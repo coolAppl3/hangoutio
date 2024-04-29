@@ -1,0 +1,42 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  body {
+    @apply font-main text-base bg-primary;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply leading-[1.2];
+  }
+
+  p {
+    @apply leading-[1.4];
+  }
+
+  .btn {
+    @apply block min-w-fit py-0 px-2 leading-[44px] font-bold text-base text-center rounded border-[1px] border-transparent cursor-pointer transition-[filter] duration-200 ease-out hover:brightness-75;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-[1200px] px-2 my-0 mx-auto h-full;
+  }
+
+  .svg {
+    @apply w-2 flex justify-center items-center border-none;
+  
+  }
+
+}
+
+
+@import './partials/variables.scss';
+@import './partials/utils.scss';
+
+
+// Media Queries --- --- ---
+// @import './partials/media-queries'
+
