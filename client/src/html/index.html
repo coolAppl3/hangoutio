@@ -7,8 +7,150 @@
       content="width=device-width, initial-scale=1.0"
     />
 
-    <!-- Title -->
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
-  <body></body>
+  <body class="bg-primary dark:bg-primary-dark">
+    <!-- top navbar -->
+    <nav class="top-nav fixed z-20 h-6 w-full bg-nav-light shadow-md dark:shadow-sm dark:shadow-cta-dark dark:bg-nav-dark">
+      <div class="container">
+        <div class="top-nav-container flex justify-between items-center">
+          <!-- logo -->
+          <a
+            href="index.html"
+            class="logo flex justify-center items-center"
+          >
+            <div class="svg w-6 h-6">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="714"
+                height="420"
+                viewBox="0 0 714 420"
+                fill="none"
+              >
+                <path
+                  d="M483.07 70.1754C483.07 108.932 451.652 140.351 412.895 140.351C374.138 140.351 342.719 108.932 342.719 70.1754C342.719 31.4186 374.138 0 412.895 0C451.652 0 483.07 31.4186 483.07 70.1754Z"
+                  fill="#29D0C5"
+                />
+                <path
+                  d="M263 256C263 196.78 311.008 148.772 370.228 148.772H456.123C515.343 148.772 563.351 196.78 563.351 256H263Z"
+                  class="fill-dark dark:fill-light"
+                />
+                <path
+                  d="M633.07 181.175C633.07 219.932 601.652 251.351 562.895 251.351C524.138 251.351 492.719 219.932 492.719 181.175C492.719 142.419 524.138 111 562.895 111C601.652 111 633.07 142.419 633.07 181.175Z"
+                  fill="#29D0C5"
+                />
+                <path
+                  d="M413 367C413 307.78 461.008 259.772 520.228 259.772H606.123C665.343 259.772 713.351 307.78 713.351 367H413Z"
+                  class="fill-dark dark:fill-light"
+                />
+                <path
+                  d="M337.779 134.71C337.779 194.197 289.556 242.421 230.069 242.421C170.582 242.421 122.359 194.197 122.359 134.71C122.359 75.2235 170.582 27 230.069 27C289.556 27 337.779 75.2235 337.779 134.71Z"
+                  fill="#E7BF23"
+                />
+                <path
+                  d="M0 419.927C0 329.031 73.6856 255.346 164.581 255.346H296.419C387.314 255.346 461 329.031 461 419.927H0Z"
+                  class="fill-dark dark:fill-light"
+                />
+              </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-title dark:text-title-dark">Hangoutio</h2>
+          </a>
+
+          <!-- links container -->
+          <ul class="links-container flex justify-center items-center mx-auto">
+            <li class="group pr-2 selected">
+              <a
+                href="#"
+                class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors hover:after:bg-cta dark:hover:after:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark group-[.selected]:font-bold"
+                >Home</a
+              >
+            </li>
+
+            <li class="group pr-2">
+              <a
+                href="#"
+                class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors hover:after:bg-cta dark:hover:after:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark"
+                >Hangout</a
+              >
+            </li>
+
+            <li class="group">
+              <a
+                href="#"
+                class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors hover:after:bg-cta dark:hover:after:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark"
+                >History</a
+              >
+            </li>
+          </ul>
+
+          <!-- utilities -->
+          <div class="utilities flex justify-center items-center">
+            <!-- theme switcher -->
+            <div
+              id="theme-switcher"
+              class="cursor-pointer group mr-2"
+              tabindex="0"
+            >
+              <div
+                class="relative theme-switcher-container flex justify-between items-center w-9 p-[2px] rounded-[10rem] border-2 border-nav-dark dark:border-nav-light after:absolute after:right-[2px] after:bg-dark after:w-3 after:h-3 after:rounded-[50%] after:group-[.dark-theme]:bg-description after:transition-transform after:duration-300 after:group-[.dark-theme]:-translate-x-[5.2rem] group-hover:border-cta group-[.dark-theme]:group-hover:border-cta-dark"
+              >
+                <div class="svg w-3 h-3 p-[2px] rounded-[50%]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="273"
+                    height="295"
+                    viewBox="0 0 273 295"
+                    class="fill-cta-dark w-2 h-2"
+                  >
+                    <path
+                      d="M106.216 0.955109C60.413 65.4738 72.594 155.3 135.286 205.119C175.521 237.091 227.108 245.075 272.784 231.045C271.201 233.274 269.55 235.473 267.829 237.638C216.289 302.496 121.93 313.293 57.0716 261.753C-7.7864 210.213 -18.5829 115.854 32.9569 50.9962C52.5241 26.3727 78.2631 9.5414 106.216 0.955109Z"
+                    />
+                  </svg>
+                </div>
+
+                <div class="svg w-3 h-3 rounded-[50%]">
+                  <svg
+                    width="300"
+                    height="281"
+                    viewBox="0 0 300 281"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-2 h-2"
+                  >
+                    <path
+                      class="fill-cta-dark"
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M149.044 0.40737C149.312 -0.135789 150.688 -0.13579 150.956 0.407369L166.741 32.3951C170.01 32.9461 173.225 33.6557 176.378 34.5157L205.789 14.8748C206.293 14.5384 207.484 15.2264 207.445 15.8308L205.363 47.7111C208.676 49.9174 211.849 52.3161 214.868 54.8911L244.755 44.7542C245.329 44.5597 246.302 45.5326 246.107 46.1062L235.122 78.4934C237.175 81.8136 239.038 85.263 240.698 88.8264L274.207 95.5006C274.801 95.6189 275.157 96.9479 274.701 97.3474L249.356 119.586C249.781 123.332 250 127.14 250 131H197.385C199.081 125.977 200 120.596 200 115C200 87.3858 177.614 65 150 65C122.386 65 100 87.3858 100 115C100 120.596 100.919 125.977 102.615 131H50C50 127.409 50.1893 123.861 50.5586 120.368L24.3225 97.3474C23.8672 96.9479 24.2233 95.6189 24.8173 95.5006L59.4019 88.6121C60.8361 85.5519 62.4208 82.5763 64.1465 79.6948L52.7542 46.1062C52.5597 45.5326 53.5326 44.5597 54.1062 44.7542L84.8093 55.1678C87.9649 52.4525 91.2919 49.9309 94.7718 47.6212L92.6963 15.8308C92.6568 15.2264 93.8484 14.5384 94.3521 14.8748L123.722 34.4884C126.843 33.6406 130.025 32.9402 133.259 32.3951L149.044 0.40737ZM115 115C115 120.765 116.394 126.205 118.863 131H181.137C183.606 126.205 185 120.765 185 115C185 95.67 169.33 80 150 80C130.67 80 115 95.67 115 115Z"
+                    />
+                    <path
+                      class="fill-cta dark:fill-light"
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M52.5073 245C78.7268 267.444 112.78 281 150 281C221.505 281 281.324 230.967 296.358 164L199.5 164C197.843 164 196.5 162.657 196.5 161C196.5 159.343 197.843 158 199.5 158L297.577 158C299.169 149.241 300 140.218 300 131H0C0 173.414 17.6038 211.717 45.9037 239L114 239C115.657 239 117 240.343 117 242C117 243.657 115.657 245 114 245L52.5073 245ZM154.5 180.5C154.5 182.157 153.157 183.5 151.5 183.5L76.5 183.5C74.8431 183.5 73.5 182.157 73.5 180.5C73.5 178.843 74.8431 177.5 76.5 177.5L151.5 177.5C153.157 177.5 154.5 178.843 154.5 180.5ZM247.5 215C249.157 215 250.5 213.657 250.5 212C250.5 210.343 249.157 209 247.5 209L151.5 209C149.843 209 148.5 210.343 148.5 212C148.5 213.657 149.843 215 151.5 215L247.5 215ZM79.5 219.5C79.5 221.157 78.1569 222.5 76.5 222.5H54C52.3431 222.5 51 221.157 51 219.5C51 217.843 52.3431 216.5 54 216.5H76.5C78.1569 216.5 79.5 217.843 79.5 219.5ZM205.5 251C207.157 251 208.5 249.657 208.5 248C208.5 246.343 207.157 245 205.5 245H163.5C161.843 245 160.5 246.343 160.5 248C160.5 249.657 161.843 251 163.5 251H205.5ZM175.5 155C175.5 156.657 174.157 158 172.5 158L138 158C136.343 158 135 156.657 135 155C135 153.343 136.343 152 138 152L172.5 152C174.157 152 175.5 153.343 175.5 155ZM94.5 152C96.1569 152 97.5 150.657 97.5 149C97.5 147.343 96.1569 146 94.5 146L37.5 146C35.8431 146 34.5 147.343 34.5 149C34.5 150.657 35.8431 152 37.5 152L94.5 152Z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- button container (sign in/sign up) -->
+            <div class="btn-container flex justify-center items-center">
+              <a
+                href="#"
+                class="btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark"
+                >Sign in</a
+              >
+
+              <a
+                href="#"
+                class="btn btn-mini bg-cta dark:bg-cta-dark text-title ml-[4px]"
+                >Sign up</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </body>
 </html>

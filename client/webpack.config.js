@@ -96,7 +96,7 @@ module.exports = {
 
     // index.html
     new HtmlWebpackPlugin({
-      title: 'Home - TeamBolt',
+      title: 'Home - Hangoutio',
       filename: 'index.html',
       template: 'src/html/index.html',
 
@@ -105,7 +105,7 @@ module.exports = {
       ],
     }),
   ],
-
+  
   optimization: {
     minimizer: [
       new CssMinimizerPlugin(),

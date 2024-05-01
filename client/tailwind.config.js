@@ -5,22 +5,29 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'primary': '#DDE1E4',
-        'secondary': '#FDFDFD',
+        // Light mode
+        'primary': '#C1C1C3',
+        'secondary': '#EBEBEB',
         'title': '#191A1C',
-        'description': '#525252',
+        'description': '#5A5B5E',
+        'cta': '#29D0C5',
 
-        // Dark theme
-        'primary-dark': '#0F182C',
-        'secondary-dark': '#232D45',
-        'title-dark': '#FDFDFD',
-        'description-dark': '#A9B5C6',
+        // Dark mode
+        'primary-dark': '#191A1C',
+        'secondary-dark': '#2E2F31',
+        'title-dark': '#EBEBEB',
+        'description-dark': '#BCBCBD',
+        'cta-dark': '#E7BF23',
+
+        // Navbar
+        'nav-light': '#f2f2f2',
+        'nav-dark': '#131416',
 
         // Global
-        'cta': '#09A8EC',
-        'light': '#FDFDFD',
+        'light': '#EBEBEB',
         'dark': '#191A1C',
-        
+
+        // Utility
       },
       borderColor: {
         'primary': '#DDE1E4',
@@ -40,10 +47,17 @@ module.exports = {
       },
       borderWidth: {
         '1': '1px',
+        '3': '3px',
       },
       boxShadowColor: {
         'soft-gray': 'rgba(0, 0, 0, 0.15)',
         'soft-white': 'rgba(255, 255, 255, 1',
+      },
+      zIndex: {
+        '1': '1',
+        '3': '3',
+        '5': '5',
+        '15': '15',
       },
     },
 

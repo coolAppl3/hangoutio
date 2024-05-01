@@ -15,21 +15,27 @@
     @apply leading-[1.4];
   }
 
-  .btn {
-    @apply block min-w-fit py-0 px-2 leading-[44px] font-bold text-base text-center rounded border-[1px] border-transparent cursor-pointer transition-[filter] duration-200 ease-out hover:brightness-75;
+  * {
+    @apply z-1 transition-colors;
   }
 }
 
 @layer components {
+  .btn {
+    @apply block min-w-fit py-1 px-[2.4rem] font-bold text-base text-center rounded border-[1px] border-transparent cursor-pointer transition-[filter] duration-200 ease-out hover:brightness-75;
+
+    &.btn-mini {
+      @apply text-xs px-[1.6rem] py-[0.6rem];
+    }
+  }
+
   .container {
     @apply max-w-[1200px] px-2 my-0 mx-auto h-full;
   }
 
   .svg {
-    @apply w-2 flex justify-center items-center border-none;
-  
+    @apply flex justify-center items-center border-none ;
   }
-
 }
 
 
