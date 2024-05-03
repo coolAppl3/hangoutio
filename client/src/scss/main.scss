@@ -43,6 +43,19 @@
 @import './partials/utils.scss';
 
 
+// .bot-nav-container {
+//   display: grid;
+//   grid-template-columns: repeat(16, minmax(0, 1fr));
+
+//   &-item {
+//     grid-column: span 3;
+
+//     &:nth-child(3) {
+//       grid-column: span 4;
+//     }
+//   }
+// }
+
 // Media Queries --- --- ---
 // @import './partials/media-queries'
 

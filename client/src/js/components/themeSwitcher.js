@@ -3,6 +3,7 @@ function themeSwitcher() {
 
   const themeBtn = document.querySelector('#theme-switcher');
   themeBtn.addEventListener('click', changeTheme);
+  themeBtn.addEventListener('keyup', handleThemeBtnKeyEvents);
 };
 
 function setTheme() {
@@ -18,11 +19,14 @@ function setTheme() {
   updateThemeBtn('dark');
 };
 
-function changeTheme(e) {
-  e.preventDefault();
-  
+function handleThemeBtnKeyEvents(e) {
+  if(e.key === 'Enter') {
+    changeTheme();
+  };
+};
+
+function changeTheme() {
   const darkTheme = JSON.parse(localStorage.getItem('darkTheme'));
-  const themeBtn = document.querySelector('#theme-switcher');
 
   if(!darkTheme) {
     document.documentElement.classList.add('dark');
