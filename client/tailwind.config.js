@@ -5,45 +5,56 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Light mode
-        'primary': '#C1C1C3',
+        // light mode
+        'primary': '#D5D5D7',
         'secondary': '#EBEBEB',
         'title': '#191A1C',
-        'description': '#5A5B5E',
+        'description': '#3C3D3E',
         'cta': '#29D0C5',
 
-        // Dark mode
+        // dark mode
         'primary-dark': '#191A1C',
         'secondary-dark': '#2E2F31',
         'title-dark': '#EBEBEB',
         'description-dark': '#BCBCBD',
         'cta-dark': '#E7BF23',
 
-        // Navbar
+        // navbar
         'nav-light': '#f2f2f2',
         'nav-dark': '#131416',
 
-        // Global
+        // global
         'light': '#EBEBEB',
         'dark': '#191A1C',
 
-        // Utility
+        // utility
       },
       borderColor: {
-        'primary': '#DDE1E4',
-        'secondary': '#FDFDFD',
+        // light mode
+        'primary': '#D5D5D7',
+        'secondary': '#EBEBEB',
+        'title': '#191A1C',
+        'description': '#3C3D3E',
+        'cta': '#29D0C5',
 
-        // Dark theme
-        'primary-dark': '#0F182C',
-        'secondary-dark': '#232D45',
+        // dark mode
+        'primary-dark': '#191A1C',
+        'secondary-dark': '#2E2F31',
+        'title-dark': '#EBEBEB',
+        'description-dark': '#BCBCBD',
+        'cta-dark': '#E7BF23',
 
-        // Global
-        'cta': '#09A8EC',
-        'light': '#FDFDFD',
+        // navbar
+        'nav-light': '#f2f2f2',
+        'nav-dark': '#131416',
+
+        // global
+        'light': '#EBEBEB',
         'dark': '#191A1C',
 
-        'soft-gray': 'rgba(255, 255, 255, 0.15)',
-        'soft-white': 'rgba(255, 255, 255, 1',
+        // border-only utility
+        'light-gray': 'rgba(30, 30, 30, 0.25)',
+        'light-black': 'rgba(200, 200, 200, 0.25)'
       },
       borderWidth: {
         '1': '1px',
@@ -59,14 +70,15 @@ module.exports = {
         '5': '5',
         '15': '15',
       },
+      gridTemplateColumns: {
+        '16': 'repeat(16, minmax(0, 1fr))',
+      },
     },
 
     screens: {
-      'xl': {'max': '1279px'},
-      'lg': {'max': '1023px'},
-      'md': {'max': '767px'},
-      'sm': {'max': '639px'},
-      'xs': {'max': '449px'},
+      'md': {'max': '800px'},
+      'sm': {'max': '650px'},
+      'xs': {'max': '400px'},
     },
     
     fontFamily: {
