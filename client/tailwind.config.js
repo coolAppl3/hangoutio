@@ -8,6 +8,7 @@ module.exports = {
         // light mode
         'primary': '#D5D5D7',
         'secondary': '#EBEBEB',
+        'section': '#f4f4f4',
         'title': '#191A1C',
         'description': '#3C3D3E',
         'cta': '#29D0C5',
@@ -15,6 +16,7 @@ module.exports = {
         // dark mode
         'primary-dark': '#191A1C',
         'secondary-dark': '#2E2F31',
+        'section-dark': '#222222',
         'title-dark': '#EBEBEB',
         'description-dark': '#BCBCBD',
         'cta-dark': '#E7BF23',
@@ -28,6 +30,8 @@ module.exports = {
         'dark': '#191A1C',
 
         // utility
+        'light-gray': 'rgba(30, 30, 30, 0.25)',
+        'light-black': 'rgba(200, 200, 200, 0.25)'
       },
       borderColor: {
         // light mode
@@ -52,7 +56,7 @@ module.exports = {
         'light': '#EBEBEB',
         'dark': '#191A1C',
 
-        // border-only utility
+        // utility
         'light-gray': 'rgba(30, 30, 30, 0.25)',
         'light-black': 'rgba(200, 200, 200, 0.25)'
       },
@@ -76,9 +80,10 @@ module.exports = {
     },
 
     screens: {
-      'md': {'max': '800px'},
+      'lg': {'max': '970px'},
+      'md': {'max': '830px'},
       'sm': {'max': '650px'},
-      'xs': {'max': '400px'},
+      'xs': {'max': '450px'},
     },
     
     fontFamily: {
@@ -93,7 +98,8 @@ module.exports = {
       lg: '2rem',
       xl: '2.2rem',
       '2xl': '2.4rem',
-      '3xl': '2.8rem'
+      '3xl': '2.8rem',
+      '4xl': '3rem',
     },
     
     spacing: {
