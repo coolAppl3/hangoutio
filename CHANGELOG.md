@@ -1,6 +1,15 @@
 # Changelog
 
 ---
+### [0.0.4] (2024-05-07)
+
+### Features
+
+- Homepage layout full implemented.
+  - Links and further functionality to be added later.
+
+
+---
 ### [0.0.3] (2024-05-03)
 
 ### Features
