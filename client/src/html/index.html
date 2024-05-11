@@ -10,6 +10,12 @@
       content="width=device-width, initial-scale=1.0"
     />
 
+    <link
+      rel="icon"
+      href="../assets/logo-favicon.ico"
+      type="image/x-icon"
+    />
+
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
 
@@ -64,8 +70,8 @@
           </div>
 
           <!-- links container -->
-          <ul class="links-container flex justify-center items-center mx-auto md:hidden">
-            <li class="group pr-2 selected">
+          <ul class="links-container flex justify-center items-center mx-auto md:hidden group">
+            <li class="group selected">
               <a
                 href="#"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors hover:after:bg-cta dark:hover:after:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark group-[.selected]:font-bold"
@@ -73,7 +79,7 @@
               >
             </li>
 
-            <li class="group pr-2">
+            <li class="group pl-2">
               <a
                 href="#"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors hover:after:bg-cta dark:hover:after:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark"
@@ -81,7 +87,7 @@
               >
             </li>
 
-            <li class="group pr-2">
+            <li class="group pl-2 hidden group-[.signed-in]:block">
               <a
                 href="#"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors hover:after:bg-cta dark:hover:after:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark"
@@ -89,7 +95,7 @@
               >
             </li>
 
-            <li class="group">
+            <li class="group pl-2 hidden group-[.signed-in]:block">
               <a
                 href="#"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors hover:after:bg-cta dark:hover:after:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark"
@@ -170,11 +176,11 @@
 
     <!-- bottom navbar -->
     <nav
-      class="bot-nav fixed bottom-0 left-0 z-20 h-6 w-full hidden md:block bg-nav-light dark:bg-nav-dark shadow-[0_-1px_2px_0_rgba(0,0,0,0.05)] shadow-cta dark:shadow-cta-dark"
+      class="bot-nav fixed bottom-0 left-0 z-20 h-6 w-full hidden md:block bg-nav-light dark:bg-nav-dark shadow-[0_-1px_2px_0_rgba(0,0,0,0.05)] shadow-cta dark:shadow-cta-dark group"
     >
-      <div class="bot-nav-container h-full grid grid-cols-16 place-items-center">
+      <div class="bot-nav-container h-full grid grid-cols-16 place-items-center group">
         <div
-          class="bot-nav-container-item col-span-3 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+          class="bot-nav-container-item col-span-5 group-[.signed-in]:col-span-3 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
         >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
@@ -199,7 +205,7 @@
         </div>
 
         <div
-          class="bot-nav-container-item col-span-3 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+          class="bot-nav-container-item col-span-3 relative w-full h-full hidden flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer group-[.signed-in]:flex"
         >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
@@ -225,7 +231,7 @@
         </div>
 
         <div
-          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+          class="bot-nav-container-item col-span-6 group-[.signed-in]:col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
         >
           <a
             href="#"
@@ -254,7 +260,7 @@
         </div>
 
         <div
-          class="bot-nav-container-item col-span-3 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+          class="bot-nav-container-item col-span-3 relative w-full h-full hidden flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer group-[.signed-in]:flex"
         >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
@@ -279,7 +285,9 @@
           >
         </div>
 
-        <div class="bot-nav-container-item col-span-3 relative w-full h-full flex flex-col justify-center items-center border-r-0 cursor-pointer">
+        <div
+          class="bot-nav-container-item col-span-5 group-[.signed-in]:col-span-3 relative w-full h-full flex flex-col justify-center items-center border-r-0 cursor-pointer"
+        >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -1130,7 +1138,7 @@
               <li
                 class="description text-sm text-description dark:text-description-dark font-bold mb-[5px] relative after:absolute after:top-[50%] after:translate-y-[-50%] after:my-auto after:-left-[1.4rem] after:w-[5px] after:h-[5px] after:rounded-[50%] after:bg-title after:dark:bg-title-dark"
               >
-                Track all your hangouts and recrate them easily.
+                Track all your hangouts and recreate them easily.
               </li>
               <li
                 class="description text-sm text-description dark:text-description-dark font-bold mb-[5px] relative after:absolute after:top-[50%] after:translate-y-[-50%] after:my-auto after:-left-[1.4rem] after:w-[5px] after:h-[5px] after:rounded-[50%] after:bg-title after:dark:bg-title-dark"
@@ -1140,7 +1148,7 @@
               <li
                 class="description text-sm text-description dark:text-description-dark font-bold mb-[5px] relative after:absolute after:top-[50%] after:translate-y-[-50%] after:my-auto after:-left-[1.4rem] after:w-[5px] after:h-[5px] after:rounded-[50%] after:bg-title after:dark:bg-title-dark"
               >
-                Add friends for easier planning.
+                Add friends to further simplify the process.
               </li>
             </ul>
 
@@ -1162,6 +1170,55 @@
     <footer class="footer py-6 md:pb-[16rem] bg-dark border-t-2 border-light-black">
       <div class="container">
         <div class="footer-container grid gap-2 grid-cols-9 lg:grid-cols-3 lg:gap-y-3 sm:grid-cols-1">
+          <!-- logo -->
+          <div class="footer-container-item flex flex-col justify-start items-start col-span-3 lg:col-span-3 lg:items-center lg:mt-2 lg:order-4 sm:col-span-1">
+            <div class="logo flex justify-center items-center w-fit relative mb-1">
+              <div class="svg w-6 h-6 mr-[4px] overflow-hidden">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="714"
+                  height="420"
+                  viewBox="0 0 714 420"
+                  fill="none"
+                >
+                  <path
+                    d="M483.07 70.1754C483.07 108.932 451.652 140.351 412.895 140.351C374.138 140.351 342.719 108.932 342.719 70.1754C342.719 31.4186 374.138 0 412.895 0C451.652 0 483.07 31.4186 483.07 70.1754Z"
+                    fill="#29D0C5"
+                  />
+                  <path
+                    d="M263 256C263 196.78 311.008 148.772 370.228 148.772H456.123C515.343 148.772 563.351 196.78 563.351 256H263Z"
+                    class="fill-light"
+                  />
+                  <path
+                    d="M633.07 181.175C633.07 219.932 601.652 251.351 562.895 251.351C524.138 251.351 492.719 219.932 492.719 181.175C492.719 142.419 524.138 111 562.895 111C601.652 111 633.07 142.419 633.07 181.175Z"
+                    fill="#29D0C5"
+                  />
+                  <path
+                    d="M413 367C413 307.78 461.008 259.772 520.228 259.772H606.123C665.343 259.772 713.351 307.78 713.351 367H413Z"
+                    class="fill-light"
+                  />
+                  <path
+                    d="M337.779 134.71C337.779 194.197 289.556 242.421 230.069 242.421C170.582 242.421 122.359 194.197 122.359 134.71C122.359 75.2235 170.582 27 230.069 27C289.556 27 337.779 75.2235 337.779 134.71Z"
+                    fill="#E7BF23"
+                  />
+                  <path
+                    d="M0 419.927C0 329.031 73.6856 255.346 164.581 255.346H296.419C387.314 255.346 461 329.031 461 419.927H0Z"
+                    class="fill-light"
+                  />
+                </svg>
+              </div>
+              <h2>
+                <a
+                  href="index.html"
+                  class="text-3xl font-bold text-title-dark sm:text-2xl xs:text-xl after:absolute after:top-0 after:left-0 after:w-full after:h-full"
+                  >Hangoutio</a
+                >
+              </h2>
+            </div>
+
+            <p class="text-base text-description-dark font-bold">Planning a meetup has never been easier!</p>
+          </div>
+
           <!-- links -->
           <ul class="footer-container-item col-span-2 lg:col-span-1">
             <h4 class="text-title-dark text-lg font-medium mb-1 h-6 flex justify-start items-center">Links</h4>
@@ -1242,55 +1299,6 @@
               >
             </li>
           </ul>
-
-          <!-- logo -->
-          <div class="footer-container-item flex flex-col justify-start items-start col-span-3 lg:col-span-3 lg:items-center lg:mt-2 sm:col-span-1">
-            <div class="logo flex justify-center items-center w-fit relative mb-1">
-              <div class="svg w-6 h-6 mr-[4px] overflow-hidden">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="714"
-                  height="420"
-                  viewBox="0 0 714 420"
-                  fill="none"
-                >
-                  <path
-                    d="M483.07 70.1754C483.07 108.932 451.652 140.351 412.895 140.351C374.138 140.351 342.719 108.932 342.719 70.1754C342.719 31.4186 374.138 0 412.895 0C451.652 0 483.07 31.4186 483.07 70.1754Z"
-                    fill="#29D0C5"
-                  />
-                  <path
-                    d="M263 256C263 196.78 311.008 148.772 370.228 148.772H456.123C515.343 148.772 563.351 196.78 563.351 256H263Z"
-                    class="fill-light"
-                  />
-                  <path
-                    d="M633.07 181.175C633.07 219.932 601.652 251.351 562.895 251.351C524.138 251.351 492.719 219.932 492.719 181.175C492.719 142.419 524.138 111 562.895 111C601.652 111 633.07 142.419 633.07 181.175Z"
-                    fill="#29D0C5"
-                  />
-                  <path
-                    d="M413 367C413 307.78 461.008 259.772 520.228 259.772H606.123C665.343 259.772 713.351 307.78 713.351 367H413Z"
-                    class="fill-light"
-                  />
-                  <path
-                    d="M337.779 134.71C337.779 194.197 289.556 242.421 230.069 242.421C170.582 242.421 122.359 194.197 122.359 134.71C122.359 75.2235 170.582 27 230.069 27C289.556 27 337.779 75.2235 337.779 134.71Z"
-                    fill="#E7BF23"
-                  />
-                  <path
-                    d="M0 419.927C0 329.031 73.6856 255.346 164.581 255.346H296.419C387.314 255.346 461 329.031 461 419.927H0Z"
-                    class="fill-light"
-                  />
-                </svg>
-              </div>
-              <h2>
-                <a
-                  href="index.html"
-                  class="text-3xl font-bold text-title-dark sm:text-2xl xs:text-xl after:absolute after:top-0 after:left-0 after:w-full after:h-full"
-                  >Hangoutio</a
-                >
-              </h2>
-            </div>
-
-            <p class="text-base text-description-dark font-bold">Planning a meetup has never been easier!</p>
-          </div>
         </div>
       </div>
     </footer>
