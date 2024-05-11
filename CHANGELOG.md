@@ -1,6 +1,38 @@
 # Changelog
 
 ---
+### [0.0.5] (2024-05-11)
+
+
+### Features
+
+- Added the logo as a favicon.
+- TypeScript introduced to the project.
+  - Previous vanilla JavaScript code has been removed.
+<br>
+- Rewrote `themeSwitcher.js` in TypeScript, and it's now `themeSwitcher.ts`.
+- Rewrote `index.js` in TypeScript, and it's now `index.ts`.
+- Added `Cookies.ts` to handle all browser cookie manipulation.
+- Added `topNavbar.ts`.
+
+
+### Build Changes
+
+- Updated how assets are built in `webpack.config.js`.
+- The build process is now integrated with TypeScript.
+
+
+### Bug Fixes
+
+- Fixed a simple misspell in the homepage.
+
+
+### Code Refactoring
+
+- Rephrased a sentence in the homepage.
+
+
+---
 ### [0.0.4] (2024-05-07)
 
 ### Features

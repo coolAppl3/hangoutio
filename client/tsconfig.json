@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./src/js2/",
+    "module": "ESNext",
+    "target": "ES2017",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "alwaysStrict": true, 
+  }
+}

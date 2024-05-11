@@ -11,17 +11,21 @@ module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
 
   entry: {
-    index: './src/js/index.js',
+    index: './src/ts/index.ts',
+  },
+
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
   },
 
   output: {
     path: path.resolve(__dirname, '../public'),
-    filename: process.env.NODE_ENV === 'production'? 'js/[name]-[contenthash].js' : 'js/[name].js',
+    filename: process.env.NODE_ENV === 'production' ? 'js/[name]-[contenthash].js' : 'js/[name].js',
     clean: true,
     assetModuleFilename: (pathData) => {
       const { filename } = pathData;
 
-      if (filename.endsWith('.woff') || filename.endsWith('.woff2') || filename.endsWith('.eot') || filename.endsWith('.ttf') || filename.endsWith('.otf')|| filename.endsWith('.otf'))  {
+      if (filename.endsWith('.woff') || filename.endsWith('.woff2') || filename.endsWith('.eot') || filename.endsWith('.ttf') || filename.endsWith('.otf') || filename.endsWith('.otf')) {
         return 'assets/fonts/[name][ext]';
       };
 
@@ -45,12 +49,6 @@ module.exports = {
     historyApiFallback: true,
   },
 
-  // performance: {
-  //   hints: false,
-  //   maxEntrypointSize: 512000,
-  //   maxAssetSize: 512000
-  // },
-
   module: {
     rules: [
       {
@@ -62,17 +60,11 @@ module.exports = {
           'sass-loader',
         ],
       },
-      
 
       {
-        test: /\.js$/,
+        test: /\.ts$/,
+        use: 'ts-loader',
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env'],
-          },
-        },
       },
 
       {
@@ -80,9 +72,7 @@ module.exports = {
         exclude: /node_modules/,
         type: 'asset/resource',
       },
-
     ],
-    
   },
 
   plugins: [
@@ -90,7 +80,7 @@ module.exports = {
 
     new CopyPlugin({
       patterns: [
-        { from: "src/assets/font-licenses", to: "assets/LICENSES/font-licenses" },
+        { from: "src/assets/", to: "assets/" },
       ],
     }),
 
@@ -105,7 +95,7 @@ module.exports = {
       ],
     }),
   ],
-  
+
   optimization: {
     minimizer: [
       new CssMinimizerPlugin(),
