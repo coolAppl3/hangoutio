@@ -31,7 +31,14 @@ module.exports = {
 
         // utility
         'light-gray': 'rgba(30, 30, 30, 0.25)',
-        'light-black': 'rgba(200, 200, 200, 0.25)'
+        'light-black': 'rgba(200, 200, 200, 0.25)',
+        'overlay': 'rgba(30, 30, 30, 0.7)',
+
+        'danger-popup': '#bd2130',
+        'danger': '#b91c1c',
+        'danger-dark': '#f87171',
+
+        'success': '#28a745',
       },
       borderColor: {
         // light mode
@@ -57,16 +64,29 @@ module.exports = {
         'dark': '#191A1C',
 
         // utility
-        'light-gray': 'rgba(30, 30, 30, 0.25)',
-        'light-black': 'rgba(200, 200, 200, 0.25)'
+        'light-gray': 'rgba(30, 30, 30, 0.45)',
+        'light-black': 'rgba(200, 200, 200, 0.6)',
+
+        'danger-popup': '#bd2130',
+        'danger': '#b91c1c',
+        'danger-dark': '#f87171',
+
+        'success': '#28a745',
       },
       borderWidth: {
         '1': '1px',
         '3': '3px',
       },
+      boxShadow: {
+        'centered': '0 0 5px 1px rgba(0, 0, 0, 0.15)',
+        'tiny': '0 0 1px 1px rgba(0, 0, 0, 0.15)'
+      },
       boxShadowColor: {
+        'soft-cta': 'rgba(41, 208, 197, 0.50)',
+        'soft-cta-dark': 'rgba(231, 191, 35, 0.50)',
+
         'soft-gray': 'rgba(0, 0, 0, 0.15)',
-        'soft-white': 'rgba(255, 255, 255, 1',
+        'soft-white': 'rgba(255, 255, 255, 0.2)',
       },
       zIndex: {
         '1': '1',
@@ -80,12 +100,12 @@ module.exports = {
     },
 
     screens: {
-      'lg': {'max': '970px'},
-      'md': {'max': '830px'},
-      'sm': {'max': '650px'},
-      'xs': {'max': '450px'},
+      'lg': { 'max': '970px' },
+      'md': { 'max': '830px' },
+      'sm': { 'max': '650px' },
+      'xs': { 'max': '450px' },
     },
-    
+
     fontFamily: {
       main: ['adjustedRoboto', 'sans-serif'],
     },
@@ -101,7 +121,7 @@ module.exports = {
       '3xl': '2.8rem',
       '4xl': '3rem',
     },
-    
+
     spacing: {
       auto: 'auto',
       '0': '0rem',
@@ -126,4 +146,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
+};

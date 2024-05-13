@@ -1,21 +1,23 @@
 const path = require('path');
 
+const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
 
-process.env.NODE_ENV = 'development';
+process.env.NODE_ENV = 'production';
 
 module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
 
   entry: {
     index: './src/ts/index.ts',
+    createHangout: './src/ts/createHangout.ts',
   },
 
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.ts', '.js'],
   },
 
   output: {
@@ -94,11 +96,24 @@ module.exports = {
         "index"
       ],
     }),
+
+    // create-hangout.html
+    new HtmlWebpackPlugin({
+      title: 'Create a Hangout - Hangoutio',
+      filename: 'create-hangout.html',
+      template: 'src/html/create-hangout.html',
+
+      chunks: [
+        "createHangout"
+      ],
+    }),
   ],
 
   optimization: {
+    minimize: true,
     minimizer: [
       new CssMinimizerPlugin(),
+      new TerserPlugin(),
     ],
   },
 };
