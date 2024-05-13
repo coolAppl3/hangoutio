@@ -3,11 +3,32 @@
 @import 'tailwindcss/utilities';
 
 @layer base {
+
+  *,
+  *::before,
+  *::after {
+    @apply m-0 p-0 box-border;
+  }
+
+  * {
+    @apply z-1 transition-colors;
+  }
+
+  html {
+    font-size: 62.5%;
+    @apply font-normal leading-[1.4];
+  }
+
   body {
     @apply font-main text-base bg-primary;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply leading-[1.2] block;
   }
 
@@ -19,68 +40,121 @@
     @apply block;
   }
 
-  * {
-    @apply z-1 transition-colors;
-  }
 }
 
 @layer components {
-  .btn {
-    @apply block min-w-fit py-1 px-[2.4rem] font-bold text-base text-center rounded border-[1px] border-transparent cursor-pointer transition-[filter] duration-200 ease-out hover:brightness-75;
+  .container {
+    @apply max-w-[1200px] px-2 my-0 mx-auto h-full;
+  }
 
-    &.btn-mini {
-      @apply text-xs px-[1.6rem] py-[0.6rem];
+  .bot-nav {
+    &-container {
+
+      &-item {
+
+        &.selected {
+          @apply bg-light-gray dark:bg-light-black;
+        }
+      }
     }
   }
 
-  .container {
-    @apply max-w-[1200px] px-2 my-0 mx-auto h-full;
+  .btn {
+    @apply block min-w-fit py-1 px-[2.4rem] font-bold text-base text-center leading-[2.2rem] rounded border-[1px] border-transparent cursor-pointer transition-[filter] duration-200 ease-out hover:brightness-75;
+
+    &.btn-mini {
+      @apply text-xs leading-[1.7rem] px-[1.6rem] py-[0.6rem];
+    }
   }
 
   .svg {
     @apply flex justify-center items-center border-none overflow-hidden;
 
     svg {
-      overflow: hidden;
-      height: fit-content;
+      @apply overflow-hidden h-fit;
     }
   }
 
   .form-group {
     @apply mb-2;
 
+    &.error {
+
+      .error-span {
+        @apply block;
+      }
+
+      input,
+      textarea {
+        @apply border-danger dark:border-danger-dark;
+      }
+    }
+
+    &.form-group-password {
+
+      &.error {
+
+        .password-icon {
+          @apply bottom-[28px]
+        }
+      }
+
+      input,
+      textarea {
+        @apply pr-4;
+      }
+    }
+
     label {
       @apply text-description dark:text-description-dark text-sm font-bold block mb-[4px];
     }
 
-    input, textarea {
-      @apply block w-full bg-transparent text-sm font-medium leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-title dark:border-title-dark;
+    input,
+    textarea {
+      @apply block w-full bg-transparent text-sm font-medium leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none;
+
+    }
+
+    .error-span {
+      @apply hidden mt-[5px] text-xs font-medium leading-[1] text-danger dark:text-danger-dark;
+    }
+
+    .password-icon {
+      @apply absolute right-1 bottom-[11px] cursor-pointer after:absolute after:hidden after:top-0 after:left-0 after:right-0 after:mx-auto after:w-[2px] after:h-full after:z-3 after:rounded-[40px] after:rotate-45 after:transition-colors after:bg-description dark:after:bg-description-dark hover:after:bg-cta dark:hover:after:bg-cta-dark;
+
+      &.revealed {
+        @apply after:block;
+      }
+    }
+
+  }
+
+
+  .triangle {
+
+    &-bottom::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 1.5rem;
+      width: 0px;
+      height: 0px;
+      border-style: solid;
+      border-width: 0 7px 8px 7px;
+      border-color: transparent transparent #ff4532 transparent;
+      transform: rotate(180deg);
     }
   }
 
-  .link-disabled {
-    @apply opacity-50 cursor-not-allowed;
+  .h-available {
+    min-height: calc(100vh - 6rem);
+    min-height: calc(100svh - 6rem);
+
+    @media(max-width: 830px) {
+      min-height: calc(100vh - 12rem);
+      min-height: calc(100svh - 12rem);
+    }
   }
 }
 
-
 @import './partials/variables.scss';
-@import './partials/utils.scss';
-
-
-// .bot-nav-container {
-//   display: grid;
-//   grid-template-columns: repeat(16, minmax(0, 1fr));
-
-//   &-item {
-//     grid-column: span 3;
-
-//     &:nth-child(3) {
-//       grid-column: span 4;
-//     }
-//   }
-// }
-
-// Media Queries --- --- ---
-// @import './partials/media-queries'
-
