@@ -2,6 +2,31 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+// Fonts
+@font-face {
+  font-family: 'adjustedRoboto';
+  src: url('../assets/fonts/roboto/Roboto-Light.ttf') format('truetype');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'adjustedRoboto';
+  src: url('../assets/fonts/roboto/Roboto-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'adjustedRoboto';
+  src: url('../assets/fonts/roboto/Roboto-Medium.ttf') format('truetype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'adjustedRoboto';
+  src: url('../assets/fonts/roboto/Roboto-Bold.ttf') format('truetype');
+  font-weight: bold;
+}
+
 @layer base {
 
   *,
@@ -16,11 +41,11 @@
 
   html {
     font-size: 62.5%;
-    @apply font-normal leading-[1.4];
+    @apply font-main font-normal leading-[1.4];
   }
 
   body {
-    @apply font-main text-base bg-primary;
+    @apply font-main text-base bg-primary relative;
   }
 
   h1,
@@ -43,6 +68,8 @@
 }
 
 @layer components {
+
+  // Utility
   .container {
     @apply max-w-[1200px] px-2 my-0 mx-auto h-full;
   }
@@ -129,7 +156,6 @@
 
   }
 
-
   .triangle {
 
     &-bottom::after {
@@ -155,6 +181,175 @@
       min-height: calc(100svh - 12rem);
     }
   }
+
+  // create-hangout.html
+  .content {
+    #steps-form {
+      height: fit-content;
+
+      .sub-form {
+        transform: translate3d(0, 150%, 0);
+        transition: transform 200ms;
+        position: absolute;
+        display: none;
+
+        &.completed {
+          transform: translate3d(-50rem, 0, 0) !important;
+        }
+
+        &.current {
+          display: block;
+          position: static;
+
+          &.in-position {
+            transform: translate3d(0, 0, 0);
+          }
+        }
+
+        &.animating {
+          display: block;
+        }
+      }
+
+
+    }
+
+    #form-navigation {
+
+      &.first-step {
+
+        #previous-step-btn {
+          display: none;
+        }
+      }
+
+      &.last-step {
+
+        #next-step-btn {
+          display: none;
+        }
+      }
+    }
+
+  }
 }
 
-@import './partials/variables.scss';
+// direct styling --- --- ---
+
+// date picker
+#date-picker-modal {
+  @apply fixed top-0 left-0 w-full bg-overlay z-[25] hidden;
+  height: 100vh;
+  height: 100svh;
+
+  &.displayed {
+    @apply flex justify-center items-center;
+  }
+
+  #date-picker {
+    @apply w-[30rem] max-w-[30rem] p-1 bg-secondary dark:bg-secondary-dark rounded-md;
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: transform 150ms, opacity 150ms;
+
+    &.in-position {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+
+    &-navbar {
+      @apply flex justify-center items-center pb-1 mb-2 border-b-1 border-b-light-gray dark:border-b-light-black;
+
+      * {
+        @apply text-title dark:text-title-dark
+      }
+
+      button {
+        @apply w-3 h-3 flex justify-center items-center hover:bg-light-gray dark:hover:bg-light-black relative after:absolute after:top-0 after:left-0 after:h-full after:w-full after:z-3;
+
+        &.hidden {
+          @apply invisible;
+        }
+      }
+
+      #date-picker-navbar-header {
+
+        span {
+          @apply text-title dark:text-title-dark font-medium;
+        }
+      }
+    }
+
+    &-days {
+      @apply grid grid-cols-7 place-items-center mb-1;
+
+      p {
+        @apply text-sm font-medium text-title dark:text-title-dark select-none;
+      }
+    }
+
+    &-dates {
+
+      &-container {
+        @apply grid grid-cols-7 place-items-center;
+
+        .date-picker-date-btn {
+          @apply w-full h-full p-1 flex justify-center items-center text-sm text-center font-bold text-description dark:text-description-dark border-1 border-transparent hover:bg-light-gray dark:hover:bg-light-black select-none;
+
+          &.disabled {
+            @apply opacity-50 hover:bg-transparent dark:hover:bg-transparent cursor-default;
+          }
+
+          &#date-picker-selected-date {
+            @apply bg-cta dark:bg-cta-dark text-dark border-cta dark:border-cta-dark;
+          }
+
+          &[data-initial] {
+            @apply border-1 border-description border-light-gray dark:border-light-black;
+          }
+        }
+      }
+    }
+
+    &-btn-container {
+      @apply flex justify-between items-center pt-1 border-t-1 border-t-light-gray dark:border-t-light-black;
+
+      #date-picker-close {
+        @apply btn w-full mr-1 bg-description dark:bg-description-dark text-light dark:text-dark;
+      }
+
+      #date-picker-confirm {
+        @apply btn w-full bg-cta dark:bg-cta-dark;
+
+        &.disabled {
+          @apply opacity-25 cursor-not-allowed hover:brightness-100;
+        }
+      }
+    }
+  }
+}
+
+// popup
+#popup {
+  @apply absolute top-8 left-0 right-0 mx-auto p-[1.4rem] w-fit text-sm text-center font-bold rounded z-[30];
+  transform: translate3d(0, 3rem, 0);
+  opacity: 0;
+  transition: transform 150ms, opacity 150ms;
+
+  &.in-view {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  &.error {
+    @apply bg-danger-popup text-light;
+  }
+
+  &.success {
+    @apply bg-success text-dark;
+  }
+
+  &.info {
+    @apply bg-cta dark:bg-cta-dark text-dark;
+  }
+}

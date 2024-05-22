@@ -1,5 +1,25 @@
 # Changelog
 
+---
+### [0.0.7] (2024-05-23)
+
+### Features
+
+- Added more UI elements in `create-hangout.html`.
+- Added `hangoutForms.ts` under the createHangout modules.
+  - It should handle the form navigation, as well as the form submission later down the line.
+- Added `datePicker.ts` under global modules.
+  - This module will be used throughout the app where needed, and will provide a consistent way for users to select a date and for the app to store them.
+  - The module dispatches a custom event with a payload to the window when a date is selected.
+- Added `popup.ts` to handle popup messages throughout the app where needed.
+
+
+### Build Changes
+
+- Removed `_utils.scss` and `media-queries.scss` completely.
+  - Any extra/complicated styling will take place in `main.scss` to avoid over-complicating future styling changes.
+- Removed `_variables.scss` and moved the font definitions to `main.scss` considering their simplicity.
+
 
 ---
 ### [0.0.6] (2024-05-14)
