@@ -1,6 +1,31 @@
 # Changelog
 
 ---
+### [0.0.8] (2024-05-26)
+
+### Features
+
+- Created `SliderInput.ts` to handle custom `range` inputs throughout the app.
+- Further UI elements added to `create-hangout.html`.
+
+
+### Style Changes
+
+- Changed the shape of the toggle button in the theme switcher from a circle to a pill.
+
+
+### Bug Fixes
+
+- Removed leftover date picker HTML in `create-hangout.html`.
+  - A temporary template `__datePicker.html` has been added for now until the date picker is used permanently in of the HTML files.
+
+
+### Documentation Changes
+
+- Added an extra point about the `datePicker.ts` module which was not noted in the last patch.
+
+
+---
 ### [0.0.7] (2024-05-23)
 
 ### Features
@@ -11,6 +36,7 @@
 - Added `datePicker.ts` under global modules.
   - This module will be used throughout the app where needed, and will provide a consistent way for users to select a date and for the app to store them.
   - The module dispatches a custom event with a payload to the window when a date is selected.
+  - The date picker doesn't allow picking any dates in the past, or dates beyond the two following months to the current one.
 - Added `popup.ts` to handle popup messages throughout the app where needed.
 
 

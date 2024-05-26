@@ -115,7 +115,7 @@
               tabindex="0"
             >
               <div
-                class="relative theme-switcher-container flex justify-between items-center w-9 p-[2px] rounded-[20rem] border-2 border-nav-dark dark:border-nav-light after:absolute after:right-[2px] after:bg-dark after:w-3 after:h-3 after:rounded-[50%] after:group-[.dark-theme]:bg-description after:transition-transform after:duration-300 after:group-[.dark-theme]:-translate-x-[5.2rem] hover:border-cta group-[.dark-theme]:hover:border-cta-dark"
+                class="relative theme-switcher-container flex justify-between items-center w-9 p-[2px] rounded-[20rem] border-2 border-nav-dark dark:border-nav-light after:absolute after:right-[2px] after:bg-dark after:w-[4.5rem] after:h-3 after:rounded-[30rem] after:group-[.dark-theme]:bg-description after:transition-transform after:duration-200 after:group-[.dark-theme]:-translate-x-[3.7rem] hover:border-cta group-[.dark-theme]:hover:border-cta-dark"
               >
                 <div class="svg w-3 h-3 p-[2px] rounded-[50%]">
                   <svg
@@ -444,9 +444,9 @@
               </div>
             </div>
 
-            <!-- step 2 -  -->
+            <!-- step 2 - configuration -->
             <div
-              class="sub-form options h-full"
+              class="sub-form configuration h-full"
               id="step-2"
             >
               <div class="form-header mb-3">
@@ -455,6 +455,48 @@
                 <p class="text-sm text-description dark:text-description-dark font-medium mb-1">
                   Choose the options that best suit your needs. Don't worry, you can change these settings later.
                 </p>
+              </div>
+
+              <div class="form-group form-group-slider">
+                <label for="suggestions-period">Suggestions period: <span data-slider-text="suggestions-period">1 day</span></label>
+                <input
+                  type="range"
+                  min="1"
+                  max="14"
+                  step="1"
+                  value="1"
+                  id="suggestions-period"
+                />
+                <div
+                  class="slider-input"
+                  data-slider-target="suggestions-period"
+                  tabindex="0"
+                >
+                  <div class="slider-input-pane">
+                    <div class="slider-input-pane-thumb"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group form-group-slider">
+                <label for="voting-period">Voting period: <span data-slider-text="voting-period">1 day</span></label>
+                <input
+                  type="range"
+                  min="1"
+                  max="14"
+                  step="1"
+                  value="1"
+                  id="voting-period"
+                />
+                <div
+                  class="slider-input"
+                  data-slider-target="voting-period"
+                  tabindex="0"
+                >
+                  <div class="slider-input-pane">
+                    <div class="slider-input-pane-thumb"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </form>
@@ -467,7 +509,7 @@
             <button
               type="button"
               id="previous-step-btn"
-              class="steo-btn flex justify-center items-center cursor-pointer text-sm font-bold text-description dark:text-description-dark underline hover:text-cta dark:hover:text-cta-dark group mr-auto relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+              class="step-btn flex justify-center items-center cursor-pointer text-sm font-bold text-description dark:text-description-dark underline hover:text-cta dark:hover:text-cta-dark group mr-auto relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
             >
               <span class="svg w-[1.4rem] h-[1.4rem]">
                 <svg
@@ -490,113 +532,9 @@
 
             <button
               id="next-step-btn"
-              class="steo-btn flex justify-center items-center cursor-pointer btn bg-cta dark:bg-cta-dark text-sm font-bold text-dark ml-auto relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+              class="step-btn flex justify-center items-center cursor-pointer btn bg-cta dark:bg-cta-dark text-sm font-bold text-dark ml-auto relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
             >
               Next step
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TEMP -->
-    <div id="date-picker-modal">
-      <div id="date-picker">
-        <div id="date-picker-container">
-          <!-- nav -->
-          <div id="date-picker-navbar">
-            <button
-              type="button"
-              id="date-picker-back"
-            >
-              <span class="svg w-1 h-1">
-                <svg
-                  width="500"
-                  height="500"
-                  viewBox="0 0 500 500"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    class="stroke-description dark:stroke-description-dark"
-                    d="M350 50L150 250L350 450"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-
-            <p
-              id="date-picker-navbar-header"
-              class="mx-auto"
-            >
-              <span id="date-picker-month"></span>
-              <span id="date-picker-year"></span>
-            </p>
-
-            <button
-              type="button"
-              id="date-picker-forward"
-            >
-              <span class="svg w-1 h-1">
-                <svg
-                  width="500"
-                  height="500"
-                  viewBox="0 0 500 500"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    class="stroke-description dark:stroke-description-dark"
-                    d="M150 450L350 250L150 50"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-
-          <!-- days -->
-          <div id="date-picker-days">
-            <p>Mon</p>
-            <p>Tue</p>
-            <p>Wed</p>
-            <p>Thu</p>
-            <p>Fri</p>
-            <p>Sat</p>
-            <p>Sun</p>
-          </div>
-
-          <!-- dates -->
-          <div id="date-picker-dates"></div>
-
-          <!-- date text -->
-          <p class="text-sm font-bold text-description dark:text-description-dark mt-1">
-            Selected date:
-            <span
-              id="selected-date-text"
-              class="text-sm font-bold text-description dark:text-description-dark"
-              >None</span
-            >
-          </p>
-
-          <!-- btn container -->
-          <div id="date-picker-btn-container">
-            <button
-              type="button"
-              id="date-picker-close"
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              id="date-picker-confirm"
-            >
-              Confirm
             </button>
           </div>
         </div>

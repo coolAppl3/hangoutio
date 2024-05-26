@@ -132,6 +132,33 @@
       }
     }
 
+    &.form-group-slider {
+
+      label {
+        span {
+          @apply text-description dark:text-description-dark text-sm font-bold;
+        }
+      }
+
+      input {
+        @apply hidden;
+      }
+
+      .slider-input {
+        @apply mt-1;
+        outline-offset: 2px;
+
+
+        &-pane {
+          @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem];
+
+          &-thumb {
+            @apply h-full w-3 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:-top-[5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%];
+          }
+        }
+      }
+    }
+
     label {
       @apply text-description dark:text-description-dark text-sm font-bold block mb-[4px];
     }
@@ -210,7 +237,6 @@
           display: block;
         }
       }
-
 
     }
 

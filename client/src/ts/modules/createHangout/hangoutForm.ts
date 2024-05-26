@@ -1,4 +1,9 @@
 import revealPassword from "../global/revealPassword";
+import SliderInput from "../global/SliderInput";
+
+// initializing imports
+const votingPeriodSlider: SliderInput = new SliderInput('voting-period', 1, 14);
+const suggestionsPeriodSlider: SliderInput = new SliderInput('suggestions-period', 1, 14);
 
 interface Member {
   name: string;
@@ -43,6 +48,7 @@ function render(): void {
   updateProgressBar();
 };
 
+// navigation
 function handleNavigation(e: MouseEvent): void {
   if (e?.target instanceof HTMLElement === false) {
     return;
@@ -92,6 +98,7 @@ function regressStep(): void {
   });
 };
 
+// utility
 function updateNavigationButtons(): void {
   const previousStepBtn: HTMLButtonElement | null = document.querySelector('#previous-step-btn');
   const nextStepBtn: HTMLButtonElement | null = document.querySelector('#next-step-btn');
