@@ -351,7 +351,7 @@
     </nav>
 
     <!-- content -->
-    <div class="content">
+    <section class="content">
       <div class="container h-available flex justify-center items-center">
         <div
           class="content-container bg-secondary dark:bg-secondary-dark w-[36rem] max-w-[36rem] my-3 py-3 px-2 rounded-sm shadow-centered dark:shadow-none overflow-hidden"
@@ -366,14 +366,14 @@
                 class="text-description dark:text-description-dark"
                 >1</span
               >
-              out of 5
+              out of 4
             </p>
 
             <!-- pane and bar -->
             <div class="progress-pane w-full h-2 bg-description dark:bg-primary-dark rounded-[10rem] overflow-visible">
               <div
                 id="progress-bar"
-                class="w-[0] h-2 mb-3 bg-cta dark:bg-cta-dark rounded-[10rem] transition-[width]"
+                class="w-0 h-2 mb-3 bg-cta dark:bg-cta-dark rounded-[10rem] transition-[width]"
               ></div>
             </div>
           </div>
@@ -389,7 +389,7 @@
               id="step-1"
             >
               <div class="form-header mb-3">
-                <h3 class="text-lg text-title dark:text-title-dark font-medium mb-1">Identify yourself.</h3>
+                <h3 class="text-lg text-title dark:text-title-dark font-medium mb-1">Identify yourself</h3>
 
                 <p class="text-sm text-description dark:text-description-dark font-medium mb-1">
                   Add your name and set a password to let everyone know who you are.
@@ -405,10 +405,13 @@
                 <input
                   type="text"
                   id="account-name"
-                  class="focus:border-cta dark:focus:border-cta-dark"
+                  name="account-name"
                   autocomplete="name"
                 />
-                <span class="error-span"></span>
+                <span
+                  class="error-span"
+                  data-target="account-name"
+                ></span>
               </div>
 
               <div class="form-group form-group-password relative">
@@ -416,7 +419,7 @@
                 <input
                   type="password"
                   id="account-password"
-                  class="focus:border-cta dark:focus:border-cta-dark"
+                  name="account-password"
                   autocomplete="new-password"
                 />
 
@@ -440,7 +443,10 @@
                   </svg>
                 </div>
 
-                <span class="error-span">Password can not be empty.</span>
+                <span
+                  class="error-span"
+                  data-target="account-password"
+                ></span>
               </div>
             </div>
 
@@ -450,7 +456,7 @@
               id="step-2"
             >
               <div class="form-header mb-3">
-                <h3 class="text-lg text-title dark:text-title-dark font-medium mb-1">Configuration.</h3>
+                <h3 class="text-lg text-title dark:text-title-dark font-medium mb-1">Configuration</h3>
 
                 <p class="text-sm text-description dark:text-description-dark font-medium mb-1">
                   Choose the options that best suit your needs. Don't worry, you can change these settings later.
@@ -458,7 +464,31 @@
               </div>
 
               <div class="form-group form-group-slider">
+                <label for="availability-period">Availability sharing period: <span data-slider-text="availability-period">1 day</span></label>
+                <span class="extra-info">Allocated time to share availability.</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="7"
+                  step="1"
+                  value="1"
+                  id="availability-period"
+                  name="availability-period"
+                />
+                <div
+                  class="slider-input"
+                  data-slider-target="availability-period"
+                  tabindex="0"
+                >
+                  <div class="slider-input-pane">
+                    <div class="slider-input-pane-thumb"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group form-group-slider">
                 <label for="suggestions-period">Suggestions period: <span data-slider-text="suggestions-period">1 day</span></label>
+                <span class="extra-info">Allocated time to suggest ideas.</span>
                 <input
                   type="range"
                   min="1"
@@ -466,6 +496,7 @@
                   step="1"
                   value="1"
                   id="suggestions-period"
+                  name="suggestions-period"
                 />
                 <div
                   class="slider-input"
@@ -480,6 +511,7 @@
 
               <div class="form-group form-group-slider">
                 <label for="voting-period">Voting period: <span data-slider-text="voting-period">1 day</span></label>
+                <span class="extra-info">Allocated time to vote on an idea.</span>
                 <input
                   type="range"
                   min="1"
@@ -487,6 +519,7 @@
                   step="1"
                   value="1"
                   id="voting-period"
+                  name="voting-period"
                 />
                 <div
                   class="slider-input"
@@ -498,6 +531,102 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- step 3 - availability -->
+            <div
+              class="sub-form availability h-full"
+              id="step-3"
+            >
+              <div class="form-header mb-3">
+                <h3 class="text-lg text-title dark:text-title-dark font-medium mb-1">Share your availability</h3>
+
+                <p class="text-sm text-description dark:text-description-dark font-medium mb-1">
+                  Before creating the hangout, you must at least add one availability slot.
+                </p>
+
+                <p class="text-sm text-description dark:text-description-dark font-medium mb-1">You can change your slots or add more later if needed.</p>
+              </div>
+
+              <div class="form-group form-group-date-picker">
+                <label for="date-picker-input">Date</label>
+                <input
+                  type="text"
+                  id="date-picker-input"
+                  name="date-picker"
+                  readonly
+                />
+                <span
+                  class="error-span"
+                  data-target="date-picker"
+                ></span>
+
+                <!-- icon -->
+                <div class="date-picker-icon svg w-2 h-2">
+                  <svg
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      class="fill-description dark:fill-description-dark"
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M158 49.5C158 39.835 165.835 32 175.5 32C185.165 32 193 39.835 193 49.5V68H408V49.5C408 39.835 415.835 32 425.5 32C435.165 32 443 39.835 443 49.5V68H500C527.614 68 550 90.3858 550 118V170.334H549.705C549.9 172.252 550 174.198 550 176.167V317.551H530V176.167C530 174.182 529.844 172.234 529.543 170.334H70.4572C70.1563 172.234 70 174.182 70 176.167V511C70 531.435 86.5655 548 107 548H300V568H107C75.5198 568 50 542.48 50 511V176.167C50 174.198 50.0999 172.252 50.2948 170.334H50V118C50 90.3857 72.3858 68 100 68H158V49.5ZM125 273.117C125 263.449 132.837 255.612 142.504 255.612H426.496C436.163 255.612 444 263.449 444 273.117C444 282.784 436.163 290.621 426.496 290.621H142.504C132.837 290.621 125 282.784 125 273.117ZM142.504 338.197C132.837 338.197 125 346.035 125 355.702C125 365.369 132.837 373.206 142.504 373.206H306.496C316.163 373.206 324 365.369 324 355.702C324 346.035 316.163 338.197 306.496 338.197H142.504Z"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="form-group form-group-time-picker-input">
+                <label for="time-picker-input">Time</label>
+                <span class="extra-info">You can add up to 3 time slots per date.</span>
+                <input
+                  type="text"
+                  id="time-picker-input"
+                  name="time-picker-input"
+                  readonly
+                />
+                <span
+                  class="error-span"
+                  data-target="time-picker"
+                ></span>
+
+                <!-- icon -->
+                <div class="time-picker-input-icon svg w-2 h-2">
+                  <svg
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="300"
+                      cy="300"
+                      r="230"
+                      class="stroke-description dark:stroke-description-dark"
+                      stroke-width="40"
+                    />
+                    <path
+                      d="M285 306.804L380.074 361.695C386.887 364.423 394.847 361.803 398.624 355.261C402.766 348.087 400.308 338.913 393.134 334.771L315 289.66V144C315 135.716 308.284 129 300 129C291.716 129 285 135.716 285 144L285 306.804Z"
+                      class="fill-description dark:fill-description-dark"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="selected-time-slots mb-2 grid grid-cols-3 gap-1"></div>
+            </div>
+
+            <!-- step 4 -->
+            <div
+              class="sub-form availability h-full"
+              id="step-4"
+            >
+              <!-- to be implemented -->
             </div>
           </form>
 
@@ -539,7 +668,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- footer -->
     <footer class="footer py-6 md:pb-[16rem] bg-dark border-t-2 border-light-black">
@@ -677,5 +806,87 @@
         </div>
       </div>
     </footer>
+
+    <div id="time-picker-modal">
+      <div id="time-picker">
+        <!-- header -->
+        <div id="time-picker-header">
+          <p>Selected date: <span id="time-picker-selected-date"></span>.</p>
+          <p>You can add up to 3 time slots per date.</p>
+        </div>
+
+        <!-- inputs -->
+        <div
+          id="time-picker-inputs"
+          class="mb-2"
+        >
+          <div class="form-group">
+            <label for="time-picker-from">From</label>
+            <input
+              type="text"
+              id="time-picker-from"
+              name="time-picker-from"
+              maxlength="5"
+              placeholder="Example: 19:30"
+              autocomplete="bday-year"
+            />
+            <span
+              class="error-span"
+              data-target="time-picker-from"
+            ></span>
+          </div>
+
+          <div class="form-group">
+            <label for="time-picker-to">To</label>
+            <input
+              type="text"
+              id="time-picker-to"
+              name="time-picker-to"
+              maxlength="5"
+              placeholder="Example: 21:45"
+              autocomplete="bday-year"
+            />
+            <span
+              class="error-span"
+              data-target="time-picker-to"
+            ></span>
+          </div>
+
+          <button
+            type="button"
+            id="time-picker-input-add"
+            class="btn bg-dark dark:bg-light text-light dark:text-dark w-full"
+          >
+            Add slot
+          </button>
+        </div>
+
+        <div id="time-picker-slots">
+          <p class="">Selected time slots:</p>
+
+          <div id="time-picker-slots-container"></div>
+        </div>
+
+        <!-- btn container -->
+        <div id="time-picker-btn-container">
+          <button
+            type="button"
+            id="time-picker-close"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            id="time-picker-confirm"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="loading-modal">
+      <div class="spinner"></div>
+    </div>
   </body>
 </html>

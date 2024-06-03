@@ -1,0 +1,77 @@
+<div id="time-picker-modal">
+  <div id="time-picker">
+    <!-- header -->
+    <div id="time-picker-header">
+      <p>Selected date: <span id="time-picker-selected-date"></span>.</p>
+      <p>You can add up to 3 time slots per date.</p>
+    </div>
+
+    <!-- inputs -->
+    <div
+      id="time-picker-inputs"
+      class="mb-2"
+    >
+      <div class="form-group">
+        <label for="time-picker-from">From</label>
+        <input
+          type="text"
+          id="time-picker-from"
+          name="time-picker-from"
+          maxlength="5"
+          placeholder="Example: 19:30"
+          autocomplete="bday-year"
+        />
+        <span
+          class="error-span"
+          data-target="time-picker-from"
+        ></span>
+      </div>
+
+      <div class="form-group">
+        <label for="time-picker-to">To</label>
+        <input
+          type="text"
+          id="time-picker-to"
+          name="time-picker-to"
+          maxlength="5"
+          placeholder="Example: 21:45"
+          autocomplete="bday-year"
+        />
+        <span
+          class="error-span"
+          data-target="time-picker-to"
+        ></span>
+      </div>
+
+      <button
+        type="button"
+        id="time-picker-input-add"
+        class="btn bg-dark dark:bg-light text-light dark:text-dark w-full"
+      >
+        Add slot
+      </button>
+    </div>
+
+    <div id="time-picker-slots">
+      <p class="">Selected time slots:</p>
+
+      <div id="time-picker-slots-container"></div>
+    </div>
+
+    <!-- btn container -->
+    <div id="time-picker-btn-container">
+      <button
+        type="button"
+        id="time-picker-close"
+      >
+        Close
+      </button>
+      <button
+        type="button"
+        id="time-picker-confirm"
+      >
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>

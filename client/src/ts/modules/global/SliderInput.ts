@@ -42,19 +42,18 @@ export default class SliderInput {
   };
 
   private loadEventListeners(): void {
+    window.addEventListener('resize', this.updateSliderDomRect.bind(this));
+
     if ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) {
       this.isTouchDevice = true;
     };
 
     if (this.isTouchDevice) {
-      this.slider?.addEventListener('touchstart', this.startDrag.bind(this));
-      window.addEventListener('resize', this.updateSliderDomRect.bind(this));
+      this.slider?.addEventListener('touchstart', this.startDrag.bind(this), { passive: true });
       return;
     };
 
     this.slider?.addEventListener('mousedown', this.startDrag.bind(this));
-    window.addEventListener('resize', this.updateSliderDomRect.bind(this));
-
     this.slider?.addEventListener('keyup', this.handleSliderKeyEvents.bind(this));
   };
 
@@ -63,8 +62,8 @@ export default class SliderInput {
     document.body.style.userSelect = 'none';
 
     if (this.isTouchDevice) {
-      document.body.addEventListener('touchmove', this.dragSlider.bind(this));
-      document.body.addEventListener('touchend', this.stopDrag.bind(this));
+      document.body.addEventListener('touchmove', this.dragSlider.bind(this), { passive: true });
+      document.body.addEventListener('touchend', this.stopDrag.bind(this), { passive: true });
       return;
     };
 
@@ -177,4 +176,3 @@ export default class SliderInput {
     this.updateSliderTextValue();
   };
 };
-

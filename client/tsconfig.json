@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./src/ts-built",
     "module": "ESNext",
-    "target": "es5",
+    "target": "ES2015",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,

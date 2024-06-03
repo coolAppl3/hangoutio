@@ -92,6 +92,10 @@
     &.btn-mini {
       @apply text-xs leading-[1.7rem] px-[1.6rem] py-[0.6rem];
     }
+
+    &.disabled {
+      @apply opacity-25 cursor-not-allowed hover:brightness-100;
+    }
   }
 
   .svg {
@@ -100,87 +104,6 @@
     svg {
       @apply overflow-hidden h-fit;
     }
-  }
-
-  .form-group {
-    @apply mb-2;
-
-    &.error {
-
-      .error-span {
-        @apply block;
-      }
-
-      input,
-      textarea {
-        @apply border-danger dark:border-danger-dark;
-      }
-    }
-
-    &.form-group-password {
-
-      &.error {
-
-        .password-icon {
-          @apply bottom-[28px]
-        }
-      }
-
-      input,
-      textarea {
-        @apply pr-4;
-      }
-    }
-
-    &.form-group-slider {
-
-      label {
-        span {
-          @apply text-description dark:text-description-dark text-sm font-bold;
-        }
-      }
-
-      input {
-        @apply hidden;
-      }
-
-      .slider-input {
-        @apply mt-1;
-        outline-offset: 2px;
-
-
-        &-pane {
-          @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem];
-
-          &-thumb {
-            @apply h-full w-3 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:-top-[5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%];
-          }
-        }
-      }
-    }
-
-    label {
-      @apply text-description dark:text-description-dark text-sm font-bold block mb-[4px];
-    }
-
-    input,
-    textarea {
-      @apply block w-full bg-transparent text-sm font-medium leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none;
-
-    }
-
-    .error-span {
-      @apply hidden mt-[5px] text-xs font-medium leading-[1] text-danger dark:text-danger-dark;
-    }
-
-    .password-icon {
-      @apply absolute right-1 bottom-[11px] cursor-pointer after:absolute after:hidden after:top-0 after:left-0 after:right-0 after:mx-auto after:w-[2px] after:h-full after:z-3 after:rounded-[40px] after:rotate-45 after:transition-colors after:bg-description dark:after:bg-description-dark hover:after:bg-cta dark:hover:after:bg-cta-dark;
-
-      &.revealed {
-        @apply after:block;
-      }
-    }
-
   }
 
   .triangle {
@@ -209,64 +132,250 @@
     }
   }
 
-  // create-hangout.html
-  .content {
-    #steps-form {
-      height: fit-content;
+  .h-line {
+    @apply w-full h-[2px] bg-light-gray dark:bg-light-black rounded-[5rem];
+  }
+}
 
-      .sub-form {
-        transform: translate3d(0, 150%, 0);
-        transition: transform 200ms;
-        position: absolute;
-        display: none;
+// direct component styling --- --- ---
 
-        &.completed {
-          transform: translate3d(-50rem, 0, 0) !important;
-        }
 
-        &.current {
-          display: block;
-          position: static;
 
-          &.in-position {
-            transform: translate3d(0, 0, 0);
-          }
-        }
+// create-hangout.html ---
 
-        &.animating {
-          display: block;
+// content
+section.content {
+  #steps-form {
+    height: fit-content;
+
+    .sub-form {
+      transform: translate3d(0, 150%, 0);
+      transition: transform 200ms;
+      position: absolute;
+      display: none;
+
+      &.completed {
+        transform: translate3d(-50rem, 0, 0) !important;
+      }
+
+      &.current {
+        display: block;
+        position: static;
+
+        &.in-position {
+          transform: translate3d(0, 0, 0);
         }
       }
 
-    }
-
-    #form-navigation {
-
-      &.first-step {
-
-        #previous-step-btn {
-          display: none;
-        }
-      }
-
-      &.last-step {
-
-        #next-step-btn {
-          display: none;
-        }
+      &.animating {
+        display: block;
       }
     }
 
   }
+
+  #form-navigation {
+
+    &.first-step {
+
+      #previous-step-btn {
+        display: none;
+      }
+    }
+
+    &.last-step {
+
+      #next-step-btn {
+        display: none;
+      }
+    }
+  }
+
 }
 
-// direct styling --- --- ---
+// selected time slots (tags below the time picker)
+.selected-time-slots {
+
+  .selected-time-slots-item {
+    @apply relative text-xs leading-[1] font-medium text-description dark:text-description-dark p-[6px] border-1 border-light-gray dark:border-light-black rounded cursor-pointer before:absolute after:absolute;
+
+    &::before {
+      @apply right-[9px] top-[7px] h-1 w-[2px] rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
+    }
+
+    &::after {
+      @apply right-[9px] top-[7px] h-1 w-[2px] -rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
+    }
+
+    &:hover {
+      @apply border-danger dark:border-danger-dark;
+
+      &::before {
+        @apply bg-danger dark:bg-danger-dark;
+      }
+
+      &::after {
+        @apply bg-danger dark:bg-danger-dark;
+      }
+    }
+  }
+}
+
+
+
+// Other ---
+
+// form groups
+.form-group {
+  @apply mb-2;
+
+  &.error {
+
+    .error-span {
+      @apply block;
+    }
+
+    input,
+    textarea {
+      @apply border-danger dark:border-danger-dark;
+    }
+  }
+
+  &.form-group-password {
+
+    &.error {
+
+      .password-icon {
+        @apply bottom-[28px]
+      }
+    }
+
+    input,
+    textarea {
+      @apply pr-4;
+    }
+  }
+
+  &.form-group-slider {
+
+    label {
+      span {
+        @apply text-description dark:text-description-dark text-sm font-bold;
+      }
+    }
+
+    input {
+      @apply hidden;
+    }
+
+    .slider-input {
+      @apply mt-1;
+      outline-offset: 2px;
+
+
+      &-pane {
+        @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem];
+
+        &-thumb {
+          @apply h-full w-3 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:-top-[5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%];
+        }
+      }
+    }
+  }
+
+  &.form-group-date-picker {
+    @apply relative;
+
+    .date-picker-icon {
+      @apply absolute right-1 bottom-[11px] cursor-pointer;
+    }
+
+    input,
+    textarea {
+      @apply pr-4 cursor-pointer relative;
+    }
+
+    .svg {
+      @apply z-0;
+    }
+  }
+
+  &.form-group-time-picker-input {
+    @apply relative mb-1;
+
+    .time-picker-input-icon {
+      @apply absolute right-1 bottom-[11px] cursor-pointer;
+    }
+
+    input,
+    textarea {
+      @apply pr-4 cursor-pointer relative;
+    }
+
+    .svg {
+      @apply z-0;
+    }
+  }
+
+  label {
+    @apply text-title dark:text-title-dark text-sm font-bold block mb-[4px];
+  }
+
+  span.extra-info {
+    @apply block mb-[4px] text-xs font-medium text-description dark:text-description-dark;
+  }
+
+  input,
+  textarea {
+    @apply block w-full bg-transparent text-sm font-medium leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none focus:border-cta dark:focus:border-cta-dark;
+
+    &.disabled {
+      @apply opacity-25 cursor-not-allowed hover:brightness-100;
+    }
+  }
+
+  .error-span {
+    @apply hidden mt-[6px] text-xs font-medium leading-[1.1] text-danger dark:text-danger-dark;
+  }
+
+  .password-icon {
+    @apply absolute right-1 bottom-[11px] cursor-pointer after:absolute after:hidden after:top-0 after:left-0 after:right-0 after:mx-auto after:w-[2px] after:h-full after:z-3 after:rounded-[40px] after:rotate-45 after:transition-colors after:bg-description dark:after:bg-description-dark hover:after:bg-cta dark:hover:after:bg-cta-dark;
+
+    &.revealed {
+      @apply after:block;
+    }
+  }
+
+}
+
+// popup
+#popup {
+  @apply fixed top-8 left-0 right-0 mx-auto py-1 px-[1.4rem] w-fit max-w-[32rem] text-sm text-center font-bold rounded z-[30];
+  transform: translate3d(0, 3rem, 0);
+  opacity: 0;
+  transition: transform 150ms, opacity 150ms;
+
+  &.in-view {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  &.error {
+    @apply bg-danger-popup text-light;
+  }
+
+  &.success {
+    @apply bg-success text-dark;
+  }
+
+  &.info {
+    @apply bg-cta dark:bg-cta-dark text-dark;
+  }
+}
 
 // date picker
 #date-picker-modal {
-  @apply fixed top-0 left-0 w-full bg-overlay z-[25] hidden;
-  height: 100vh;
-  height: 100svh;
+  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[25] hidden;
 
   &.displayed {
     @apply flex justify-center items-center;
@@ -355,27 +464,120 @@
   }
 }
 
-// popup
-#popup {
-  @apply absolute top-8 left-0 right-0 mx-auto p-[1.4rem] w-fit text-sm text-center font-bold rounded z-[30];
-  transform: translate3d(0, 3rem, 0);
-  opacity: 0;
-  transition: transform 150ms, opacity 150ms;
+// time picker
+#time-picker-modal {
+  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[25] hidden;
 
-  &.in-view {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
+  &.displayed {
+    @apply flex justify-center items-center;
   }
 
-  &.error {
-    @apply bg-danger-popup text-light;
+  #time-picker {
+    @apply w-[30rem] max-w-[30rem] py-3 px-2 bg-secondary dark:bg-secondary-dark rounded-md;
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: transform 150ms, opacity 150ms;
+
+    &.in-position {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+
+    &-header {
+      @apply mb-2;
+
+      p {
+        @apply text-sm font-medium text-description dark:text-description-dark;
+
+        &:first-child {
+          @apply mb-[4px] font-bold;
+
+          span {
+            @apply text-sm font-bold text-description dark:text-description-dark;
+          }
+        }
+      }
+    }
+
+    &-slots {
+      @apply mb-2;
+
+      p {
+        @apply mb-1 text-sm font-bold text-description dark:text-description-dark;
+      }
+
+
+      &-container {
+        @apply grid grid-cols-1 gap-1;
+
+        .no-slots {
+          @apply text-xs leading-[1] font-bold text-description dark:text-description-dark brightness-150;
+        }
+
+        .selected-time-slots-item {
+          @apply relative text-xs leading-[1] font-medium text-description dark:text-description-dark p-[6px] border-1 border-light-gray dark:border-light-black rounded cursor-pointer before:absolute after:absolute;
+
+          &::before {
+            @apply right-[9px] top-[7px] h-1 w-[2px] rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
+          }
+
+          &::after {
+            @apply right-[9px] top-[7px] h-1 w-[2px] -rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
+          }
+
+          &:hover {
+            @apply border-danger dark:border-danger-dark;
+
+            &::before {
+              @apply bg-danger dark:bg-danger-dark;
+            }
+
+            &::after {
+              @apply bg-danger dark:bg-danger-dark;
+            }
+          }
+        }
+      }
+    }
+
+    &-btn-container {
+      @apply flex justify-between items-center pt-1 border-t-1 border-t-light-gray dark:border-t-light-black;
+
+      #time-picker-close {
+        @apply btn w-full mr-1 bg-description dark:bg-description-dark text-light dark:text-dark;
+      }
+
+      #time-picker-confirm {
+        @apply btn w-full bg-cta dark:bg-cta-dark;
+
+        &.disabled {
+          @apply opacity-25 cursor-not-allowed hover:brightness-100;
+        }
+      }
+    }
+  }
+}
+
+// loading modal
+#loading-modal {
+  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[50] place-items-center hidden;
+
+  &.displayed {
+    @apply grid;
   }
 
-  &.success {
-    @apply bg-success text-dark;
+  .spinner {
+    @apply block h-5 w-5 rounded-[100%] border-[6px] border-solid border-primary dark:border-primary-dark border-l-cta dark:border-l-cta-dark;
+    animation: spin 500ms infinite linear forwards;
   }
 
-  &.info {
-    @apply bg-cta dark:bg-cta-dark text-dark;
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
   }
 }

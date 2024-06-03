@@ -1,6 +1,42 @@
 # Changelog
 
 ---
+### [0.0.9] (2024-06-03)
+
+### Features
+
+- Amended some of the text in `index.html`.
+- Added `timePicker.ts` under global modules.
+  - Added a temporary `__timePicker.html` under `src/html/`.
+- Rephrased some of the content in `index.html`.
+- Added `ErrorSpan.ts` under global modules.
+- Added `LoadingModal.ts` under global modules.
+- Implemented the UI for the 3rd step in `create-hangout.html`.
+
+
+### Style Changes
+
+- Simple additions to `tailwind.config.js`.
+
+
+### Code Refactoring
+
+- Changed any occurrence of `setAttribute('disabled', 'disabled')` to `setAttribute('disabled', '')` throughout the app for better readability and consistency.
+
+
+### Bug Fixes
+
+- Replaced any use of `isNan()` with `Number.isNaN()` to avoid any potential unexpected behavior down the line.
+- Specified touch events in `SliderInput.ts` to be passive to avoid potential scrolling issues.
+- Fixed keyboard navigation being possible on sliders controlled by `SliderInput.ts` while in the process of being dragged.
+  - This didn't negatively affect the state or cause unexpected behavior with the final result, but simply isn't user intuitive.
+
+
+### Build Changes
+
+- Changed the target in `tsconfig.js` to ES2015 (ES6) instead of ES5.
+
+---
 ### [0.0.8] (2024-05-26)
 
 ### Features
