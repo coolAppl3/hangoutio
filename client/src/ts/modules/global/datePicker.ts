@@ -281,7 +281,7 @@ function createDateBtn(btnType: 'active' | 'empty', btnValue?: number): HTMLButt
   if (btnType === 'empty') {
     const emptyBtn: HTMLButtonElement = document.createElement('button');
     emptyBtn.type = 'button';
-    emptyBtn.setAttribute('disabled', 'disabled');
+    emptyBtn.setAttribute('disabled', '');
     emptyBtn.className = 'date-picker-date-empty-btn';
 
     return emptyBtn;
@@ -329,7 +329,7 @@ function isDivisibleBy(dividend: number, divisor: number): boolean {
 };
 
 function isValidDateValue(value: number): boolean {
-  if (isNaN(value) || !Number.isInteger(value)) {
+  if (Number.isNaN(value) || !Number.isInteger(value)) {
     return false;
   };
 
@@ -347,7 +347,7 @@ function handleConfirmBtnState(): void {
 
   if (!datePickerState.selectedDate) {
     confirmBtn?.classList.add('disabled');
-    confirmBtn?.setAttribute('disabled', 'disabled');
+    confirmBtn?.setAttribute('disabled', '');
     return;
   };
 

@@ -32,13 +32,16 @@ module.exports = {
         // utility
         'light-gray': 'rgba(30, 30, 30, 0.25)',
         'light-black': 'rgba(200, 200, 200, 0.25)',
+
         'overlay': 'rgba(30, 30, 30, 0.7)',
+        'overlay-dark': 'rgba(30, 30, 30, 0.8)',
 
         'danger-popup': '#bd2130',
         'danger': '#b91c1c',
         'danger-dark': '#f87171',
 
         'success': '#28a745',
+        'edit': '#0062CC',
       },
       borderColor: {
         // light mode

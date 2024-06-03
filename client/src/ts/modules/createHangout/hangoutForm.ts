@@ -4,6 +4,7 @@ import SliderInput from "../global/SliderInput";
 // initializing imports
 const votingPeriodSlider: SliderInput = new SliderInput('voting-period', 1, 14);
 const suggestionsPeriodSlider: SliderInput = new SliderInput('suggestions-period', 1, 14);
+const availabilitySlider: SliderInput = new SliderInput('availability-period', 1, 7);
 
 interface Member {
   name: string;
@@ -21,7 +22,7 @@ interface FormState {
 
 const formState: FormState = {
   currentStep: 1,
-  totalSteps: 5,
+  totalSteps: 4,
   leaderName: undefined,
   leaderPassword: undefined,
   members: [],
@@ -115,12 +116,12 @@ function updateNavigationButtons(): void {
 
   if (formState.currentStep === 1) {
     previousStepBtn.style.display = 'none';
-    previousStepBtn.setAttribute('disabled', 'disabled');
+    previousStepBtn.setAttribute('disabled', '');
   };
 
   if (formState.currentStep === formState.totalSteps) {
     nextStepBtn.style.display = 'none';
-    nextStepBtn.setAttribute('disabled', 'disabled');
+    nextStepBtn.setAttribute('disabled', '');
   };
 };
 
