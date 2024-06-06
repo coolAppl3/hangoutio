@@ -1,9 +1,3 @@
-export default function datePicker(): void {
-  initDatePicker();
-  displayDatePicker();
-  loadEventListeners();
-};
-
 interface DatePickerState {
   initialYear: number;
   initialMonth: number;
@@ -34,6 +28,12 @@ const datePickerState: DatePickerState = {
   selectedDate: undefined,
   selectedMonth: undefined,
   selectedYear: undefined,
+};
+
+export default function datePicker(): void {
+  initDatePicker();
+  displayDatePicker();
+  loadEventListeners();
 };
 
 function loadEventListeners(): void {
@@ -214,7 +214,6 @@ function highlightInitialDate(): void {
   };
 
   const initialDate: HTMLButtonElement | null = document.querySelector(`[data-date-value="${datePickerState.initialDate}"]`);
-  // initialDate?.classList.add('initial');
   initialDate?.setAttribute('data-initial', 'true');
 
   initialDate ? disablePastDates(initialDate) : undefined;
@@ -394,7 +393,7 @@ function resetUIState(): void {
   }, 100);
 
   render();
-  // updateDates();
+  updateDates();
   initDatePicker();
 };
 

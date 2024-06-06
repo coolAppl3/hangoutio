@@ -13,7 +13,7 @@ export default class SliderInput {
   private isDragging: boolean;
   private isTouchDevice: boolean;
 
-  public sliderValue: number;
+  private sliderValue: number;
 
   public constructor(inputID: string, sliderMinValue: number, sliderMaxValue: number) {
     this.inputID = inputID;
@@ -40,6 +40,11 @@ export default class SliderInput {
 
     this.loadEventListeners();
   };
+
+
+  public get value(): number {
+    return this.sliderValue;
+  }
 
   private loadEventListeners(): void {
     window.addEventListener('resize', this.updateSliderDomRect.bind(this));
@@ -88,7 +93,6 @@ export default class SliderInput {
       xCoordinates = touch.clientX;
     };
 
-
     const difference: number = (xCoordinates - this.sliderDomRect.left);
     const slidePercentage: number = ((Math.min(difference, this.sliderDomRect.width) / this.sliderDomRect.width) * 100 + 4) | 0;
 
@@ -109,7 +113,7 @@ export default class SliderInput {
     document.body.removeEventListener('mousemove', this.stopDrag);
   };
 
-  private updateSliderDomRect(): void {
+  public updateSliderDomRect(): void {
     this.sliderDomRect = this.slider?.getBoundingClientRect();
   };
 
@@ -125,6 +129,13 @@ export default class SliderInput {
 
     this.updateSliderTextValue();
     this.actualInput?.setAttribute('value', `${this.sliderValue}`);
+  };
+
+  private dispatchSliderUpdatedEvent(): void {
+    const sliderInfo: { id: string, value: number } = { id: this.inputID, value: this.sliderValue };
+    const sliderUpdatedEVent: CustomEvent = new CustomEvent<{ id: string, value: number }>('sliderUpdated', { detail: sliderInfo });
+
+    window.dispatchEvent(sliderUpdatedEVent);
   };
 
   private updateSliderTextValue(): void {

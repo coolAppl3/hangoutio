@@ -1,31 +1,23 @@
-import revealPassword from "../global/revealPassword";
-import SliderInput from "../global/SliderInput";
+import { hangoutFormState } from "./hangoutFormState";
+
+import { setSliderValues } from "./hangoutFormConfig";
+import hangoutAvailability from "./hangoutAvailability";
+import hangoutAccount from "./hangoutAccount";
+import popup from "../global/popup";
 
 // initializing imports
-const votingPeriodSlider: SliderInput = new SliderInput('voting-period', 1, 14);
-const suggestionsPeriodSlider: SliderInput = new SliderInput('suggestions-period', 1, 14);
-const availabilitySlider: SliderInput = new SliderInput('availability-period', 1, 7);
+hangoutAvailability();
+hangoutAccount();
 
-interface Member {
-  name: string;
-  password: string;
-};
 
-interface FormState {
+interface FormStepState {
   currentStep: number,
   totalSteps: number,
-  leaderName?: string,
-  leaderUsername?: string,
-  leaderPassword?: string,
-  members: Member[],
 };
 
-const formState: FormState = {
+const formStepState: FormStepState = {
   currentStep: 1,
-  totalSteps: 4,
-  leaderName: undefined,
-  leaderPassword: undefined,
-  members: [],
+  totalSteps: 3,
 };
 
 export default function hangoutForms(): void {
@@ -34,19 +26,39 @@ export default function hangoutForms(): void {
 };
 
 function loadEventListeners(): void {
-  const accountPasswordIcon: HTMLElement | null = document.querySelector('#password-icon-account');
-  accountPasswordIcon?.addEventListener('click', () => { revealPassword(accountPasswordIcon) });
-
   const formNavigation: HTMLElement | null = document.querySelector('#form-navigation');
   formNavigation?.addEventListener('click', handleNavigation);
 
-  const stepsForm: HTMLFormElement | null = document.querySelector('#steps-form');
-  stepsForm?.addEventListener('submit', handleFormSubmission);
+  window.addEventListener('accountDetailsValid', handleFormSubmission);
+  window.addEventListener('timeSlotsChanged', handleStepValidation);
 };
 
 function render(): void {
   updateNavigationButtons();
   updateProgressBar();
+  handleStepValidation();
+};
+
+// submission
+function handleFormSubmission(): void {
+  if (hangoutFormState.timeSlots.length === 0 || hangoutFormState.dateTimestamp === 0) {
+    popup('You must add your availability before continuing.', 'error');
+    regressStep();
+
+    return;
+  };
+
+  console.log('Form submission')
+};
+
+// validation
+function handleStepValidation(): void {
+  if (formStepState.currentStep === 2 && (hangoutFormState.timeSlots.length === 0 || hangoutFormState.dateTimestamp === 0)) {
+    disableNextStepBtn();
+    return;
+  };
+
+  enableNextStepBtn();
 };
 
 // navigation
@@ -57,19 +69,24 @@ function handleNavigation(e: MouseEvent): void {
 
   const targetElementID: string = e.target.id;
 
-  if (targetElementID === 'previous-step-btn' && (formState.currentStep - 1) >= 1) {
+  if (targetElementID === 'previous-step-btn' && (formStepState.currentStep - 1) >= 1) {
     regressStep();
     return;
   };
 
-  if (targetElementID === 'next-step-btn' && (formState.currentStep + 1) <= formState.totalSteps) {
+  if (targetElementID === 'next-step-btn' && (formStepState.currentStep + 1) <= formStepState.totalSteps) {
     progressStep();
   };
 };
 
 function progressStep(): void {
-  const currentStepElement: HTMLElement | null = document.querySelector(`#step-${formState.currentStep}`);
-  formState.currentStep++;
+  const currentStepElement: HTMLElement | null = document.querySelector(`#step-${formStepState.currentStep}`);
+
+  if (formStepState.currentStep === 1) {
+    setSliderValues();
+  };
+
+  formStepState.currentStep++;
   render();
 
   currentStepElement?.classList.add('animating', 'completed');
@@ -85,8 +102,8 @@ function progressStep(): void {
 };
 
 function regressStep(): void {
-  const currentStepElement: HTMLElement | null = document.querySelector(`#step-${formState.currentStep}`);
-  formState.currentStep--;
+  const currentStepElement: HTMLElement | null = document.querySelector(`#step-${formStepState.currentStep}`);
+  formStepState.currentStep--;
   render();
 
   currentStepElement?.classList.remove('in-position', 'current');
@@ -114,12 +131,12 @@ function updateNavigationButtons(): void {
   nextStepBtn.style.display = 'block';
   nextStepBtn.removeAttribute('disabled');
 
-  if (formState.currentStep === 1) {
+  if (formStepState.currentStep === 1) {
     previousStepBtn.style.display = 'none';
     previousStepBtn.setAttribute('disabled', '');
   };
 
-  if (formState.currentStep === formState.totalSteps) {
+  if (formStepState.currentStep === formStepState.totalSteps) {
     nextStepBtn.style.display = 'none';
     nextStepBtn.setAttribute('disabled', '');
   };
@@ -127,23 +144,35 @@ function updateNavigationButtons(): void {
 
 function updateProgressBar(): void {
   const progressContainerStep: HTMLSpanElement | null = document.querySelector('#progress-container-step');
-  progressContainerStep ? progressContainerStep.textContent = `${formState.currentStep}` : undefined;
+  progressContainerStep ? progressContainerStep.textContent = `${formStepState.currentStep}` : undefined;
 
-  const completionPercentage = ((formState.currentStep - 1) / formState.totalSteps) * 100
+  const completionPercentage = ((formStepState.currentStep - 1) / formStepState.totalSteps) * 100
   const roundedCompletionPercentage: number = Math.round(completionPercentage);
 
   const progressBar: HTMLDivElement | null = document.querySelector('#progress-bar');
   progressBar ? progressBar.style.width = `${roundedCompletionPercentage}%` : undefined;
 };
 
-function handleFormSubmission(e: SubmitEvent): void {
-  e.preventDefault();
+function disableNextStepBtn(): void {
+  const nextStepBtn: HTMLButtonElement | null = document.querySelector('#next-step-btn');
 
-  if (formState.currentStep !== formState.totalSteps) {
-    progressStep();
+  if (!nextStepBtn) {
     return;
   };
 
-  console.log('Form submission');
-  // to be further implemented later...
+  nextStepBtn.classList.add('disabled');
+  nextStepBtn.setAttribute('disabled', '');
+  nextStepBtn.setAttribute('title', 'You must add your availability before continuing.');
+};
+
+function enableNextStepBtn(): void {
+  const nextStepBtn: HTMLButtonElement | null = document.querySelector('#next-step-btn');
+
+  if (!nextStepBtn) {
+    return;
+  };
+
+  nextStepBtn.classList.remove('disabled');
+  nextStepBtn.removeAttribute('disabled');
+  nextStepBtn.removeAttribute('title');
 };

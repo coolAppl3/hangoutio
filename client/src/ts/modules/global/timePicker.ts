@@ -16,7 +16,9 @@ const timePickerState: TimePickerState = {
 };
 
 export default function timePicker(selectedDate: string, existingSlots: TimeSlot[]): void {
-  initTimePicker(selectedDate, existingSlots);
+  timePickerState.slots = existingSlots;
+
+  initTimePicker(selectedDate);
   loadEventListeners();
 };
 
@@ -38,10 +40,9 @@ function render(): void {
 };
 
 // initialization
-function initTimePicker(selectedDate: string, existingSlots: TimeSlot[]): void {
+function initTimePicker(selectedDate: string): void {
   displayTimePicker();
   displaySelectedDate(selectedDate);
-  displaySelectedSlots(existingSlots);
   render();
 };
 
@@ -58,10 +59,10 @@ function addTimeSlot(): void {
     return;
   };
 
-  isValidTimeFormat(fromInput);
-  isValidTimeFormat(toInput);
+  const isValidFrom: boolean = isValidTimeFormat(fromInput);
+  const isValidTo: boolean = isValidTimeFormat(toInput);
 
-  if (!isValidTimeFormat(fromInput) || !isValidTimeFormat(toInput)) {
+  if (!isValidFrom || !isValidTo) {
     return;
   };
 
@@ -113,6 +114,7 @@ function removeSlot(e: MouseEvent): void {
 
   timePickerState.slots.splice(slotIndex, 1);
 
+  dispatchSelectedSlots();
   render();
   popup('Slot removed.', 'success');
 };
