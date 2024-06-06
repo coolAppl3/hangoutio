@@ -1,6 +1,38 @@
 # Changelog
 
 ---
+### [0.0.10] (2024-06-05)
+
+
+### Features
+
+- Added a getter for the sliderValue in `SliderInput.ts`.
+- Moved the hangout account creation step in `hangoutForm.ts` and `create-hangout.html` to now be last. 
+- `hangoutForm.ts` completed apart from the final step to persist the data, which will be coming in future steps.
+- Added `hangoutFormConfig.ts` under `modules/createHangout/`  to control the sliders in the configuration step in `create-hangout.html`.
+- Added `hangoutAvailability.ts` `modules/createHangout/` to control the availability step in `create-hangout.html`.
+- Added `hangoutAccount.ts` under `modules/createHangout/` to control the group leader credentials, and trigger the final event to begin processing the form.
+- Added `hangoutFormState.ts` under `modules/createHangout/` to hold the state of the above-mentioned modules.
+- Slight adjustments to `datePicker.ts` and `timePicker.ts`.
+
+
+### Bug Fixes
+
+- Removed leftover console log in `LoadingModal.ts`.
+- Fixed the password reveal icon's position changing if the error message is multi-lined.
+
+
+### Style Changes
+
+- Made general, fine-tuning changes in `main.scss`.
+
+
+### Build Changes
+
+- Removed `__datePicker.html` and `__timePicker.html` templates, as they've been implemented in `create-hangout.html` and can be retrieved again that way
+
+
+---
 ### [0.0.9] (2024-06-03)
 
 ### Features
