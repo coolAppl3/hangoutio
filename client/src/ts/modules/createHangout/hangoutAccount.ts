@@ -33,7 +33,7 @@ function setAccountDetails(e: SubmitEvent): void {
     return;
   };
 
-  hangoutFormState.leaderName = accountNameInput.value.toLowerCase();
+  hangoutFormState.leaderName = accountNameInput.value.trim();
   hangoutFormState.leaderPassword = accountPasswordInput.value;
 
   dispatchAccountEvent();
@@ -45,18 +45,20 @@ function dispatchAccountEvent(): void {
 };
 
 function validateAccountName(accountInput: HTMLInputElement): boolean {
-  if (accountInput.value.trim() === '') {
+  const trimmedValue: string = accountInput.value.trim();
+
+  if (trimmedValue === '') {
     ErrorSpan.display(accountInput, 'Name must at least contain one letter.');
     return false;
   };
 
-  if (accountInput.value.trim().length > 25) {
+  if (trimmedValue.length > 25) {
     ErrorSpan.display(accountInput, 'Name must not be longer than 25 letters.');
     return false;
   };
 
-  const regex: RegExp = /^[A-Za-z\s]{1,25}$/;
-  if (!regex.test(accountInput.value)) {
+  const regex: RegExp = /^[A-Za-z ]{1,25}$/;
+  if (!regex.test(trimmedValue)) {
     ErrorSpan.display(accountInput, 'Name must only contain English letters.');
     return false;
   };
@@ -81,7 +83,7 @@ function validatePassword(accountPasswordInput: HTMLInputElement): boolean {
     return false;
   };
 
-  const regex = /^[A-Za-z0-9._]{8,40}$/;
+  const regex: RegExp = /^[A-Za-z0-9._]{8,40}$/;
   if (!regex.test(accountPasswordInput.value)) {
     ErrorSpan.display(accountPasswordInput, 'Special characters, apart from dots and underscores, are not allowed.');
     return false;

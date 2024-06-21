@@ -1,6 +1,53 @@
 # Changelog
 
 ---
+### [0.1.0] (2024-06-21)
+
+### Build Changes
+
+- Backend typescript build process implemented.
+  - Production-ready code will be created under the `dist` directory in the root level.
+
+
+### Features
+
+- Added `db.ts` to handle the connection to the MariaDB database and create a connection pool.
+- Added `app.ts` and set up the following routes: `/api/hangouts`, `/api/accounts`, `/api/guests`, `api/hangoutMembers`.
+- Added `accounts.ts` under `src/routes`.
+  - POST requests to `/accounts/signup` are meant for creating an account.
+  - Validation functionality to be implemented in a future patch.
+- Added `guests.ts` under `src/routes`.
+  - POST requests to `/guests/` are meant for creating a guest user.
+  - Guest accounts are created for their respective hangout, and are automatically removed once the hangout is concluded.
+  - Guests will have to provide a name and a password for their respective hangout to ensure proper identification within the hangout.
+- Duplicate account and guest names within the same hangout is allowed, and the front-end should help distinguish two people with the same name. This logic might change in a future patch if it proves ineffective.
+- Added `hangouts.ts` under `src/routes`.
+  - POST requests to `/hangouts/` are meant for creating a hangout.
+  - Hangouts are automatically removed from the database upon being concluded.
+- Added `hangoutMembers.ts` under `src/routes`.
+  - POST requests to `/hangoutMembers/` are meant for creating data linking an account or a guest user to a specific hangout within the database.
+  - Hangout member data will also specify whether a user is the leader of the hangout.
+- Added `generateAuthToken.ts` under `/src/util`, which has two functions responsible for generating authTokens for accounts and guest users.
+- Added `generateHangoutID.ts` under `/src/util`, which is responsible for generating a 32-character hangout ID.
+- Added `userValidation.ts` under `/src/util/validation`, which contains validation functions used during the creation of accounts and guest users.
+- Added `hangoutValidation.ts` under `/src/util/validation`, which contains validation functions used during the creation of a hangout.
+- Added `passwordHash.ts` under `src/util`, which contains a function to hash and salt passwords before returning it, using the `bcrypt` library.
+
+### Bug Fixes
+
+- Fixed `__datePicker.html` and `__timePicker.html` not being removed despite last patches' notes stating they were.
+
+
+### Code Refactoring
+
+- Added missing `RegExp` type in `validatePassword()` under `hangoutAccount.ts`.
+- Names no longer get mutated to lowercase when added to the state in `validateAccountName()`.
+  - Changed the regex to no longer accept whitespace in general, but rather a space.
+  - The input value is now also trimmed before being tested against the regex, to prevent a single space value passing.
+  - Added a note above the name input to express to the user that the input is case-sensitive.
+
+
+---
 ### [0.0.10] (2024-06-05)
 
 
