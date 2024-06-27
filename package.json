@@ -1,6 +1,6 @@
 {
   "name": "hangoutio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Hangoutio is an app designed to organize hangouts with your friends easily and efficiently.",
   "main": "app.js",
   "type": "commonjs",
@@ -22,11 +22,13 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@types/express-useragent": "^1.0.5",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-useragent": "^1.0.15",
     "mysql2": "^3.10.0"
   }
 }

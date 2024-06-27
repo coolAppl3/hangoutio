@@ -1,66 +1,93 @@
-import express, { Router, Request, Response } from 'express';
 import { dbPool } from "../db/db";
-import { isValidHangoutID } from '../util/validation/hangoutValidation';
-import { isValidUserType } from '../util/validation/userValidation';
+import express, { Router, Request, Response } from 'express';
+import { isValidHangoutIDString } from '../util/validation/hangoutValidation';
+import { getHangoutCapacity, getHangoutMemberLimit, hangoutLeaderExists, validateHangoutID } from '../services/hangoutServices';
+import { validateAuthToken } from '../services/authTokenServices';
+import { isValidAuthTokenString } from '../util/validation/userValidation';
+import { undefinedValuesDetected } from "../util/validation/requestValidation";
 
 export const hangoutMembersRouter: Router = express.Router();
 
-interface ResponseData {
-  status: number,
-  json: { success: boolean, resData: any } | { success: boolean, message: string },
-};
-
-interface CreateHangoutMember {
-  hangoutID: string,
-  userType: 'account' | 'guest',
-  userID: number,
-  isLeader: boolean,
-};
-
 hangoutMembersRouter.post('/', async (req: Request, res: Response) => {
-  const requestData: CreateHangoutMember = req.body;
+  interface RequestData {
+    hangoutID: string,
+    authToken: string,
+    isLeader: boolean,
+  };
 
-  if (!isValidHangoutID(requestData.hangoutID)) {
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['hangoutID', 'authToken', 'isLeader'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutIDString(requestData.hangoutID)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
-  if (!isValidUserType(requestData.userType)) {
-    res.status(400).json({ success: false, message: 'Invalid user type.' });
+  if (!isValidAuthTokenString(requestData.authToken)) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.userID)) {
-    res.status(400).json({ success: false, message: 'Invalid user ID.' });
+  const isValidHangoutID: boolean = await validateHangoutID(res, requestData.hangoutID);
+  if (!isValidHangoutID) {
     return;
   };
 
-  const { status, json }: ResponseData = await createHangoutMember(requestData);
-  res.status(status).json(json);
-});
+  const isValidAuthToken: boolean = await validateAuthToken(res, requestData.authToken);
+  if (!isValidAuthToken) {
+    return;
+  };
 
-async function createHangoutMember(requestData: CreateHangoutMember): Promise<ResponseData> {
+  if (requestData.isLeader) {
+    const leaderExists: boolean = await hangoutLeaderExists(res, requestData.hangoutID);
+    if (leaderExists) {
+      return;
+    };
+  };
+
+  const hangoutMemberLimit: number = await getHangoutMemberLimit(res, requestData.hangoutID);
+  if (hangoutMemberLimit === 0) {
+    return;
+  };
+
+  const hangoutIsFull: boolean = await getHangoutCapacity(res, requestData.hangoutID, hangoutMemberLimit);
+  if (hangoutIsFull) {
+    return;
+  };
+
   try {
     const [insertData]: any = await dbPool.execute(
-      `INSERT INTO HangoutMembers(hangout_id, user_type, user_id, is_leader)
-      VALUES(?, ?, ?, ?)`,
-      [requestData.hangoutID, requestData.userType, Math.floor(requestData.userID), Boolean(requestData.isLeader)]
+      `INSERT INTO HangoutMembers(hangout_id, auth_token, is_leader)
+      VALUES(?, ?, ?);`,
+      [requestData.hangoutID, requestData.authToken, requestData.isLeader]
     );
 
     const hangoutMemberID: string = insertData.insertId;
-    return { status: 200, json: { success: true, resData: { hangoutMemberID } } };
+    res.json({ success: true, resData: { hangoutMemberID } });
 
   } catch (err: any) {
     console.log(err);
 
     if (err.errno === 1452) {
-      return { status: 400, json: { success: false, message: 'Hangout ID does not exist.' } };
+      res.status(404).json({ success: false, message: 'Hangout not found.' });
+      return;
     };
 
     if (err.errno === 1062) {
-      return { status: 409, json: { success: false, message: 'User is already a part of this hangout.' } };
+      res.status(400).json({ success: false, message: 'You are already a member in this session.' });
+      return;
     };
 
-    return { status: 500, json: { success: false, message: 'Something went wrong.' } };
+    if (!err.errno) {
+      res.status(400).json({ success: false, message: 'Invalid request data.' });
+      return;
+    };
+
+    res.status(500).json({ success: false, message: 'Internal server error.' });
   };
-};
+});

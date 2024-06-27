@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidUserType = exports.isValidPassword = exports.isValidName = exports.isValidEmail = void 0;
+exports.isValidAuthTokenString = exports.isValidPassword = exports.isValidName = exports.isValidEmail = void 0;
 function isValidEmail(email) {
     const regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
     return regex.test(email);
@@ -19,12 +19,20 @@ function isValidPassword(password) {
 }
 exports.isValidPassword = isValidPassword;
 ;
-function isValidUserType(userType) {
-    if (userType !== 'account' && userType !== 'guest') {
+function isValidAuthTokenString(authToken) {
+    if (typeof authToken !== 'string') {
+        return false;
+    }
+    ;
+    if (authToken.length !== 32) {
+        return false;
+    }
+    ;
+    if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
         return false;
     }
     ;
     return true;
 }
-exports.isValidUserType = isValidUserType;
+exports.isValidAuthTokenString = isValidAuthTokenString;
 ;

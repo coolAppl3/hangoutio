@@ -126,8 +126,8 @@ function isValidTimeFormat(input: HTMLInputElement): boolean {
     return false;
   };
 
-  const validTimeRegex: RegExp = /^[0-2][0-9]:[0-5][0-9]$/;
-  if (!validTimeRegex.test(input.value)) {
+  const validTimeFormatRegex: RegExp = /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!validTimeFormatRegex.test(input.value)) {
     ErrorSpan.display(input, 'Please use a valid 24-hour format (HH:MM).');
     return false;
   };
@@ -201,7 +201,7 @@ function isWithinExistingSlot(slot: TimeSlot, time: string): boolean {
 };
 
 function includesExistingSlot(slot: TimeSlot, newSlot: TimeSlot): boolean {
-  if (newSlot.from < slot.from && newSlot.to > slot.to) {
+  if (getTimeNumber(newSlot.from) < getTimeNumber(slot.from) && getTimeNumber(newSlot.to) > getTimeNumber(slot.to)) {
     return true;
   };
 
@@ -391,7 +391,7 @@ function clearInputs(): void {
 };
 
 function getTimeNumber(time: string): number {
-  return +(time.split(':').join(''));;
+  return +(time.split(':').join(''));
 };
 
 function dispatchSelectedSlots(): void {

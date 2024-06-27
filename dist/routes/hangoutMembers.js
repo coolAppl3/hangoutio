@@ -4,52 +4,85 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hangoutMembersRouter = void 0;
-const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
+const express_1 = __importDefault(require("express"));
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
+const hangoutServices_1 = require("../services/hangoutServices");
+const authTokenServices_1 = require("../services/authTokenServices");
 const userValidation_1 = require("../util/validation/userValidation");
+const requestValidation_1 = require("../util/validation/requestValidation");
 exports.hangoutMembersRouter = express_1.default.Router();
-;
-;
 exports.hangoutMembersRouter.post('/', async (req, res) => {
+    ;
     const requestData = req.body;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
+    const expectedKeys = ['hangoutID', 'authToken', 'isLeader'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!(0, hangoutValidation_1.isValidHangoutIDString)(requestData.hangoutID)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidUserType)(requestData.userType)) {
-        res.status(400).json({ success: false, message: 'Invalid user type.' });
+    if (!(0, userValidation_1.isValidAuthTokenString)(requestData.authToken)) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.userID)) {
-        res.status(400).json({ success: false, message: 'Invalid user ID.' });
+    const isValidHangoutID = await (0, hangoutServices_1.validateHangoutID)(res, requestData.hangoutID);
+    if (!isValidHangoutID) {
         return;
     }
     ;
-    const { status, json } = await createHangoutMember(requestData);
-    res.status(status).json(json);
-});
-async function createHangoutMember(requestData) {
+    const isValidAuthToken = await (0, authTokenServices_1.validateAuthToken)(res, requestData.authToken);
+    if (!isValidAuthToken) {
+        return;
+    }
+    ;
+    if (requestData.isLeader) {
+        const leaderExists = await (0, hangoutServices_1.hangoutLeaderExists)(res, requestData.hangoutID);
+        if (leaderExists) {
+            return;
+        }
+        ;
+    }
+    ;
+    const hangoutMemberLimit = await (0, hangoutServices_1.getHangoutMemberLimit)(res, requestData.hangoutID);
+    if (hangoutMemberLimit === 0) {
+        return;
+    }
+    ;
+    const hangoutIsFull = await (0, hangoutServices_1.getHangoutCapacity)(res, requestData.hangoutID, hangoutMemberLimit);
+    if (hangoutIsFull) {
+        return;
+    }
+    ;
     try {
-        const [insertData] = await db_1.dbPool.execute(`INSERT INTO HangoutMembers(hangout_id, user_type, user_id, is_leader)
-      VALUES(?, ?, ?, ?)`, [requestData.hangoutID, requestData.userType, Math.floor(requestData.userID), Boolean(requestData.isLeader)]);
+        const [insertData] = await db_1.dbPool.execute(`INSERT INTO HangoutMembers(hangout_id, auth_token, is_leader)
+      VALUES(?, ?, ?);`, [requestData.hangoutID, requestData.authToken, requestData.isLeader]);
         const hangoutMemberID = insertData.insertId;
-        return { status: 200, json: { success: true, resData: { hangoutMemberID } } };
+        res.json({ success: true, resData: { hangoutMemberID } });
     }
     catch (err) {
         console.log(err);
         if (err.errno === 1452) {
-            return { status: 400, json: { success: false, message: 'Hangout ID does not exist.' } };
+            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            return;
         }
         ;
         if (err.errno === 1062) {
-            return { status: 409, json: { success: false, message: 'User is already a part of this hangout.' } };
+            res.status(400).json({ success: false, message: 'You are already a member in this session.' });
+            return;
         }
         ;
-        return { status: 500, json: { success: false, message: 'Something went wrong.' } };
+        if (!err.errno) {
+            res.status(400).json({ success: false, message: 'Invalid request data.' });
+            return;
+        }
+        ;
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
-}
-;
+});

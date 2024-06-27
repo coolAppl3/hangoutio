@@ -1,4 +1,4 @@
-export function isValidHangoutID(hangoutID: string): boolean {
+export function isValidHangoutIDString(hangoutID: string): boolean {
   if (typeof hangoutID !== 'string') {
     return false;
   };
@@ -13,6 +13,7 @@ export function isValidHangoutID(hangoutID: string): boolean {
 
   return true;
 };
+
 
 export function isValidHangoutConfiguration(availabilityPeriod: number, suggestionsPeriod: number, votingPeriod: number): boolean {
   if (availabilityPeriod < 1 || availabilityPeriod > 7) {
@@ -38,3 +39,16 @@ export function isValidHangoutConfiguration(availabilityPeriod: number, suggesti
   return true;
 };
 
+const maxMemberLimit: number = 20;
+export function isValidHangoutMemberLimit(limit: number): boolean {
+
+  if (!Number.isInteger(limit)) {
+    return false;
+  };
+
+  if (limit < 2 || limit > maxMemberLimit) {
+    return false;
+  };
+
+  return true;
+};
