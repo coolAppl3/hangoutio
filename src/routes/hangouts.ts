@@ -1,7 +1,10 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
 import generateHangoutId from '../util/generateHangoutID';
-import { isValidHangoutConfiguration } from '../util/validation/hangoutValidation';
+import { isValidHangoutConfiguration, isValidHangoutMemberLimit } from '../util/validation/hangoutValidation';
+import { undefinedValuesDetected } from '../util/validation/requestValidation';
+import { validateAuthToken } from '../services/authTokenServices';
+import { isValidAuthTokenString } from '../util/validation/userValidation';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -15,13 +18,31 @@ interface CreateHangout {
   suggestionsPeriod: number,
   votingPeriod: number,
   approveMembers: boolean,
+  memberLimit: number,
 };
 
 hangoutsRouter.post('/', async (req: Request, res: Response) => {
   const requestData: CreateHangout = req.body;
 
-  if (!isValidHangoutConfiguration(requestData.availabilityPeriod, requestData.suggestionsPeriod, requestData.votingPeriod)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout data.' });
+  const expectedKeys: string[] = ['availabilityPeriod', 'suggestionsPeriod', 'votingPeriod', 'approveMembers', 'memberLimit'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  const { availabilityPeriod, suggestionsPeriod, votingPeriod }: CreateHangout = requestData;
+  if (!isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, votingPeriod)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout configuration.' });
+    return;
+  };
+
+  if (typeof requestData.approveMembers !== 'boolean') {
+    res.status(400).json({ success: false, message: 'Invalid hangout configuration.' });
+    return false;
+  };
+
+  if (!isValidHangoutMemberLimit(requestData.memberLimit)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout member limit.' });
     return;
   };
 
@@ -33,14 +54,14 @@ async function createHangout(requestData: CreateHangout, attemptNumber: number =
   const hangoutID: string = generateHangoutId();
 
   if (attemptNumber > 3) {
-    return { status: 500, json: { success: false, message: 'Something went wrong.' } };
+    return { status: 500, json: { success: false, message: 'Internal server error.' } };
   };
 
   try {
     await dbPool.execute(
-      `INSERT INTO Hangouts(hangout_id, approve_members, availability_period, suggestions_period, voting_period, current_step, created_on_timestamp, completed_on_timestamp)
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?)`,
-      [hangoutID, Boolean(requestData.approveMembers), Math.floor(requestData.availabilityPeriod), Math.floor(requestData.suggestionsPeriod), Math.floor(requestData.votingPeriod), 1, Date.now(), null]
+      `INSERT INTO Hangouts(hangout_id, approve_members, member_limit, availability_period, suggestions_period, voting_period, current_step, created_on_timestamp, completed_on_timestamp)
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      [hangoutID, requestData.approveMembers, requestData.memberLimit, requestData.availabilityPeriod, requestData.suggestionsPeriod, requestData.votingPeriod, 1, Date.now(), null]
     );
 
     return { status: 200, json: { success: true, resData: { hangoutID } } };
@@ -56,6 +77,10 @@ async function createHangout(requestData: CreateHangout, attemptNumber: number =
       return { status: 400, json: { success: false, message: 'Invalid step value.' } };
     };
 
-    return { status: 500, json: { success: false, message: 'Something went wrong.' } };
+    if (!err.errno) {
+      return { status: 400, json: { success: false, message: 'Invalid request data.' } };
+    };
+
+    return { status: 500, json: { success: false, message: 'Internal server error.' } };
   };
 };

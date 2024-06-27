@@ -1,37 +1,77 @@
 # Changelog
 
 ---
+### [0.1.1] (2024-06-27)
+
+
+### Features
+
+- Improved the regex used for testing a valid 24-hour format in `timePicker.ts` to make it more robust.
+- Added `timeSlotValidation.ts` to validate time slot strings in the backend.
+- Added a `member_limit` column in the `Hangouts` table and implemented the functionality.
+  - The column's value can be between 2 and 20 (inclusive).
+  - Future patches will reflect this one the front end.
+- Removed the indexes set for `created_on_timestamp` and `completed_on_timestamp` in the `Hangouts` table.
+- Added `undefinedValuesDetected()` under `requestValidation.ts` to detect invalid request data and return an intentionally vague 400 response.
+  - This is only a part of the validation process, and is meant to prevent bad actors from guessing the correct request structure.
+- Added `authTokenServices.ts` and `hangoutServices.ts`.
+- Renamed `passwordHash.ts` to `passwordServices.ts` and moved it to the services directory.
+- Renamed `hashPassword()` to `getHashedPassword()` and reworked the function into a service that takes in the Response object.
+- Added `Availability.ts` as a router to handle availability-related requests.
+
+### Code Refactoring
+
+- Reworked the general structure of routers to make them more readable and efficient.
+- Reworked the `HangoutMembers` table to now store authTokens instead of the user's type and ID.
+- Removed `isValidUserType()` from `accountValidation.ts` as it's no longer needed.
+- Changed `account_name` in the `Accounts` table and `guest_name` in the `Guests` table to now both be `user_name`, to simplify data fetching queries down the line, and avoid redundancies.
+
+
+### Bug Fixes
+
+- Fixed the ability to set multiple hangout members as a leader for the same hangout.
+- Fixed `includesExistingSlots()` in `timePicker.ts` not converting the dates to numbers before executing the comparisons.
+  - JavaScript's Lexicographical comparison was automatically used (and worked so far), but the function now properly converts strings into numbers to avoid unexpected behavior.
+- Fixed responses resulting from request keys 
+
+
+### Documentation Changes
+
+- Removed redundancies from the changelog, and rephrased some of the patch notes.
+
+
+---
 ### [0.1.0] (2024-06-21)
 
 ### Build Changes
 
 - Backend typescript build process implemented.
-  - Production-ready code will be created under the `dist` directory in the root level.
+  - Production-ready code will be created into `dist` in the root level.
 
 
 ### Features
 
 - Added `db.ts` to handle the connection to the MariaDB database and create a connection pool.
 - Added `app.ts` and set up the following routes: `/api/hangouts`, `/api/accounts`, `/api/guests`, `api/hangoutMembers`.
-- Added `accounts.ts` under `src/routes`.
+- Added `accounts.ts`.
   - POST requests to `/accounts/signup` are meant for creating an account.
   - Validation functionality to be implemented in a future patch.
-- Added `guests.ts` under `src/routes`.
+- Added `guests.ts`.
   - POST requests to `/guests/` are meant for creating a guest user.
   - Guest accounts are created for their respective hangout, and are automatically removed once the hangout is concluded.
   - Guests will have to provide a name and a password for their respective hangout to ensure proper identification within the hangout.
 - Duplicate account and guest names within the same hangout is allowed, and the front-end should help distinguish two people with the same name. This logic might change in a future patch if it proves ineffective.
-- Added `hangouts.ts` under `src/routes`.
+- Added `hangouts.ts`.
   - POST requests to `/hangouts/` are meant for creating a hangout.
   - Hangouts are automatically removed from the database upon being concluded.
-- Added `hangoutMembers.ts` under `src/routes`.
+- Added `hangoutMembers.ts`.
   - POST requests to `/hangoutMembers/` are meant for creating data linking an account or a guest user to a specific hangout within the database.
   - Hangout member data will also specify whether a user is the leader of the hangout.
-- Added `generateAuthToken.ts` under `/src/util`, which has two functions responsible for generating authTokens for accounts and guest users.
-- Added `generateHangoutID.ts` under `/src/util`, which is responsible for generating a 32-character hangout ID.
-- Added `userValidation.ts` under `/src/util/validation`, which contains validation functions used during the creation of accounts and guest users.
-- Added `hangoutValidation.ts` under `/src/util/validation`, which contains validation functions used during the creation of a hangout.
-- Added `passwordHash.ts` under `src/util`, which contains a function to hash and salt passwords before returning it, using the `bcrypt` library.
+- Added `generateAuthToken.ts`, which has two functions responsible for generating authTokens for accounts and guest users.
+- Added `generateHangoutID.ts`, which is responsible for generating a 32-character hangout ID.
+- Added `userValidation.ts`, which contains validation functions used during the creation of accounts and guest users.
+- Added `hangoutValidation.ts`, which contains validation functions used during the creation of a hangout.
+- Added `passwordHash.ts`, which contains a function to hash and salt passwords before returning it, using the `bcrypt` library.
 
 ### Bug Fixes
 
@@ -56,10 +96,10 @@
 - Added a getter for the sliderValue in `SliderInput.ts`.
 - Moved the hangout account creation step in `hangoutForm.ts` and `create-hangout.html` to now be last. 
 - `hangoutForm.ts` completed apart from the final step to persist the data, which will be coming in future steps.
-- Added `hangoutFormConfig.ts` under `modules/createHangout/`  to control the sliders in the configuration step in `create-hangout.html`.
+- Added `hangoutFormConfig.ts`  to control the sliders in the configuration step in `create-hangout.html`.
 - Added `hangoutAvailability.ts` `modules/createHangout/` to control the availability step in `create-hangout.html`.
-- Added `hangoutAccount.ts` under `modules/createHangout/` to control the group leader credentials, and trigger the final event to begin processing the form.
-- Added `hangoutFormState.ts` under `modules/createHangout/` to hold the state of the above-mentioned modules.
+- Added `hangoutAccount.ts` to control the group leader credentials, and trigger the final event to begin processing the form.
+- Added `hangoutFormState.ts` to hold the state of the above-mentioned modules.
 - Slight adjustments to `datePicker.ts` and `timePicker.ts`.
 
 
@@ -85,11 +125,11 @@
 ### Features
 
 - Amended some of the text in `index.html`.
-- Added `timePicker.ts` under global modules.
+- Added `timePicker.ts`.
   - Added a temporary `__timePicker.html` under `src/html/`.
 - Rephrased some of the content in `index.html`.
-- Added `ErrorSpan.ts` under global modules.
-- Added `LoadingModal.ts` under global modules.
+- Added `ErrorSpan.ts`.
+- Added `LoadingModal.ts`.
 - Implemented the UI for the 3rd step in `create-hangout.html`.
 
 
@@ -146,9 +186,9 @@
 ### Features
 
 - Added more UI elements in `create-hangout.html`.
-- Added `hangoutForms.ts` under the createHangout modules.
+- Added `hangoutForms.ts`.
   - It should handle the form navigation, as well as the form submission later down the line.
-- Added `datePicker.ts` under global modules.
+- Added `datePicker.ts`.
   - This module will be used throughout the app where needed, and will provide a consistent way for users to select a date and for the app to store them.
   - The module dispatches a custom event with a payload to the window when a date is selected.
   - The date picker doesn't allow picking any dates in the past, or dates beyond the two following months to the current one.
@@ -172,7 +212,7 @@
 - The page the user is on is not gently highlighted in the bottom navbar.
 - Added `create-hangout.html` and part of the UI has been implemented.
 - Added `createHangout.ts`.
-- Added `revealPassword.ts` under global modules.
+- Added `revealPassword.ts`.
 
 ### Bug Fixes
 

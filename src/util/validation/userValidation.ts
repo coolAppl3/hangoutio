@@ -13,8 +13,16 @@ export function isValidPassword(password: string): boolean {
   return regex.test(password);
 };
 
-export function isValidUserType(userType: string): boolean {
-  if (userType !== 'account' && userType !== 'guest') {
+export function isValidAuthTokenString(authToken: string): boolean {
+  if (typeof authToken !== 'string') {
+    return false;
+  };
+
+  if (authToken.length !== 32) {
+    return false;
+  };
+
+  if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
     return false;
   };
 

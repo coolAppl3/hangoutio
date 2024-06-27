@@ -6,22 +6,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.accountsRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
-const generateAuthToken_1 = require("../util/generateAuthToken");
+const authTokens_1 = require("../util/authTokens");
 const userValidation_1 = require("../util/validation/userValidation");
-const passwordHash_1 = require("../util/passwordHash");
-const bcryptSaltRounds = 10;
+const passwordServices_1 = require("../services/passwordServices");
+const requestValidation_1 = require("../util/validation/requestValidation");
 exports.accountsRouter = express_1.default.Router();
 ;
 ;
 exports.accountsRouter.post('/signUp', async (req, res) => {
     const requestData = req.body;
-    if (!(0, userValidation_1.isValidEmail)(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.' });
+    const expectedKeys = ['email', 'password', 'userName'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidName)(requestData.accountName)) {
-        res.status(400).json({ success: false, message: 'Invalid account name.' });
+    if (!(0, userValidation_1.isValidEmail)(requestData.email)) {
+        res.status(400).json({ success: false, message: 'Invalid email address.' });
         return;
     }
     ;
@@ -30,9 +31,13 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         return;
     }
     ;
-    const hashedPassword = await (0, passwordHash_1.hashPassword)(requestData.password);
-    if (passwordHash_1.hashPassword.length === 0) {
-        res.status(500).json({ success: false, message: 'Something went wrong.' });
+    if (!(0, userValidation_1.isValidName)(requestData.userName)) {
+        res.status(400).json({ success: false, message: 'Invalid account name.' });
+        return;
+    }
+    ;
+    const hashedPassword = await (0, passwordServices_1.getHashedPassword)(res, requestData.password);
+    if (hashedPassword === '') {
         return;
     }
     ;
@@ -40,18 +45,22 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
     res.status(status).json(json);
 });
 async function createAccount(requestData, hashedPassword, attemptNumber = 1) {
-    const authToken = (0, generateAuthToken_1.generateAccountAuthToken)();
+    const authToken = (0, authTokens_1.generateAuthToken)('account');
     if (attemptNumber > 3) {
-        return { status: 500, json: { success: false, message: 'Something went wrong.' } };
+        return { status: 500, json: { success: false, message: 'Internal server error.' } };
     }
     ;
     try {
-        await db_1.dbPool.execute(`INSERT INTO Accounts(auth_token, email, password_hash, account_name, is_verified, created_on_timestamp, friends)
-      VALUES(?, ?, ?, ?, ?, ?, ?)`, [authToken, requestData.email, hashedPassword, requestData.accountName, false, Date.now(), '']);
+        await db_1.dbPool.execute(`INSERT INTO Accounts(auth_token, email, password_hash, user_name, is_verified, created_on_timestamp, friends)
+      VALUES(?, ?, ?, ?, ?, ?, ?);`, [authToken, requestData.email, hashedPassword, requestData.userName, false, Date.now(), '']);
         return { status: 200, json: { success: true, resData: { authToken } } };
     }
     catch (err) {
         console.log(err);
+        if (!err.errno) {
+            return { status: 400, json: { success: false, message: 'Invalid request data.' } };
+        }
+        ;
         if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'email'`)) {
             return { status: 409, json: { success: false, message: 'Email address is already in use.' } };
         }
@@ -60,7 +69,7 @@ async function createAccount(requestData, hashedPassword, attemptNumber = 1) {
             return await createAccount(requestData, hashedPassword, attemptNumber++);
         }
         ;
-        return { status: 500, json: { success: false, message: 'Something went wrong.' } };
+        return { status: 500, json: { success: false, message: 'Internal server error.' } };
     }
     ;
 }

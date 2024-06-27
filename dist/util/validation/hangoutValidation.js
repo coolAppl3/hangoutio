@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidHangoutConfiguration = exports.isValidHangoutID = void 0;
-function isValidHangoutID(hangoutID) {
+exports.isValidHangoutMemberLimit = exports.isValidHangoutConfiguration = exports.isValidHangoutIDString = void 0;
+function isValidHangoutIDString(hangoutID) {
     if (typeof hangoutID !== 'string') {
         return false;
     }
@@ -16,7 +16,7 @@ function isValidHangoutID(hangoutID) {
     ;
     return true;
 }
-exports.isValidHangoutID = isValidHangoutID;
+exports.isValidHangoutIDString = isValidHangoutIDString;
 ;
 function isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, votingPeriod) {
     if (availabilityPeriod < 1 || availabilityPeriod > 7) {
@@ -40,4 +40,18 @@ function isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, voti
     return true;
 }
 exports.isValidHangoutConfiguration = isValidHangoutConfiguration;
+;
+const maxMemberLimit = 20;
+function isValidHangoutMemberLimit(limit) {
+    if (!Number.isInteger(limit)) {
+        return false;
+    }
+    ;
+    if (limit < 2 || limit > maxMemberLimit) {
+        return false;
+    }
+    ;
+    return true;
+}
+exports.isValidHangoutMemberLimit = isValidHangoutMemberLimit;
 ;
