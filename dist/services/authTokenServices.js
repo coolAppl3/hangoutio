@@ -44,8 +44,15 @@ async function validateHangoutMemberAuthToken(res, authToken, hangoutMemberID) {
     ;
     try {
         const [rows] = await db_1.dbPool.execute(`SELECT auth_token FROM HangoutMembers
-      WHERE hangout_member_id = ?;`, [hangoutMemberID]);
+      WHERE hangout_member_id = ?
+      LIMIT 1;`, [hangoutMemberID]);
         if (rows.length === 0) {
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            return false;
+        }
+        ;
+        const memberAuthToken = rows[0].auth_token;
+        if (memberAuthToken !== authToken) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return false;
         }

@@ -48,11 +48,19 @@ export async function validateHangoutMemberAuthToken(res: Response, authToken: s
   try {
     const [rows]: any = await dbPool.execute(
       `SELECT auth_token FROM HangoutMembers
-      WHERE hangout_member_id = ?;`,
+      WHERE hangout_member_id = ?
+      LIMIT 1;`,
       [hangoutMemberID]
     );
 
     if (rows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return false;
+    };
+
+    const memberAuthToken: string = rows[0].auth_token;
+
+    if (memberAuthToken !== authToken) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return false;
     };

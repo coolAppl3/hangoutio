@@ -1,8 +1,23 @@
 # Changelog
 
 ---
-### [0.1.1] (2024-06-27)
+### [0.1.2] (2024-07-01)
 
+### Features
+
+- Added `suggestions.ts` as a router to handle suggestion-related requests.
+- Added `suggestionServices.ts`.
+- Added `suggestionValidation.ts`.
+- Added `votes.ts` as a router to handle suggestion-related requests.
+- Added `voteServices.ts`.
+- Added `add_vote.sql` as reference to the `add_vote` procedure now in the database.
+- Added `validate_auth_token.sql` as a reference to the `validate_auth_token.sql` function now in the database.
+  - Both the procedure and function above are not used currently within the app. They will be tested at some point in the future to measure how significant of a performance improvement they provide, and will subsequently either be implemented further or removed.
+- Added `logUnexpectedError.ts` which will be used if procedures end up being implemented for monitoring purposes.
+
+
+---
+### [0.1.1] (2024-06-27)
 
 ### Features
 
@@ -18,6 +33,7 @@
 - Renamed `passwordHash.ts` to `passwordServices.ts` and moved it to the services directory.
 - Renamed `hashPassword()` to `getHashedPassword()` and reworked the function into a service that takes in the Response object.
 - Added `Availability.ts` as a router to handle availability-related requests.
+
 
 ### Code Refactoring
 
@@ -89,7 +105,6 @@
 
 ---
 ### [0.0.10] (2024-06-05)
-
 
 ### Features
 
