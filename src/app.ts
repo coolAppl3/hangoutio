@@ -3,12 +3,15 @@ dotenv.config();
 import path from 'path';
 import cors from 'cors';
 import express, { Application } from 'express';
+
 // routers
 import { hangoutsRouter } from './routes/hangouts';
 import { accountsRouter } from './routes/accounts';
 import { guestsRouter } from './routes/guests';
 import { hangoutMembersRouter } from './routes/hangoutMembers';
 import { availabilityRouter } from './routes/availability';
+import { suggestionsRouter } from './routes/suggestions';
+import { votesRouter } from './routes/votes';
 
 const port = process.env.PORT || 5000;
 const app: Application = express();
@@ -37,6 +40,8 @@ app.use('/api/accounts', accountsRouter);
 app.use('/api/guests', guestsRouter);
 app.use('/api/hangoutMembers', hangoutMembersRouter);
 app.use('/api/availability', availabilityRouter);
+app.use('/api/suggestions', suggestionsRouter);
+app.use('/api/votes', votesRouter);
 
 // init
 app.listen(port, () => {
