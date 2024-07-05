@@ -6,13 +6,9 @@ import { generateAuthToken } from '../util/authTokens';
 import { isValidHangoutIDString } from '../util/validation/hangoutValidation';
 import { getHashedPassword } from '../services/passwordServices';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
+import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const guestsRouter: Router = express.Router();
-
-interface ResponseData {
-  status: number,
-  json: { success: boolean, resData: any } | { success: boolean, message: string },
-};
 
 interface CreateGuest {
   userName: string,
@@ -49,42 +45,49 @@ guestsRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  const { status, json }: ResponseData = await createGuest(requestData, hashedPassword);
-  res.status(status).json(json);
+  await createGuest(res, requestData, hashedPassword);
 });
 
-async function createGuest(requestData: CreateGuest, hashedPassword: string, attemptNumber: number = 1): Promise<ResponseData> {
+async function createGuest(res: Response, requestData: CreateGuest, hashedPassword: string, attemptNumber: number = 1): Promise<void> {
   const authToken = generateAuthToken('guest');
 
   if (attemptNumber > 3) {
-    return { status: 500, json: { success: false, message: 'Internal server error.' } };
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+    return;
   };
 
   try {
     const [insertData]: any = await dbPool.execute(
-      `INSERT INTO Guests(auth_token, user_name, password_hash, hangout_id)
-      VALUES(?, ?, ?, ?);`,
+      `INSERT INTO Guests(
+        auth_token,
+        user_name,
+        password_hash,
+        hangout_id
+      )
+      VALUES(${generatePlaceHolders(4)});`,
       [authToken, requestData.userName, hashedPassword, requestData.hangoutID]
     );
 
     const guestID: number = insertData.insertId;
-    return { status: 200, json: { success: true, resData: { guestID, authToken } } };
+    res.json({ success: true, resData: { guestID, authToken } });
 
   } catch (err: any) {
     console.log(err);
 
     if (!err.errno) {
-      return { status: 400, json: { success: false, message: 'Invalid request data.' } };
+      res.status(400).json({ success: false, message: 'Invalid request data.' });
+      return;
     };
 
     if (err.errno === 1452) {
-      return { status: 400, json: { success: false, message: 'Hangout not found.' } };
+      res.status(404).json({ succesS: false, message: 'Hangout not found.' });
+      return;
     };
 
     if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-      return await createGuest(requestData, hashedPassword, attemptNumber++);
+      return await createGuest(res, requestData, hashedPassword, ++attemptNumber);
     };
 
-    return { status: 500, json: { success: false, message: 'Internal server error.' } };
+    res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 };

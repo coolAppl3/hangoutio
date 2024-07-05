@@ -10,22 +10,30 @@ const timeSlotValidation_1 = require("../util/validation/timeSlotValidation");
 const authTokenServices_1 = require("../services/authTokenServices");
 const userValidation_1 = require("../util/validation/userValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.availabilityRouter = express_1.default.Router();
 exports.availabilityRouter.post('/', async (req, res) => {
     ;
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const authToken = authHeader.substring(7);
     const requestData = req.body;
-    const expectedKeys = ['authToken', 'hangoutMemberID', 'dateString', 'dateTimestamp', 'slots'];
+    const expectedKeys = ['hangoutMemberID', 'dateString', 'dateTimestamp', 'slots'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidAuthTokenString)(requestData.authToken)) {
+    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
     ;
-    const isValidAuthToken = await (0, authTokenServices_1.validateHangoutMemberAuthToken)(res, requestData.authToken, requestData.hangoutMemberID);
+    const isValidAuthToken = await (0, authTokenServices_1.validateHangoutMemberAuthToken)(res, authToken, requestData.hangoutMemberID);
     if (!isValidAuthToken) {
         return;
     }
@@ -56,14 +64,20 @@ exports.availabilityRouter.post('/', async (req, res) => {
     }
     ;
     try {
-        await db_1.dbPool.execute(`INSERT INTO Availability(hangout_member_id, date_string, date_timestamp, slots)
-      VALUES(?, ?, ?, ?)`, [requestData.hangoutMemberID, requestData.dateString, requestData.dateTimestamp, requestData.slots]);
+        await db_1.dbPool.execute(`INSERT INTO Availability(
+        hangout_member_id,
+        date_string,
+        date_timestamp,
+        slots
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)})`, [requestData.hangoutMemberID, requestData.dateString, requestData.dateTimestamp, requestData.slots]);
         res.json({ success: true, requestData: {} });
     }
     catch (err) {
         console.log(err);
         if (!err.errno) {
             res.status(400).json({ success: false, message: 'Invalid request data.' });
+            return;
         }
         ;
         if (err.errno === 1062) {

@@ -7,10 +7,10 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "alwaysStrict": true,
-    "types": ["node", "express", "express-useragent", "cors", "bcrypt"],
+    "types": ["node", "express", "express-useragent", "cors", "bcrypt", "nodemailer"],
     "typeRoots": ["./node_modules/@types"],
     "removeComments": true,
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "global.d.ts"],
   "exclude": ["node_modules"],
 }

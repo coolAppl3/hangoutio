@@ -5,26 +5,33 @@ import { isValidAuthTokenString } from '../util/validation/userValidation';
 import { isValidSuggestionDescription, isValidSuggestionTitle } from '../util/validation/suggestionsValidation';
 import { validateHangoutMemberAuthToken } from '../services/authTokenServices';
 import { checkSuggestionsLimit } from '../services/suggestionServices';
+import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const suggestionsRouter: Router = express.Router();
 
 suggestionsRouter.post('/', async (req: Request, res: Response) => {
   interface RequestData {
-    authToken: string,
     hangoutMemberID: number,
     suggestionTitle: string,
     suggestionDescription: string,
   };
 
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['authToken', 'hangoutMemberID', 'suggestionTitle', 'suggestionDescription'];
+  const expectedKeys: string[] = ['hangoutMemberID', 'suggestionTitle', 'suggestionDescription'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!isValidAuthTokenString(requestData.authToken)) {
+  if (!isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -34,7 +41,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  const isValidAuthToken: boolean = await validateHangoutMemberAuthToken(res, requestData.authToken, requestData.hangoutMemberID);
+  const isValidAuthToken: boolean = await validateHangoutMemberAuthToken(res, authToken, requestData.hangoutMemberID);
   if (!isValidAuthToken) {
     return;
   };
@@ -56,8 +63,12 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
   try {
     await dbPool.execute(
-      `INSERT INTO Suggestions(hangout_member_id, suggestion_title, suggestion_description)
-      VALUES(?, ?, ?)`,
+      `INSERT INTO Suggestions(
+        hangout_member_id,
+        suggestion_title,
+        suggestion_description
+      )
+      VALUES(${generatePlaceHolders(3)})`,
       [requestData.hangoutMemberID, requestData.suggestionTitle, requestData.suggestionDescription]
     );
 

@@ -1,6 +1,42 @@
 # Changelog
 
 ---
+### [0.1.3] (2024-07-06)
+
+### Features
+
+- Increased idle timeout for pool connections from 1 to 5 minutes.
+- Increased the pool connections limit from 20 to 50.
+- Moved the authToken logic for all endpoints to check for it in the `Authorization` header as a `Bearer` token.
+- Added `initTransporter.ts`.
+- Added `emailServices.ts`.
+- Added `emailTemplates.ts`.
+- Restructured the form of the `Accounts` table in the database.
+- Added verification code email logic when signing up.
+- Added verification code resending logic to `accounts.ts`, which now listens to GET requests made to `/resendVerificationCode`.
+- Added `accountServices.ts`.
+- Added `generatePlaceHolders.ts` to help make `mysql2` execute statements more readable and less error-prone.
+- Added `generateVerificationCode.ts`.
+  - Generated codes are 6 characters long, and only use uppercase letters and numbers, with the letter `O` being excluded.
+
+### Code Refactoring
+
+- Refactored some of the logic in existent routers for better readability and efficiency.
+
+
+### Bug Fixes
+
+- Fixed static files in `app.ts` being incorrectly pointed to the `public` directory. 
+
+
+### Build Changes
+
+- Added a `.cpanel.yml` file to automate the deployment process.
+- Added `global.d.ts`.
+  - The file is empty for now, but might be used down the line.
+
+
+---
 ### [0.1.2] (2024-07-01)
 
 ### Features

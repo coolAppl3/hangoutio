@@ -11,17 +11,25 @@ const userValidation_1 = require("../util/validation/userValidation");
 const suggestionsValidation_1 = require("../util/validation/suggestionsValidation");
 const authTokenServices_1 = require("../services/authTokenServices");
 const suggestionServices_1 = require("../services/suggestionServices");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.suggestionsRouter = express_1.default.Router();
 exports.suggestionsRouter.post('/', async (req, res) => {
     ;
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const authToken = authHeader.substring(7);
     const requestData = req.body;
-    const expectedKeys = ['authToken', 'hangoutMemberID', 'suggestionTitle', 'suggestionDescription'];
+    const expectedKeys = ['hangoutMemberID', 'suggestionTitle', 'suggestionDescription'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidAuthTokenString)(requestData.authToken)) {
+    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -31,7 +39,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    const isValidAuthToken = await (0, authTokenServices_1.validateHangoutMemberAuthToken)(res, requestData.authToken, requestData.hangoutMemberID);
+    const isValidAuthToken = await (0, authTokenServices_1.validateHangoutMemberAuthToken)(res, authToken, requestData.hangoutMemberID);
     if (!isValidAuthToken) {
         return;
     }
@@ -52,8 +60,12 @@ exports.suggestionsRouter.post('/', async (req, res) => {
     }
     ;
     try {
-        await db_1.dbPool.execute(`INSERT INTO Suggestions(hangout_member_id, suggestion_title, suggestion_description)
-      VALUES(?, ?, ?)`, [requestData.hangoutMemberID, requestData.suggestionTitle, requestData.suggestionDescription]);
+        await db_1.dbPool.execute(`INSERT INTO Suggestions(
+        hangout_member_id,
+        suggestion_title,
+        suggestion_description
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)})`, [requestData.hangoutMemberID, requestData.suggestionTitle, requestData.suggestionDescription]);
         res.json({ success: true, resData: {} });
     }
     catch (err) {

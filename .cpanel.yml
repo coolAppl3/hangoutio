@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/coolappl/hangoutio.com
+    - /bin/cp -R * $DEPLOYPATH
+    - /usr/bin/rsync -av --delete $HOME/repositories/billDivider/ $HOME/hangoutio.com/
