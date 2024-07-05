@@ -27,7 +27,7 @@ if (process.env.NODE_ENV === 'development') {
     }));
 }
 ;
-app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
+app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use('/api/hangouts', hangouts_1.hangoutsRouter);
 app.use('/api/accounts', accounts_1.accountsRouter);
 app.use('/api/guests', guests_1.guestsRouter);

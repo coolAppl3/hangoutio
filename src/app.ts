@@ -32,7 +32,7 @@ if (process.env.NODE_ENV === 'development') {
 };
 
 // static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // routes
 app.use('/api/hangouts', hangoutsRouter);

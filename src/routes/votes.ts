@@ -3,19 +3,26 @@ import { dbPool } from '../db/db';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { checkVotesLimit, checkForDuplicateVote } from '../services/voteServices';
 import { validateHangoutMemberAuthToken } from '../services/authTokenServices';
+import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const votesRouter: Router = express.Router();
 
 votesRouter.post('/', async (req: Request, res: Response) => {
   interface RequestData {
-    authToken: string,
     hangoutMemberID: number,
     suggestionID: number,
   };
 
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['authToken', 'hangoutMemberID', 'suggestionID'];
+  const expectedKeys: string[] = ['hangoutMemberID', 'suggestionID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -26,7 +33,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  const isValidAuthToken: boolean = await validateHangoutMemberAuthToken(res, requestData.authToken, requestData.hangoutMemberID);
+  const isValidAuthToken: boolean = await validateHangoutMemberAuthToken(res, authToken, requestData.hangoutMemberID);
   if (!isValidAuthToken) {
     return;
   };
@@ -43,8 +50,11 @@ votesRouter.post('/', async (req: Request, res: Response) => {
 
   try {
     await dbPool.execute(
-      `INSERT INTO Votes(hangout_member_id, suggestion_id)
-      VALUES(?, ?)`,
+      `INSERT INTO Votes(
+        hangout_member_id,
+        suggestion_id
+      )
+      VALUES(${generatePlaceHolders(2)})`,
       [requestData.hangoutMemberID, requestData.suggestionID]
     );
 

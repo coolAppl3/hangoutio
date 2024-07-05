@@ -9,8 +9,8 @@ const db_1 = require("../db/db");
 const generateHangoutID_1 = __importDefault(require("../util/generateHangoutID"));
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.hangoutsRouter = express_1.default.Router();
-;
 ;
 exports.hangoutsRouter.post('/', async (req, res) => {
     const requestData = req.body;
@@ -36,35 +36,48 @@ exports.hangoutsRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    const { status, json } = await createHangout(requestData);
-    res.status(status).json(json);
+    await createHangout(res, requestData);
 });
-async function createHangout(requestData, attemptNumber = 0) {
+async function createHangout(res, requestData, attemptNumber = 0) {
     const hangoutID = (0, generateHangoutID_1.default)();
     if (attemptNumber > 3) {
-        return { status: 500, json: { success: false, message: 'Internal server error.' } };
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+        return;
     }
     ;
     try {
-        await db_1.dbPool.execute(`INSERT INTO Hangouts(hangout_id, approve_members, member_limit, availability_period, suggestions_period, voting_period, current_step, created_on_timestamp, completed_on_timestamp)
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);`, [hangoutID, requestData.approveMembers, requestData.memberLimit, requestData.availabilityPeriod, requestData.suggestionsPeriod, requestData.votingPeriod, 1, Date.now(), null]);
-        return { status: 200, json: { success: true, resData: { hangoutID } } };
+        await db_1.dbPool.execute(`INSERT INTO Hangouts(
+        hangout_id,
+        approve_members,
+        member_limit,
+        availability_period,
+        suggestions_period,
+        voting_period,
+        current_step,
+        created_on_timestamp,
+        completed_on_timestamp
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(9)});`, [hangoutID, requestData.approveMembers, requestData.memberLimit, requestData.availabilityPeriod, requestData.suggestionsPeriod, requestData.votingPeriod, 1, Date.now(), null]);
+        res.json({ success: true, resData: { hangoutID } });
+        return;
     }
     catch (err) {
         console.log(err);
         if (err.errno === 1062) {
-            return await createHangout(requestData, attemptNumber++);
+            return await createHangout(res, requestData, ++attemptNumber);
         }
         ;
         if (err.errno === 4025) {
-            return { status: 400, json: { success: false, message: 'Invalid step value.' } };
+            res.status(400).json({ success: false, message: 'Invalid step value.' });
+            return;
         }
         ;
         if (!err.errno) {
-            return { status: 400, json: { success: false, message: 'Invalid request data.' } };
+            res.status(400).json({ success: false, message: 'Invalid request data.' });
+            return;
         }
         ;
-        return { status: 500, json: { success: false, message: 'Internal server error.' } };
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
 }

@@ -11,8 +11,8 @@ const authTokens_1 = require("../util/authTokens");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 const passwordServices_1 = require("../services/passwordServices");
 const requestValidation_1 = require("../util/validation/requestValidation");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.guestsRouter = express_1.default.Router();
-;
 ;
 exports.guestsRouter.post('/', async (req, res) => {
     const requestData = req.body;
@@ -42,36 +42,43 @@ exports.guestsRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    const { status, json } = await createGuest(requestData, hashedPassword);
-    res.status(status).json(json);
+    await createGuest(res, requestData, hashedPassword);
 });
-async function createGuest(requestData, hashedPassword, attemptNumber = 1) {
+async function createGuest(res, requestData, hashedPassword, attemptNumber = 1) {
     const authToken = (0, authTokens_1.generateAuthToken)('guest');
     if (attemptNumber > 3) {
-        return { status: 500, json: { success: false, message: 'Internal server error.' } };
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+        return;
     }
     ;
     try {
-        const [insertData] = await db_1.dbPool.execute(`INSERT INTO Guests(auth_token, user_name, password_hash, hangout_id)
-      VALUES(?, ?, ?, ?);`, [authToken, requestData.userName, hashedPassword, requestData.hangoutID]);
+        const [insertData] = await db_1.dbPool.execute(`INSERT INTO Guests(
+        auth_token,
+        user_name,
+        password_hash,
+        hangout_id
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [authToken, requestData.userName, hashedPassword, requestData.hangoutID]);
         const guestID = insertData.insertId;
-        return { status: 200, json: { success: true, resData: { guestID, authToken } } };
+        res.json({ success: true, resData: { guestID, authToken } });
     }
     catch (err) {
         console.log(err);
         if (!err.errno) {
-            return { status: 400, json: { success: false, message: 'Invalid request data.' } };
+            res.status(400).json({ success: false, message: 'Invalid request data.' });
+            return;
         }
         ;
         if (err.errno === 1452) {
-            return { status: 400, json: { success: false, message: 'Hangout not found.' } };
+            res.status(404).json({ succesS: false, message: 'Hangout not found.' });
+            return;
         }
         ;
         if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-            return await createGuest(requestData, hashedPassword, attemptNumber++);
+            return await createGuest(res, requestData, hashedPassword, ++attemptNumber);
         }
         ;
-        return { status: 500, json: { success: false, message: 'Internal server error.' } };
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
 }

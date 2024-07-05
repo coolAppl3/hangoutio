@@ -5,19 +5,26 @@ import { getHangoutCapacity, getHangoutMemberLimit, hangoutLeaderExists, validat
 import { validateAuthToken } from '../services/authTokenServices';
 import { isValidAuthTokenString } from '../util/validation/userValidation';
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
+import { generatePlaceHolders } from "../util/generatePlaceHolders";
 
 export const hangoutMembersRouter: Router = express.Router();
 
 hangoutMembersRouter.post('/', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutID: string,
-    authToken: string,
     isLeader: boolean,
   };
 
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutID', 'authToken', 'isLeader'];
+  const expectedKeys: string[] = ['hangoutID', 'isLeader'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -28,7 +35,7 @@ hangoutMembersRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidAuthTokenString(requestData.authToken)) {
+  if (!isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -38,7 +45,7 @@ hangoutMembersRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  const isValidAuthToken: boolean = await validateAuthToken(res, requestData.authToken);
+  const isValidAuthToken: boolean = await validateAuthToken(res, authToken);
   if (!isValidAuthToken) {
     return;
   };
@@ -62,9 +69,13 @@ hangoutMembersRouter.post('/', async (req: Request, res: Response) => {
 
   try {
     const [insertData]: any = await dbPool.execute(
-      `INSERT INTO HangoutMembers(hangout_id, auth_token, is_leader)
-      VALUES(?, ?, ?);`,
-      [requestData.hangoutID, requestData.authToken, requestData.isLeader]
+      `INSERT INTO HangoutMembers(
+        hangout_id,
+        auth_token,
+        is_leader
+      )
+      VALUES(${generatePlaceHolders(3)});`,
+      [requestData.hangoutID, authToken, requestData.isLeader]
     );
 
     const hangoutMemberID: string = insertData.insertId;

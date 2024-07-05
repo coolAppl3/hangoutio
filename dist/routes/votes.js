@@ -9,11 +9,19 @@ const db_1 = require("../db/db");
 const requestValidation_1 = require("../util/validation/requestValidation");
 const voteServices_1 = require("../services/voteServices");
 const authTokenServices_1 = require("../services/authTokenServices");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.votesRouter = express_1.default.Router();
 exports.votesRouter.post('/', async (req, res) => {
     ;
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const authToken = authHeader.substring(7);
     const requestData = req.body;
-    const expectedKeys = ['authToken', 'hangoutMemberID', 'suggestionID'];
+    const expectedKeys = ['hangoutMemberID', 'suggestionID'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -24,7 +32,7 @@ exports.votesRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    const isValidAuthToken = await (0, authTokenServices_1.validateHangoutMemberAuthToken)(res, requestData.authToken, requestData.hangoutMemberID);
+    const isValidAuthToken = await (0, authTokenServices_1.validateHangoutMemberAuthToken)(res, authToken, requestData.hangoutMemberID);
     if (!isValidAuthToken) {
         return;
     }
@@ -40,8 +48,11 @@ exports.votesRouter.post('/', async (req, res) => {
     }
     ;
     try {
-        await db_1.dbPool.execute(`INSERT INTO Votes(hangout_member_id, suggestion_id)
-      VALUES(?, ?)`, [requestData.hangoutMemberID, requestData.suggestionID]);
+        await db_1.dbPool.execute(`INSERT INTO Votes(
+        hangout_member_id,
+        suggestion_id
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(2)})`, [requestData.hangoutMemberID, requestData.suggestionID]);
         res.json({ success: true, resData: {} });
     }
     catch (err) {

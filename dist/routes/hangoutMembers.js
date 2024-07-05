@@ -11,11 +11,19 @@ const hangoutServices_1 = require("../services/hangoutServices");
 const authTokenServices_1 = require("../services/authTokenServices");
 const userValidation_1 = require("../util/validation/userValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.hangoutMembersRouter = express_1.default.Router();
 exports.hangoutMembersRouter.post('/', async (req, res) => {
     ;
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const authToken = authHeader.substring(7);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'authToken', 'isLeader'];
+    const expectedKeys = ['hangoutID', 'isLeader'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -26,7 +34,7 @@ exports.hangoutMembersRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidAuthTokenString)(requestData.authToken)) {
+    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -36,7 +44,7 @@ exports.hangoutMembersRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    const isValidAuthToken = await (0, authTokenServices_1.validateAuthToken)(res, requestData.authToken);
+    const isValidAuthToken = await (0, authTokenServices_1.validateAuthToken)(res, authToken);
     if (!isValidAuthToken) {
         return;
     }
@@ -60,8 +68,12 @@ exports.hangoutMembersRouter.post('/', async (req, res) => {
     }
     ;
     try {
-        const [insertData] = await db_1.dbPool.execute(`INSERT INTO HangoutMembers(hangout_id, auth_token, is_leader)
-      VALUES(?, ?, ?);`, [requestData.hangoutID, requestData.authToken, requestData.isLeader]);
+        const [insertData] = await db_1.dbPool.execute(`INSERT INTO HangoutMembers(
+        hangout_id,
+        auth_token,
+        is_leader
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.hangoutID, authToken, requestData.isLeader]);
         const hangoutMemberID = insertData.insertId;
         res.json({ success: true, resData: { hangoutMemberID } });
     }
