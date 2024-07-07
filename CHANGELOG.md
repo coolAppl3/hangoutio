@@ -1,6 +1,33 @@
 # Changelog
 
 ---
+### [0.1.4] (2024-07-07)
+
+### Features
+
+- Updated how the count for verification emails sent is incremented in the database to reduce unnecessary complexity.
+- Updated `isValidEmail()`, `isValidName()`, and `isValidPassword()` in `userValidation.ts` to now ensure that the argument passed in is of type string.
+- Reworked `createAccount()` in `accounts.ts` to now return the user ID, instead of the authToken, which should only be supplied once the account is verified.
+- Reworked the `/resendVerificationCode` endpoint in `accounts.ts` to now validate the request based on the user ID.
+  - The router now listens for a POST request instead of GET for this endpoint.
+- Added `isValidVerificationCode()` under `userValidation.ts`.
+- Added `incrementFailedVerificationAttempts()` under `accountServices.ts`.
+- Added `deleteAccount()` under `accountServices.ts`.
+- Added `verifyAccount` as a POST endpoint in the `accounts.ts` router.
+- Added `/signIn` as a POST endpoint in the `accounts.ts` router.
+- Added `/` as a GET endpoint in the `accounts.ts`.
+  - This request, for now, only fetches the account's name and friends ID string.
+
+### Bug Fixes
+
+- Fixed a leftover hardcoded dummy authToken in `accounts.ts`, which wasn't removed prior to pushing last patch.
+
+### Code Refactoring
+
+- Reworked the `Accounts` table to now only rely on the number of `failed_signing_attempts` to determine if the account is locked, effectively skipping an unnecessary step.
+
+
+---
 ### [0.1.3] (2024-07-06)
 
 ### Features
