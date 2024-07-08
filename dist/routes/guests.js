@@ -7,11 +7,11 @@ exports.guestsRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
 const userValidation_1 = require("../util/validation/userValidation");
-const authTokens_1 = require("../util/authTokens");
+const generateAuthTokens_1 = require("../util/generators/generateAuthTokens");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 const passwordServices_1 = require("../services/passwordServices");
 const requestValidation_1 = require("../util/validation/requestValidation");
-const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
+const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
 exports.guestsRouter = express_1.default.Router();
 ;
 exports.guestsRouter.post('/', async (req, res) => {
@@ -22,12 +22,12 @@ exports.guestsRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidName)(requestData.userName)) {
+    if (!(0, userValidation_1.isValidNameString)(requestData.userName)) {
         res.status(400).json({ success: false, message: 'Invalid guest name.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidPassword)(requestData.password)) {
+    if (!(0, userValidation_1.isValidEmailString)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
@@ -45,7 +45,7 @@ exports.guestsRouter.post('/', async (req, res) => {
     await createGuest(res, requestData, hashedPassword);
 });
 async function createGuest(res, requestData, hashedPassword, attemptNumber = 1) {
-    const authToken = (0, authTokens_1.generateAuthToken)('guest');
+    const authToken = (0, generateAuthTokens_1.generateAuthToken)('guest');
     if (attemptNumber > 3) {
         res.status(500).json({ success: false, message: 'Internal server error.' });
         return;

@@ -1,4 +1,4 @@
-export function isValidEmail(email: string): boolean {
+export function isValidEmailString(email: string): boolean {
   if (typeof email !== 'string') {
     return false;
   };
@@ -7,7 +7,7 @@ export function isValidEmail(email: string): boolean {
   return regex.test(email);
 };
 
-export function isValidName(name: string): boolean {
+export function isValidNameString(name: string): boolean {
   if (typeof name !== 'string') {
     return false;
   };
@@ -16,7 +16,7 @@ export function isValidName(name: string): boolean {
   return regex.test(name);
 };
 
-export function isValidPassword(password: string): boolean {
+export function isValidPasswordString(password: string): boolean {
   if (typeof password !== 'string') {
     return false;
   };
@@ -25,7 +25,7 @@ export function isValidPassword(password: string): boolean {
   return regex.test(password);
 };
 
-export function isValidVerificationCode(verificationCode: string): boolean {
+export function isValidVerificationCodeString(verificationCode: string): boolean {
   if (typeof verificationCode !== 'string') {
     return false;
   };
@@ -44,6 +44,22 @@ export function isValidAuthTokenString(authToken: string): boolean {
   };
 
   if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
+    return false;
+  };
+
+  return true;
+};
+
+export function isValidRecoveryTokenString(recoveryToken: string): boolean {
+  if (typeof recoveryToken !== 'string') {
+    return false;
+  };
+
+  if (recoveryToken.length !== 32) {
+    return false;
+  };
+
+  if (!recoveryToken.startsWith('r')) {
     return false;
   };
 

@@ -3,7 +3,7 @@ import { dbPool } from '../db/db';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { checkVotesLimit, checkForDuplicateVote } from '../services/voteServices';
 import { validateHangoutMemberAuthToken } from '../services/authTokenServices';
-import { generatePlaceHolders } from '../util/generatePlaceHolders';
+import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
 
 export const votesRouter: Router = express.Router();
 

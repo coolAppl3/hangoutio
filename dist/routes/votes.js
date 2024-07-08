@@ -9,7 +9,7 @@ const db_1 = require("../db/db");
 const requestValidation_1 = require("../util/validation/requestValidation");
 const voteServices_1 = require("../services/voteServices");
 const authTokenServices_1 = require("../services/authTokenServices");
-const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
+const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
 exports.votesRouter = express_1.default.Router();
 exports.votesRouter.post('/', async (req, res) => {
     ;

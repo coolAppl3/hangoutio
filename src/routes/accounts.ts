@@ -1,13 +1,14 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
-import { generateAuthToken } from '../util/authTokens';
-import { isValidEmail, isValidPassword, isValidName, isValidAuthTokenString, isValidVerificationCode } from '../util/validation/userValidation';
+import { generateAuthToken } from '../util/generators/generateAuthTokens';
+import * as userValidation from '../util/validation/userValidation';
+import * as accountServices from '../services/accountServices';
 import { compareHashedPassword, getHashedPassword } from '../services/passwordServices';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { sendVerificationEmail } from '../services/emailServices';
-import { deleteAccount, incrementFailedSignInAttempts, incrementFailedVerificationAttempts, incrementVerificationEmailCount, verifyAccount } from '../services/accountServices';
-import { generatePlaceHolders } from '../util/generatePlaceHolders';
-import { generateVerificationCode } from '../util/generateVerificationCode';
+import { sendRecoveryEmail, sendVerificationEmail } from '../services/emailServices';
+import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
+import { generateVerificationCode } from '../util/generators/generateVerificationCode';
+import { generateRecoveryToken } from '../util/generators/generateRecoveryToken';
 
 export const accountsRouter: Router = express.Router();
 
@@ -26,17 +27,17 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidEmail(requestData.email)) {
+  if (!userValidation.isValidEmailString(requestData.email)) {
     res.status(400).json({ success: false, message: 'Invalid email address.' });
     return;
   };
 
-  if (!isValidPassword(requestData.password)) {
+  if (!userValidation.isValidPasswordString(requestData.password)) {
     res.status(400).json({ success: false, message: 'Invalid password.' });
     return;
   };
 
-  if (!isValidName(requestData.userName)) {
+  if (!userValidation.isValidNameString(requestData.userName)) {
     res.status(400).json({ success: false, message: 'Invalid account name.' });
     return;
   };
@@ -54,7 +55,7 @@ async function createAccount(res: Response, requestData: CreateAccount, hashedPa
   const verificationCode: string = generateVerificationCode();
 
   if (attemptNumber > 3) {
-    res.status(500).json({ success: false, message: 'Internal server errorrrrr.' });
+    res.status(500).json({ success: false, message: 'Internal server error.' });
     return;
   };
 
@@ -71,11 +72,10 @@ async function createAccount(res: Response, requestData: CreateAccount, hashedPa
         is_verified,
         verification_emails_sent,
         failed_verification_attempts,
-        failed_signin_attempts,
-        recovery_email_timestamp
+        failed_sign_in_attempts
       )
-      VALUES(${generatePlaceHolders(12)});`,
-      [authToken, requestData.email, requestData.userName, hashedPassword, Date.now(), '', verificationCode, false, 1, 0, 0, 0]
+      VALUES(${generatePlaceHolders(11)});`,
+      [authToken, requestData.email, requestData.userName, hashedPassword, Date.now(), '', verificationCode, false, 1, 0, 0]
     );
 
     const accountID: number = insertData.insertId;
@@ -104,7 +104,7 @@ async function createAccount(res: Response, requestData: CreateAccount, hashedPa
   };
 };
 
-accountsRouter.post('/resendVerificationCode', async (req: Request, res: Response) => {
+accountsRouter.post('/verification/resendEmail', async (req: Request, res: Response) => {
   interface RequestData {
     accountID: number,
   };
@@ -133,13 +133,12 @@ accountsRouter.post('/resendVerificationCode', async (req: Request, res: Respons
         verification_code,
         verification_emails_sent
       FROM Accounts
-      WHERE account_id = ?
-      LIMIT 1;`,
+      WHERE account_id = ?;`,
       [requestData.accountID]
     );
 
     if (rows.length === 0) {
-      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
@@ -159,13 +158,13 @@ accountsRouter.post('/resendVerificationCode', async (req: Request, res: Respons
     return;
   };
 
-  await incrementVerificationEmailCount(requestData.accountID);
+  await accountServices.incrementVerificationEmailCount(requestData.accountID);
   res.json({ success: true, resData: {} });
 
   await sendVerificationEmail(accountEmail, requestData.accountID, verificationCode);
 });
 
-accountsRouter.post('/verifyAccount', async (req: Request, res: Response) => {
+accountsRouter.post('/verification/verify', async (req: Request, res: Response) => {
   interface RequestData {
     accountID: number,
     verificationCode: string,
@@ -184,7 +183,7 @@ accountsRouter.post('/verifyAccount', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidVerificationCode(requestData.verificationCode)) {
+  if (!userValidation.isValidVerificationCodeString(requestData.verificationCode)) {
     res.status(400).json({ success: false, message: 'Invalid verification code.' });
     return;
   };
@@ -227,18 +226,18 @@ accountsRouter.post('/verifyAccount', async (req: Request, res: Response) => {
 
     if (requestData.verificationCode !== accountDetails.verificationCode) {
       if (accountDetails.failedVerificationAttempts === 2) {
-        await deleteAccount(requestData.accountID);
+        await accountServices.deleteAccount(requestData.accountID);
         res.status(401).json({ success: false, message: 'Incorrect Verification code. Account deleted.' });
 
         return;
       };
 
-      await incrementFailedVerificationAttempts(requestData.accountID);
+      await accountServices.incrementFailedVerificationAttempts(requestData.accountID);
       res.status(401).json({ success: false, message: 'Incorrect verification code.' });
       return;
     };
 
-    const verificationSuccessful: boolean = await verifyAccount(res, requestData.accountID);
+    const verificationSuccessful: boolean = await accountServices.verifyAccount(res, requestData.accountID);
     if (!verificationSuccessful) {
       return;
     };
@@ -267,12 +266,12 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidEmail(requestData.email)) {
+  if (!userValidation.isValidEmailString(requestData.email)) {
     res.status(400).json({ success: false, message: 'Invalid email address.' });
     return;
   };
 
-  if (!isValidPassword(requestData.password)) {
+  if (!userValidation.isValidPasswordString(requestData.password)) {
     res.status(401).json({ success: false, message: 'Invalid password.' });
     return;
   };
@@ -284,7 +283,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
         auth_token,
         password_hash,
         is_verified,
-        failed_signin_attempts
+        failed_sign_in_attempts
       FROM Accounts
       WHERE email = ?
       LIMIT 1;`,
@@ -301,7 +300,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
       authToken: string,
       passwordHash: string,
       isVerified: boolean,
-      failedSigningAttempts: number,
+      failedSignInAttempts: number,
     };
 
     const accountDetails: AccountDetails = {
@@ -309,17 +308,17 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
       authToken: rows[0].auth_token,
       passwordHash: rows[0].password_hash,
       isVerified: rows[0].is_verified,
-      failedSigningAttempts: rows[0].failed_signin_attempts,
+      failedSignInAttempts: rows[0].failed_sign_in_attempts,
     };
 
-    if (accountDetails.failedSigningAttempts === 5) {
+    if (accountDetails.failedSignInAttempts === 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
 
     const isCorrectPassword: boolean = await compareHashedPassword(res, requestData.password, accountDetails.passwordHash);
     if (!isCorrectPassword) {
-      await incrementFailedSignInAttempts(accountDetails.accountID);
+      await accountServices.incrementFailedSignInAttempts(accountDetails.accountID);
       res.status(401).json({ success: false, message: 'Incorrect password.' });
 
       return;
@@ -328,6 +327,10 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     if (!accountDetails.isVerified) {
       res.status(403).json({ success: false, message: 'Account not verified.' });
       return;
+    };
+
+    if (accountDetails.failedSignInAttempts > 0) {
+      await accountServices.resetFailedSignInAttempts(accountDetails.accountID);
     };
 
     res.json({ success: true, resData: { authToken: accountDetails.authToken } });
@@ -339,6 +342,127 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
 });
 
+accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) => {
+  interface RequestData {
+    email: string,
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['email'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!userValidation.isValidEmailString(requestData.email)) {
+    res.status(400).json({ success: false, message: 'Invalid email address.' });
+    return;
+  };
+
+  const accountID: number = await accountServices.findAccountIdByEmail(res, requestData.email);
+  if (!accountID) {
+    return;
+  };
+
+  const onRecoveryCooldown: boolean = await accountServices.checkForOngoingRecovery(res, accountID);
+  if (onRecoveryCooldown) {
+    res.status(403).json({ success: false, message: 'Recovery on cooldown.' });
+    return;
+  };
+
+  const recoveryToken: string = generateRecoveryToken();
+
+  try {
+    await dbPool.execute(
+      `INSERT INTO AccountRecovery(
+        account_id,
+        recovery_token,
+        request_timestamp
+      )
+      VALUES(${generatePlaceHolders(3)})`,
+      [accountID, recoveryToken, Date.now()]
+    );
+
+    res.json({ success: true, resData: {} });
+    await sendRecoveryEmail(requestData.email, recoveryToken);
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
+accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Response) => {
+  interface RequestData {
+    recoveryToken: string,
+    newPassword: string,
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['recoveryToken', 'newPassword'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!userValidation.isValidRecoveryTokenString(requestData.recoveryToken)) {
+    res.status(400).json({ success: false, message: 'Invalid recovery token.' });
+    return;
+  };
+
+  if (!userValidation.isValidPasswordString(requestData.newPassword)) {
+    res.status(400).json({ success: false, message: 'Invalid new password.' });
+    return;
+  };
+
+  let accountID: number;
+
+  try {
+    const [rows]: any = await dbPool.execute(
+      `SELECT account_id FROM AccountRecovery
+      WHERE recovery_token = ?
+      LIMIT 1;`,
+      [requestData.recoveryToken]
+    );
+
+    if (rows.length === 0) {
+      res.status(404).json({ success: false, message: 'Account not found' });
+      return;
+    };
+
+    accountID = rows[0].account_id;
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+
+    return;
+  };
+
+  const hashedPassword: string = await getHashedPassword(res, requestData.newPassword);
+  if (hashedPassword === '') {
+    return;
+  };
+
+  try {
+    await dbPool.execute(
+      `UPDATE Accounts
+        SET failed_sign_in_attempts = 0, password_hash = ?
+      WHERE account_id = ?`,
+      [hashedPassword, accountID]
+    );
+
+    res.json({ success: true, resData: {} })
+    await accountServices.removeAccountRecoveryRow(requestData.recoveryToken);
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
 accountsRouter.get('/', async (req: Request, res: Response) => {
   const authHeader: string | undefined = req.headers['authorization'];
   if (!authHeader) {
@@ -348,7 +472,7 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
 
   const authToken: string = authHeader.substring(7);
 
-  if (!isValidAuthTokenString(authToken)) {
+  if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };

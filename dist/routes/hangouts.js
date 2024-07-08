@@ -6,10 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.hangoutsRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
-const generateHangoutID_1 = __importDefault(require("../util/generateHangoutID"));
+const generateHangoutID_1 = __importDefault(require("../util/generators/generateHangoutID"));
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
-const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
+const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
 exports.hangoutsRouter = express_1.default.Router();
 ;
 exports.hangoutsRouter.post('/', async (req, res) => {
