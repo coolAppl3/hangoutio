@@ -10,7 +10,7 @@ const timeSlotValidation_1 = require("../util/validation/timeSlotValidation");
 const authTokenServices_1 = require("../services/authTokenServices");
 const userValidation_1 = require("../util/validation/userValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
-const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
+const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
 exports.availabilityRouter = express_1.default.Router();
 exports.availabilityRouter.post('/', async (req, res) => {
     ;

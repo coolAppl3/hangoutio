@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidAuthTokenString = exports.isValidVerificationCode = exports.isValidPassword = exports.isValidName = exports.isValidEmail = void 0;
-function isValidEmail(email) {
+exports.isValidRecoveryTokenString = exports.isValidAuthTokenString = exports.isValidVerificationCodeString = exports.isValidPasswordString = exports.isValidNameString = exports.isValidEmailString = void 0;
+function isValidEmailString(email) {
     if (typeof email !== 'string') {
         return false;
     }
@@ -9,9 +9,9 @@ function isValidEmail(email) {
     const regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
     return regex.test(email);
 }
-exports.isValidEmail = isValidEmail;
+exports.isValidEmailString = isValidEmailString;
 ;
-function isValidName(name) {
+function isValidNameString(name) {
     if (typeof name !== 'string') {
         return false;
     }
@@ -19,9 +19,9 @@ function isValidName(name) {
     const regex = /^[A-Za-z ]{1,25}$/;
     return regex.test(name);
 }
-exports.isValidName = isValidName;
+exports.isValidNameString = isValidNameString;
 ;
-function isValidPassword(password) {
+function isValidPasswordString(password) {
     if (typeof password !== 'string') {
         return false;
     }
@@ -29,9 +29,9 @@ function isValidPassword(password) {
     const regex = /^[A-Za-z0-9._]{8,40}$/;
     return regex.test(password);
 }
-exports.isValidPassword = isValidPassword;
+exports.isValidPasswordString = isValidPasswordString;
 ;
-function isValidVerificationCode(verificationCode) {
+function isValidVerificationCodeString(verificationCode) {
     if (typeof verificationCode !== 'string') {
         return false;
     }
@@ -39,7 +39,7 @@ function isValidVerificationCode(verificationCode) {
     const regex = /^[A-NP-Z0-9]{6}$/;
     return regex.test(verificationCode);
 }
-exports.isValidVerificationCode = isValidVerificationCode;
+exports.isValidVerificationCodeString = isValidVerificationCodeString;
 ;
 function isValidAuthTokenString(authToken) {
     if (typeof authToken !== 'string') {
@@ -57,4 +57,21 @@ function isValidAuthTokenString(authToken) {
     return true;
 }
 exports.isValidAuthTokenString = isValidAuthTokenString;
+;
+function isValidRecoveryTokenString(recoveryToken) {
+    if (typeof recoveryToken !== 'string') {
+        return false;
+    }
+    ;
+    if (recoveryToken.length !== 32) {
+        return false;
+    }
+    ;
+    if (!recoveryToken.startsWith('r')) {
+        return false;
+    }
+    ;
+    return true;
+}
+exports.isValidRecoveryTokenString = isValidRecoveryTokenString;
 ;

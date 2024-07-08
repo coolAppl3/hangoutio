@@ -1,12 +1,12 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
 
-import { isValidName, isValidPassword } from '../util/validation/userValidation';
-import { generateAuthToken } from '../util/authTokens';
+import { isValidNameString, isValidEmailString } from '../util/validation/userValidation';
+import { generateAuthToken } from '../util/generators/generateAuthTokens';
 import { isValidHangoutIDString } from '../util/validation/hangoutValidation';
 import { getHashedPassword } from '../services/passwordServices';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { generatePlaceHolders } from '../util/generatePlaceHolders';
+import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
 
 export const guestsRouter: Router = express.Router();
 
@@ -25,12 +25,12 @@ guestsRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidName(requestData.userName)) {
+  if (!isValidNameString(requestData.userName)) {
     res.status(400).json({ success: false, message: 'Invalid guest name.' });
     return;
   };
 
-  if (!isValidPassword(requestData.password)) {
+  if (!isValidEmailString(requestData.password)) {
     res.status(400).json({ success: false, message: 'Invalid password.' });
     return;
   };

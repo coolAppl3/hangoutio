@@ -11,7 +11,7 @@ const userValidation_1 = require("../util/validation/userValidation");
 const suggestionsValidation_1 = require("../util/validation/suggestionsValidation");
 const authTokenServices_1 = require("../services/authTokenServices");
 const suggestionServices_1 = require("../services/suggestionServices");
-const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
+const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
 exports.suggestionsRouter = express_1.default.Router();
 exports.suggestionsRouter.post('/', async (req, res) => {
     ;

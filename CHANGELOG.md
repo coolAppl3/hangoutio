@@ -1,6 +1,35 @@
 # Changelog
 
 ---
+### [0.1.5] (2024-07-09)
+
+### Code Refactoring
+
+- Renamed `authTokens.ts` to `generateAuthTokens.ts`.
+- Moved all code/token generation modules to a new `generators` directory under `util`.
+- Renamed `failed_signin_attempts` in the `Accounts` table to `failed_sign_in_attempts` for consistency.
+- Successful sign in attempts to now reset the number of failed sign in attempts back to 0.
+- Added `AccountRecovery` table to the database.
+- Removed `recovery_email_timestamp` which now redundant with the new `AccountRecovery`table.
+- Added `generateRecoveryToken.ts`.
+- Added POST requests to `accounts/recovery/sendEmail` which will send a recovery email to start the recovery process.
+  - The request fails if a `RecoveryAccount` row with the user ID in question is found.
+  - Cron jobs, which will be introduced in a later patch, will handle the removal of `RecoveryAccount` rows after a set period of time.
+- Added PUT requests to `accounts/recovery/updatePassword` which will validate the recovery token and update the password.
+
+### Bug Fixes
+
+- Fixed a typo in the 500 error message in `createAccount()` under `accounts.ts`.
+
+
+### Code Refactoring
+
+- Renamed the functions under `userValidation.ts` to now better reflect that they validate the structure of the string itself, without making any requests to the database.
+- Refactored how the functions in `userValidation.ts` and `accountServices.ts` are imported in `accounts.ts` to now use namespaces.
+- Moved all modules responsible for generating codes or tokens to a `generators` directory under `util`.
+
+
+---
 ### [0.1.4] (2024-07-07)
 
 ### Features

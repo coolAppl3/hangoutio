@@ -1,9 +1,9 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
-import generateHangoutId from '../util/generateHangoutID';
+import generateHangoutId from '../util/generators/generateHangoutID';
 import { isValidHangoutConfiguration, isValidHangoutMemberLimit } from '../util/validation/hangoutValidation';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { generatePlaceHolders } from '../util/generatePlaceHolders';
+import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
 
 export const hangoutsRouter: Router = express.Router();
 
