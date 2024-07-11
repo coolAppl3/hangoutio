@@ -29,18 +29,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.accountsRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
-const generateAuthTokens_1 = require("../util/generators/generateAuthTokens");
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const userValidation = __importStar(require("../util/validation/userValidation"));
-const accountServices = __importStar(require("../services/accountServices"));
-const passwordServices_1 = require("../services/passwordServices");
+const generateAuthTokens_1 = require("../util/generators/generateAuthTokens");
 const requestValidation_1 = require("../util/validation/requestValidation");
 const emailServices_1 = require("../services/emailServices");
 const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
 const generateVerificationCode_1 = require("../util/generators/generateVerificationCode");
 const generateRecoveryToken_1 = require("../util/generators/generateRecoveryToken");
+const generateCancellationToken_1 = require("../util/generators/generateCancellationToken");
 exports.accountsRouter = express_1.default.Router();
 ;
 exports.accountsRouter.post('/signUp', async (req, res) => {
+    ;
     const requestData = req.body;
     const expectedKeys = ['email', 'password', 'userName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -63,14 +64,23 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         return;
     }
     ;
-    const hashedPassword = await (0, passwordServices_1.getHashedPassword)(res, requestData.password);
-    if (hashedPassword === '') {
-        return;
+    try {
+        const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
+        const accountCreationData = {
+            email: requestData.email,
+            hashedPassword,
+            userName: requestData.userName,
+        };
+        await createAccount(res, accountCreationData);
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
-    await createAccount(res, requestData, hashedPassword);
 });
-async function createAccount(res, requestData, hashedPassword, attemptNumber = 1) {
+async function createAccount(res, accountCreationData, attemptNumber = 1) {
+    const { email, hashedPassword, userName } = accountCreationData;
     const authToken = (0, generateAuthTokens_1.generateAuthToken)('account');
     const verificationCode = (0, generateVerificationCode_1.generateVerificationCode)();
     if (attemptNumber > 3) {
@@ -78,42 +88,60 @@ async function createAccount(res, requestData, hashedPassword, attemptNumber = 1
         return;
     }
     ;
+    let connection;
     try {
-        const [insertData] = await db_1.dbPool.execute(`INSERT INTO Accounts(
+        connection = await db_1.dbPool.getConnection();
+        await connection.beginTransaction();
+        const [insertData] = await connection.execute(`INSERT INTO Accounts(
         auth_token,
         email,
         user_name,
-        password_hash,
+        hashed_password,
         created_on_timestamp,
         friends_id_string,
-        verification_code,
         is_verified,
-        verification_emails_sent,
-        failed_verification_attempts,
         failed_sign_in_attempts
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(11)});`, [authToken, requestData.email, requestData.userName, hashedPassword, Date.now(), '', verificationCode, false, 1, 0, 0]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(8)})`, [authToken, email, userName, hashedPassword, Date.now(), '', 0, 0]);
         const accountID = insertData.insertId;
+        await connection.execute(`INSERT INTO AccountVerification(
+        account_id,
+        verification_code,
+        verification_emails_sent,
+        failed_verification_attempts
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)})`, [accountID, verificationCode, 1, 0]);
+        connection.commit();
         res.json({ success: true, resData: { accountID } });
-        await (0, emailServices_1.sendVerificationEmail)(requestData.email, accountID, verificationCode);
+        await (0, emailServices_1.sendVerificationEmail)(email, accountID, verificationCode);
     }
     catch (err) {
         console.log(err);
+        if (connection) {
+            await connection.rollback();
+        }
+        ;
         if (!err.errno) {
-            res.status(400).json({ success: false, message: 'Invalid request data.' });
+            res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
         ;
         if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'email'`)) {
-            res.status(409).json({ success: false, message: 'Email address is already in use.' });
+            res.status(409).json({ success: false, message: 'Email address already in use.' });
             return;
         }
         ;
         if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-            return await createAccount(res, requestData, hashedPassword, ++attemptNumber);
+            return await createAccount(res, accountCreationData, ++attemptNumber);
         }
         ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    finally {
+        if (connection) {
+            connection.release();
+        }
+        ;
     }
     ;
 }
@@ -132,39 +160,49 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         return;
     }
     ;
-    let accountEmail;
-    let verificationCode;
-    let verificationEmailsSent;
     try {
         const [rows] = await db_1.dbPool.execute(`SELECT
-        email,
-        verification_code,
-        verification_emails_sent
+        Accounts.is_verified,
+        Accounts.email,
+        AccountVerification.verification_code,
+        AccountVerification.verification_emails_sent
       FROM Accounts
-      WHERE account_id = ?;`, [requestData.accountID]);
+      LEFT JOIN AccountVerification ON Accounts.account_id = AccountVerification.account_id
+      WHERE Accounts.account_id = ?
+      LIMIT 1;`, [requestData.accountID]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
             return;
         }
         ;
-        accountEmail = rows[0].email;
-        verificationCode = rows[0].verification_code;
-        verificationEmailsSent = rows[0].verification_emails_sent;
-        if (verificationEmailsSent === 3) {
+        ;
+        const accountDetails = {
+            isVerified: rows[0].is_verified,
+            email: rows[0].email,
+            verificationCode: rows[0].verification_code,
+            verificationEmailsSent: rows[0].verification_emails_sent,
+        };
+        if (accountDetails.isVerified) {
+            res.status(400).json({ success: false, message: 'Account already verified.' });
+            return;
+        }
+        ;
+        if (accountDetails.verificationEmailsSent === 3) {
             res.status(403).json({ success: false, message: 'Verification emails limit reached.' });
             return;
         }
         ;
+        await db_1.dbPool.execute(`UPDATE AccountVerification
+      SET verification_emails_sent = verification_emails_sent + 1
+      WHERE account_id = ?;`, [requestData.accountID]);
+        res.json({ success: true, resData: {} });
+        await (0, emailServices_1.sendVerificationEmail)(accountDetails.email, requestData.accountID, accountDetails.verificationCode);
     }
     catch (err) {
         console.log(err);
         res.status(500).json({ success: false, message: 'Internal server error.' });
-        return;
     }
     ;
-    await accountServices.incrementVerificationEmailCount(requestData.accountID);
-    res.json({ success: true, resData: {} });
-    await (0, emailServices_1.sendVerificationEmail)(accountEmail, requestData.accountID, verificationCode);
 });
 exports.accountsRouter.post('/verification/verify', async (req, res) => {
     ;
@@ -185,14 +223,17 @@ exports.accountsRouter.post('/verification/verify', async (req, res) => {
         return;
     }
     ;
+    let connection;
     try {
         const [rows] = await db_1.dbPool.execute(`SELECT
-        auth_token,
-        verification_code,
-        is_verified,
+        Accounts.auth_token,
+        Accounts.is_verified,
+        AccountVerification.verification_code,
         failed_verification_attempts
       FROM Accounts
-      WHERE account_id = ?;`, [requestData.accountID]);
+      LEFT JOIN AccountVerification ON Accounts.account_id = AccountVerification.account_id
+      WHERE Accounts.account_id = ?
+      LIMIT 1;`, [requestData.accountID]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
             return;
@@ -201,8 +242,8 @@ exports.accountsRouter.post('/verification/verify', async (req, res) => {
         ;
         const accountDetails = {
             authToken: rows[0].auth_token,
-            verificationCode: rows[0].verification_code,
             isVerified: rows[0].is_verified,
+            verificationCode: rows[0].verification_code,
             failedVerificationAttempts: rows[0].failed_verification_attempts,
         };
         if (accountDetails.isVerified) {
@@ -212,27 +253,42 @@ exports.accountsRouter.post('/verification/verify', async (req, res) => {
         ;
         if (requestData.verificationCode !== accountDetails.verificationCode) {
             if (accountDetails.failedVerificationAttempts === 2) {
-                await accountServices.deleteAccount(requestData.accountID);
-                res.status(401).json({ success: false, message: 'Incorrect Verification code. Account deleted.' });
+                await db_1.dbPool.execute(`DELETE FROM Accounts
+          WHERE account_id = ?;`, [requestData.accountID]);
+                res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.' });
                 return;
             }
             ;
-            await accountServices.incrementFailedVerificationAttempts(requestData.accountID);
+            await db_1.dbPool.execute(`UPDATE AccountVerification
+        SET failed_verification_attempts = failed_verification_attempts + 1
+        WHERE account_id = ?;`, [requestData.accountID]);
             res.status(401).json({ success: false, message: 'Incorrect verification code.' });
             return;
         }
         ;
-        const verificationSuccessful = await accountServices.verifyAccount(res, requestData.accountID);
-        if (!verificationSuccessful) {
-            return;
-        }
-        ;
+        connection = await db_1.dbPool.getConnection();
+        await connection.beginTransaction();
+        await connection.execute(`UPDATE Accounts
+      SET is_verified = 1
+      WHERE account_id = ?;`, [requestData.accountID]);
+        await connection.execute(`DELETE FROM AccountVerification
+      WHERE account_id = ?;`, [requestData.accountID]);
+        connection.commit();
         res.json({ success: true, resData: { authToken: accountDetails.authToken } });
     }
     catch (err) {
         console.log(err);
+        if (connection) {
+            connection.rollback();
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
-        return;
+    }
+    finally {
+        if (connection) {
+            connection.release();
+        }
+        ;
     }
     ;
 });
@@ -251,7 +307,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
     }
     ;
     if (!userValidation.isValidPasswordString(requestData.password)) {
-        res.status(401).json({ success: false, message: 'Invalid password.' });
+        res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
     ;
@@ -259,7 +315,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         const [rows] = await db_1.dbPool.execute(`SELECT
         account_id,
         auth_token,
-        password_hash,
+        hashed_password,
         is_verified,
         failed_sign_in_attempts
       FROM Accounts
@@ -274,18 +330,25 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         const accountDetails = {
             accountID: rows[0].account_id,
             authToken: rows[0].auth_token,
-            passwordHash: rows[0].password_hash,
+            hashedPassword: rows[0].hashed_password,
             isVerified: rows[0].is_verified,
             failedSignInAttempts: rows[0].failed_sign_in_attempts,
         };
+        if (accountDetails.authToken.startsWith('d_')) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
         if (accountDetails.failedSignInAttempts === 5) {
             res.status(403).json({ success: false, message: 'Account locked.' });
             return;
         }
         ;
-        const isCorrectPassword = await (0, passwordServices_1.compareHashedPassword)(res, requestData.password, accountDetails.passwordHash);
+        const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashedPassword);
         if (!isCorrectPassword) {
-            await accountServices.incrementFailedSignInAttempts(accountDetails.accountID);
+            await db_1.dbPool.execute(`UPDATE Accounts
+        SET failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE account_id = ?;`, [accountDetails.accountID]);
             res.status(401).json({ success: false, message: 'Incorrect password.' });
             return;
         }
@@ -296,7 +359,9 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         if (accountDetails.failedSignInAttempts > 0) {
-            await accountServices.resetFailedSignInAttempts(accountDetails.accountID);
+            await db_1.dbPool.execute(`UPDATE Accounts
+        SET failed_sign_in_attempts = 0
+        WHERE account_id = ?;`, [accountDetails.accountID]);
         }
         ;
         res.json({ success: true, resData: { authToken: accountDetails.authToken } });
@@ -307,7 +372,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
+exports.accountsRouter.post('/recovery/start', async (req, res) => {
     ;
     const requestData = req.body;
     const expectedKeys = ['email'];
@@ -321,30 +386,69 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
         return;
     }
     ;
-    const accountID = await accountServices.findAccountIdByEmail(res, requestData.email);
-    if (!accountID) {
-        return;
-    }
-    ;
-    const onRecoveryCooldown = await accountServices.checkForOngoingRecovery(res, accountID);
-    if (onRecoveryCooldown) {
-        res.status(403).json({ success: false, message: 'Recovery on cooldown.' });
-        return;
-    }
-    ;
-    const recoveryToken = (0, generateRecoveryToken_1.generateRecoveryToken)();
     try {
-        await db_1.dbPool.execute(`INSERT INTO AccountRecovery(
-        account_id,
-        recovery_token,
-        request_timestamp
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)})`, [accountID, recoveryToken, Date.now()]);
+        const [rows] = await db_1.dbPool.execute(`SELECT
+        Accounts.account_id,
+        Accounts.is_verified,
+        AccountRecovery.request_timestamp
+      FROM Accounts
+      LEFT JOIN AccountRecovery ON Accounts.account_id = AccountRecovery.account_id
+      WHERE Accounts.email = ?
+      LIMIT 1;`, [requestData.email]);
+        if (rows.length === 0) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
+        const accountID = rows[0].account_id;
+        const isVerified = rows[0].is_verified;
+        const recoveryRequestTimestamp = rows[0].request_timestamp;
+        if (!isVerified) {
+            res.status(403).json({ success: false, message: 'Account not verified.' });
+            return;
+        }
+        ;
+        if (!recoveryRequestTimestamp) {
+            const recoveryToken = (0, generateRecoveryToken_1.generateRecoveryToken)();
+            await db_1.dbPool.execute(`INSERT INTO AccountRecovery(
+          account_id,
+          recovery_token,
+          request_timestamp
+        )
+        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)})`, [accountID, recoveryToken, Date.now()]);
+            res.json({ success: true, resData: {} });
+            await (0, emailServices_1.sendRecoveryEmail)(requestData.email, accountID, recoveryToken);
+            return;
+        }
+        ;
+        const recoveryCooldown = 1000 * 60 * 60 * 12;
+        if (Date.now() - recoveryRequestTimestamp < recoveryCooldown) {
+            res.status(403).json({ success: false, message: 'On recovery cooldown.' });
+            return;
+        }
+        ;
+        const newRecoveryToken = (0, generateRecoveryToken_1.generateRecoveryToken)();
+        await db_1.dbPool.execute(`UPDATE AccountRecovery
+      SET
+        recovery_token = ?,
+        request_timestamp = ?,
+        failed_recovery_attempts = ?
+      WHERE account_id = ?;`, [newRecoveryToken, Date.now(), 0, accountID]);
         res.json({ success: true, resData: {} });
-        await (0, emailServices_1.sendRecoveryEmail)(requestData.email, recoveryToken);
+        await (0, emailServices_1.sendRecoveryEmail)(requestData.email, accountID, newRecoveryToken);
     }
     catch (err) {
         console.log(err);
+        if (err.errno === 1452) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
+        if (err.errno === 1062) {
+            res.status(403).json({ success: false, message: 'On recovery cooldown.' });
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -352,9 +456,14 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
 exports.accountsRouter.put('/recovery/updatePassword', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['recoveryToken', 'newPassword'];
+    const expectedKeys = ['accountID', 'recoveryToken', 'newPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!Number.isInteger(requestData.accountID)) {
+        res.status(400).json({ success: false, message: 'Invalid account ID.' });
         return;
     }
     ;
@@ -368,35 +477,249 @@ exports.accountsRouter.put('/recovery/updatePassword', async (req, res) => {
         return;
     }
     ;
-    let accountID;
     try {
-        const [rows] = await db_1.dbPool.execute(`SELECT account_id FROM AccountRecovery
-      WHERE recovery_token = ?
-      LIMIT 1;`, [requestData.recoveryToken]);
+        const [rows] = await db_1.dbPool.execute(`SELECT
+        recovery_id,
+        recovery_token
+      FROM AccountRecovery
+      WHERE account_id = ?;`, [requestData.accountID]);
         if (rows.length === 0) {
-            res.status(404).json({ success: false, message: 'Account not found' });
+            res.status(404).json({ success: false, message: 'No recovery process found for this account.' });
             return;
         }
         ;
-        accountID = rows[0].account_id;
+        const recoveryID = rows[0].recovery_id;
+        const recoveryToken = rows[0].recovery_token;
+        if (requestData.recoveryToken !== recoveryToken) {
+            res.status(401).json({ success: false, message: 'Incorrect recovery token.' });
+            return;
+        }
+        ;
+        const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
+        await db_1.dbPool.execute(`UPDATE Accounts
+      SET hashed_password = ?, failed_sign_in_attempts = 0
+      WHERE account_id = ?;`, [newHashedPassword, requestData.accountID]);
+        await db_1.dbPool.execute(`DELETE FROM AccountRecovery
+      WHERE recovery_id = ?;`, [recoveryID]);
+        res.json({ success: true, resData: {} });
     }
     catch (err) {
         console.log(err);
         res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    ;
+});
+exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
+    ;
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
     ;
-    const hashedPassword = await (0, passwordServices_1.getHashedPassword)(res, requestData.newPassword);
-    if (hashedPassword === '') {
+    const authToken = authHeader.substring(7);
+    const requestData = req.body;
+    if (!userValidation.isValidAuthTokenString(authToken)) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const expectedKeys = ['password'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!userValidation.isValidPasswordString(requestData.password)) {
+        res.status(400).json({ success: false, message: 'Invalid password.' });
+        return;
+    }
+    ;
+    let connection;
+    try {
+        const [rows] = await db_1.dbPool.execute(`SELECT
+        account_id,
+        email,
+        hashed_password
+      FROM Accounts
+      WHERE auth_token = ?
+      LIMIT 1;`, [authToken]);
+        if (rows.length === 0) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
+        ;
+        const accountDetails = {
+            accountID: rows[0].account_id,
+            email: rows[0].email,
+            hashedPassword: rows[0].hashed_password,
+        };
+        const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashedPassword);
+        if (!isCorrectPassword) {
+            res.status(401).json({ success: false, message: 'Incorrect password.' });
+            return;
+        }
+        ;
+        connection = await db_1.dbPool.getConnection();
+        await connection.beginTransaction();
+        const markedAuthToken = `d_${authToken}`;
+        const cancellationToken = (0, generateCancellationToken_1.generateCancellationToken)();
+        await connection.execute(`UPDATE Accounts
+      SET auth_token = ?
+      WHERE account_id = ?;`, [markedAuthToken, accountDetails.accountID]);
+        await connection.execute(`INSERT INTO AccountDeletionRequests(
+        account_id,
+        cancellation_token,
+        request_timestamp
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)})`, [accountDetails.accountID, cancellationToken, Date.now()]);
+        connection.commit();
+        res.json({ success: true, resData: {} });
+        await (0, emailServices_1.sendDeletionEmail)(accountDetails.email, accountDetails.accountID, cancellationToken);
+    }
+    catch (err) {
+        console.log(err);
+        if (connection) {
+            connection.rollback();
+        }
+        ;
+        if (err.errno === 1452) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    finally {
+        if (connection) {
+            connection.release();
+        }
+        ;
+    }
+    ;
+});
+exports.accountsRouter.put('/deletion/cancel', async (req, res) => {
+    ;
+    const requestData = req.body;
+    const expectedKeys = ['cancellationToken', 'accountID'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!Number.isInteger(requestData.accountID)) {
+        res.status(400).json({ succesS: false, message: 'Invalid account ID.' });
+        return;
+    }
+    ;
+    if (!userValidation.isValidCancellationTokenString(requestData.cancellationToken)) {
+        res.status(400).json({ success: false, message: 'Invalid cancellation token.' });
+        return;
+    }
+    ;
+    let connection;
+    try {
+        const [rows] = await db_1.dbPool.execute(`SELECT
+        deletion_id,
+        cancellation_token
+      FROM AccountDeletionRequests
+      WHERE account_id = ?
+      LIMIT 1;`, [requestData.accountID]);
+        if (rows.length === 0) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
+        const deletionID = rows[0].deletion_id;
+        const fetchedCancellationToken = rows[0].cancellation_token;
+        if (requestData.cancellationToken !== fetchedCancellationToken) {
+            res.status(401).json({ success: false, message: 'Incorrect cancellation token.' });
+            return;
+        }
+        ;
+        connection = await db_1.dbPool.getConnection();
+        await connection.beginTransaction();
+        connection.execute(`UPDATE Accounts
+      SET auth_token = SUBSTRING(auth_token, 3, CHAR_LENGTH(auth_token) - 2)
+      WHERE account_id = ?;`, [requestData.accountID]);
+        connection.execute(`DELETE FROM AccountDeletionRequests
+      WHERE deletion_id = ?;`, [deletionID]);
+        connection.commit();
+        res.json({ success: true, resData: {} });
+    }
+    catch (err) {
+        console.log(err);
+        if (connection) {
+            connection.rollback();
+        }
+        ;
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    finally {
+        if (connection) {
+            connection.release();
+        }
+        ;
+    }
+    ;
+});
+exports.accountsRouter.put('/details/changePassword', async (req, res) => {
+    ;
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const authToken = authHeader.substring(7);
+    const requestData = req.body;
+    if (!userValidation.isValidAuthTokenString(authToken)) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const expectedKeys = ['currentPassword', 'newPassword'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!userValidation.isValidPasswordString(requestData.currentPassword)) {
+        res.status(400).json({ success: false, message: 'Invalid password.' });
+        return;
+    }
+    ;
+    if (!userValidation.isValidPasswordString(requestData.newPassword)) {
+        res.status(400).json({ success: false, message: 'Invalid new password.' });
         return;
     }
     ;
     try {
+        const [rows] = await db_1.dbPool.execute(`SELECT
+        account_id,
+        hashed_password
+      FROM Accounts
+      WHERE auth_token = ?
+      LIMIT 1;`, [authToken]);
+        if (rows.length === 0) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
+        const accountID = rows[0].account_id;
+        const hashedPassword = rows[0].hashed_password;
+        const isCorrectPassword = await bcrypt_1.default.compare(requestData.currentPassword, hashedPassword);
+        if (!isCorrectPassword) {
+            res.status(401).json({ success: false, message: 'Incorrect password.' });
+            return;
+        }
+        ;
+        const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
         await db_1.dbPool.execute(`UPDATE Accounts
-        SET failed_sign_in_attempts = 0, password_hash = ?
-      WHERE account_id = ?`, [hashedPassword, accountID]);
+      SET hashed_password = ?
+      WHERE account_id = ?;`, [newHashedPassword, accountID]);
         res.json({ success: true, resData: {} });
-        await accountServices.removeAccountRecoveryRow(requestData.recoveryToken);
     }
     catch (err) {
         console.log(err);
@@ -429,11 +752,9 @@ exports.accountsRouter.get('/', async (req, res) => {
             return;
         }
         ;
-        const accountDetails = {
-            accountName: rows[0].user_name,
-            friendsIdString: rows[0].friends_id_string,
-        };
-        res.json({ success: true, resData: accountDetails });
+        const accountName = rows[0].user_name;
+        const friendsIdString = rows[0].friends_id_string;
+        res.json({ success: true, resData: { accountName, friendsIdString } });
     }
     catch (err) {
         console.log(err);

@@ -1,12 +1,12 @@
-import { getRecoveryEmailTemplate, getVerificationEmailTemplate } from '../util/email/emailTemplates';
+import { getAccountDeletionTemplate, getRecoveryEmailTemplate, getVerificationEmailTemplate } from '../util/email/emailTemplates';
 import { emailTransporter } from '../util/email/initTransporter';
 
 export async function sendVerificationEmail(to: string, accountID: number, code: string): Promise<void> {
   try {
     const info: any = await emailTransporter.sendMail({
-      from: process.env.TRANSPORTER_USER,
+      from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
       to,
-      subject: 'Verify Your Hangoutio Account',
+      subject: 'Hangoutio - Account Verification',
       html: getVerificationEmailTemplate(accountID, code),
     });
 
@@ -17,13 +17,29 @@ export async function sendVerificationEmail(to: string, accountID: number, code:
   };
 };
 
-export async function sendRecoveryEmail(to: string, recoveryToken: string): Promise<void> {
+export async function sendRecoveryEmail(to: string, accountID: number, recoveryToken: string): Promise<void> {
   try {
     const info: any = await emailTransporter.sendMail({
-      from: process.env.TRANSPORTER_USER,
+      from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
       to,
-      subject: 'Hangoutio Account Recovery',
-      html: getRecoveryEmailTemplate(recoveryToken),
+      subject: 'Hangoutio - Account Recovery',
+      html: getRecoveryEmailTemplate(accountID, recoveryToken),
+    });
+
+    console.log(`Email sent: ${info.response}`);
+
+  } catch (err: any) {
+    console.log(err);
+  };
+};
+
+export async function sendDeletionEmail(to: string, accountID: number, cancellationToken: string): Promise<void> {
+  try {
+    const info: any = await emailTransporter.sendMail({
+      from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
+      to,
+      subject: 'Hangoutio - Account Deletion',
+      html: getAccountDeletionTemplate(accountID, cancellationToken),
     });
 
     console.log(`Email sent: ${info.response}`);

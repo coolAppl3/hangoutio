@@ -1,6 +1,37 @@
 # Changelog
 
 ---
+### [0.1.6] (2024-07-11)
+
+### Features
+
+- Added a listener for DELETE requests to `accounts/deletion/start`, which will start the deletion process.
+  - This marks the account for deletion, and the account behaves fully as if it is deleted.
+  - Deleting the account will take place within 48-72 hours from when the request is made, through a a cron job which will be added in a future patch.
+  - The user will receive an email with a link containing a cancellation token meant as a last chance to cancel the process.
+- Added a listener for PUT requests to `accounts/deletion/cancel`, which will cancel the process if a valid cancellation token is provided.
+- Added a listener for PUT requests to `accounts/details/changePassword`, which will handle password change requests by the user.
+
+
+### Code Refactoring
+
+- Fully refactored `accounts.ts` to improve error handling, logic, and readability.
+  - It no longer uses `accountServices.ts` or `passwordServices.ts`.
+  - Transactions have been added where necessary.
+- Removed `accountServices.ts`.
+- Removed `passwordServices.ts`.
+- Renamed the `accounts/recovery/sendEmail` endpoint to `accounts/recovery/start`
+- Refactored the `accounts/recovery/start` endpoint to now include the account ID in the recovery email.
+- Refactored the `accounts/deletion/start` endpoint to now include the account ID in the deletion email.
+- Renamed `password_hash` column in both `Accounts` and `Guests` to `hashed_password` to avoid potential confusion.
+
+
+### Documentation Changes
+
+- Slightly improved the phrasing in last patch's notes.
+
+
+---
 ### [0.1.5] (2024-07-09)
 
 ### Code Refactoring
@@ -10,12 +41,12 @@
 - Renamed `failed_signin_attempts` in the `Accounts` table to `failed_sign_in_attempts` for consistency.
 - Successful sign in attempts to now reset the number of failed sign in attempts back to 0.
 - Added `AccountRecovery` table to the database.
-- Removed `recovery_email_timestamp` which now redundant with the new `AccountRecovery`table.
+- Removed `recovery_email_timestamp` which is now redundant with the new `AccountRecovery`table.
 - Added `generateRecoveryToken.ts`.
-- Added POST requests to `accounts/recovery/sendEmail` which will send a recovery email to start the recovery process.
+- Added a listener for POST requests to `accounts/recovery/sendEmail`, which will send a recovery email to start the recovery process.
   - The request fails if a `RecoveryAccount` row with the user ID in question is found.
-  - Cron jobs, which will be introduced in a later patch, will handle the removal of `RecoveryAccount` rows after a set period of time.
-- Added PUT requests to `accounts/recovery/updatePassword` which will validate the recovery token and update the password.
+  - A cron job, which will be introduced in a later patch, will handle the removal of `RecoveryAccount` rows after a set period of time.
+- Added a listener for PUT requests to `accounts/recovery/updatePassword`, which will validate the recovery token and update the password.
 
 ### Bug Fixes
 

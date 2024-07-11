@@ -9,9 +9,9 @@ const db_1 = require("../db/db");
 const userValidation_1 = require("../util/validation/userValidation");
 const generateAuthTokens_1 = require("../util/generators/generateAuthTokens");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
-const passwordServices_1 = require("../services/passwordServices");
 const requestValidation_1 = require("../util/validation/requestValidation");
 const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
+const bcrypt_1 = __importDefault(require("bcrypt"));
 exports.guestsRouter = express_1.default.Router();
 ;
 exports.guestsRouter.post('/', async (req, res) => {
@@ -37,8 +37,13 @@ exports.guestsRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    const hashedPassword = await (0, passwordServices_1.getHashedPassword)(res, requestData.password);
-    if (hashedPassword === '') {
+    let hashedPassword;
+    try {
+        hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
         return;
     }
     ;
@@ -55,7 +60,7 @@ async function createGuest(res, requestData, hashedPassword, attemptNumber = 1) 
         const [insertData] = await db_1.dbPool.execute(`INSERT INTO Guests(
         auth_token,
         user_name,
-        password_hash,
+        hashed_password,
         hangout_id
       )
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [authToken, requestData.userName, hashedPassword, requestData.hangoutID]);

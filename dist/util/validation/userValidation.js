@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidRecoveryTokenString = exports.isValidAuthTokenString = exports.isValidVerificationCodeString = exports.isValidPasswordString = exports.isValidNameString = exports.isValidEmailString = void 0;
+exports.isValidCancellationTokenString = exports.isValidRecoveryTokenString = exports.isValidAuthTokenString = exports.isValidVerificationCodeString = exports.isValidPasswordString = exports.isValidNameString = exports.isValidEmailString = void 0;
 function isValidEmailString(email) {
     if (typeof email !== 'string') {
         return false;
@@ -74,4 +74,21 @@ function isValidRecoveryTokenString(recoveryToken) {
     return true;
 }
 exports.isValidRecoveryTokenString = isValidRecoveryTokenString;
+;
+function isValidCancellationTokenString(cancellationToken) {
+    if (typeof cancellationToken !== 'string') {
+        return false;
+    }
+    ;
+    if (cancellationToken.length !== 32) {
+        return false;
+    }
+    ;
+    if (!cancellationToken.startsWith('c')) {
+        return false;
+    }
+    ;
+    return true;
+}
+exports.isValidCancellationTokenString = isValidCancellationTokenString;
 ;

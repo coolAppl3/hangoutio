@@ -65,3 +65,19 @@ export function isValidRecoveryTokenString(recoveryToken: string): boolean {
 
   return true;
 };
+
+export function isValidCancellationTokenString(cancellationToken: string): boolean {
+  if (typeof cancellationToken !== 'string') {
+    return false;
+  };
+
+  if (cancellationToken.length !== 32) {
+    return false;
+  };
+
+  if (!cancellationToken.startsWith('c')) {
+    return false;
+  };
+
+  return true;
+};
