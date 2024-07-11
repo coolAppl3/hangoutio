@@ -1,12 +1,12 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
-
 import { isValidNameString, isValidEmailString } from '../util/validation/userValidation';
 import { generateAuthToken } from '../util/generators/generateAuthTokens';
 import { isValidHangoutIDString } from '../util/validation/hangoutValidation';
-import { getHashedPassword } from '../services/passwordServices';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
+import bcrypt from 'bcrypt';
+
 
 export const guestsRouter: Router = express.Router();
 
@@ -40,8 +40,15 @@ guestsRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  const hashedPassword: string = await getHashedPassword(res, requestData.password);
-  if (hashedPassword === '') {
+  let hashedPassword: string;
+
+  try {
+    hashedPassword = await bcrypt.hash(requestData.password, 10);
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+
     return;
   };
 
@@ -61,7 +68,7 @@ async function createGuest(res: Response, requestData: CreateGuest, hashedPasswo
       `INSERT INTO Guests(
         auth_token,
         user_name,
-        password_hash,
+        hashed_password,
         hangout_id
       )
       VALUES(${generatePlaceHolders(4)});`,
