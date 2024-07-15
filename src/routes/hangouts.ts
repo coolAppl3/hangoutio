@@ -1,9 +1,9 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
-import generateHangoutId from '../util/generators/generateHangoutID';
+import { generateHangoutID } from '../util/tokenGenerator';
 import { isValidHangoutConfiguration, isValidHangoutMemberLimit } from '../util/validation/hangoutValidation';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
+import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -44,7 +44,7 @@ hangoutsRouter.post('/', async (req: Request, res: Response) => {
 });
 
 async function createHangout(res: Response, requestData: CreateHangout, attemptNumber: number = 0): Promise<void> {
-  const hangoutID: string = generateHangoutId();
+  const hangoutID: string = generateHangoutID();
 
   if (attemptNumber > 3) {
     res.status(500).json({ success: false, message: 'Internal server error.' });

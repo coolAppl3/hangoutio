@@ -7,10 +7,10 @@ exports.guestsRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
 const userValidation_1 = require("../util/validation/userValidation");
-const generateAuthTokens_1 = require("../util/generators/generateAuthTokens");
+const tokenGenerator_1 = require("../util/tokenGenerator");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
-const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 exports.guestsRouter = express_1.default.Router();
 ;
@@ -50,7 +50,7 @@ exports.guestsRouter.post('/', async (req, res) => {
     await createGuest(res, requestData, hashedPassword);
 });
 async function createGuest(res, requestData, hashedPassword, attemptNumber = 1) {
-    const authToken = (0, generateAuthTokens_1.generateAuthToken)('guest');
+    const authToken = (0, tokenGenerator_1.generateAuthToken)('guest');
     if (attemptNumber > 3) {
         res.status(500).json({ success: false, message: 'Internal server error.' });
         return;

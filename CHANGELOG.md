@@ -1,7 +1,39 @@
 # Changelog
 
 ---
-### [0.1.6] (2024-07-11)
+## [0.1.7] (2024-07-15)
+
+### Features
+
+- **New endpoints**:
+  - POST `accounts/details/updateEmail/start`: Initiates the email update process.
+  - PUT `accounts/details/updateEmail/confirm`: Updates the user's email and generates a new authentication token.
+  - PUT `accounts/details/updateName`: Handles user name changes.
+- Enhanced the appearance and phrasing of email templates.
+- Renamed endpoint `accounts/details/changePassword` to `accounts/details/updatePassword`.
+- Endpoint `accounts/details/updatePassword` now tracks failed sign in attempts and locks the account after reaching the limit.
+- Simplified token generation by removing unique identifiers, except for account, guest, and hangout tokens.
+  - Added `generateUniqueToken()` for basic token generation.
+  - Introduced `isValidToken()` in `userValidation.ts` for validating basic tokens.
+- Updated the recovery process to allow up to 3 recovery emails before reaching the limit.
+- Added a `marked_for_deletion` column to the `Accounts` table for better readability and logic.
+- Recovery requests now generate a new authentication token to enhance account security.
+
+### Bug Fixes
+
+- Fixed missing `await` keyword in transaction connections within `accounts.ts`.
+- Corrected endpoints in `accounts.ts` to increment failed sign-in attempts on incorrect password entries.
+- Addressed several unnoticed bugs in `accounts.ts`.
+
+### Code Refactoring
+
+- Refactored `accounts.ts` for improved efficiency and readability.
+- Consolidated modules in `util/generators` into `tokenGenerator.ts`, except for `generatePlaceholders.ts`, which is now at the root level of the `util` directory.
+  - Removed `generators` directory.
+
+
+---
+## [0.1.6] (2024-07-11)
 
 ### Features
 
@@ -32,7 +64,7 @@
 
 
 ---
-### [0.1.5] (2024-07-09)
+## [0.1.5] (2024-07-09)
 
 ### Code Refactoring
 
@@ -61,7 +93,7 @@
 
 
 ---
-### [0.1.4] (2024-07-07)
+## [0.1.4] (2024-07-07)
 
 ### Features
 
@@ -88,7 +120,7 @@
 
 
 ---
-### [0.1.3] (2024-07-06)
+## [0.1.3] (2024-07-06)
 
 ### Features
 
@@ -124,7 +156,7 @@
 
 
 ---
-### [0.1.2] (2024-07-01)
+## [0.1.2] (2024-07-01)
 
 ### Features
 
@@ -140,7 +172,7 @@
 
 
 ---
-### [0.1.1] (2024-06-27)
+## [0.1.1] (2024-06-27)
 
 ### Features
 
@@ -180,7 +212,7 @@
 
 
 ---
-### [0.1.0] (2024-06-21)
+## [0.1.0] (2024-06-21)
 
 ### Build Changes
 
@@ -227,7 +259,7 @@
 
 
 ---
-### [0.0.10] (2024-06-05)
+## [0.0.10] (2024-06-05)
 
 ### Features
 
@@ -258,7 +290,7 @@
 
 
 ---
-### [0.0.9] (2024-06-03)
+## [0.0.9] (2024-06-03)
 
 ### Features
 
@@ -294,7 +326,7 @@
 - Changed the target in `tsconfig.js` to ES2015 (ES6) instead of ES5.
 
 ---
-### [0.0.8] (2024-05-26)
+## [0.0.8] (2024-05-26)
 
 ### Features
 
@@ -319,7 +351,7 @@
 
 
 ---
-### [0.0.7] (2024-05-23)
+## [0.0.7] (2024-05-23)
 
 ### Features
 
@@ -341,7 +373,7 @@
 
 
 ---
-### [0.0.6] (2024-05-14)
+## [0.0.6] (2024-05-14)
 
 ### Features
 
@@ -380,7 +412,7 @@
 
 
 ---
-### [0.0.5] (2024-05-11)
+## [0.0.5] (2024-05-11)
 
 ### Features
 
@@ -410,7 +442,7 @@
 
 
 ---
-### [0.0.4] (2024-05-07)
+## [0.0.4] (2024-05-07)
 
 ### Features
 
@@ -419,7 +451,7 @@
 
 
 ---
-### [0.0.3] (2024-05-03)
+## [0.0.3] (2024-05-03)
 
 ### Features
 
@@ -430,7 +462,7 @@
 
 
 ---
-### [0.0.2] (2024-05-01)
+## [0.0.2] (2024-05-01)
 
 ### Features
 

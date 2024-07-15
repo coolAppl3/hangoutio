@@ -1,10 +1,10 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
 import { isValidNameString, isValidEmailString } from '../util/validation/userValidation';
-import { generateAuthToken } from '../util/generators/generateAuthTokens';
+import { generateAuthToken } from '../util/tokenGenerator';
 import { isValidHangoutIDString } from '../util/validation/hangoutValidation';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
+import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import bcrypt from 'bcrypt';
 
 

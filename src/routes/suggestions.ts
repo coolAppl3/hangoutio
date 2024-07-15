@@ -5,7 +5,7 @@ import { isValidAuthTokenString } from '../util/validation/userValidation';
 import { isValidSuggestionDescription, isValidSuggestionTitle } from '../util/validation/suggestionsValidation';
 import { validateHangoutMemberAuthToken } from '../services/authTokenServices';
 import { checkSuggestionsLimit } from '../services/suggestionServices';
-import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
+import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const suggestionsRouter: Router = express.Router();
 

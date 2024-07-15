@@ -6,10 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.hangoutsRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
-const generateHangoutID_1 = __importDefault(require("../util/generators/generateHangoutID"));
+const tokenGenerator_1 = require("../util/tokenGenerator");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
-const generatePlaceHolders_1 = require("../util/generators/generatePlaceHolders");
+const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.hangoutsRouter = express_1.default.Router();
 ;
 exports.hangoutsRouter.post('/', async (req, res) => {
@@ -39,7 +39,7 @@ exports.hangoutsRouter.post('/', async (req, res) => {
     await createHangout(res, requestData);
 });
 async function createHangout(res, requestData, attemptNumber = 0) {
-    const hangoutID = (0, generateHangoutID_1.default)();
+    const hangoutID = (0, tokenGenerator_1.generateHangoutID)();
     if (attemptNumber > 3) {
         res.status(500).json({ success: false, message: 'Internal server error.' });
         return;

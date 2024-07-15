@@ -16,7 +16,7 @@ export function isValidNameString(name: string): boolean {
   return regex.test(name);
 };
 
-export function isValidPasswordString(password: string): boolean {
+export function isValidNewPasswordString(password: string): boolean {
   if (typeof password !== 'string') {
     return false;
   };
@@ -25,13 +25,12 @@ export function isValidPasswordString(password: string): boolean {
   return regex.test(password);
 };
 
-export function isValidVerificationCodeString(verificationCode: string): boolean {
-  if (typeof verificationCode !== 'string') {
+export function isValidPasswordString(password: string): boolean {
+  if (typeof password !== 'string' || password.trim() === '') {
     return false;
   };
 
-  const regex: RegExp = /^[A-NP-Z0-9]{6}$/;
-  return regex.test(verificationCode);
+  return true;
 };
 
 export function isValidAuthTokenString(authToken: string): boolean {
@@ -50,34 +49,23 @@ export function isValidAuthTokenString(authToken: string): boolean {
   return true;
 };
 
-export function isValidRecoveryTokenString(recoveryToken: string): boolean {
-  if (typeof recoveryToken !== 'string') {
+export function isValidToken(token: string): boolean {
+  if (typeof token !== 'string') {
     return false;
   };
 
-  if (recoveryToken.length !== 32) {
-    return false;
-  };
-
-  if (!recoveryToken.startsWith('r')) {
+  if (token.length !== 32) {
     return false;
   };
 
   return true;
 };
 
-export function isValidCancellationTokenString(cancellationToken: string): boolean {
-  if (typeof cancellationToken !== 'string') {
+export function isValidCodeString(verificationCode: string): boolean {
+  if (typeof verificationCode !== 'string') {
     return false;
   };
 
-  if (cancellationToken.length !== 32) {
-    return false;
-  };
-
-  if (!cancellationToken.startsWith('c')) {
-    return false;
-  };
-
-  return true;
+  const regex: RegExp = /^[A-NP-Z0-9]{6}$/;
+  return regex.test(verificationCode);
 };

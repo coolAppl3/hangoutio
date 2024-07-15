@@ -5,7 +5,7 @@ import { getHangoutCapacity, getHangoutMemberLimit, hangoutLeaderExists, validat
 import { validateAuthToken } from '../services/authTokenServices';
 import { isValidAuthTokenString } from '../util/validation/userValidation';
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
-import { generatePlaceHolders } from "../util/generators/generatePlaceHolders";
+import { generatePlaceHolders } from "../util/generatePlaceHolders";
 
 export const hangoutMembersRouter: Router = express.Router();
 
