@@ -4,7 +4,7 @@ import { isValidTimeSlotsString } from '../util/validation/timeSlotValidation';
 import { validateHangoutMemberAuthToken } from '../services/authTokenServices';
 import { isValidAuthTokenString } from '../util/validation/userValidation';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { generatePlaceHolders } from '../util/generators/generatePlaceHolders';
+import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const availabilityRouter: Router = express.Router();
 

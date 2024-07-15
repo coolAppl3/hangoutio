@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidCancellationTokenString = exports.isValidRecoveryTokenString = exports.isValidAuthTokenString = exports.isValidVerificationCodeString = exports.isValidPasswordString = exports.isValidNameString = exports.isValidEmailString = void 0;
+exports.isValidCodeString = exports.isValidToken = exports.isValidAuthTokenString = exports.isValidPasswordString = exports.isValidNewPasswordString = exports.isValidNameString = exports.isValidEmailString = void 0;
 function isValidEmailString(email) {
     if (typeof email !== 'string') {
         return false;
@@ -21,7 +21,7 @@ function isValidNameString(name) {
 }
 exports.isValidNameString = isValidNameString;
 ;
-function isValidPasswordString(password) {
+function isValidNewPasswordString(password) {
     if (typeof password !== 'string') {
         return false;
     }
@@ -29,17 +29,16 @@ function isValidPasswordString(password) {
     const regex = /^[A-Za-z0-9._]{8,40}$/;
     return regex.test(password);
 }
-exports.isValidPasswordString = isValidPasswordString;
+exports.isValidNewPasswordString = isValidNewPasswordString;
 ;
-function isValidVerificationCodeString(verificationCode) {
-    if (typeof verificationCode !== 'string') {
+function isValidPasswordString(password) {
+    if (typeof password !== 'string' || password.trim() === '') {
         return false;
     }
     ;
-    const regex = /^[A-NP-Z0-9]{6}$/;
-    return regex.test(verificationCode);
+    return true;
 }
-exports.isValidVerificationCodeString = isValidVerificationCodeString;
+exports.isValidPasswordString = isValidPasswordString;
 ;
 function isValidAuthTokenString(authToken) {
     if (typeof authToken !== 'string') {
@@ -58,37 +57,26 @@ function isValidAuthTokenString(authToken) {
 }
 exports.isValidAuthTokenString = isValidAuthTokenString;
 ;
-function isValidRecoveryTokenString(recoveryToken) {
-    if (typeof recoveryToken !== 'string') {
+function isValidToken(token) {
+    if (typeof token !== 'string') {
         return false;
     }
     ;
-    if (recoveryToken.length !== 32) {
-        return false;
-    }
-    ;
-    if (!recoveryToken.startsWith('r')) {
+    if (token.length !== 32) {
         return false;
     }
     ;
     return true;
 }
-exports.isValidRecoveryTokenString = isValidRecoveryTokenString;
+exports.isValidToken = isValidToken;
 ;
-function isValidCancellationTokenString(cancellationToken) {
-    if (typeof cancellationToken !== 'string') {
+function isValidCodeString(verificationCode) {
+    if (typeof verificationCode !== 'string') {
         return false;
     }
     ;
-    if (cancellationToken.length !== 32) {
-        return false;
-    }
-    ;
-    if (!cancellationToken.startsWith('c')) {
-        return false;
-    }
-    ;
-    return true;
+    const regex = /^[A-NP-Z0-9]{6}$/;
+    return regex.test(verificationCode);
 }
-exports.isValidCancellationTokenString = isValidCancellationTokenString;
+exports.isValidCodeString = isValidCodeString;
 ;
