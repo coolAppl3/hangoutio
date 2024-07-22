@@ -24,8 +24,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendEmailUpdateEmail = exports.sendDeletionEmail = exports.sendRecoveryEmail = exports.sendVerificationEmail = void 0;
-const emailTemplates = __importStar(require("../util/email/emailTemplates"));
-const initTransporter_1 = require("../util/email/initTransporter");
+const emailTemplates = __importStar(require("./emailTemplates"));
+const initTransporter_1 = require("./initTransporter");
 async function sendVerificationEmail(to, accountID, code) {
     try {
         const info = await initTransporter_1.emailTransporter.sendMail({

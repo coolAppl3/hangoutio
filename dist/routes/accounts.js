@@ -33,7 +33,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const userValidation = __importStar(require("../util/validation/userValidation"));
 const tokenGenerator = __importStar(require("../util/tokenGenerator"));
 const requestValidation_1 = require("../util/validation/requestValidation");
-const emailServices_1 = require("../services/emailServices");
+const emailServices_1 = require("../util/email/emailServices");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 exports.accountsRouter = express_1.default.Router();
 ;

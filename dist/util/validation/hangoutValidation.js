@@ -41,13 +41,12 @@ function isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, voti
 }
 exports.isValidHangoutConfiguration = isValidHangoutConfiguration;
 ;
-const maxMemberLimit = 20;
 function isValidHangoutMemberLimit(limit) {
     if (!Number.isInteger(limit)) {
         return false;
     }
     ;
-    if (limit < 2 || limit > maxMemberLimit) {
+    if (limit < 2 || limit > 20) {
         return false;
     }
     ;

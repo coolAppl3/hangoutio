@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import * as userValidation from '../util/validation/userValidation';
 import * as tokenGenerator from '../util/tokenGenerator';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { sendDeletionEmail, sendEmailUpdateEmail, sendRecoveryEmail, sendVerificationEmail } from '../services/emailServices';
+import { sendDeletionEmail, sendEmailUpdateEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const accountsRouter: Router = express.Router();

@@ -39,14 +39,13 @@ export function isValidHangoutConfiguration(availabilityPeriod: number, suggesti
   return true;
 };
 
-const maxMemberLimit: number = 20;
 export function isValidHangoutMemberLimit(limit: number): boolean {
 
   if (!Number.isInteger(limit)) {
     return false;
   };
 
-  if (limit < 2 || limit > maxMemberLimit) {
+  if (limit < 2 || limit > 20) {
     return false;
   };
 

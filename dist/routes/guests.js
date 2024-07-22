@@ -16,18 +16,18 @@ exports.guestsRouter = express_1.default.Router();
 ;
 exports.guestsRouter.post('/', async (req, res) => {
     const requestData = req.body;
-    const expectedKeys = ['userName', 'password', 'hangoutID'];
+    const expectedKeys = ['userName', 'password', 'hangoutID', 'isLeader'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidNameString)(requestData.userName)) {
-        res.status(400).json({ success: false, message: 'Invalid guest name.' });
+        res.status(400).json({ success: false, message: 'Invalid name.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidEmailString)(requestData.password)) {
+    if (!(0, userValidation_1.isValidNewPasswordString)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
@@ -37,35 +37,46 @@ exports.guestsRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    let hashedPassword;
+    if (typeof requestData.isLeader !== 'boolean') {
+        res.status(400).json({ success: false, message: 'Invalid guest type.' });
+        return;
+    }
+    ;
     try {
-        hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
+        const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
+        await createGuest(res, requestData, hashedPassword);
     }
     catch (err) {
         console.log(err);
         res.status(500).json({ success: false, message: 'Internal server error.' });
-        return;
     }
     ;
-    await createGuest(res, requestData, hashedPassword);
 });
-async function createGuest(res, requestData, hashedPassword, attemptNumber = 1) {
+async function createGuest(res, newGuestData, hashedPassword, attemptNumber = 1) {
     const authToken = (0, tokenGenerator_1.generateAuthToken)('guest');
     if (attemptNumber > 3) {
         res.status(500).json({ success: false, message: 'Internal server error.' });
         return;
     }
     ;
+    let connection;
     try {
-        const [insertData] = await db_1.dbPool.execute(`INSERT INTO Guests(
+        const connection = await db_1.dbPool.getConnection();
+        await connection.beginTransaction();
+        await connection.execute(`INSERT INTO Guests(
         auth_token,
         user_name,
         hashed_password,
         hangout_id
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [authToken, requestData.userName, hashedPassword, requestData.hangoutID]);
-        const guestID = insertData.insertId;
-        res.json({ success: true, resData: { guestID, authToken } });
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [authToken, newGuestData.userName, hashedPassword, newGuestData.hangoutID]);
+        await connection.execute(`INSERT INTO HangoutMembers(
+        hangout_id,
+        auth_token,
+        is_leader,
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)})`, [newGuestData.hangoutID, authToken, newGuestData.isLeader]);
+        res.json({ success: true, resData: { authToken } });
     }
     catch (err) {
         console.log(err);
@@ -80,7 +91,7 @@ async function createGuest(res, requestData, hashedPassword, attemptNumber = 1) 
         }
         ;
         if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-            return await createGuest(res, requestData, hashedPassword, ++attemptNumber);
+            return await createGuest(res, newGuestData, hashedPassword, ++attemptNumber);
         }
         ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
