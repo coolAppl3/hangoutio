@@ -1,5 +1,5 @@
-import * as emailTemplates from '../util/email/emailTemplates';
-import { emailTransporter } from '../util/email/initTransporter';
+import * as emailTemplates from './emailTemplates';
+import { emailTransporter } from './initTransporter';
 
 export async function sendVerificationEmail(to: string, accountID: number, code: string): Promise<void> {
   try {

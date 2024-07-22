@@ -1,5 +1,38 @@
 # Changelog
 
+
+---
+## [0.1.8] (2024-07-22)
+0.1.8
+### Features
+
+- Reworked how guest accounts are created.
+  - They're now only created when a user wants to join or create a hangout.
+  - Removed the `guests.ts` router.
+- Added `routerServices.ts`.
+- **New endpoints**:
+  - PUT `hangouts/details/updatePassword`: Updates the hangout password.
+  - POST `hangoutMembers//create/accountMember`: Creates a hangout member from an existing account.
+  - POST `hangoutMembers//create/guestMember`: Creates a guest account then a corresponding hangout member.
+  - POST `hangouts//create/accountLeader`: Creates a hangout and a leader hangout member using the user's account.
+  - POST `hangouts//create/guestLeader`: Creates a hangout, guest account, and a leader hangout member using the guest account.
+- **Removed endpoints**:
+  - POST `hangoutMembers/`.
+  - POST `guests/`.
+- Removed the option to approve members from hangouts.
+- Added an option to set up a password for hangouts.
+- Reworked how a hangout member is created to now check for a potential password.
+
+### Code Refactoring
+
+- Removed `hangoutServices.ts` and implemented its logic directly where needed.
+- Moved `emailServices.ts` into `email` under `util`.
+
+### Bug Fixes
+
+- Fixed the endpoint for creating guests checking for a valid password using `isValidEmailString()` instead of `isValidNewPasswordString()`.
+
+
 ---
 ## [0.1.7] (2024-07-15)
 

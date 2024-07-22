@@ -10,7 +10,6 @@ const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const hangouts_1 = require("./routes/hangouts");
 const accounts_1 = require("./routes/accounts");
-const guests_1 = require("./routes/guests");
 const hangoutMembers_1 = require("./routes/hangoutMembers");
 const availability_1 = require("./routes/availability");
 const suggestions_1 = require("./routes/suggestions");
@@ -30,7 +29,6 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use('/api/hangouts', hangouts_1.hangoutsRouter);
 app.use('/api/accounts', accounts_1.accountsRouter);
-app.use('/api/guests', guests_1.guestsRouter);
 app.use('/api/hangoutMembers', hangoutMembers_1.hangoutMembersRouter);
 app.use('/api/availability', availability_1.availabilityRouter);
 app.use('/api/suggestions', suggestions_1.suggestionsRouter);
