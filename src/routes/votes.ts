@@ -54,7 +54,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
         hangout_member_id,
         suggestion_id
       )
-      VALUES(${generatePlaceHolders(2)})`,
+      VALUES(${generatePlaceHolders(2)});`,
       [requestData.hangoutMemberID, requestData.suggestionID]
     );
 

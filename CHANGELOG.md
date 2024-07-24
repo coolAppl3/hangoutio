@@ -1,9 +1,29 @@
 # Changelog
 
+---
+## [0.1.9] (2024-07-25)
+
+### Features
+
+- **New endpoints**:
+  - PUT `hangouts/details/changeLimit`: Changes the hangout member limit.
+  - PUT `hangouts/details/steps/changePeriods`: Changes availability, suggestions, or voting periods for a given hangouts.
+  - PUT `hangouts/details/steps/progress`: Progresses the hangout to the next step immediately.
+  - PUT `hangouts/details/members/kick`: Kicks a hangout member.
+  - PUT `hangouts/details/members/transferLeadership`: Transfers the hangout leadership.
+  - DELETE `hangouts/`: Deletes hangout.
+- Added `step_timestamp` to the `Hangouts` table schema.
+- Altered `current_step` in the `Hangouts` table schema to now be between 1 and 4 (inclusive), with 4 referring to a completed hangout.
+
+
+### Code Refactoring
+
+- Improved the structure and consistency of SQL queries throughout all routers. 
+
 
 ---
 ## [0.1.8] (2024-07-22)
-0.1.8
+
 ### Features
 
 - Reworked how guest accounts are created.

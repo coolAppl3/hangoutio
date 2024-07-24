@@ -196,7 +196,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
       FROM
         Accounts
       WHERE
-        auth_token = ?`,
+        auth_token = ?;`,
       [authToken]
     );
 

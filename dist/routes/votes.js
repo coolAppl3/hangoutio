@@ -52,7 +52,7 @@ exports.votesRouter.post('/', async (req, res) => {
         hangout_member_id,
         suggestion_id
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(2)})`, [requestData.hangoutMemberID, requestData.suggestionID]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(2)});`, [requestData.hangoutMemberID, requestData.suggestionID]);
         res.json({ success: true, resData: {} });
     }
     catch (err) {

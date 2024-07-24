@@ -91,8 +91,12 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
     await connection.beginTransaction();
 
     const [rows]: any = await connection.execute(
-      `SELECT new_email from EmailUpdateRequests
-      WHERE new_email = ?`,
+      `SELECT
+        new_email
+      FROM
+        EmailUpdateRequests
+      WHERE
+        new_email = ?;`,
       [accountCreationData.email]
     );
 
@@ -113,7 +117,7 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
         failed_sign_in_attempts,
         marked_for_deletion
       )
-      VALUES(${generatePlaceHolders(9)})`,
+      VALUES(${generatePlaceHolders(9)});`,
       [authToken, email, userName, hashedPassword, Date.now(), '', false, 0, false]
     );
 
@@ -125,7 +129,7 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
         verification_emails_sent,
         failed_verification_attempts
       )
-      VALUES(${generatePlaceHolders(4)})`,
+      VALUES(${generatePlaceHolders(4)});`,
       [accountID, verificationCode, 1, 0]
     );
 
@@ -189,9 +193,12 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
         Accounts.email,
         AccountVerification.verification_code,
         AccountVerification.verification_emails_sent
-      FROM Accounts
-      LEFT JOIN AccountVerification ON Accounts.account_id = AccountVerification.account_id
-      WHERE Accounts.account_id = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        AccountVerification ON Accounts.account_id = AccountVerification.account_id
+      WHERE
+        Accounts.account_id = ?
       LIMIT 1;`,
       [requestData.accountID]
     );
@@ -226,9 +233,12 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     };
 
     await dbPool.execute(
-      `UPDATE AccountVerification
-        SET verification_emails_sent = verification_emails_sent + 1
-      WHERE account_id = ?;`,
+      `UPDATE
+        AccountVerification
+      SET
+        verification_emails_sent = verification_emails_sent + 1
+      WHERE
+        account_id = ?;`,
       [requestData.accountID]
     );
 
@@ -274,9 +284,12 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
         Accounts.is_verified,
         AccountVerification.verification_code,
         failed_verification_attempts
-      FROM Accounts
-      LEFT JOIN AccountVerification ON Accounts.account_id = AccountVerification.account_id
-      WHERE Accounts.account_id = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        AccountVerification ON Accounts.account_id = AccountVerification.account_id
+      WHERE
+        Accounts.account_id = ?
       LIMIT 1;`,
       [requestData.accountID]
     );
@@ -308,8 +321,10 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
     if (requestData.verificationCode !== accountDetails.verificationCode) {
       if (accountDetails.failedVerificationAttempts === 2) {
         await dbPool.execute(
-          `DELETE FROM Accounts
-          WHERE account_id = ?;`,
+          `DELETE FROM
+            Accounts
+          WHERE
+            account_id = ?;`,
           [requestData.accountID]
         );
 
@@ -318,9 +333,12 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
       };
 
       await dbPool.execute(
-        `UPDATE AccountVerification
-          SET failed_verification_attempts = failed_verification_attempts + 1
-        WHERE account_id = ?;`,
+        `UPDATE
+          AccountVerification
+        SET
+          failed_verification_attempts = failed_verification_attempts + 1
+        WHERE
+          account_id = ?;`,
         [requestData.accountID]
       );
 
@@ -332,15 +350,20 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
     await connection.beginTransaction();
 
     await connection.execute(
-      `UPDATE Accounts
-        SET is_verified = TRUE
-      WHERE account_id = ?;`,
+      `UPDATE
+        Accounts
+      SET
+        is_verified = TRUE
+      WHERE
+        account_id = ?;`,
       [requestData.accountID]
     );
 
     await connection.execute(
-      `DELETE FROM AccountVerification
-      WHERE account_id = ?;`,
+      `DELETE FROM
+        AccountVerification
+      WHERE
+        account_id = ?;`,
       [requestData.accountID]
     );
 
@@ -396,8 +419,10 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
         is_verified,
         failed_sign_in_attempts,
         marked_for_deletion
-      FROM Accounts
-      WHERE email = ?
+      FROM
+        Accounts
+      WHERE
+        email = ?
       LIMIT 1;`,
       [requestData.email]
     );
@@ -438,9 +463,12 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
     if (!isCorrectPassword) {
       await dbPool.execute(
-        `UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`,
+        `UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`,
         [accountDetails.accountID]
       );
 
@@ -460,9 +488,12 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     if (accountDetails.failedSignInAttempts > 0) {
       await dbPool.execute(
-        `UPDATE Accounts
-          SET failed_sign_in_attempts = 0
-        WHERE account_id = ?;`,
+        `UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = 0
+        WHERE
+          account_id = ?;`,
         [accountDetails.accountID]
       );
     };
@@ -502,9 +533,12 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
         AccountRecovery.recovery_id,
         AccountRecovery.recovery_emails_sent,
         AccountRecovery.recovery_token
-      FROM Accounts
-      LEFT JOIN AccountRecovery ON Accounts.account_id = AccountRecovery.account_id
-      WHERE Accounts.email = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        AccountRecovery ON Accounts.account_id = AccountRecovery.account_id
+      WHERE
+        Accounts.email = ?
       LIMIT 1;`,
       [requestData.email]
     );
@@ -551,7 +585,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
           request_timestamp,
           recovery_emails_sent
         )
-        VALUES(${generatePlaceHolders(4)})`,
+        VALUES(${generatePlaceHolders(4)});`,
         [accountDetails.accountID, newRecoveryToken, Date.now(), 1]
       );
 
@@ -567,9 +601,12 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
     };
 
     await dbPool.execute(
-      `UPDATE AccountRecovery
-        SET recovery_emails_sent = recovery_emails_sent + 1
-      WHERE account_id = ?;`,
+      `UPDATE
+        AccountRecovery
+      SET
+        recovery_emails_sent = recovery_emails_sent + 1
+      WHERE
+        account_id = ?;`,
       [accountDetails.recoveryID]
     );
 
@@ -625,8 +662,10 @@ accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Respons
       `SELECT
         recovery_id,
         recovery_token
-      FROM AccountRecovery
-      WHERE account_id = ?;`,
+      FROM
+        AccountRecovery
+      WHERE
+        account_id = ?;`,
       [requestData.accountID]
     );
 
@@ -679,18 +718,22 @@ async function updatePassword(res: Response, updatePasswordData: UpdatePasswordD
     await connection.beginTransaction();
 
     await connection.execute(
-      `UPDATE Accounts
-        SET
+      `UPDATE
+        Accounts
+      SET
         auth_token = ?,
         hashed_password = ?,
         failed_sign_in_attempts = 0
-      WHERE account_id = ?;`,
+      WHERE
+        account_id = ?;`,
       [newAuthToken, updatePasswordData.newHashedPassword, updatePasswordData.accountID]
     );
 
     await connection.execute(
-      `DELETE FROM AccountRecovery
-      WHERE recovery_id = ?;`,
+      `DELETE FROM
+        AccountRecovery
+      WHERE
+        recovery_id = ?;`,
       [updatePasswordData.recoveryID]
     );
 
@@ -756,8 +799,10 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         email,
         hashed_password,
         failed_sign_in_attempts
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`,
       [authToken]
     );
@@ -789,9 +834,12 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
     if (!isCorrectPassword) {
       await dbPool.execute(
-        `UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`,
+        `UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`,
         [accountDetails.accountID]
       );
 
@@ -811,11 +859,13 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     const cancellationToken: string = tokenGenerator.generateUniqueToken();
 
     await connection.execute(
-      `UPDATE Accounts
-        SET
+      `UPDATE
+        Accounts
+      SET
         auth_token = ?,
         marked_for_deletion = TRUE
-      WHERE account_id = ?;`,
+      WHERE
+        account_id = ?;`,
       [markedAuthToken, accountDetails.accountID]
     );
 
@@ -886,8 +936,10 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
       `SELECT
         deletion_id,
         cancellation_token
-      FROM AccountDeletionRequests
-      WHERE account_id = ?
+      FROM
+        AccountDeletionRequests
+      WHERE
+        account_id = ?
       LIMIT 1;`,
       [requestData.accountID]
     );
@@ -909,17 +961,21 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
     await connection.beginTransaction();
 
     connection.execute(
-      `UPDATE Accounts
-        SET
+      `UPDATE
+        Accounts
+      SET
         auth_token = SUBSTRING(auth_token, 3, CHAR_LENGTH(auth_token) - 2),
         marked_for_deletion = FALSE
-      WHERE account_id = ?;`,
+      WHERE
+        account_id = ?;`,
       [requestData.accountID]
     );
 
     connection.execute(
-      `DELETE FROM AccountDeletionRequests
-      WHERE deletion_id = ?;`,
+      `DELETE FROM
+        AccountDeletionRequests
+      WHERE
+        deletion_id = ?;`,
       [deletionID]
     );
 
@@ -984,8 +1040,10 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
         account_id,
         hashed_password,
         failed_sign_in_attempts
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`,
       [authToken]
     );
@@ -1015,9 +1073,12 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.currentPassword, accountDetails.hashedPassword);
     if (!isCorrectPassword) {
       await dbPool.execute(
-        `UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`,
+        `UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`,
         [accountDetails.accountID]
       );
 
@@ -1033,9 +1094,12 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
     const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
 
     await dbPool.execute(
-      `UPDATE Accounts
-        SET hashed_password = ?
-      WHERE account_id = ?;`,
+      `UPDATE
+        Accounts
+      SET
+        hashed_password = ?
+      WHERE
+        account_id = ?;`,
       [newHashedPassword, accountDetails.accountID]
     );
 
@@ -1094,9 +1158,12 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         EmailUpdateRequests.new_email,
         EmailUpdateRequests.verification_code,
         EmailUpdateRequests.update_emails_sent
-      FROM Accounts
-      LEFT JOIN EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
-      WHERE Accounts.auth_token = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
+      WHERE
+        Accounts.auth_token = ?
       LIMIT 1;`,
       [authToken]
     );
@@ -1136,9 +1203,12 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
     if (!isCorrectPassword) {
       await dbPool.execute(
-        `UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`,
+        `UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`,
         [accountDetails.accountID]
       );
 
@@ -1167,7 +1237,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
           update_emails_sent,
           failed_update_attempts
         )
-        VALUES(${generatePlaceHolders(6)})`,
+        VALUES(${generatePlaceHolders(6)});`,
         [accountDetails.accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]
       );
 
@@ -1188,9 +1258,12 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     };
 
     await dbPool.execute(
-      `UPDATE EmailUpdateRequests
-        SET update_emails_sent = update_emails_sent + 1
-      WHERE update_id = ?;`,
+      `UPDATE
+        EmailUpdateRequests
+      SET
+        update_emails_sent = update_emails_sent + 1
+      WHERE
+        update_id = ?;`,
       [accountDetails.updateID]
     );
 
@@ -1253,9 +1326,12 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
         EmailUpdateRequests.new_email,
         EmailUpdateRequests.verification_code,
         EmailUpdateRequests.failed_update_attempts
-      FROM Accounts
-      LEFT JOIN EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
-      WHERE Accounts.account_id = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
+      WHERE
+        Accounts.account_id = ?
       LIMIT 1;`,
       [requestData.accountID]
     );
@@ -1298,9 +1374,12 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
 
     if (requestData.verificationCode !== accountDetails.verificationCode) {
       await dbPool.execute(
-        `UPDATE EmailUpdateRequests
-          SET failed_update_attempts = failed_update_attempts + 1
-        WHERE update_id = ?`,
+        `UPDATE
+          EmailUpdateRequests
+        SET
+          failed_update_attempts = failed_update_attempts + 1
+        WHERE
+          update_id = ?;`,
         [accountDetails.updateID]
       );
 
@@ -1341,17 +1420,21 @@ async function updateEmail(res: Response, emailUpdateData: UpdateEmailData, atte
     await connection.beginTransaction();
 
     await connection.execute(
-      `UPDATE Accounts
-        SET
+      `UPDATE
+        Accounts
+      SET
         auth_token = ?,
         email = ?
-      WHERE account_id = ?;`,
+      WHERE
+        account_id = ?;`,
       [newAuthToken, emailUpdateData.newEmail, emailUpdateData.accountID]
     );
 
     await connection.execute(
-      `DELETE FROM EmailUpdateRequests
-      WHERE update_id = ?;`,
+      `DELETE FROM
+        EmailUpdateRequests
+      WHERE
+        update_id = ?;`,
       [emailUpdateData.updateID]
     );
 
@@ -1425,8 +1508,10 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
         account_id,
         hashed_password,
         failed_sign_in_attempts
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`,
       [authToken]
     );
@@ -1456,9 +1541,12 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
     if (!isCorrectPassword) {
       await dbPool.execute(
-        `UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`,
+        `UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`,
         [accountDetails.accountID]
       );
 
@@ -1472,9 +1560,12 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
     };
 
     await dbPool.execute(
-      `UPDATE Accounts
-        SET user_name = ?
-      WHERE account_id = ?;`,
+      `UPDATE
+        Accounts
+      SET
+        user_name = ?
+      WHERE
+        account_id = ?;`,
       [requestData.newName, accountDetails.accountID]
     );
 
@@ -1505,8 +1596,10 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
       `SELECT
         user_name,
         friends_id_string
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`,
       [authToken]
     );

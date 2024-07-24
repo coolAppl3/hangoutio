@@ -91,8 +91,12 @@ async function createAccount(res, accountCreationData, attemptNumber = 1) {
     try {
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        const [rows] = await connection.execute(`SELECT new_email from EmailUpdateRequests
-      WHERE new_email = ?`, [accountCreationData.email]);
+        const [rows] = await connection.execute(`SELECT
+        new_email
+      FROM
+        EmailUpdateRequests
+      WHERE
+        new_email = ?;`, [accountCreationData.email]);
         if (rows.length !== 0) {
             res.status(409).json({ success: false, message: 'Email address already in use.' });
             return;
@@ -109,7 +113,7 @@ async function createAccount(res, accountCreationData, attemptNumber = 1) {
         failed_sign_in_attempts,
         marked_for_deletion
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(9)})`, [authToken, email, userName, hashedPassword, Date.now(), '', false, 0, false]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(9)});`, [authToken, email, userName, hashedPassword, Date.now(), '', false, 0, false]);
         const accountID = insertData.insertId;
         await connection.execute(`INSERT INTO AccountVerification(
         account_id,
@@ -117,7 +121,7 @@ async function createAccount(res, accountCreationData, attemptNumber = 1) {
         verification_emails_sent,
         failed_verification_attempts
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)})`, [accountID, verificationCode, 1, 0]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [accountID, verificationCode, 1, 0]);
         await connection.commit();
         res.json({ success: true, resData: { accountID } });
         await (0, emailServices_1.sendVerificationEmail)(email, accountID, verificationCode);
@@ -173,9 +177,12 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         Accounts.email,
         AccountVerification.verification_code,
         AccountVerification.verification_emails_sent
-      FROM Accounts
-      LEFT JOIN AccountVerification ON Accounts.account_id = AccountVerification.account_id
-      WHERE Accounts.account_id = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        AccountVerification ON Accounts.account_id = AccountVerification.account_id
+      WHERE
+        Accounts.account_id = ?
       LIMIT 1;`, [requestData.accountID]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -199,9 +206,12 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
             return;
         }
         ;
-        await db_1.dbPool.execute(`UPDATE AccountVerification
-        SET verification_emails_sent = verification_emails_sent + 1
-      WHERE account_id = ?;`, [requestData.accountID]);
+        await db_1.dbPool.execute(`UPDATE
+        AccountVerification
+      SET
+        verification_emails_sent = verification_emails_sent + 1
+      WHERE
+        account_id = ?;`, [requestData.accountID]);
         res.json({ success: true, resData: {} });
         await (0, emailServices_1.sendVerificationEmail)(accountDetails.email, requestData.accountID, accountDetails.verificationCode);
     }
@@ -237,9 +247,12 @@ exports.accountsRouter.post('/verification/verify', async (req, res) => {
         Accounts.is_verified,
         AccountVerification.verification_code,
         failed_verification_attempts
-      FROM Accounts
-      LEFT JOIN AccountVerification ON Accounts.account_id = AccountVerification.account_id
-      WHERE Accounts.account_id = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        AccountVerification ON Accounts.account_id = AccountVerification.account_id
+      WHERE
+        Accounts.account_id = ?
       LIMIT 1;`, [requestData.accountID]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -260,26 +273,36 @@ exports.accountsRouter.post('/verification/verify', async (req, res) => {
         ;
         if (requestData.verificationCode !== accountDetails.verificationCode) {
             if (accountDetails.failedVerificationAttempts === 2) {
-                await db_1.dbPool.execute(`DELETE FROM Accounts
-          WHERE account_id = ?;`, [requestData.accountID]);
+                await db_1.dbPool.execute(`DELETE FROM
+            Accounts
+          WHERE
+            account_id = ?;`, [requestData.accountID]);
                 res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.' });
                 return;
             }
             ;
-            await db_1.dbPool.execute(`UPDATE AccountVerification
-          SET failed_verification_attempts = failed_verification_attempts + 1
-        WHERE account_id = ?;`, [requestData.accountID]);
+            await db_1.dbPool.execute(`UPDATE
+          AccountVerification
+        SET
+          failed_verification_attempts = failed_verification_attempts + 1
+        WHERE
+          account_id = ?;`, [requestData.accountID]);
             res.status(401).json({ success: false, message: 'Incorrect verification code.' });
             return;
         }
         ;
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        await connection.execute(`UPDATE Accounts
-        SET is_verified = TRUE
-      WHERE account_id = ?;`, [requestData.accountID]);
-        await connection.execute(`DELETE FROM AccountVerification
-      WHERE account_id = ?;`, [requestData.accountID]);
+        await connection.execute(`UPDATE
+        Accounts
+      SET
+        is_verified = TRUE
+      WHERE
+        account_id = ?;`, [requestData.accountID]);
+        await connection.execute(`DELETE FROM
+        AccountVerification
+      WHERE
+        account_id = ?;`, [requestData.accountID]);
         await connection.commit();
         res.json({ success: true, resData: { authToken: accountDetails.authToken } });
     }
@@ -326,8 +349,10 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         is_verified,
         failed_sign_in_attempts,
         marked_for_deletion
-      FROM Accounts
-      WHERE email = ?
+      FROM
+        Accounts
+      WHERE
+        email = ?
       LIMIT 1;`, [requestData.email]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -355,9 +380,12 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         ;
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashedPassword);
         if (!isCorrectPassword) {
-            await db_1.dbPool.execute(`UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`, [accountDetails.accountID]);
+            await db_1.dbPool.execute(`UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`, [accountDetails.accountID]);
             if (accountDetails.failedSignInAttempts + 1 === 5) {
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
@@ -373,9 +401,12 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         if (accountDetails.failedSignInAttempts > 0) {
-            await db_1.dbPool.execute(`UPDATE Accounts
-          SET failed_sign_in_attempts = 0
-        WHERE account_id = ?;`, [accountDetails.accountID]);
+            await db_1.dbPool.execute(`UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = 0
+        WHERE
+          account_id = ?;`, [accountDetails.accountID]);
         }
         ;
         res.json({ success: true, resData: { authToken: accountDetails.authToken } });
@@ -408,9 +439,12 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         AccountRecovery.recovery_id,
         AccountRecovery.recovery_emails_sent,
         AccountRecovery.recovery_token
-      FROM Accounts
-      LEFT JOIN AccountRecovery ON Accounts.account_id = AccountRecovery.account_id
-      WHERE Accounts.email = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        AccountRecovery ON Accounts.account_id = AccountRecovery.account_id
+      WHERE
+        Accounts.email = ?
       LIMIT 1;`, [requestData.email]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -444,7 +478,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
           request_timestamp,
           recovery_emails_sent
         )
-        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)})`, [accountDetails.accountID, newRecoveryToken, Date.now(), 1]);
+        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [accountDetails.accountID, newRecoveryToken, Date.now(), 1]);
             res.json({ success: true, resData: {} });
             await (0, emailServices_1.sendRecoveryEmail)(requestData.email, accountDetails.accountID, newRecoveryToken);
             return;
@@ -455,9 +489,12 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
             return;
         }
         ;
-        await db_1.dbPool.execute(`UPDATE AccountRecovery
-        SET recovery_emails_sent = recovery_emails_sent + 1
-      WHERE account_id = ?;`, [accountDetails.recoveryID]);
+        await db_1.dbPool.execute(`UPDATE
+        AccountRecovery
+      SET
+        recovery_emails_sent = recovery_emails_sent + 1
+      WHERE
+        account_id = ?;`, [accountDetails.recoveryID]);
         res.json({ success: true, resData: {} });
         await (0, emailServices_1.sendRecoveryEmail)(requestData.email, accountDetails.accountID, accountDetails.recoveryToken);
     }
@@ -501,8 +538,10 @@ exports.accountsRouter.put('/recovery/updatePassword', async (req, res) => {
         const [rows] = await db_1.dbPool.execute(`SELECT
         recovery_id,
         recovery_token
-      FROM AccountRecovery
-      WHERE account_id = ?;`, [requestData.accountID]);
+      FROM
+        AccountRecovery
+      WHERE
+        account_id = ?;`, [requestData.accountID]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Recovery request not found.' });
             return;
@@ -543,14 +582,18 @@ async function updatePassword(res, updatePasswordData, attemptNumber = 1) {
     try {
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        await connection.execute(`UPDATE Accounts
-        SET
+        await connection.execute(`UPDATE
+        Accounts
+      SET
         auth_token = ?,
         hashed_password = ?,
         failed_sign_in_attempts = 0
-      WHERE account_id = ?;`, [newAuthToken, updatePasswordData.newHashedPassword, updatePasswordData.accountID]);
-        await connection.execute(`DELETE FROM AccountRecovery
-      WHERE recovery_id = ?;`, [updatePasswordData.recoveryID]);
+      WHERE
+        account_id = ?;`, [newAuthToken, updatePasswordData.newHashedPassword, updatePasswordData.accountID]);
+        await connection.execute(`DELETE FROM
+        AccountRecovery
+      WHERE
+        recovery_id = ?;`, [updatePasswordData.recoveryID]);
         await connection.commit();
         res.json({ success: true, resData: {} });
     }
@@ -608,8 +651,10 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         email,
         hashed_password,
         failed_sign_in_attempts
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`, [authToken]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -630,9 +675,12 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         ;
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashedPassword);
         if (!isCorrectPassword) {
-            await db_1.dbPool.execute(`UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`, [accountDetails.accountID]);
+            await db_1.dbPool.execute(`UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`, [accountDetails.accountID]);
             if (accountDetails.failedSignInAttempts + 1 === 5) {
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
@@ -646,11 +694,13 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         await connection.beginTransaction();
         const markedAuthToken = `d_${authToken}`;
         const cancellationToken = tokenGenerator.generateUniqueToken();
-        await connection.execute(`UPDATE Accounts
-        SET
+        await connection.execute(`UPDATE
+        Accounts
+      SET
         auth_token = ?,
         marked_for_deletion = TRUE
-      WHERE account_id = ?;`, [markedAuthToken, accountDetails.accountID]);
+      WHERE
+        account_id = ?;`, [markedAuthToken, accountDetails.accountID]);
         await connection.execute(`INSERT INTO AccountDeletionRequests(
         account_id,
         cancellation_token,
@@ -706,8 +756,10 @@ exports.accountsRouter.put('/deletion/cancel', async (req, res) => {
         const [rows] = await db_1.dbPool.execute(`SELECT
         deletion_id,
         cancellation_token
-      FROM AccountDeletionRequests
-      WHERE account_id = ?
+      FROM
+        AccountDeletionRequests
+      WHERE
+        account_id = ?
       LIMIT 1;`, [requestData.accountID]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Deletion request not found.' });
@@ -723,13 +775,17 @@ exports.accountsRouter.put('/deletion/cancel', async (req, res) => {
         ;
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        connection.execute(`UPDATE Accounts
-        SET
+        connection.execute(`UPDATE
+        Accounts
+      SET
         auth_token = SUBSTRING(auth_token, 3, CHAR_LENGTH(auth_token) - 2),
         marked_for_deletion = FALSE
-      WHERE account_id = ?;`, [requestData.accountID]);
-        connection.execute(`DELETE FROM AccountDeletionRequests
-      WHERE deletion_id = ?;`, [deletionID]);
+      WHERE
+        account_id = ?;`, [requestData.accountID]);
+        connection.execute(`DELETE FROM
+        AccountDeletionRequests
+      WHERE
+        deletion_id = ?;`, [deletionID]);
         await connection.commit();
         res.json({ success: true, resData: {} });
     }
@@ -785,8 +841,10 @@ exports.accountsRouter.put('/details/updatePassword', async (req, res) => {
         account_id,
         hashed_password,
         failed_sign_in_attempts
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`, [authToken]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -806,9 +864,12 @@ exports.accountsRouter.put('/details/updatePassword', async (req, res) => {
         ;
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.currentPassword, accountDetails.hashedPassword);
         if (!isCorrectPassword) {
-            await db_1.dbPool.execute(`UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`, [accountDetails.accountID]);
+            await db_1.dbPool.execute(`UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`, [accountDetails.accountID]);
             if (accountDetails.failedSignInAttempts + 1 === 5) {
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
@@ -819,9 +880,12 @@ exports.accountsRouter.put('/details/updatePassword', async (req, res) => {
         }
         ;
         const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
-        await db_1.dbPool.execute(`UPDATE Accounts
-        SET hashed_password = ?
-      WHERE account_id = ?;`, [newHashedPassword, accountDetails.accountID]);
+        await db_1.dbPool.execute(`UPDATE
+        Accounts
+      SET
+        hashed_password = ?
+      WHERE
+        account_id = ?;`, [newHashedPassword, accountDetails.accountID]);
         res.json({ success: true, resData: {} });
     }
     catch (err) {
@@ -871,9 +935,12 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         EmailUpdateRequests.new_email,
         EmailUpdateRequests.verification_code,
         EmailUpdateRequests.update_emails_sent
-      FROM Accounts
-      LEFT JOIN EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
-      WHERE Accounts.auth_token = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
+      WHERE
+        Accounts.auth_token = ?
       LIMIT 1;`, [authToken]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -898,9 +965,12 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         ;
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashedPassword);
         if (!isCorrectPassword) {
-            await db_1.dbPool.execute(`UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`, [accountDetails.accountID]);
+            await db_1.dbPool.execute(`UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`, [accountDetails.accountID]);
             if (accountDetails.failedSignInAttempts + 1 === 5) {
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
@@ -925,7 +995,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
           update_emails_sent,
           failed_update_attempts
         )
-        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)})`, [accountDetails.accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]);
+        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [accountDetails.accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]);
             res.json({ success: true, resData: { accountID: accountDetails.accountID } });
             await (0, emailServices_1.sendEmailUpdateEmail)(requestData.newEmail, accountDetails.accountID, newVerificationCode);
             return;
@@ -941,9 +1011,12 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
             return;
         }
         ;
-        await db_1.dbPool.execute(`UPDATE EmailUpdateRequests
-        SET update_emails_sent = update_emails_sent + 1
-      WHERE update_id = ?;`, [accountDetails.updateID]);
+        await db_1.dbPool.execute(`UPDATE
+        EmailUpdateRequests
+      SET
+        update_emails_sent = update_emails_sent + 1
+      WHERE
+        update_id = ?;`, [accountDetails.updateID]);
         res.json({ success: true, resData: { accountID: accountDetails.accountID } });
         await (0, emailServices_1.sendEmailUpdateEmail)(accountDetails.newEmail, accountDetails.accountID, accountDetails.verificationCode);
     }
@@ -996,9 +1069,12 @@ exports.accountsRouter.put('/details/updateEmail/confirm', async (req, res) => {
         EmailUpdateRequests.new_email,
         EmailUpdateRequests.verification_code,
         EmailUpdateRequests.failed_update_attempts
-      FROM Accounts
-      LEFT JOIN EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
-      WHERE Accounts.account_id = ?
+      FROM
+        Accounts
+      LEFT JOIN
+        EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
+      WHERE
+        Accounts.account_id = ?
       LIMIT 1;`, [requestData.accountID]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -1029,9 +1105,12 @@ exports.accountsRouter.put('/details/updateEmail/confirm', async (req, res) => {
         }
         ;
         if (requestData.verificationCode !== accountDetails.verificationCode) {
-            await db_1.dbPool.execute(`UPDATE EmailUpdateRequests
-          SET failed_update_attempts = failed_update_attempts + 1
-        WHERE update_id = ?`, [accountDetails.updateID]);
+            await db_1.dbPool.execute(`UPDATE
+          EmailUpdateRequests
+        SET
+          failed_update_attempts = failed_update_attempts + 1
+        WHERE
+          update_id = ?;`, [accountDetails.updateID]);
             if (accountDetails.failedUpdateAttempts + 1 === 3) {
                 res.status(401).json({ success: false, message: 'Incorrect verification code. Request suspended.' });
                 return;
@@ -1065,13 +1144,17 @@ async function updateEmail(res, emailUpdateData, attemptNumber = 1) {
     try {
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        await connection.execute(`UPDATE Accounts
-        SET
+        await connection.execute(`UPDATE
+        Accounts
+      SET
         auth_token = ?,
         email = ?
-      WHERE account_id = ?;`, [newAuthToken, emailUpdateData.newEmail, emailUpdateData.accountID]);
-        await connection.execute(`DELETE FROM EmailUpdateRequests
-      WHERE update_id = ?;`, [emailUpdateData.updateID]);
+      WHERE
+        account_id = ?;`, [newAuthToken, emailUpdateData.newEmail, emailUpdateData.accountID]);
+        await connection.execute(`DELETE FROM
+        EmailUpdateRequests
+      WHERE
+        update_id = ?;`, [emailUpdateData.updateID]);
         connection.commit();
         res.json({ success: true, resData: { newAuthToken } });
     }
@@ -1137,8 +1220,10 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
         account_id,
         hashed_password,
         failed_sign_in_attempts
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`, [authToken]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
@@ -1158,9 +1243,12 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
         ;
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashedPassword);
         if (!isCorrectPassword) {
-            await db_1.dbPool.execute(`UPDATE Accounts
-          SET failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE account_id = ?;`, [accountDetails.accountID]);
+            await db_1.dbPool.execute(`UPDATE
+          Accounts
+        SET
+          failed_sign_in_attempts = failed_sign_in_attempts + 1
+        WHERE
+          account_id = ?;`, [accountDetails.accountID]);
             if (accountDetails.failedSignInAttempts + 1 === 5) {
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
@@ -1170,9 +1258,12 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
             return;
         }
         ;
-        await db_1.dbPool.execute(`UPDATE Accounts
-        SET user_name = ?
-      WHERE account_id = ?;`, [requestData.newName, accountDetails.accountID]);
+        await db_1.dbPool.execute(`UPDATE
+        Accounts
+      SET
+        user_name = ?
+      WHERE
+        account_id = ?;`, [requestData.newName, accountDetails.accountID]);
         res.json({ success: true, resData: { newName: requestData.newName } });
     }
     catch (err) {
@@ -1198,8 +1289,10 @@ exports.accountsRouter.get('/', async (req, res) => {
         const [rows] = await db_1.dbPool.execute(`SELECT
         user_name,
         friends_id_string
-      FROM Accounts
-      WHERE auth_token = ?
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?
       LIMIT 1;`, [authToken]);
         if (rows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });

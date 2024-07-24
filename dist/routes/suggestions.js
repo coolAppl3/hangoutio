@@ -65,7 +65,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
         suggestion_title,
         suggestion_description
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)})`, [requestData.hangoutMemberID, requestData.suggestionTitle, requestData.suggestionDescription]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.hangoutMemberID, requestData.suggestionTitle, requestData.suggestionDescription]);
         res.json({ success: true, resData: {} });
     }
     catch (err) {

@@ -70,7 +70,7 @@ exports.availabilityRouter.post('/', async (req, res) => {
         date_timestamp,
         slots
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)})`, [requestData.hangoutMemberID, requestData.dateString, requestData.dateTimestamp, requestData.slots]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberID, requestData.dateString, requestData.dateTimestamp, requestData.slots]);
         res.json({ success: true, requestData: {} });
     }
     catch (err) {
