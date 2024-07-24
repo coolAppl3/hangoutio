@@ -74,7 +74,7 @@ availabilityRouter.post('/', async (req: Request, res: Response) => {
         date_timestamp,
         slots
       )
-      VALUES(${generatePlaceHolders(4)})`,
+      VALUES(${generatePlaceHolders(4)});`,
       [requestData.hangoutMemberID, requestData.dateString, requestData.dateTimestamp, requestData.slots]
     );
 

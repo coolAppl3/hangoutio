@@ -165,7 +165,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
       FROM
         Accounts
       WHERE
-        auth_token = ?`, [authToken]);
+        auth_token = ?;`, [authToken]);
         if (accountRows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
             return;

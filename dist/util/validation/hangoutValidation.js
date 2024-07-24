@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidHangoutMemberLimit = exports.isValidHangoutConfiguration = exports.isValidHangoutIDString = void 0;
+exports.isValidNewPeriods = exports.isValidHangoutMemberLimit = exports.isValidHangoutConfiguration = exports.isValidHangoutIDString = void 0;
 function isValidHangoutIDString(hangoutID) {
     if (typeof hangoutID !== 'string') {
         return false;
@@ -53,4 +53,51 @@ function isValidHangoutMemberLimit(limit) {
     return true;
 }
 exports.isValidHangoutMemberLimit = isValidHangoutMemberLimit;
+;
+;
+;
+function isValidNewPeriods(hangoutDetails, newPeriods) {
+    const daysPassed = getDaysPassed(hangoutDetails.stepTimestamp);
+    if (hangoutDetails.currentStep === 1) {
+        if (newPeriods.newAvailabilityPeriod < daysPassed || newPeriods.newAvailabilityPeriod === daysPassed) {
+            return false;
+        }
+        ;
+    }
+    ;
+    if (hangoutDetails.currentStep === 2) {
+        if (newPeriods.newAvailabilityPeriod !== hangoutDetails.currentAvailabilityPeriod) {
+            return false;
+        }
+        ;
+        if (newPeriods.newSuggestionsPeriod < daysPassed || newPeriods.newSuggestionsPeriod === daysPassed) {
+            return false;
+        }
+        ;
+    }
+    ;
+    if (hangoutDetails.currentStep === 3) {
+        if (newPeriods.newAvailabilityPeriod !== hangoutDetails.currentAvailabilityPeriod) {
+            return false;
+        }
+        ;
+        if (newPeriods.newSuggestionsPeriod !== hangoutDetails.currentSuggestionsPeriod) {
+            return false;
+        }
+        ;
+        if (newPeriods.newVotingPeriod < daysPassed || newPeriods.newVotingPeriod === daysPassed) {
+            return false;
+        }
+        ;
+    }
+    ;
+    return true;
+}
+exports.isValidNewPeriods = isValidNewPeriods;
+;
+function getDaysPassed(stepTimeStamp) {
+    const dayMilliseconds = 1000 * 60 * 60 * 24;
+    const daysPassed = Math.floor((Date.now() - stepTimeStamp) / dayMilliseconds);
+    return daysPassed;
+}
 ;

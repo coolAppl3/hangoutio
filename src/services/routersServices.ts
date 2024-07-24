@@ -84,11 +84,12 @@ export async function createHangout(connection: any, res: Response, NewHangoutDa
         suggestions_period,
         voting_period,
         current_step,
+        step_timestamp,
         created_on_timestamp,
         completed_on_timestamp
       )
-      VALUES(${generatePlaceHolders(9)});`,
-      [hangoutID, hashedPassword, NewHangoutData.memberLimit, NewHangoutData.availabilityPeriod, NewHangoutData.suggestionsPeriod, NewHangoutData.votingPeriod, 1, Date.now(), null]
+      VALUES(${generatePlaceHolders(10)});`,
+      [hangoutID, hashedPassword, NewHangoutData.memberLimit, NewHangoutData.availabilityPeriod, NewHangoutData.suggestionsPeriod, NewHangoutData.votingPeriod, 1, Date.now(), Date.now(), null]
     );
 
     return hangoutID;

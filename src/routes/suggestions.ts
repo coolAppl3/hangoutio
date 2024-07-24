@@ -68,7 +68,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
         suggestion_title,
         suggestion_description
       )
-      VALUES(${generatePlaceHolders(3)})`,
+      VALUES(${generatePlaceHolders(3)});`,
       [requestData.hangoutMemberID, requestData.suggestionTitle, requestData.suggestionDescription]
     );
 

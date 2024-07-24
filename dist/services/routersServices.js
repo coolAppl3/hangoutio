@@ -69,10 +69,11 @@ async function createHangout(connection, res, NewHangoutData, attemptNumber = 1)
         suggestions_period,
         voting_period,
         current_step,
+        step_timestamp,
         created_on_timestamp,
         completed_on_timestamp
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(9)});`, [hangoutID, hashedPassword, NewHangoutData.memberLimit, NewHangoutData.availabilityPeriod, NewHangoutData.suggestionsPeriod, NewHangoutData.votingPeriod, 1, Date.now(), null]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(10)});`, [hangoutID, hashedPassword, NewHangoutData.memberLimit, NewHangoutData.availabilityPeriod, NewHangoutData.suggestionsPeriod, NewHangoutData.votingPeriod, 1, Date.now(), Date.now(), null]);
         return hangoutID;
     }
     catch (err) {
