@@ -18,11 +18,12 @@ async function createGuestAccount(connection, res, newGuestData, attemptNumber =
     try {
         await connection.execute(`INSERT INTO Guests(
         auth_token,
-        user_name,
+        username,
         hashed_password,
+        display_name,
         hangout_id
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [authToken, newGuestData.userName, newGuestData.hashedPassword, newGuestData.hangoutID]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [authToken, newGuestData.username, newGuestData.hashedPassword, newGuestData.displayName, newGuestData.hangoutID]);
         return authToken;
     }
     catch (err) {
@@ -33,6 +34,11 @@ async function createGuestAccount(connection, res, newGuestData, attemptNumber =
         ;
         if (err.errno === 1452) {
             res.status(404).json({ succesS: false, message: 'Hangout not found.' });
+            return false;
+        }
+        ;
+        if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'username'`)) {
+            res.status(409).json({ success: false, message: 'Username is taken.' });
             return false;
         }
         ;

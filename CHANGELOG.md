@@ -1,6 +1,22 @@
 # Changelog
 
 ---
+## [0.1.10] (2024-07-27)
+
+### Features
+
+- Brought back the `guest.ts` router.
+- Renamed `user_name` in the `Accounts` and `Guests` tables to `display_name`.
+- Guests now have to create a unique username apart from choosing their display name.
+  - This is meant to help with guests logging into their accounts.
+- **New endpoints**:
+  - PUT `hangoutMembers/details/leaveHangout`: Leaves the hangout.
+    - If the user has a guest account, it's automatically deleted.
+    - If the user is the leader, a new leader is randomly assigned.
+    - If the user is a leader and the only member, the hangout is automatically deleted.
+  - POST `guests/signIn`: Used to sign in a guest into their respective hangout.
+
+---
 ## [0.1.9] (2024-07-25)
 
 ### Features

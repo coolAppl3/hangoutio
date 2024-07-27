@@ -5,8 +5,9 @@ import cors from 'cors';
 import express, { Application } from 'express';
 
 // routers
-import { hangoutsRouter } from './routes/hangouts';
 import { accountsRouter } from './routes/accounts';
+import { hangoutsRouter } from './routes/hangouts';
+import { guestsRouter } from './routes/guests';
 import { hangoutMembersRouter } from './routes/hangoutMembers';
 import { availabilityRouter } from './routes/availability';
 import { suggestionsRouter } from './routes/suggestions';
@@ -34,8 +35,9 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.static(path.join(__dirname, '../public')));
 
 // routes
-app.use('/api/hangouts', hangoutsRouter);
 app.use('/api/accounts', accountsRouter);
+app.use('/api/hangouts', hangoutsRouter);
+app.use('/api/guests', guestsRouter);
 app.use('/api/hangoutMembers', hangoutMembersRouter);
 app.use('/api/availability', availabilityRouter);
 app.use('/api/suggestions', suggestionsRouter);

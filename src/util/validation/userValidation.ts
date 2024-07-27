@@ -7,15 +7,6 @@ export function isValidEmailString(email: string): boolean {
   return regex.test(email);
 };
 
-export function isValidNameString(name: string): boolean {
-  if (typeof name !== 'string') {
-    return false;
-  };
-
-  const regex: RegExp = /^[A-Za-z ]{1,25}$/;
-  return regex.test(name);
-};
-
 export function isValidNewPasswordString(password: string): boolean {
   if (typeof password !== 'string') {
     return false;
@@ -31,6 +22,24 @@ export function isValidPasswordString(password: string): boolean {
   };
 
   return true;
+};
+
+export function isValidUsernameString(username: string): boolean {
+  if (typeof username !== 'string') {
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z_.]{8,25}$/;
+  return regex.test(username);
+};
+
+export function isValidDisplayNameString(name: string): boolean {
+  if (typeof name !== 'string') {
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z ]{1,25}$/;
+  return regex.test(name);
 };
 
 export function isValidAuthTokenString(authToken: string): boolean {

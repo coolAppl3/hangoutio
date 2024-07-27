@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidCodeString = exports.isValidToken = exports.isValidAuthTokenString = exports.isValidPasswordString = exports.isValidNewPasswordString = exports.isValidNameString = exports.isValidEmailString = void 0;
+exports.isValidCodeString = exports.isValidToken = exports.isValidAuthTokenString = exports.isValidDisplayNameString = exports.isValidUsernameString = exports.isValidPasswordString = exports.isValidNewPasswordString = exports.isValidEmailString = void 0;
 function isValidEmailString(email) {
     if (typeof email !== 'string') {
         return false;
@@ -10,16 +10,6 @@ function isValidEmailString(email) {
     return regex.test(email);
 }
 exports.isValidEmailString = isValidEmailString;
-;
-function isValidNameString(name) {
-    if (typeof name !== 'string') {
-        return false;
-    }
-    ;
-    const regex = /^[A-Za-z ]{1,25}$/;
-    return regex.test(name);
-}
-exports.isValidNameString = isValidNameString;
 ;
 function isValidNewPasswordString(password) {
     if (typeof password !== 'string') {
@@ -39,6 +29,26 @@ function isValidPasswordString(password) {
     return true;
 }
 exports.isValidPasswordString = isValidPasswordString;
+;
+function isValidUsernameString(username) {
+    if (typeof username !== 'string') {
+        return false;
+    }
+    ;
+    const regex = /^[A-Za-z_.]{8,25}$/;
+    return regex.test(username);
+}
+exports.isValidUsernameString = isValidUsernameString;
+;
+function isValidDisplayNameString(name) {
+    if (typeof name !== 'string') {
+        return false;
+    }
+    ;
+    const regex = /^[A-Za-z ]{1,25}$/;
+    return regex.test(name);
+}
+exports.isValidDisplayNameString = isValidDisplayNameString;
 ;
 function isValidAuthTokenString(authToken) {
     if (typeof authToken !== 'string') {

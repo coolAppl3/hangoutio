@@ -12,7 +12,7 @@ export const accountsRouter: Router = express.Router();
 interface AccountCreationData {
   email: string,
   hashedPassword: string,
-  userName: string,
+  displayName: string,
 };
 
 interface UpdateEmailData {
@@ -27,16 +27,18 @@ interface UpdatePasswordData {
   newHashedPassword: string,
 };
 
+// --- --- ---
+
 accountsRouter.post('/signUp', async (req: Request, res: Response) => {
   interface RequestData {
     email: string,
     password: string,
-    userName: string,
+    displayName: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['email', 'password', 'userName'];
+  const expectedKeys: string[] = ['email', 'password', 'displayName'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -52,7 +54,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!userValidation.isValidNameString(requestData.userName)) {
+  if (!userValidation.isValidDisplayNameString(requestData.displayName)) {
     res.status(400).json({ success: false, message: 'Invalid account name.' });
     return;
   };
@@ -62,7 +64,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     const accountCreationData: AccountCreationData = {
       email: requestData.email,
       hashedPassword,
-      userName: requestData.userName,
+      displayName: requestData.displayName,
     };
 
     await createAccount(res, accountCreationData);
@@ -74,7 +76,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
 });
 
 async function createAccount(res: Response, accountCreationData: AccountCreationData, attemptNumber: number = 1): Promise<void> {
-  const { email, hashedPassword, userName } = accountCreationData;
+  const { email, hashedPassword, displayName } = accountCreationData;
 
   const authToken: string = tokenGenerator.generateAuthToken('account');
   const verificationCode: string = tokenGenerator.generateUniqueCode();
@@ -109,8 +111,8 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
       `INSERT INTO Accounts(
         auth_token,
         email,
-        user_name,
         hashed_password,
+        display_name,
         created_on_timestamp,
         friends_id_string,
         is_verified,
@@ -118,7 +120,7 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
         marked_for_deletion
       )
       VALUES(${generatePlaceHolders(9)});`,
-      [authToken, email, userName, hashedPassword, Date.now(), '', false, 0, false]
+      [authToken, email, hashedPassword, displayName, Date.now(), '', false, 0, false]
     );
 
     const accountID: number = insertData.insertId;
@@ -1469,7 +1471,7 @@ async function updateEmail(res: Response, emailUpdateData: UpdateEmailData, atte
 accountsRouter.put('/details/updateName', async (req: Request, res: Response) => {
   interface RequestData {
     password: string,
-    newName: string,
+    newDisplayName: string,
   };
 
   const authHeader: string | undefined = req.headers['authorization'];
@@ -1486,7 +1488,7 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
     return;
   };
 
-  const expectedKeys: string[] = ['password', 'newName'];
+  const expectedKeys: string[] = ['password', 'newDisplayName'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -1497,7 +1499,7 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
     return;
   };
 
-  if (!userValidation.isValidNameString(requestData.newName)) {
+  if (!userValidation.isValidDisplayNameString(requestData.newDisplayName)) {
     res.status(400).json({ success: false, message: 'Invalid account name.' });
     return;
   };
@@ -1507,7 +1509,8 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
       `SELECT
         account_id,
         hashed_password,
-        failed_sign_in_attempts
+        failed_sign_in_attempts,
+        display_name
       FROM
         Accounts
       WHERE
@@ -1525,12 +1528,14 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
       accountID: number,
       hashedPassword: string,
       failedSignInAttempts: number,
+      displayName: string,
     };
 
     const accountDetails: AccountDetails = {
       accountID: rows[0].account_id,
       hashedPassword: rows[0].hashed_password,
       failedSignInAttempts: rows[0].failed_sign_in_attempts,
+      displayName: rows[0].display_name,
     };
 
     if (accountDetails.failedSignInAttempts === 5) {
@@ -1559,17 +1564,22 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
       return;
     };
 
+    if (requestData.newDisplayName === accountDetails.displayName) {
+      res.status(409).json({ success: false, message: 'New name can not be equal to the existing name.' });
+      return;
+    };
+
     await dbPool.execute(
       `UPDATE
         Accounts
       SET
-        user_name = ?
+        display_name = ?
       WHERE
         account_id = ?;`,
-      [requestData.newName, accountDetails.accountID]
+      [requestData.newDisplayName, accountDetails.accountID]
     );
 
-    res.json({ success: true, resData: { newName: requestData.newName } });
+    res.json({ success: true, resData: { newDisplayName: requestData.newDisplayName } });
 
   } catch (err: any) {
     console.log(err);
@@ -1594,7 +1604,7 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
   try {
     const [rows]: any = await dbPool.execute(
       `SELECT
-        user_name,
+        display_name,
         friends_id_string
       FROM
         Accounts
@@ -1615,7 +1625,7 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
     };
 
     const accountDetails: AccountDetails = {
-      accountName: rows[0].user_name,
+      accountName: rows[0].display_name,
       friendsIdString: rows[0].friends_id_string,
     };
 

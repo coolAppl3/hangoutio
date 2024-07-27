@@ -4,47 +4,59 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.guestsRouter = void 0;
-const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
-const userValidation_1 = require("../util/validation/userValidation");
-const tokenGenerator_1 = require("../util/tokenGenerator");
-const hangoutValidation_1 = require("../util/validation/hangoutValidation");
-const requestValidation_1 = require("../util/validation/requestValidation");
-const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
+const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const requestValidation_1 = require("../util/validation/requestValidation");
+const userValidation_1 = require("../util/validation/userValidation");
 exports.guestsRouter = express_1.default.Router();
-;
-exports.guestsRouter.post('/', async (req, res) => {
+exports.guestsRouter.post('/signIn', async (req, res) => {
+    ;
     const requestData = req.body;
-    const expectedKeys = ['userName', 'password', 'hangoutID', 'isLeader'];
+    const expectedKeys = ['username', 'password'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidNameString)(requestData.userName)) {
-        res.status(400).json({ success: false, message: 'Invalid name.' });
+    if (!(0, userValidation_1.isValidUsernameString)(requestData.username)) {
+        res.status(400).json({ success: false, message: 'Invalid username.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidNewPasswordString)(requestData.password)) {
+    if (!(0, userValidation_1.isValidPasswordString)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutIDString)(requestData.hangoutID)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
-        return;
-    }
-    ;
-    if (typeof requestData.isLeader !== 'boolean') {
-        res.status(400).json({ success: false, message: 'Invalid guest type.' });
-        return;
-    }
-    ;
     try {
-        const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
-        await createGuest(res, requestData, hashedPassword);
+        const [rows] = await db_1.dbPool.execute(`SELECT
+        auth_token,
+        hangout_id,
+        hashed_password
+      FROM
+        Guests
+      WHERE
+        username = ?
+      LIMIT 1;`);
+        if (rows.length === 0) {
+            res.status(404).json({ success: false, message: 'Guest account not found.' });
+            return;
+        }
+        ;
+        ;
+        const guestDetails = {
+            authToken: rows[0].auth_token,
+            hangoutID: rows[0].hangout_id,
+            hashedPassword: rows[0].hashed_password,
+        };
+        const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, guestDetails.hashedPassword);
+        if (!isCorrectPassword) {
+            res.status(401).json({ success: false, message: 'Incorrect password.' });
+            return;
+        }
+        ;
+        res.json({ success: true, resData: { authToken: guestDetails.authToken, hangoutID: guestDetails.hangoutID } });
     }
     catch (err) {
         console.log(err);
@@ -52,50 +64,3 @@ exports.guestsRouter.post('/', async (req, res) => {
     }
     ;
 });
-async function createGuest(res, newGuestData, hashedPassword, attemptNumber = 1) {
-    const authToken = (0, tokenGenerator_1.generateAuthToken)('guest');
-    if (attemptNumber > 3) {
-        res.status(500).json({ success: false, message: 'Internal server error.' });
-        return;
-    }
-    ;
-    let connection;
-    try {
-        const connection = await db_1.dbPool.getConnection();
-        await connection.beginTransaction();
-        await connection.execute(`INSERT INTO Guests(
-        auth_token,
-        user_name,
-        hashed_password,
-        hangout_id
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [authToken, newGuestData.userName, hashedPassword, newGuestData.hangoutID]);
-        await connection.execute(`INSERT INTO HangoutMembers(
-        hangout_id,
-        auth_token,
-        is_leader,
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)})`, [newGuestData.hangoutID, authToken, newGuestData.isLeader]);
-        res.json({ success: true, resData: { authToken } });
-    }
-    catch (err) {
-        console.log(err);
-        if (!err.errno) {
-            res.status(400).json({ success: false, message: 'Invalid request data.' });
-            return;
-        }
-        ;
-        if (err.errno === 1452) {
-            res.status(404).json({ succesS: false, message: 'Hangout not found.' });
-            return;
-        }
-        ;
-        if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-            return await createGuest(res, newGuestData, hashedPassword, ++attemptNumber);
-        }
-        ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
-    }
-    ;
-}
-;
