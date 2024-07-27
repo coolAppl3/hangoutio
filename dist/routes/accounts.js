@@ -42,7 +42,7 @@ exports.accountsRouter = express_1.default.Router();
 exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['email', 'password', 'userName'];
+    const expectedKeys = ['email', 'password', 'displayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -58,7 +58,7 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidNameString(requestData.userName)) {
+    if (!userValidation.isValidDisplayNameString(requestData.displayName)) {
         res.status(400).json({ success: false, message: 'Invalid account name.' });
         return;
     }
@@ -68,7 +68,7 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         const accountCreationData = {
             email: requestData.email,
             hashedPassword,
-            userName: requestData.userName,
+            displayName: requestData.displayName,
         };
         await createAccount(res, accountCreationData);
     }
@@ -79,7 +79,7 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
 });
 async function createAccount(res, accountCreationData, attemptNumber = 1) {
-    const { email, hashedPassword, userName } = accountCreationData;
+    const { email, hashedPassword, displayName } = accountCreationData;
     const authToken = tokenGenerator.generateAuthToken('account');
     const verificationCode = tokenGenerator.generateUniqueCode();
     if (attemptNumber > 3) {
@@ -105,15 +105,15 @@ async function createAccount(res, accountCreationData, attemptNumber = 1) {
         const [insertData] = await connection.execute(`INSERT INTO Accounts(
         auth_token,
         email,
-        user_name,
         hashed_password,
+        display_name,
         created_on_timestamp,
         friends_id_string,
         is_verified,
         failed_sign_in_attempts,
         marked_for_deletion
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(9)});`, [authToken, email, userName, hashedPassword, Date.now(), '', false, 0, false]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(9)});`, [authToken, email, hashedPassword, displayName, Date.now(), '', false, 0, false]);
         const accountID = insertData.insertId;
         await connection.execute(`INSERT INTO AccountVerification(
         account_id,
@@ -1199,7 +1199,7 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
         return;
     }
     ;
-    const expectedKeys = ['password', 'newName'];
+    const expectedKeys = ['password', 'newDisplayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -1210,7 +1210,7 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidNameString(requestData.newName)) {
+    if (!userValidation.isValidDisplayNameString(requestData.newDisplayName)) {
         res.status(400).json({ success: false, message: 'Invalid account name.' });
         return;
     }
@@ -1219,7 +1219,8 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
         const [rows] = await db_1.dbPool.execute(`SELECT
         account_id,
         hashed_password,
-        failed_sign_in_attempts
+        failed_sign_in_attempts,
+        display_name
       FROM
         Accounts
       WHERE
@@ -1235,6 +1236,7 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
             accountID: rows[0].account_id,
             hashedPassword: rows[0].hashed_password,
             failedSignInAttempts: rows[0].failed_sign_in_attempts,
+            displayName: rows[0].display_name,
         };
         if (accountDetails.failedSignInAttempts === 5) {
             res.status(403).json({ success: false, message: 'Account locked.' });
@@ -1258,13 +1260,18 @@ exports.accountsRouter.put('/details/updateName', async (req, res) => {
             return;
         }
         ;
+        if (requestData.newDisplayName === accountDetails.displayName) {
+            res.status(409).json({ success: false, message: 'New name can not be equal to the existing name.' });
+            return;
+        }
+        ;
         await db_1.dbPool.execute(`UPDATE
         Accounts
       SET
-        user_name = ?
+        display_name = ?
       WHERE
-        account_id = ?;`, [requestData.newName, accountDetails.accountID]);
-        res.json({ success: true, resData: { newName: requestData.newName } });
+        account_id = ?;`, [requestData.newDisplayName, accountDetails.accountID]);
+        res.json({ success: true, resData: { newDisplayName: requestData.newDisplayName } });
     }
     catch (err) {
         console.log(err);
@@ -1287,7 +1294,7 @@ exports.accountsRouter.get('/', async (req, res) => {
     ;
     try {
         const [rows] = await db_1.dbPool.execute(`SELECT
-        user_name,
+        display_name,
         friends_id_string
       FROM
         Accounts
@@ -1301,7 +1308,7 @@ exports.accountsRouter.get('/', async (req, res) => {
         ;
         ;
         const accountDetails = {
-            accountName: rows[0].user_name,
+            accountName: rows[0].display_name,
             friendsIdString: rows[0].friends_id_string,
         };
         res.json({ success: true, resData: { accountName: accountDetails.accountName, friendsIdString: accountDetails.friendsIdString } });

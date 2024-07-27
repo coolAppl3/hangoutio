@@ -4,8 +4,9 @@ import { generateAuthToken, generateHangoutID } from "../util/tokenGenerator"
 import { generatePlaceHolders } from "../util/generatePlaceHolders"
 
 interface NewGuestData {
-  userName: string,
+  username: string,
   hashedPassword: string,
+  displayName: string,
   hangoutID: string,
 };
 
@@ -21,12 +22,13 @@ export async function createGuestAccount(connection: any, res: Response, newGues
     await connection.execute(
       `INSERT INTO Guests(
         auth_token,
-        user_name,
+        username,
         hashed_password,
+        display_name,
         hangout_id
       )
-      VALUES(${generatePlaceHolders(4)});`,
-      [authToken, newGuestData.userName, newGuestData.hashedPassword, newGuestData.hangoutID]
+      VALUES(${generatePlaceHolders(5)});`,
+      [authToken, newGuestData.username, newGuestData.hashedPassword, newGuestData.displayName, newGuestData.hangoutID]
     );
 
     return authToken;
@@ -40,6 +42,11 @@ export async function createGuestAccount(connection: any, res: Response, newGues
 
     if (err.errno === 1452) {
       res.status(404).json({ succesS: false, message: 'Hangout not found.' });
+      return false;
+    };
+
+    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'username'`)) {
+      res.status(409).json({ success: false, message: 'Username is taken.' });
       return false;
     };
 

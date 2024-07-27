@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import * as hangoutValidation from '../util/validation/hangoutValidation';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
-import { isValidAuthTokenString, isValidNameString, isValidNewPasswordString, isValidPasswordString } from '../util/validation/userValidation';
+import { isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidPasswordString, isValidUsernameString } from '../util/validation/userValidation';
 import { createGuestAccount, createHangout } from '../services/routersServices';
 
 export const hangoutsRouter: Router = express.Router();
@@ -124,13 +124,14 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     availabilityPeriod: number,
     suggestionsPeriod: number,
     votingPeriod: number,
-    userName: string,
+    username: string,
     password: string,
+    displayName: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutPassword', 'memberLimit', 'availabilityPeriod', 'suggestionsPeriod', 'votingPeriod', 'userName', 'password'];
+  const expectedKeys: string[] = ['hangoutPassword', 'memberLimit', 'availabilityPeriod', 'suggestionsPeriod', 'votingPeriod', 'username', 'password', 'displayName'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -152,13 +153,18 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     return;
   };
 
-  if (!isValidNameString(requestData.userName)) {
-    res.status(400).json({ success: false, message: 'Invalid guest name.' });
+  if (!isValidUsernameString(requestData.username)) {
+    res.status(400).json({ success: false, message: 'Invalid username.' });
     return;
   };
 
   if (!isValidNewPasswordString(requestData.password)) {
     res.status(400).json({ success: false, message: 'Invalid guest password.' });
+    return;
+  };
+
+  if (!isValidDisplayNameString(requestData.displayName)) {
+    res.status(400).json({ success: false, message: 'Invalid display name.' });
     return;
   };
 
@@ -175,15 +181,17 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     };
 
     interface NewGuestData {
-      userName: string,
+      username: string,
       hashedPassword: string,
+      displayName: string,
       hangoutID: string,
     };
 
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
     const newGuestData: NewGuestData = {
-      userName: requestData.userName,
+      username: requestData.username,
       hashedPassword,
+      displayName: requestData.displayName,
       hangoutID,
     };
 

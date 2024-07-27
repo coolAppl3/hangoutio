@@ -128,7 +128,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
 exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityPeriod', 'suggestionsPeriod', 'votingPeriod', 'userName', 'password'];
+    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityPeriod', 'suggestionsPeriod', 'votingPeriod', 'username', 'password', 'displayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -150,13 +150,18 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidNameString)(requestData.userName)) {
-        res.status(400).json({ success: false, message: 'Invalid guest name.' });
+    if (!(0, userValidation_1.isValidUsernameString)(requestData.username)) {
+        res.status(400).json({ success: false, message: 'Invalid username.' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidNewPasswordString)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid guest password.' });
+        return;
+    }
+    ;
+    if (!(0, userValidation_1.isValidDisplayNameString)(requestData.displayName)) {
+        res.status(400).json({ success: false, message: 'Invalid display name.' });
         return;
     }
     ;
@@ -172,8 +177,9 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         ;
         const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
         const newGuestData = {
-            userName: requestData.userName,
+            username: requestData.username,
             hashedPassword,
+            displayName: requestData.displayName,
             hangoutID,
         };
         const authToken = await (0, routersServices_1.createGuestAccount)(connection, res, newGuestData);
