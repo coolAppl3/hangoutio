@@ -29,17 +29,21 @@ export function isValidUsernameString(username: string): boolean {
     return false;
   };
 
-  const regex: RegExp = /^[A-Za-z_.]{8,25}$/;
+  const regex: RegExp = /^[A-Za-z0-9_.]{5,25}$/;
   return regex.test(username);
 };
 
-export function isValidDisplayNameString(name: string): boolean {
-  if (typeof name !== 'string') {
+export function isValidDisplayNameString(displayName: string): boolean {
+  if (typeof displayName !== 'string') {
+    return false;
+  };
+
+  if (displayName.trim() !== displayName) {
     return false;
   };
 
   const regex: RegExp = /^[A-Za-z ]{1,25}$/;
-  return regex.test(name);
+  return regex.test(displayName);
 };
 
 export function isValidAuthTokenString(authToken: string): boolean {
