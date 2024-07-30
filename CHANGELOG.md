@@ -1,6 +1,32 @@
 # Changelog
 
 ---
+## [0.1.11] (2024-07-30)
+
+### Features
+
+- Added a `username` column to the `Accounts` table schema.
+- Removed `friends_id_string` column from the `Accounts` table schema.
+- Removed GET `accounts/` endpoint.
+- **New tables**:
+  - `FriendRequests`: Tracks pending friend requests.
+  - `Friendships`: Tracks a user's friends.
+- **New endpoints**:
+  - POST `accounts/friends/requests/send`: Sends a friend request.
+  - PUT `accounts/friends/requests/accept`: Accepts a friend request.
+  - DELETE `accounts/friends/requests/decline`: Declines a friend request.
+  - DELETE `accounts/friends/remove`: Removes a friend from a user's friend list.
+- If a starts their account deletion process, all hangouts where they're the leader are deleted, and they automatically leave any hangout they're a member of.
+  - Users will be informed of this before confirming.
+
+### Bug Fixes
+
+- Fixed an issue with incrementing the count of recovery emails sent.
+- Fixed updating an account's password through the `details/updatePassword` endpoint not generating a new authToken.
+  - Next patch will deal with updating the hangout member rows the user was a part of.
+- Fixed the start of the email update process not checking if the email is in use first.
+
+---
 ## [0.1.10] (2024-07-27)
 
 ### Features
@@ -15,6 +41,7 @@
     - If the user is the leader, a new leader is randomly assigned.
     - If the user is a leader and the only member, the hangout is automatically deleted.
   - POST `guests/signIn`: Used to sign in a guest into their respective hangout.
+
 
 ---
 ## [0.1.9] (2024-07-25)
@@ -76,7 +103,7 @@
 
 - **New endpoints**:
   - POST `accounts/details/updateEmail/start`: Initiates the email update process.
-  - PUT `accounts/details/updateEmail/confirm`: Updates the user's email and generates a new authentication token.
+  - PUT `accounts/details/updateEmail/confirm`: Updates the user's email and generates a new authToken.
   - PUT `accounts/details/updateName`: Handles user name changes.
 - Enhanced the appearance and phrasing of email templates.
 - Renamed endpoint `accounts/details/changePassword` to `accounts/details/updatePassword`.
@@ -86,7 +113,7 @@
   - Introduced `isValidToken()` in `userValidation.ts` for validating basic tokens.
 - Updated the recovery process to allow up to 3 recovery emails before reaching the limit.
 - Added a `marked_for_deletion` column to the `Accounts` table for better readability and logic.
-- Recovery requests now generate a new authentication token to enhance account security.
+- Recovery requests now generate a new authToken to enhance account security.
 
 ### Bug Fixes
 

@@ -9,74 +9,15 @@ import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const accountsRouter: Router = express.Router();
 
-interface AccountCreationData {
+interface CreateAccountData {
   email: string,
   hashedPassword: string,
+  username: string,
   displayName: string,
 };
 
-interface UpdateEmailData {
-  accountID: number,
-  updateID: number,
-  newEmail: string,
-};
-
-interface UpdatePasswordData {
-  accountID: number,
-  recoveryID: number,
-  newHashedPassword: string,
-};
-
-// --- --- ---
-
-accountsRouter.post('/signUp', async (req: Request, res: Response) => {
-  interface RequestData {
-    email: string,
-    password: string,
-    displayName: string,
-  };
-
-  const requestData: RequestData = req.body;
-
-  const expectedKeys: string[] = ['email', 'password', 'displayName'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
-    res.status(400).json({ success: false, message: 'Invalid request data.' });
-    return;
-  };
-
-  if (!userValidation.isValidEmailString(requestData.email)) {
-    res.status(400).json({ success: false, message: 'Invalid email address.' });
-    return;
-  };
-
-  if (!userValidation.isValidNewPasswordString(requestData.password)) {
-    res.status(400).json({ success: false, message: 'Invalid password.' });
-    return;
-  };
-
-  if (!userValidation.isValidDisplayNameString(requestData.displayName)) {
-    res.status(400).json({ success: false, message: 'Invalid account name.' });
-    return;
-  };
-
-  try {
-    const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
-    const accountCreationData: AccountCreationData = {
-      email: requestData.email,
-      hashedPassword,
-      displayName: requestData.displayName,
-    };
-
-    await createAccount(res, accountCreationData);
-
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-  };
-});
-
-async function createAccount(res: Response, accountCreationData: AccountCreationData, attemptNumber: number = 1): Promise<void> {
-  const { email, hashedPassword, displayName } = accountCreationData;
+async function createAccount(res: Response, createAccountData: CreateAccountData, attemptNumber: number = 1): Promise<void> {
+  const { email, hashedPassword, displayName, username } = createAccountData;
 
   const authToken: string = tokenGenerator.generateAuthToken('account');
   const verificationCode: string = tokenGenerator.generateUniqueCode();
@@ -89,17 +30,14 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
   let connection;
 
   try {
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
-
-    const [rows]: any = await connection.execute(
+    const [rows]: any = await dbPool.execute(
       `SELECT
         new_email
       FROM
         EmailUpdateRequests
       WHERE
         new_email = ?;`,
-      [accountCreationData.email]
+      [createAccountData.email]
     );
 
     if (rows.length !== 0) {
@@ -107,20 +45,23 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
       return;
     };
 
+    connection = await dbPool.getConnection();
+    await connection.beginTransaction();
+
     const [insertData]: any = await connection.execute(
       `INSERT INTO Accounts(
         auth_token,
         email,
         hashed_password,
+        username,
         display_name,
         created_on_timestamp,
-        friends_id_string,
         is_verified,
         failed_sign_in_attempts,
         marked_for_deletion
       )
       VALUES(${generatePlaceHolders(9)});`,
-      [authToken, email, hashedPassword, displayName, Date.now(), '', false, 0, false]
+      [authToken, email, hashedPassword, username, displayName, Date.now(), false, 0, false]
     );
 
     const accountID: number = insertData.insertId;
@@ -157,8 +98,13 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
       return;
     };
 
+    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'username'`)) {
+      res.status(409).json({ success: false, message: 'Username taken.' });
+      return;
+    };
+
     if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-      return await createAccount(res, accountCreationData, ++attemptNumber);
+      return await createAccount(res, createAccountData, ++attemptNumber);
     };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -169,6 +115,178 @@ async function createAccount(res: Response, accountCreationData: AccountCreation
     };
   };
 };
+
+interface UpdatePasswordData {
+  accountID: number,
+  recoveryID: number | null,
+  newHashedPassword: string,
+};
+
+async function updatePassword(res: Response, updatePasswordData: UpdatePasswordData, attemptNumber: number = 1): Promise<void> {
+  const newAuthToken: string = tokenGenerator.generateAuthToken('account');
+  let connection
+
+  if (attemptNumber > 3) {
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+    return;
+  };
+
+  try {
+    connection = await dbPool.getConnection();
+    await connection.beginTransaction();
+
+    await connection.execute(
+      `UPDATE
+        Accounts
+      SET
+        auth_token = ?,
+        hashed_password = ?,
+        failed_sign_in_attempts = 0
+      WHERE
+        account_id = ?;`,
+      [newAuthToken, updatePasswordData.newHashedPassword, updatePasswordData.accountID]
+    );
+
+    if (updatePasswordData.recoveryID) {
+      await connection.execute(
+        `DELETE FROM
+          AccountRecovery
+        WHERE
+          recovery_id = ?;`,
+        [updatePasswordData.recoveryID]
+      );
+    };
+
+    await connection.commit();
+    res.json({ success: true, resData: {} });
+
+  } catch (err: any) {
+    console.log(err);
+
+    if (connection) {
+      await connection.rollback();
+    };
+
+    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
+      return await updatePassword(res, updatePasswordData, ++attemptNumber);
+    };
+
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+
+  } finally {
+    if (connection) {
+      connection.release();
+    };
+  };
+};
+
+interface UpdateEmailData {
+  accountID: number,
+  updateID: number,
+  newEmail: string,
+};
+
+async function updateEmail(res: Response, emailUpdateData: UpdateEmailData, attemptNumber: number = 1): Promise<void> {
+  const newAuthToken: string = tokenGenerator.generateAuthToken('account');
+
+  if (attemptNumber > 3) {
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+    return;
+  };
+
+  try {
+    await dbPool.execute(
+      `UPDATE
+        Accounts
+      SET
+        auth_token = ?,
+        email = ?
+      WHERE
+        account_id = ?;`,
+      [newAuthToken, emailUpdateData.newEmail, emailUpdateData.accountID]
+    );
+
+    await dbPool.execute(
+      `DELETE FROM
+        EmailUpdateRequests
+      WHERE
+        update_id = ?;`,
+      [emailUpdateData.updateID]
+    );
+
+    res.json({ success: true, resData: { newAuthToken } })
+
+  } catch (err: any) {
+    console.log(err);
+
+    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'email'`)) {
+      res.status(409).json({ success: false, message: 'Email address already in use.' });
+      return;
+    };
+
+    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
+      return await updateEmail(res, emailUpdateData, ++attemptNumber);
+    };
+
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+
+  };
+};
+
+// --- --- ---
+
+accountsRouter.post('/signUp', async (req: Request, res: Response) => {
+  interface RequestData {
+    email: string,
+    password: string,
+    username: string,
+    displayName: string,
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['email', 'password', 'username', 'displayName'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!userValidation.isValidEmailString(requestData.email)) {
+    res.status(400).json({ success: false, message: 'Invalid email address.' });
+    return;
+  };
+
+  if (!userValidation.isValidNewPasswordString(requestData.password)) {
+    res.status(400).json({ success: false, message: 'Invalid password.' });
+    return;
+  };
+
+  if (!userValidation.isValidUsernameString(requestData.username)) {
+    res.status(400).json({ success: false, message: 'Invalid username.' });
+    return;
+  };
+
+  if (!userValidation.isValidDisplayNameString(requestData.displayName)) {
+    res.status(400).json({ success: false, message: 'Invalid display name.' });
+    return;
+  };
+
+  try {
+    const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
+    const createAccountData: CreateAccountData = {
+      email: requestData.email,
+      hashedPassword,
+      username: requestData.username,
+      displayName: requestData.displayName,
+    };
+
+    await createAccount(res, createAccountData);
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
 
 accountsRouter.post('/verification/resendEmail', async (req: Request, res: Response) => {
   interface RequestData {
@@ -390,20 +508,20 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
 
 accountsRouter.post('/signIn', async (req: Request, res: Response) => {
   interface RequestData {
-    email: string,
+    username: string,
     password: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['email', 'password'];
+  const expectedKeys: string[] = ['username', 'password'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidEmailString(requestData.email)) {
-    res.status(400).json({ success: false, message: 'Invalid email address.' });
+  if (!userValidation.isValidUsernameString(requestData.username)) {
+    res.status(400).json({ success: false, message: 'Invalid username.' });
     return;
   };
 
@@ -424,9 +542,9 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
       FROM
         Accounts
       WHERE
-        email = ?
+        username = ?
       LIMIT 1;`,
-      [requestData.email]
+      [requestData.username]
     );
 
     if (rows.length === 0) {
@@ -608,7 +726,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       SET
         recovery_emails_sent = recovery_emails_sent + 1
       WHERE
-        account_id = ?;`,
+        recovery_id = ?;`,
       [accountDetails.recoveryID]
     );
 
@@ -657,8 +775,6 @@ accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Respons
     return;
   };
 
-  let connection;
-
   try {
     const [rows]: any = await dbPool.execute(
       `SELECT
@@ -705,62 +821,6 @@ accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Respons
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
-
-async function updatePassword(res: Response, updatePasswordData: UpdatePasswordData, attemptNumber: number = 1): Promise<void> {
-  const newAuthToken: string = tokenGenerator.generateAuthToken('account');
-  let connection
-
-  if (attemptNumber > 3) {
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-    return;
-  };
-
-  try {
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
-
-    await connection.execute(
-      `UPDATE
-        Accounts
-      SET
-        auth_token = ?,
-        hashed_password = ?,
-        failed_sign_in_attempts = 0
-      WHERE
-        account_id = ?;`,
-      [newAuthToken, updatePasswordData.newHashedPassword, updatePasswordData.accountID]
-    );
-
-    await connection.execute(
-      `DELETE FROM
-        AccountRecovery
-      WHERE
-        recovery_id = ?;`,
-      [updatePasswordData.recoveryID]
-    );
-
-    await connection.commit();
-    res.json({ success: true, resData: {} });
-
-  } catch (err: any) {
-    console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-      return await updatePassword(res, updatePasswordData, ++attemptNumber);
-    };
-
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-
-  } finally {
-    if (connection) {
-      connection.release();
-    };
-  };
-};
 
 accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => {
   interface RequestData {
@@ -857,6 +917,49 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     connection = await dbPool.getConnection();
     await connection.beginTransaction();
 
+    const [hangoutRows]: any = await connection.execute(
+      `SELECT
+        hangout_id
+      FROM
+        HangoutMembers
+      WHERE
+        auth_token = ? AND
+        is_leader = TRUE;`,
+      [authToken]
+    );
+
+
+    if (hangoutRows.length !== 0) {
+      let hangoutIdsToDelete: string = ``;
+
+      for (let i = 0; i < hangoutRows.length; i++) {
+        if (i + 1 === hangoutRows.length) {
+          hangoutIdsToDelete += `'${hangoutRows[i].hangout_id}'`;
+          continue;
+        };
+
+        hangoutIdsToDelete += `'${hangoutRows[i].hangout_id}', `;
+      };
+
+      console.log(hangoutRows)
+      console.log(hangoutIdsToDelete)
+
+      await connection.execute(
+        `DELETE FROM
+          Hangouts
+        WHERE
+          hangout_id IN (${hangoutIdsToDelete});`
+      );
+
+      await connection.execute(
+        `DELETE FROM
+          HangoutMembers
+        WHERE
+          auth_token = ?;`,
+        [authToken]
+      );
+    };
+
     const markedAuthToken: string = `d_${authToken}`;
     const cancellationToken: string = tokenGenerator.generateUniqueToken();
 
@@ -951,10 +1054,17 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
       return;
     };
 
-    const deletionID: number = rows[0].deletion_id;
-    const fetchedCancellationToken: string = rows[0].cancellation_token;
+    interface DeletionData {
+      deletionID: number,
+      cancellationToken: string,
+    };
 
-    if (requestData.cancellationToken !== fetchedCancellationToken) {
+    const deletionData: DeletionData = {
+      deletionID: rows[0].deletion_id,
+      cancellationToken: rows[0].cancellation_token,
+    };
+
+    if (requestData.cancellationToken !== deletionData.cancellationToken) {
       res.status(401).json({ success: false, message: 'Incorrect cancellation token.' });
       return;
     };
@@ -978,7 +1088,7 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
         AccountDeletionRequests
       WHERE
         deletion_id = ?;`,
-      [deletionID]
+      [deletionData.deletionID]
     );
 
     await connection.commit();
@@ -1094,18 +1204,13 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
     };
 
     const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
+    const updatePasswordData: UpdatePasswordData = {
+      accountID: accountDetails.accountID,
+      recoveryID: null,
+      newHashedPassword,
+    };
 
-    await dbPool.execute(
-      `UPDATE
-        Accounts
-      SET
-        hashed_password = ?
-      WHERE
-        account_id = ?;`,
-      [newHashedPassword, accountDetails.accountID]
-    );
-
-    res.json({ success: true, resData: {} })
+    await updatePassword(res, updatePasswordData);
 
   } catch (err: any) {
     console.log(err);
@@ -1149,8 +1254,13 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     return;
   };
 
+  let connection;
+
   try {
-    const [rows]: any = await dbPool.execute(
+    connection = await dbPool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows]: any = await connection.execute(
       `SELECT
         Accounts.account_id,
         Accounts.hashed_password,
@@ -1171,7 +1281,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     );
 
     if (rows.length === 0) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
@@ -1204,7 +1314,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
     if (!isCorrectPassword) {
-      await dbPool.execute(
+      await connection.execute(
         `UPDATE
           Accounts
         SET
@@ -1224,13 +1334,36 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     };
 
     if (requestData.newEmail === accountDetails.currentEmail) {
-      res.status(403).json({ success: false, message: 'New email can not be equal to the current email.' });
+      res.status(409).json({ success: false, message: 'New email can not be equal to the current email.' });
+      return;
+    };
+
+    const [emailRows]: any = await connection.execute(
+      `SELECT
+        1
+      FROM
+        Accounts
+      WHERE
+        email = ?
+      UNION
+      SELECT
+        1
+      FROM
+        EmailUpdateRequests
+      WHERE
+        new_email = ?
+      LIMIT 1;`,
+      [requestData.newEmail, requestData.newEmail]
+    );
+
+    if (emailRows.length !== 0) {
+      res.status(409).json({ success: false, message: 'Email already in use.' });
       return;
     };
 
     if (!accountDetails.updateID) { // no update requests
       const newVerificationCode: string = tokenGenerator.generateUniqueCode();
-      await dbPool.execute(
+      await connection.execute(
         `INSERT INTO EmailUpdateRequests(
           account_id,
           new_email,
@@ -1243,9 +1376,10 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         [accountDetails.accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]
       );
 
+      await connection.commit();
       res.json({ success: true, resData: { accountID: accountDetails.accountID } });
-      await sendEmailUpdateEmail(requestData.newEmail, accountDetails.accountID, newVerificationCode);
 
+      await sendEmailUpdateEmail(requestData.newEmail, accountDetails.accountID, newVerificationCode);
       return;
     };
 
@@ -1259,7 +1393,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    await dbPool.execute(
+    await connection.execute(
       `UPDATE
         EmailUpdateRequests
       SET
@@ -1269,18 +1403,29 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       [accountDetails.updateID]
     );
 
+    await connection.commit();
     res.json({ success: true, resData: { accountID: accountDetails.accountID } });
+
     await sendEmailUpdateEmail(accountDetails.newEmail, accountDetails.accountID, accountDetails.verificationCode);
 
   } catch (err: any) {
     console.log(err);
 
-    if (err.errno === 1452) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
+    if (connection) {
+      await connection.rollback();
+    };
+
+    if (err.errno === 1062) {
+      res.status(409).json({ success: false, message: 'Email already in use.' });
       return;
     };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
+
+  } finally {
+    if (connection) {
+      connection.release();
+    };
   };
 });
 
@@ -1408,67 +1553,7 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
   };
 });
 
-async function updateEmail(res: Response, emailUpdateData: UpdateEmailData, attemptNumber: number = 1): Promise<void> {
-  const newAuthToken: string = tokenGenerator.generateAuthToken('account');
-  let connection;
-
-  if (attemptNumber > 3) {
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-    return;
-  };
-
-  try {
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
-
-    await connection.execute(
-      `UPDATE
-        Accounts
-      SET
-        auth_token = ?,
-        email = ?
-      WHERE
-        account_id = ?;`,
-      [newAuthToken, emailUpdateData.newEmail, emailUpdateData.accountID]
-    );
-
-    await connection.execute(
-      `DELETE FROM
-        EmailUpdateRequests
-      WHERE
-        update_id = ?;`,
-      [emailUpdateData.updateID]
-    );
-
-    connection.commit();
-    res.json({ success: true, resData: { newAuthToken } })
-
-  } catch (err: any) {
-    console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'email'`)) {
-      res.status(409).json({ success: false, message: 'Email address already in use.' });
-      return;
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-      return await updateEmail(res, emailUpdateData, ++attemptNumber);
-    };
-
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-
-  } finally {
-    if (connection) {
-      connection.release();
-    };
-  };
-};
-
-accountsRouter.put('/details/updateName', async (req: Request, res: Response) => {
+accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Response) => {
   interface RequestData {
     password: string,
     newDisplayName: string,
@@ -1500,7 +1585,7 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
   };
 
   if (!userValidation.isValidDisplayNameString(requestData.newDisplayName)) {
-    res.status(400).json({ success: false, message: 'Invalid account name.' });
+    res.status(400).json({ success: false, message: 'Invalid display name.' });
     return;
   };
 
@@ -1565,7 +1650,7 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
     };
 
     if (requestData.newDisplayName === accountDetails.displayName) {
-      res.status(409).json({ success: false, message: 'New name can not be equal to the existing name.' });
+      res.status(409).json({ success: false, message: 'Account already has this display name.' });
       return;
     };
 
@@ -1587,7 +1672,11 @@ accountsRouter.put('/details/updateName', async (req: Request, res: Response) =>
   };
 });
 
-accountsRouter.get('/', async (req: Request, res: Response) => {
+accountsRouter.post('/friends/requests/send', async (req: Request, res: Response) => {
+  interface RequestData {
+    requesteeUsername: string,
+  };
+
   const authHeader: string | undefined = req.headers['authorization'];
   if (!authHeader) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
@@ -1595,41 +1684,402 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
+  const requestData: RequestData = req.body;
 
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
 
+  const expectedKeys: string[] = ['requesteeUsername'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!userValidation.isValidUsernameString(requestData.requesteeUsername)) {
+    res.status(400).json({ success: false, message: 'Invalid username.' });
+    return;
+  };
+
   try {
-    const [rows]: any = await dbPool.execute(
+    const [requesterRows]: any = await dbPool.execute(
       `SELECT
-        display_name,
-        friends_id_string
+        account_id,
+        username
       FROM
         Accounts
       WHERE
-        auth_token = ?
-      LIMIT 1;`,
+        auth_token = ?;`,
       [authToken]
     );
 
-    if (rows.length === 0) {
+    if (requesterRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const requesterID: number = requesterRows[0].account_id;
+    const requesterUsername: string = requesterRows[0].username;
+
+    if (requesterUsername === requestData.requesteeUsername) {
+      res.status(409).json({ success: false, message: 'Can not add yourself as a friend.' });
+      return;
+    };
+
+    const [requesteeRows]: any = await dbPool.execute(
+      `SELECT
+        account_id
+      FROM
+        Accounts
+      WHERE
+        username = ?
+      LIMIT 1;`,
+      [requestData.requesteeUsername]
+    );
+
+    if (requesteeRows.length === 0) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    interface AccountDetails {
-      accountName: string,
-      friendsIdString: string,
+    const requesteeID: number = requesteeRows[0].account_id;
+    const [friendshipRows]: any = await dbPool.execute(
+      `SELECT
+        friendship_id
+      FROM
+        Friendships
+      WHERE
+        account_id = ? AND
+        friend_id = ?
+      LIMIT 1;`,
+      [requesterID, requesteeID]
+    );
+
+    if (friendshipRows.length > 0) {
+      res.status(409).json({ success: false, message: 'Already friends.' });
+      return;
     };
 
-    const accountDetails: AccountDetails = {
-      accountName: rows[0].display_name,
-      friendsIdString: rows[0].friends_id_string,
+    const [friendRequestRows]: any = await dbPool.execute(
+      `SELECT
+        request_id,
+        requester_id,
+        requestee_id
+      FROM
+        FriendRequests
+      WHERE
+        (requester_id = ? AND requestee_id = ?) OR
+        (requester_id = ? AND requestee_id = ?)
+      LIMIT 2;`,
+      [requesterID, requesteeID, requesteeID, requesterID]
+    );
+
+    if (friendRequestRows.length === 0) {
+      await dbPool.execute(
+        `INSERT INTO FriendRequests(
+          requester_id,
+          requestee_id,
+          request_timestamp
+        )
+        VALUES(${generatePlaceHolders(3)});`,
+        [requesterID, requesteeID, Date.now()]
+      );
+
+      res.json({ success: true, resData: {} });
+      return;
     };
 
-    res.json({ success: true, resData: { accountName: accountDetails.accountName, friendsIdString: accountDetails.friendsIdString } })
+    let toRequester: boolean = false;
+    let toRequestee: boolean = false;
+
+    for (const request of friendRequestRows) {
+      if (request.requester_id === requesterID) {
+        toRequestee = true;
+      };
+
+      if (request.requester_id === requesteeID) {
+        toRequester = true;
+      };
+    };
+
+    if (!toRequester && toRequestee) {
+      res.status(409).json({ success: false, message: 'Request already sent.' });
+      return;
+    };
+
+    const request: any = friendRequestRows.find((request: any) => request.requester_id === requesteeID);
+    res.status(409).json({
+      success: false,
+      message: 'Pending friend request.',
+      resData: {
+        friendRequestID: request.request_id,
+      },
+    });
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
+accountsRouter.put('/friends/requests/accept', async (req: Request, res: Response) => {
+  interface RequestData {
+    friendRequestID: number,
+  };
+
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
+  const requestData: RequestData = req.body;
+
+  if (!userValidation.isValidAuthTokenString(authToken)) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const expectedKeys: string[] = ['friendRequestID'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.friendRequestID)) {
+    res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
+    return;
+  };
+
+  let connection;
+
+  try {
+    const [accountRows]: any = await dbPool.execute(
+      `SELECT
+        account_id
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?;`,
+      [authToken]
+    );
+
+    if (accountRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const accountID: number = accountRows[0].account_id;
+    const [friendRequestRows]: any = await dbPool.execute(
+      `SELECT
+        requester_id
+      FROM
+        FriendRequests
+      WHERE
+        request_id = ? AND
+        requestee_id = ?;`,
+      [requestData.friendRequestID, accountID]
+    );
+
+    if (friendRequestRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Friend request not found.' });
+      return;
+    };
+
+    const friendID: string = friendRequestRows[0].requester_id;
+    const friendshipTimestamp: number = Date.now();
+
+    connection = await dbPool.getConnection();
+    await connection.beginTransaction();
+
+    connection.execute(
+      `INSERT INTO Friendships(
+        account_id,
+        friend_id,
+        friendship_timestamp
+      )
+      VALUES
+        (${generatePlaceHolders(3)}),
+        (${generatePlaceHolders(3)});`,
+      [accountID, friendID, friendshipTimestamp, friendID, accountID, friendshipTimestamp]
+    );
+
+    connection.execute(
+      `DELETE FROM
+        FriendRequests
+      WHERE
+        requester_id = ? AND
+        requestee_id = ?;`,
+      [friendID, accountID]
+    );
+
+    await connection.commit();
+    res.json({ success: true, resData: {} })
+
+  } catch (err: any) {
+    console.log(err);
+
+    if (connection) {
+      await connection.rollback();
+    };
+
+    if (err.errno === 1062) {
+      res.status(409).json({ success: false, message: 'Already friends.' });
+      return;
+    };
+
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  } finally {
+    if (connection) {
+      connection.release();
+    };
+  };
+});
+
+accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Response) => {
+  interface RequestData {
+    friendRequestID: number,
+  };
+
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
+  const requestData: RequestData = req.body;
+
+  if (!userValidation.isValidAuthTokenString(authToken)) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const expectedKeys: string[] = ['friendRequestID'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.friendRequestID)) {
+    res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
+  };
+
+  try {
+    const [accountRows]: any = await dbPool.execute(
+      `SELECT
+        account_id
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?;`,
+      [authToken]
+    );
+
+    if (accountRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const accountID: number = accountRows[0].account_id;
+    const [deletionData]: any = await dbPool.execute(
+      `DELETE FROM
+        FriendRequests
+      WHERE
+        request_id = ? AND
+        requestee_id = ?;`,
+      [requestData.friendRequestID, accountID]
+    );
+
+    if (deletionData.affectedRows === 0) {
+      res.status(404).json({ success: false, message: 'Friend request not found.' });
+      return;
+    };
+
+    res.json({ success: true, resData: {} });
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
+accountsRouter.delete('/friends/remove', async (req: Request, res: Response) => {
+  interface RequestData {
+    friendshipID: number,
+  };
+
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
+  const requestData: RequestData = req.body;
+
+  if (!userValidation.isValidAuthTokenString(authToken)) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const expectedKeys: string[] = ['friendRequestID'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.friendshipID)) {
+    res.status(400).json({ success: false, message: 'Invalid friendship ID.' });
+    return;
+  };
+
+  try {
+    const [accountRows]: any = await dbPool.execute(
+      `SELECT
+        account_id
+      FROM
+        Accounts
+      WHERE
+        auth_token = ?;`,
+      [authToken]
+    );
+
+    if (accountRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const accountID: number = accountRows[0].account_id;
+    const [friendshipRows]: any = await dbPool.execute(
+      `SELECT
+        friend_id
+      FROM
+        Friendships
+      WHERE
+        friendship_id = ?;`,
+      [requestData.friendshipID]
+    );
+
+    if (friendshipRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Friend not found.' });
+      return;
+    };
+
+    const friendID: number = friendshipRows[0].friend_id;
+    await dbPool.execute(
+      `DELETE FROM
+        Friendships
+      WHERE
+        (account_id = ? AND friend_id = ?) OR
+        (account_id = ? AND friend_id = ?)
+      LIMIT 2;`,
+      [accountID, friendID, friendID, accountID]
+    );
+
+    res.json({ success: true, resData: {} });
 
   } catch (err: any) {
     console.log(err);
