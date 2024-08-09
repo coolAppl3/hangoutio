@@ -51,7 +51,15 @@ export function isValidAuthTokenString(authToken: string): boolean {
     return false;
   };
 
-  if (authToken.length !== 32) {
+  if (authToken.length < 34) {
+    return false;
+  };
+
+  if (authToken[32] !== '_') {
+    return false;
+  };
+
+  if (!Number.isInteger(+authToken.substring(33))) {
     return false;
   };
 
@@ -60,6 +68,18 @@ export function isValidAuthTokenString(authToken: string): boolean {
   };
 
   return true;
+};
+
+export function getUserID(authToken: string): number {
+  return +authToken.substring(33);
+};
+
+export function getUserType(authToken: string): 'account' | 'guest' {
+  if (authToken.startsWith('a')) {
+    return 'account';
+  };
+
+  return 'guest';
 };
 
 export function isValidToken(token: string): boolean {

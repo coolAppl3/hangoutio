@@ -1,4 +1,5 @@
 import { dbPool } from "../db/db";
+import { RowDataPacket } from "mysql2";
 import express, { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
@@ -31,42 +32,39 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface GuestDetails extends RowDataPacket {
+      auth_token: string,
+      hangout_id: string,
+      hashed_password: string,
+    };
+
+    const [guestRows] = await dbPool.execute<GuestDetails[]>(
       `SELECT
         auth_token,
         hangout_id,
         hashed_password
       FROM
-        Guests
+        guests
       WHERE
         username = ?
-      LIMIT 1;`
+      LIMIT 1;`,
+      [requestData.username]
     );
 
-    if (rows.length === 0) {
+    if (guestRows.length === 0) {
       res.status(404).json({ success: false, message: 'Guest account not found.' });
       return;
     };
 
-    interface GuestDetails {
-      authToken: string,
-      hangoutID: string,
-      hashedPassword: string,
-    };
+    const guestDetails: GuestDetails = guestRows[0];
 
-    const guestDetails: GuestDetails = {
-      authToken: rows[0].auth_token,
-      hangoutID: rows[0].hangout_id,
-      hashedPassword: rows[0].hashed_password,
-    };
-
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, guestDetails.hashedPassword);
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, guestDetails.hashed_password);
     if (!isCorrectPassword) {
       res.status(401).json({ success: false, message: 'Incorrect password.' });
       return;
     };
 
-    res.json({ success: true, resData: { authToken: guestDetails.authToken, hangoutID: guestDetails.hangoutID } })
+    res.json({ success: true, resData: { authToken: guestDetails.auth_token, hangoutID: guestDetails.hangout_id } })
 
   } catch (err: any) {
     console.log(err);

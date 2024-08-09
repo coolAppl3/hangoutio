@@ -30,33 +30,29 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
     }
     ;
     try {
-        const [rows] = await db_1.dbPool.execute(`SELECT
+        ;
+        const [guestRows] = await db_1.dbPool.execute(`SELECT
         auth_token,
         hangout_id,
         hashed_password
       FROM
-        Guests
+        guests
       WHERE
         username = ?
-      LIMIT 1;`);
-        if (rows.length === 0) {
+      LIMIT 1;`, [requestData.username]);
+        if (guestRows.length === 0) {
             res.status(404).json({ success: false, message: 'Guest account not found.' });
             return;
         }
         ;
-        ;
-        const guestDetails = {
-            authToken: rows[0].auth_token,
-            hangoutID: rows[0].hangout_id,
-            hashedPassword: rows[0].hashed_password,
-        };
-        const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, guestDetails.hashedPassword);
+        const guestDetails = guestRows[0];
+        const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, guestDetails.hashed_password);
         if (!isCorrectPassword) {
             res.status(401).json({ success: false, message: 'Incorrect password.' });
             return;
         }
         ;
-        res.json({ success: true, resData: { authToken: guestDetails.authToken, hangoutID: guestDetails.hangoutID } });
+        res.json({ success: true, resData: { authToken: guestDetails.auth_token, hangoutID: guestDetails.hangout_id } });
     }
     catch (err) {
         console.log(err);

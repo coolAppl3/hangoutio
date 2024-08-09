@@ -41,12 +41,12 @@ export function generateUniqueToken(): string {
 };
 
 // non-account related
-export function generateHangoutID(): string {
+export function generateHangoutID(timestamp: number): string {
   let hangoutID: string = 'h';
 
   while (hangoutID.length < 32) {
     hangoutID += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
   };
 
-  return hangoutID;
+  return `${hangoutID}_${timestamp}`;
 };

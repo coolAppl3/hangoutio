@@ -1,239 +1,14 @@
 import express, { Router, Request, Response } from 'express';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { dbPool } from '../db/db';
 import bcrypt from 'bcrypt';
 import * as userValidation from '../util/validation/userValidation';
 import * as tokenGenerator from '../util/tokenGenerator';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { sendDeletionEmail, sendEmailUpdateEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
+import { sendDeletionEmail, sendEmailUpdateEmail, sendEmailUpdateWarningEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const accountsRouter: Router = express.Router();
-
-interface CreateAccountData {
-  email: string,
-  hashedPassword: string,
-  username: string,
-  displayName: string,
-};
-
-async function createAccount(res: Response, createAccountData: CreateAccountData, attemptNumber: number = 1): Promise<void> {
-  const { email, hashedPassword, displayName, username } = createAccountData;
-
-  const authToken: string = tokenGenerator.generateAuthToken('account');
-  const verificationCode: string = tokenGenerator.generateUniqueCode();
-
-  if (attemptNumber > 3) {
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-    return;
-  };
-
-  let connection;
-
-  try {
-    const [rows]: any = await dbPool.execute(
-      `SELECT
-        new_email
-      FROM
-        EmailUpdateRequests
-      WHERE
-        new_email = ?;`,
-      [createAccountData.email]
-    );
-
-    if (rows.length !== 0) {
-      res.status(409).json({ success: false, message: 'Email address already in use.' });
-      return;
-    };
-
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
-
-    const [insertData]: any = await connection.execute(
-      `INSERT INTO Accounts(
-        auth_token,
-        email,
-        hashed_password,
-        username,
-        display_name,
-        created_on_timestamp,
-        is_verified,
-        failed_sign_in_attempts,
-        marked_for_deletion
-      )
-      VALUES(${generatePlaceHolders(9)});`,
-      [authToken, email, hashedPassword, username, displayName, Date.now(), false, 0, false]
-    );
-
-    const accountID: number = insertData.insertId;
-    await connection.execute(
-      `INSERT INTO AccountVerification(
-        account_id,
-        verification_code,
-        verification_emails_sent,
-        failed_verification_attempts
-      )
-      VALUES(${generatePlaceHolders(4)});`,
-      [accountID, verificationCode, 1, 0]
-    );
-
-    await connection.commit();
-    res.json({ success: true, resData: { accountID } });
-
-    await sendVerificationEmail(email, accountID, verificationCode);
-
-  } catch (err: any) {
-    console.log(err)
-
-    if (connection) {
-      await connection.rollback();
-    };
-
-    if (!err.errno) {
-      res.status(500).json({ success: false, message: 'Internal server error.' });
-      return;
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'email'`)) {
-      res.status(409).json({ success: false, message: 'Email address already in use.' });
-      return;
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'username'`)) {
-      res.status(409).json({ success: false, message: 'Username taken.' });
-      return;
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-      return await createAccount(res, createAccountData, ++attemptNumber);
-    };
-
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-
-  } finally {
-    if (connection) {
-      connection.release();
-    };
-  };
-};
-
-interface UpdatePasswordData {
-  accountID: number,
-  recoveryID: number | null,
-  newHashedPassword: string,
-};
-
-async function updatePassword(res: Response, updatePasswordData: UpdatePasswordData, attemptNumber: number = 1): Promise<void> {
-  const newAuthToken: string = tokenGenerator.generateAuthToken('account');
-  let connection
-
-  if (attemptNumber > 3) {
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-    return;
-  };
-
-  try {
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
-
-    await connection.execute(
-      `UPDATE
-        Accounts
-      SET
-        auth_token = ?,
-        hashed_password = ?,
-        failed_sign_in_attempts = 0
-      WHERE
-        account_id = ?;`,
-      [newAuthToken, updatePasswordData.newHashedPassword, updatePasswordData.accountID]
-    );
-
-    if (updatePasswordData.recoveryID) {
-      await connection.execute(
-        `DELETE FROM
-          AccountRecovery
-        WHERE
-          recovery_id = ?;`,
-        [updatePasswordData.recoveryID]
-      );
-    };
-
-    await connection.commit();
-    res.json({ success: true, resData: {} });
-
-  } catch (err: any) {
-    console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-      return await updatePassword(res, updatePasswordData, ++attemptNumber);
-    };
-
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-
-  } finally {
-    if (connection) {
-      connection.release();
-    };
-  };
-};
-
-interface UpdateEmailData {
-  accountID: number,
-  updateID: number,
-  newEmail: string,
-};
-
-async function updateEmail(res: Response, emailUpdateData: UpdateEmailData, attemptNumber: number = 1): Promise<void> {
-  const newAuthToken: string = tokenGenerator.generateAuthToken('account');
-
-  if (attemptNumber > 3) {
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-    return;
-  };
-
-  try {
-    await dbPool.execute(
-      `UPDATE
-        Accounts
-      SET
-        auth_token = ?,
-        email = ?
-      WHERE
-        account_id = ?;`,
-      [newAuthToken, emailUpdateData.newEmail, emailUpdateData.accountID]
-    );
-
-    await dbPool.execute(
-      `DELETE FROM
-        EmailUpdateRequests
-      WHERE
-        update_id = ?;`,
-      [emailUpdateData.updateID]
-    );
-
-    res.json({ success: true, resData: { newAuthToken } })
-
-  } catch (err: any) {
-    console.log(err);
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'email'`)) {
-      res.status(409).json({ success: false, message: 'Email address already in use.' });
-      return;
-    };
-
-    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-      return await updateEmail(res, emailUpdateData, ++attemptNumber);
-    };
-
-    res.status(500).json({ success: false, message: 'Internal server error.' });
-
-  };
-};
-
-// --- --- ---
 
 accountsRouter.post('/signUp', async (req: Request, res: Response) => {
   interface RequestData {
@@ -271,20 +46,111 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     return;
   };
 
+  let connection;
+
   try {
-    const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
-    const createAccountData: CreateAccountData = {
-      email: requestData.email,
-      hashedPassword,
-      username: requestData.username,
-      displayName: requestData.displayName,
+    connection = await dbPool.getConnection();
+    await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
+    await connection.beginTransaction();
+
+    const [emailRows] = await connection.execute<RowDataPacket[]>(
+      `(SELECT 1 FROM accounts WHERE email = ? LIMIT 1)
+      UNION ALL
+      (SELECT 1 FROM email_update WHERE new_email = ? LIMIT 1);`,
+      [requestData.email, requestData.email]
+    );
+
+    if (emailRows.length > 0) {
+      await connection.rollback();
+      res.status(409).json({ success: false, message: 'Email already in use.' });
+
+      return;
     };
 
-    await createAccount(res, createAccountData);
+    const authToken: string = tokenGenerator.generateAuthToken('account');
+    const verificationCode: string = tokenGenerator.generateUniqueCode();
+    const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
+
+    const [firstResultSetHeader] = await connection.execute<ResultSetHeader>(
+      `INSERT INTO accounts(
+        auth_token,
+        email,
+        hashed_password,
+        username,
+        display_name,
+        created_on_timestamp,
+        is_verified,
+        failed_sign_in_attempts,
+        marked_for_deletion
+      )
+      VALUES(${generatePlaceHolders(9)});`,
+      [authToken, requestData.email, hashedPassword, requestData.username, requestData.displayName, Date.now(), false, 0, false]
+    );
+
+    const accountID: number = firstResultSetHeader.insertId;
+    const idMarkedAuthToken: string = `${authToken}_${accountID}`;
+
+    const [secondResultSetHeader] = await connection.execute<ResultSetHeader>(
+      `UPDATE
+        accounts
+      SET
+        auth_token = ?
+      WHERE
+        account_id = ?;`,
+      [idMarkedAuthToken, accountID]
+    );
+
+    if (secondResultSetHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
+
+    await connection.execute(
+      `INSERT INTO account_verification(
+        account_id,
+        verification_code,
+        verification_emails_sent,
+        failed_verification_attempts
+      )
+      VALUES(${generatePlaceHolders(4)});`,
+      [accountID, verificationCode, 1, 0]
+    );
+
+    await connection.commit();
+    res.json({ success: true, resData: { accountID } });
+
+    await sendVerificationEmail(requestData.email, accountID, verificationCode, requestData.displayName);
 
   } catch (err: any) {
     console.log(err);
+
+    if (connection) {
+      await connection.rollback();
+    };
+
+    if (!err.errno) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
+      res.status(409).json({ success: false, message: 'Duplicate authToken.' });
+      return;
+    };
+
+    if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'username'`)) {
+      res.status(409).json({ success: false, message: 'Username taken.' });
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
+
+  } finally {
+    if (connection) {
+      connection.release();
+    };
   };
 });
 
@@ -307,63 +173,72 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      email: string,
+      display_name: string,
+      is_verified: boolean,
+      verification_id: number,
+      verification_code: string,
+      verification_emails_sent: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        Accounts.is_verified,
-        Accounts.email,
-        AccountVerification.verification_code,
-        AccountVerification.verification_emails_sent
+        accounts.email,
+        accounts.display_name,
+        accounts.is_verified,
+        account_verification.verification_id,
+        account_verification.verification_code,
+        account_verification.verification_emails_sent
       FROM
-        Accounts
+        accounts
       LEFT JOIN
-        AccountVerification ON Accounts.account_id = AccountVerification.account_id
+        account_verification ON accounts.account_id = account_verification.account_id
       WHERE
-        Accounts.account_id = ?
+        accounts.account_id = ?
       LIMIT 1;`,
       [requestData.accountID]
     );
 
-    if (rows.length === 0) {
+    if (accountRows.length === 0) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    interface AccountDetails {
-      isVerified: boolean,
-      email: string,
-      verificationCode: string,
-      verificationEmailsSent: number,
-    };
+    const accountDetails: AccountDetails = accountRows[0];
 
-    const accountDetails: AccountDetails = {
-      isVerified: rows[0].is_verified,
-      email: rows[0].email,
-      verificationCode: rows[0].verification_code,
-      verificationEmailsSent: rows[0].verification_emails_sent,
-    };
-
-    if (accountDetails.isVerified) {
+    if (accountDetails.is_verified) {
       res.status(400).json({ success: false, message: 'Account already verified.' });
       return;
     };
 
-    if (accountDetails.verificationEmailsSent === 3) {
+    if (!accountDetails.verification_id) {
+      res.status(404).json({ success: false, message: 'Verification request not found.' });
+      return;
+    };
+
+    if (accountDetails.verification_emails_sent === 3) {
       res.status(403).json({ success: false, message: 'Verification emails limit reached.' });
       return;
     };
 
-    await dbPool.execute(
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
-        AccountVerification
+        account_verification
       SET
         verification_emails_sent = verification_emails_sent + 1
       WHERE
-        account_id = ?;`,
-      [requestData.accountID]
+        verification_id = ?;`,
+      [accountDetails.verification_id]
     );
 
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
     res.json({ success: true, resData: {} });
-    await sendVerificationEmail(accountDetails.email, requestData.accountID, accountDetails.verificationCode);
+    await sendVerificationEmail(accountDetails.email, requestData.accountID, accountDetails.verification_code, accountDetails.display_name);
 
   } catch (err: any) {
     console.log(err);
@@ -398,51 +273,48 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
   let connection;
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+      is_verified: boolean,
+      verification_id: number,
+      verification_code: string,
+      failed_verification_attempts: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        Accounts.auth_token,
-        Accounts.is_verified,
-        AccountVerification.verification_code,
-        failed_verification_attempts
+        accounts.auth_token,
+        accounts.is_verified,
+        account_verification.verification_id,
+        account_verification.verification_code,
+        account_verification.failed_verification_attempts
       FROM
-        Accounts
+        accounts
       LEFT JOIN
-        AccountVerification ON Accounts.account_id = AccountVerification.account_id
+        account_verification ON accounts.account_id = account_verification.account_id
       WHERE
-        Accounts.account_id = ?
+        accounts.account_id = ?
       LIMIT 1;`,
       [requestData.accountID]
     );
 
-    if (rows.length === 0) {
+    if (accountRows.length === 0) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    interface AccountDetails {
-      authToken: string,
-      isVerified: boolean,
-      verificationCode: string,
-      failedVerificationAttempts: number,
-    };
+    const accountDetails: AccountDetails = accountRows[0];
 
-    const accountDetails: AccountDetails = {
-      authToken: rows[0].auth_token,
-      isVerified: rows[0].is_verified,
-      verificationCode: rows[0].verification_code,
-      failedVerificationAttempts: rows[0].failed_verification_attempts,
-    };
-
-    if (accountDetails.isVerified) {
+    if (accountDetails.is_verified) {
       res.status(400).json({ success: false, message: 'Account already verified.' });
       return;
     };
 
-    if (requestData.verificationCode !== accountDetails.verificationCode) {
-      if (accountDetails.failedVerificationAttempts === 2) {
+    if (requestData.verificationCode !== accountDetails.verification_code) {
+      if (accountDetails.failed_verification_attempts === 2) {
         await dbPool.execute(
           `DELETE FROM
-            Accounts
+            accounts
           WHERE
             account_id = ?;`,
           [requestData.accountID]
@@ -454,12 +326,12 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
 
       await dbPool.execute(
         `UPDATE
-          AccountVerification
+          account_verification
         SET
           failed_verification_attempts = failed_verification_attempts + 1
         WHERE
-          account_id = ?;`,
-        [requestData.accountID]
+          verification_id = ?;`,
+        [accountDetails.verification_id]
       );
 
       res.status(401).json({ success: false, message: 'Incorrect verification code.' });
@@ -469,9 +341,9 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
     connection = await dbPool.getConnection();
     await connection.beginTransaction();
 
-    await connection.execute(
+    const [updateHeader] = await connection.execute<ResultSetHeader>(
       `UPDATE
-        Accounts
+        accounts
       SET
         is_verified = TRUE
       WHERE
@@ -479,16 +351,30 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
       [requestData.accountID]
     );
 
-    await connection.execute(
+    if (updateHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
+
+    const [deleteHeader] = await connection.execute<ResultSetHeader>(
       `DELETE FROM
-        AccountVerification
+        account_verification
       WHERE
-        account_id = ?;`,
-      [requestData.accountID]
+        verification_id = ?;`,
+      [accountDetails.verification_id]
     );
 
+    if (deleteHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
+
     await connection.commit();
-    res.json({ success: true, resData: { authToken: accountDetails.authToken } });
+    res.json({ success: true, resData: { authToken: accountDetails.auth_token } });
 
   } catch (err: any) {
     console.log(err);
@@ -531,7 +417,16 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      account_id: number,
+      auth_token: string,
+      hashed_password: string,
+      is_verified: boolean,
+      failed_sign_in_attempts: number,
+      marked_for_deletion: boolean,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
         account_id,
         auth_token,
@@ -540,85 +435,81 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
         failed_sign_in_attempts,
         marked_for_deletion
       FROM
-        Accounts
+        accounts
       WHERE
         username = ?
       LIMIT 1;`,
       [requestData.username]
     );
 
-    if (rows.length === 0) {
+    if (accountRows.length === 0) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    interface AccountDetails {
-      accountID: number,
-      authToken: string,
-      hashedPassword: string,
-      isVerified: boolean,
-      failedSignInAttempts: number,
-      markedForDeletion: boolean,
-    };
+    const accountDetails: AccountDetails = accountRows[0];
 
-    const accountDetails: AccountDetails = {
-      accountID: rows[0].account_id,
-      authToken: rows[0].auth_token,
-      hashedPassword: rows[0].hashed_password,
-      isVerified: rows[0].is_verified,
-      failedSignInAttempts: rows[0].failed_sign_in_attempts,
-      markedForDeletion: rows[0].marked_for_deletion,
-    };
-
-    if (accountDetails.markedForDeletion) {
+    if (accountDetails.marked_for_deletion) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    if (accountDetails.failedSignInAttempts === 5) {
+    if (accountDetails.failed_sign_in_attempts === 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
+    if (!accountDetails.is_verified) {
+      res.status(403).json({ success: false, message: 'Account unverified.' });
+      return;
+    };
+
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
+      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+        const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountDetails.account_id}`;
+        await dbPool.execute(
+          `UPDATE
+            accounts
+          SET
+            auth_token = ?,
+            failed_sign_in_attempts = failed_sign_in_attempts + 1
+          WHERE
+            account_id = ?;`,
+          [newAuthToken, accountDetails.account_id]
+        );
+
+        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
+        return;
+      };
+
       await dbPool.execute(
         `UPDATE
-          Accounts
+          accounts
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountDetails.accountID]
+        [accountDetails.account_id]
       );
-
-      if (accountDetails.failedSignInAttempts + 1 === 5) {
-        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
-        return;
-      };
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
       return;
     };
 
-    if (!accountDetails.isVerified) {
-      res.status(403).json({ success: false, message: 'Account not verified.' });
-      return;
-    };
-
-    if (accountDetails.failedSignInAttempts > 0) {
+    if (accountDetails.failed_sign_in_attempts > 0) {
       await dbPool.execute(
         `UPDATE
-          Accounts
+          accounts
         SET
           failed_sign_in_attempts = 0
         WHERE
           account_id = ?;`,
-        [accountDetails.accountID]
+        [accountDetails.account_id]
       );
     };
 
-    res.json({ success: true, resData: { authToken: accountDetails.authToken } });
+    res.json({ success: true, resData: { authToken: accountDetails.auth_token } });
 
   } catch (err: any) {
     console.log(err);
@@ -645,102 +536,96 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      account_id: number,
+      display_name: string,
+      is_verified: boolean,
+      marked_for_deletion: boolean,
+      recovery_id: number,
+      recovery_emails_sent: number,
+      recovery_token: string,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        Accounts.account_id,
-        Accounts.is_verified,
-        Accounts.marked_for_deletion,
-        AccountRecovery.recovery_id,
-        AccountRecovery.recovery_emails_sent,
-        AccountRecovery.recovery_token
+        accounts.account_id,
+        accounts.display_name,
+        accounts.is_verified,
+        accounts.marked_for_deletion,
+        account_recovery.recovery_id,
+        account_recovery.recovery_emails_sent,
+        account_recovery.recovery_token
       FROM
-        Accounts
+        accounts
       LEFT JOIN
-        AccountRecovery ON Accounts.account_id = AccountRecovery.account_id
+        account_recovery ON accounts.account_id = account_recovery.account_id
       WHERE
-        Accounts.email = ?
+        accounts.email = ?
       LIMIT 1;`,
       [requestData.email]
     );
 
-    if (rows.length === 0) {
+    if (accountRows.length === 0) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    interface AccountDetails {
-      accountID: number,
-      isVerified: boolean,
-      markedForDeletion: boolean,
-      recoveryID: number,
-      recoveryEmailsSent: number,
-      recoveryToken: string,
-    };
+    const accountDetails: AccountDetails = accountRows[0];
 
-    const accountDetails: AccountDetails = {
-      accountID: rows[0].account_id,
-      isVerified: rows[0].is_verified,
-      markedForDeletion: rows[0].markedForDeletion,
-      recoveryID: rows[0].recovery_id,
-      recoveryEmailsSent: rows[0].recovery_emails_sent,
-      recoveryToken: rows[0].recovery_token,
-    };
-
-    if (accountDetails.markedForDeletion) {
+    if (accountDetails.marked_for_deletion) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    if (!accountDetails.isVerified) {
-      res.status(403).json({ success: false, message: 'Account not verified.' });
+    if (!accountDetails.is_verified) {
+      res.status(403).json({ success: false, message: 'Account unverified.' });
       return;
     };
 
-    if (!accountDetails.recoveryID) { // no recovery process
-      const newRecoveryToken: string = tokenGenerator.generateUniqueToken();
+    if (!accountDetails.recovery_id) {
+      const recoveryToken: string = tokenGenerator.generateUniqueToken();
       await dbPool.execute(
-        `INSERT INTO AccountRecovery(
+        `INSERT INTO account_recovery(
           account_id,
           recovery_token,
           request_timestamp,
           recovery_emails_sent
         )
         VALUES(${generatePlaceHolders(4)});`,
-        [accountDetails.accountID, newRecoveryToken, Date.now(), 1]
+        [accountDetails.account_id, recoveryToken, Date.now(), 1]
       );
 
       res.json({ success: true, resData: {} });
-      await sendRecoveryEmail(requestData.email, accountDetails.accountID, newRecoveryToken);
+      await sendRecoveryEmail(requestData.email, accountDetails.account_id, recoveryToken, accountDetails.display_name);
 
       return;
     };
 
-    if (accountDetails.recoveryEmailsSent === 3) {
+    if (accountDetails.recovery_emails_sent === 3) {
       res.status(403).json({ success: false, message: 'Recovery email limit reached.' });
       return;
     };
 
-    await dbPool.execute(
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
-        AccountRecovery
+        account_recovery
       SET
         recovery_emails_sent = recovery_emails_sent + 1
       WHERE
         recovery_id = ?;`,
-      [accountDetails.recoveryID]
+      [accountDetails.recovery_id]
     );
 
-    res.json({ success: true, resData: {} })
-    await sendRecoveryEmail(requestData.email, accountDetails.accountID, accountDetails.recoveryToken);
-
-  } catch (err: any) {
-    console.log(err);
-
-    if (err.errno === 1452) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
       return;
     };
 
+    res.json({ success: true, resData: {} })
+    await sendRecoveryEmail(requestData.email, accountDetails.account_id, accountDetails.recovery_token, accountDetails.display_name);
+
+  } catch (err: any) {
+    console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -776,45 +661,64 @@ accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Respons
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface RecoveryDetails extends RowDataPacket {
+      recovery_id: number,
+      recovery_token: string,
+    };
+
+    const [recoveryRows] = await dbPool.execute<RecoveryDetails[]>(
       `SELECT
         recovery_id,
         recovery_token
       FROM
-        AccountRecovery
+        account_recovery
       WHERE
-        account_id = ?;`,
+        account_id = ?
+      LIMIT 1;`,
       [requestData.accountID]
     );
 
-    if (rows.length === 0) {
+    if (recoveryRows.length === 0) {
       res.status(404).json({ success: false, message: 'Recovery request not found.' });
       return;
     };
 
-    interface AccountDetails {
-      recoveryID: number,
-      recoveryToken: string,
-    };
+    const RecoveryDetails: RecoveryDetails = recoveryRows[0];
 
-    const accountDetails: AccountDetails = {
-      recoveryID: rows[0].recovery_id,
-      recoveryToken: rows[0].recovery_token,
-    };
-
-    if (requestData.recoveryToken !== accountDetails.recoveryToken) {
+    if (requestData.recoveryToken !== RecoveryDetails.recovery_token) {
       res.status(401).json({ success: false, message: 'Incorrect recovery token.' });
       return;
     };
 
+    const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${requestData.accountID}`;
     const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
-    const updatePasswordData: UpdatePasswordData = {
-      accountID: requestData.accountID,
-      recoveryID: accountDetails.recoveryID,
-      newHashedPassword,
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `UPDATE
+        accounts
+      SET
+        auth_token = ?,
+        hashed_password = ?,
+        failed_sign_in_attempts = ?
+      WHERE
+        account_id = ?;`,
+      [newAuthToken, newHashedPassword, 0, requestData.accountID]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
     };
 
-    await updatePassword(res, updatePasswordData);
+    await dbPool.execute(
+      `DELETE FROM
+        account_recovery
+      WHERE
+        recovery_id = ?;`,
+      [RecoveryDetails.recovery_id]
+    );
+
+    res.json({ success: true, resData: { authToken: newAuthToken } });
 
   } catch (err: any) {
     console.log(err);
@@ -834,12 +738,13 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
+
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
@@ -855,81 +760,94 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
   let connection;
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+      email: string,
+      hashed_password: string,
+      display_name: string,
+      failed_sign_in_attempts: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        account_id,
+        auth_token,
         email,
         hashed_password,
+        display_name,
         failed_sign_in_attempts
       FROM
-        Accounts
+        accounts
       WHERE
-        auth_token = ?
-      LIMIT 1;`,
-      [authToken]
+        account_id = ?;`,
+      [accountID]
     );
 
-    if (rows.length === 0) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
+    if (accountRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    interface AccountDetails {
-      accountID: number,
-      email: string,
-      hashedPassword: string,
-      failedSignInAttempts: number,
+    const accountDetails: AccountDetails = accountRows[0];
+
+    if (authToken !== accountDetails.auth_token) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
     };
 
-    const accountDetails: AccountDetails = {
-      accountID: rows[0].account_id,
-      email: rows[0].email,
-      hashedPassword: rows[0].hashed_password,
-      failedSignInAttempts: rows[0].failed_sign_in_attempts
-    };
-
-    if (accountDetails.failedSignInAttempts === 5) {
+    if (accountDetails.failed_sign_in_attempts === 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
+      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+        const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+        await dbPool.execute(
+          `UPDATE
+            accounts
+          SET
+            auth_token = ?,
+            failed_sign_in_attempts = failed_sign_in_attempts + 1
+          WHERE
+            account_id = ?;`,
+          [newAuthToken, accountID]
+        );
+
+        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
+        return;
+      };
+
       await dbPool.execute(
         `UPDATE
-          Accounts
+          accounts
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountDetails.accountID]
+        [accountID]
       );
-
-      if (accountDetails.failedSignInAttempts + 1 === 5) {
-        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
-        return;
-      };
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
       return;
     };
 
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
+    interface HangoutDetails extends RowDataPacket {
+      hangout_id: string,
+    };
 
-    const [hangoutRows]: any = await connection.execute(
+    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
         hangout_id
       FROM
-        HangoutMembers
+        hangout_members
       WHERE
-        auth_token = ? AND
+        account_id = ? AND
         is_leader = TRUE;`,
-      [authToken]
+      [accountID]
     );
 
-
-    if (hangoutRows.length !== 0) {
+    if (hangoutRows.length > 0) {
       let hangoutIdsToDelete: string = ``;
 
       for (let i = 0; i < hangoutRows.length; i++) {
@@ -941,64 +859,71 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         hangoutIdsToDelete += `'${hangoutRows[i].hangout_id}', `;
       };
 
-      console.log(hangoutRows)
-      console.log(hangoutIdsToDelete)
-
-      await connection.execute(
+      const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
         `DELETE FROM
-          Hangouts
+          hangouts
         WHERE
           hangout_id IN (${hangoutIdsToDelete});`
       );
 
-      await connection.execute(
+      if (resultSetHeader.affectedRows === 0) {
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+        return;
+      };
+
+      await dbPool.execute(
         `DELETE FROM
-          HangoutMembers
+          hangout_members
         WHERE
-          auth_token = ?;`,
-        [authToken]
+          account_id = ?;`,
+        [accountID]
       );
     };
 
     const markedAuthToken: string = `d_${authToken}`;
     const cancellationToken: string = tokenGenerator.generateUniqueToken();
 
-    await connection.execute(
+    connection = await dbPool.getConnection();
+    await connection.beginTransaction();
+
+    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `UPDATE
-        Accounts
+        accounts
       SET
         auth_token = ?,
         marked_for_deletion = TRUE
       WHERE
         account_id = ?;`,
-      [markedAuthToken, accountDetails.accountID]
+      [markedAuthToken, accountID]
     );
 
+    if (resultSetHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
+
     await connection.execute(
-      `INSERT INTO AccountDeletionRequests(
+      `INSERT INTO account_deletion(
         account_id,
         cancellation_token,
         request_timestamp
       )
       VALUES(${generatePlaceHolders(3)});`,
-      [accountDetails.accountID, cancellationToken, Date.now()]
+      [accountID, cancellationToken, Date.now()]
     );
 
     await connection.commit();
     res.status(202).json({ success: true, resData: {} });
 
-    await sendDeletionEmail(accountDetails.email, accountDetails.accountID, cancellationToken);
+    await sendDeletionEmail(accountDetails.email, accountID, cancellationToken, accountDetails.display_name);
 
   } catch (err: any) {
     console.log(err);
 
     if (connection) {
       await connection.rollback();
-    };
-
-    if (err.errno === 1452) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
-      return;
     };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -1037,34 +962,31 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
   let connection;
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface DeletionDetails extends RowDataPacket {
+      deletion_id: number,
+      cancellation_token: string,
+    };
+
+    const [deletionRows] = await dbPool.execute<DeletionDetails[]>(
       `SELECT
         deletion_id,
         cancellation_token
       FROM
-        AccountDeletionRequests
+        account_deletion
       WHERE
         account_id = ?
       LIMIT 1;`,
       [requestData.accountID]
     );
 
-    if (rows.length === 0) {
+    if (deletionRows.length === 0) {
       res.status(404).json({ success: false, message: 'Deletion request not found.' });
       return;
     };
 
-    interface DeletionData {
-      deletionID: number,
-      cancellationToken: string,
-    };
+    const deletionDetails: DeletionDetails = deletionRows[0];
 
-    const deletionData: DeletionData = {
-      deletionID: rows[0].deletion_id,
-      cancellationToken: rows[0].cancellation_token,
-    };
-
-    if (requestData.cancellationToken !== deletionData.cancellationToken) {
+    if (requestData.cancellationToken !== deletionDetails.cancellation_token) {
       res.status(401).json({ success: false, message: 'Incorrect cancellation token.' });
       return;
     };
@@ -1072,24 +994,39 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
     connection = await dbPool.getConnection();
     await connection.beginTransaction();
 
-    connection.execute(
+    const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${requestData.accountID}`;
+    const [updateHeader] = await connection.execute<ResultSetHeader>(
       `UPDATE
-        Accounts
+        accounts
       SET
-        auth_token = SUBSTRING(auth_token, 3, CHAR_LENGTH(auth_token) - 2),
+        auth_token = ?,
         marked_for_deletion = FALSE
       WHERE
         account_id = ?;`,
-      [requestData.accountID]
+      [newAuthToken, requestData.accountID]
     );
 
-    connection.execute(
+    if (updateHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
+
+    const [deleteHeader] = await connection.execute<ResultSetHeader>(
       `DELETE FROM
-        AccountDeletionRequests
+        account_deletion
       WHERE
         deletion_id = ?;`,
-      [deletionData.deletionID]
+      [deletionDetails.deletion_id]
     );
+
+    if (deleteHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
 
     await connection.commit();
     res.json({ success: true, resData: {} });
@@ -1123,12 +1060,13 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
+
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['currentPassword', 'newPassword'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
@@ -1147,34 +1085,34 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+      hashed_password: string,
+      failed_sign_in_attempts: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        account_id,
+        auth_token,
         hashed_password,
         failed_sign_in_attempts
       FROM
-        Accounts
+        accounts
       WHERE
-        auth_token = ?
-      LIMIT 1;`,
-      [authToken]
+        account_id = ?;`,
+      [accountID]
     );
 
-    if (rows.length === 0) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
+    if (accountRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    interface AccountDetails {
-      accountID: number,
-      hashedPassword: string,
-      failedSignInAttempts: number,
-    };
+    const accountDetails: AccountDetails = accountRows[0];
 
-    const accountDetails: AccountDetails = {
-      accountID: rows[0].account_id,
-      hashedPassword: rows[0].hashed_password,
-      failedSignInAttempts: rows[0].failed_sign_in_attempts,
+    if (authToken !== accountDetails.auth_token) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
     };
 
     if (accountDetails.failedSignInAttempts === 5) {
@@ -1182,35 +1120,65 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.currentPassword, accountDetails.hashedPassword);
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.currentPassword, accountDetails.hashed_password);
     if (!isCorrectPassword) {
+      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+        const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+        await dbPool.execute(
+          `UPDATE
+            accounts
+          SET
+            auth_token = ?,
+            failed_sign_in_attempts = failed_sign_in_attempts + 1
+          WHERE
+            account_id = ?;`,
+          [newAuthToken, accountID]
+        );
+
+        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
+        return;
+      };
+
       await dbPool.execute(
         `UPDATE
-          Accounts
+          accounts
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountDetails.accountID]
+        [accountID]
       );
-
-      if (accountDetails.failedSignInAttempts + 1 === 5) {
-        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
-        return;
-      };
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
       return;
     };
 
-    const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
-    const updatePasswordData: UpdatePasswordData = {
-      accountID: accountDetails.accountID,
-      recoveryID: null,
-      newHashedPassword,
+    const isSamePassword: boolean = await bcrypt.compare(requestData.newPassword, accountDetails.hashed_password);
+    if (isSamePassword) {
+      res.status(409).json({ success: false, message: 'New password matches existing one.' });
+      return;
     };
 
-    await updatePassword(res, updatePasswordData);
+    const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+    const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `UPDATE
+        accounts
+      SET
+        auth_token = ?,
+        hashed_password = ?
+      WHERE
+        account_id = ?;`,
+      [newAuthToken, newHashedPassword, accountID]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    res.json({ success: true, resData: { authToken: newAuthToken } });
 
   } catch (err: any) {
     console.log(err);
@@ -1231,12 +1199,13 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
+
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password', 'newEmail'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
@@ -1245,7 +1214,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
   };
 
   if (!userValidation.isValidEmailString(requestData.newEmail)) {
-    res.status(400).json({ success: false, message: 'Invalid new email address.' });
+    res.status(400).json({ success: false, message: 'Invalid email address.' });
     return;
   };
 
@@ -1257,114 +1226,115 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
   let connection;
 
   try {
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+      hashed_password: string,
+      email: string,
+      display_name: string,
+      failed_sign_in_attempts: number,
+      update_id: number,
+      new_email: string,
+      verification_code: string,
+      request_timestamp: number,
+      update_emails_sent: number,
+      failed_update_attempts: number,
+    };
 
-    const [rows]: any = await connection.execute(
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        Accounts.account_id,
-        Accounts.hashed_password,
-        Accounts.email,
-        Accounts.failed_sign_in_attempts,
-        EmailUpdateRequests.update_id,
-        EmailUpdateRequests.new_email,
-        EmailUpdateRequests.verification_code,
-        EmailUpdateRequests.update_emails_sent
+        accounts.auth_token,
+        accounts.hashed_password,
+        accounts.email,
+        accounts.display_name,
+        accounts.failed_sign_in_attempts,
+        email_update.update_id,
+        email_update.new_email,
+        email_update.verification_code,
+        email_update.request_timestamp,
+        email_update.update_emails_sent,
+        email_update.failed_update_attempts
       FROM
-        Accounts
+        accounts
       LEFT JOIN
-        EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
+        email_update ON accounts.account_id = email_update.account_id
       WHERE
-        Accounts.auth_token = ?
+        accounts.account_id = ?
       LIMIT 1;`,
-      [authToken]
+      [accountID]
     );
 
-    if (rows.length === 0) {
+    const accountDetails: AccountDetails = accountRows[0];
+
+    if (accountRows.length === 0) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    interface AccountDetails {
-      accountID: number,
-      hashedPassword: string,
-      currentEmail: string,
-      failedSignInAttempts: number,
-      updateID: number,
-      newEmail: string,
-      verificationCode: string,
-      updateEmailsSent: number,
-    };
-
-    const accountDetails: AccountDetails = {
-      accountID: rows[0].account_id,
-      hashedPassword: rows[0].hashed_password,
-      currentEmail: rows[0].email,
-      failedSignInAttempts: rows[0].failed_sign_in_attempts,
-      updateID: rows[0].update_id,
-      newEmail: rows[0].new_email,
-      verificationCode: rows[0].verification_code,
-      updateEmailsSent: rows[0].update_emails_sent,
-    };
-
-    if (accountDetails.failedSignInAttempts === 5) {
-      res.status(403).json({ success: false, message: 'Account locked.' });
+    if (authToken !== accountDetails.auth_token) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await connection.execute(
+      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+        const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+        await dbPool.execute(
+          `UPDATE
+            accounts
+          SET
+            auth_token = ?,
+            failed_sign_in_attempts = failed_sign_in_attempts + 1
+          WHERE
+            account_id = ?;`,
+          [newAuthToken, accountID]
+        );
+
+        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
+        return;
+      };
+
+      await dbPool.execute(
         `UPDATE
-          Accounts
+          accounts
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountDetails.accountID]
+        [accountID]
       );
-
-      if (accountDetails.failedSignInAttempts + 1 === 5) {
-        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
-        return;
-      };
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
       return;
     };
 
-    if (requestData.newEmail === accountDetails.currentEmail) {
+    if (requestData.newEmail === accountDetails.email) {
       res.status(409).json({ success: false, message: 'New email can not be equal to the current email.' });
       return;
     };
 
-    const [emailRows]: any = await connection.execute(
-      `SELECT
-        1
-      FROM
-        Accounts
-      WHERE
-        email = ?
-      UNION
-      SELECT
-        1
-      FROM
-        EmailUpdateRequests
-      WHERE
-        new_email = ?
-      LIMIT 1;`,
-      [requestData.newEmail, requestData.newEmail]
-    );
+    if (!accountDetails.update_id) {
+      connection = await dbPool.getConnection();
+      await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+      await connection.beginTransaction();
 
-    if (emailRows.length !== 0) {
-      res.status(409).json({ success: false, message: 'Email already in use.' });
-      return;
-    };
+      const [emailRows] = await connection.execute<RowDataPacket[]>(
+        `(SELECT 1 FROM accounts WHERE email = ? LIMIT 1)
+        UNION ALL
+        (SELECT 1 FROM email_update WHERE new_email = ? LIMIT 1);`,
+        [requestData.newEmail, requestData.newEmail]
+      );
 
-    if (!accountDetails.updateID) { // no update requests
+      if (emailRows.length > 0) {
+        await connection.rollback();
+        res.status(409).json({ success: false, message: 'Email already in use.' });
+
+        return;
+      };
+
       const newVerificationCode: string = tokenGenerator.generateUniqueCode();
-      await connection.execute(
-        `INSERT INTO EmailUpdateRequests(
+      await connection.execute<ResultSetHeader>(
+        `INSERT INTO email_update(
           account_id,
           new_email,
           verification_code,
@@ -1373,51 +1343,57 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
           failed_update_attempts
         )
         VALUES(${generatePlaceHolders(6)});`,
-        [accountDetails.accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]
+        [accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]
       );
 
       await connection.commit();
-      res.json({ success: true, resData: { accountID: accountDetails.accountID } });
+      res.json({ success: true, resData: {} });
 
-      await sendEmailUpdateEmail(requestData.newEmail, accountDetails.accountID, newVerificationCode);
+      await sendEmailUpdateEmail(requestData.newEmail, newVerificationCode, accountDetails.display_name);
       return;
     };
 
-    if (requestData.newEmail !== accountDetails.newEmail) {
-      res.status(403).json({ success: false, message: 'Ongoing request contains a different new email address.' });
+    if (accountDetails.failed_update_attempts === 3) {
+      const dayMilliseconds: number = 1000 * 60 * 60 * 24;
+      const timeTillNextRequest: number = new Date(accountDetails.request_timestamp + dayMilliseconds - Date.now()).getHours() + 1;
+
+      res.status(403).json({ success: false, message: 'Too many failed attempts.', resData: { timeTillNextRequest } });
       return;
     };
 
-    if (accountDetails.updateEmailsSent === 3) {
+    if (requestData.newEmail !== accountDetails.new_email) {
+      res.status(409).json({ success: false, message: 'Ongoing request contains a different new email address.' });
+      return;
+    };
+
+    if (accountDetails.update_emails_sent === 3) {
       res.status(403).json({ success: false, message: 'Update email limit reached.' });
       return;
     };
 
-    await connection.execute(
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
-        EmailUpdateRequests
+        email_update
       SET
         update_emails_sent = update_emails_sent + 1
       WHERE
         update_id = ?;`,
-      [accountDetails.updateID]
+      [accountDetails.update_id]
     );
 
-    await connection.commit();
-    res.json({ success: true, resData: { accountID: accountDetails.accountID } });
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
 
-    await sendEmailUpdateEmail(accountDetails.newEmail, accountDetails.accountID, accountDetails.verificationCode);
+    res.json({ success: true, resData: {} });
+    await sendEmailUpdateEmail(accountDetails.new_email, accountDetails.verification_code, accountDetails.display_name);
 
   } catch (err: any) {
     console.log(err);
 
     if (connection) {
       await connection.rollback();
-    };
-
-    if (err.errno === 1062) {
-      res.status(409).json({ success: false, message: 'Email already in use.' });
-      return;
     };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -1431,7 +1407,6 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
 accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Response) => {
   interface RequestData {
-    accountID: number,
     verificationCode: string,
   };
 
@@ -1442,21 +1417,17 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
 
-  const expectedKeys: string[] = ['accountID', 'verificationCode'];
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['verificationCode'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
-    return;
-  };
-
-  if (!Number.isInteger(requestData.accountID)) {
-    res.status(400).json({ success: false, message: 'Invalid account ID.' });
     return;
   };
 
@@ -1466,72 +1437,77 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+      display_name: string,
+      email: string,
+      update_id: number,
+      new_email: string,
+      verification_code: string,
+      request_timestamp: number,
+      failed_update_attempts: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        Accounts.auth_token,
-        EmailUpdateRequests.update_id,
-        EmailUpdateRequests.new_email,
-        EmailUpdateRequests.verification_code,
-        EmailUpdateRequests.failed_update_attempts
+        accounts.auth_token,
+        accounts.display_name,
+        accounts.email,
+        email_update.update_id,
+        email_update.new_email,
+        email_update.verification_code,
+        email_update.request_timestamp,
+        email_update.failed_update_attempts
       FROM
-        Accounts
+        accounts
       LEFT JOIN
-        EmailUpdateRequests ON Accounts.account_id = EmailUpdateRequests.account_id
+        email_update ON accounts.account_id = email_update.account_id
       WHERE
-        Accounts.account_id = ?
+        accounts.account_id = ?
       LIMIT 1;`,
-      [requestData.accountID]
+      [accountID]
     );
 
-    if (rows.length === 0) {
+    if (accountRows.length === 0) {
       res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    interface AccountDetails {
-      authToken: string,
-      updateID: number,
-      newEmail: string,
-      verificationCode: string,
-      failedUpdateAttempts: number
-    };
+    const accountDetails: AccountDetails = accountRows[0];
 
-    const accountDetails: AccountDetails = {
-      authToken: rows[0].auth_token,
-      updateID: rows[0].update_id,
-      newEmail: rows[0].new_email,
-      verificationCode: rows[0].verification_code,
-      failedUpdateAttempts: rows[0].failed_update_attempts,
-    };
-
-    if (authToken !== accountDetails.authToken) {
+    if (authToken !== accountDetails.auth_token) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    if (!accountDetails.updateID) {
+    if (!accountDetails.update_id) {
       res.status(404).json({ success: false, message: 'Email update request not found.' });
       return;
     };
 
-    if (accountDetails.failedUpdateAttempts === 3) {
-      res.status(403).json({ success: false, message: 'Update attempt limit reached.' });
+    if (accountDetails.failed_update_attempts === 3) {
+      const dayMilliseconds: number = 1000 * 60 * 60 * 24;
+      const timeTillNextRequest: number = new Date(accountDetails.request_timestamp + dayMilliseconds - Date.now()).getHours() + 1;
+
+      res.status(403).json({ success: false, message: 'Too many failed attempts.', resData: { timeTillNextRequest } });
       return;
     };
 
-    if (requestData.verificationCode !== accountDetails.verificationCode) {
+    if (requestData.verificationCode !== accountDetails.verification_code) {
       await dbPool.execute(
         `UPDATE
-          EmailUpdateRequests
+          email_update
         SET
           failed_update_attempts = failed_update_attempts + 1
         WHERE
           update_id = ?;`,
-        [accountDetails.updateID]
+        [accountDetails.update_id]
       );
 
-      if (accountDetails.failedUpdateAttempts + 1 === 3) {
+      if (accountDetails.failed_sign_in_attempts + 1 === 3) {
         res.status(401).json({ success: false, message: 'Incorrect verification code. Request suspended.' });
+        await sendEmailUpdateWarningEmail(accountDetails.email, accountDetails.display_name);
+
         return;
       };
 
@@ -1539,13 +1515,24 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
       return;
     };
 
-    const updateEmailData: UpdateEmailData = {
-      accountID: requestData.accountID,
-      updateID: accountDetails.updateID,
-      newEmail: accountDetails.newEmail,
+    const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `UPDATE
+        accounts
+      SET
+        auth_token = ?,
+        email = ?
+      WHERE
+        account_id = ?;`,
+      [newAuthToken, accountDetails.new_email, accountID]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
     };
 
-    await updateEmail(res, updateEmailData);
+    res.json({ success: true, resData: { authToken: newAuthToken } });
 
   } catch (err: any) {
     console.log(err);
@@ -1566,12 +1553,13 @@ accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Respo
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
+
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password', 'newDisplayName'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
@@ -1590,79 +1578,95 @@ accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Respo
   };
 
   try {
-    const [rows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+      hashed_password: string,
+      failed_sign_in_attempts: number,
+      display_name: string,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        account_id,
+        auth_token,
         hashed_password,
         failed_sign_in_attempts,
         display_name
       FROM
-        Accounts
+        accounts
       WHERE
-        auth_token = ?
-      LIMIT 1;`,
-      [authToken]
+        account_id = ?;`,
+      [accountID]
     );
 
-    if (rows.length === 0) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
+    if (accountRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    interface AccountDetails {
-      accountID: number,
-      hashedPassword: string,
-      failedSignInAttempts: number,
-      displayName: string,
+    const accountDetails: AccountDetails = accountRows[0];
+
+    if (authToken !== accountDetails.auth_token) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
     };
 
-    const accountDetails: AccountDetails = {
-      accountID: rows[0].account_id,
-      hashedPassword: rows[0].hashed_password,
-      failedSignInAttempts: rows[0].failed_sign_in_attempts,
-      displayName: rows[0].display_name,
-    };
-
-    if (accountDetails.failedSignInAttempts === 5) {
+    if (accountDetails.failed_sign_in_attempts === 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashedPassword);
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
+      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+        const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+        await dbPool.execute(
+          `UPDATE
+            accounts
+          SET
+            auth_token = ?,
+            failed_sign_in_attempts = failed_sign_in_attempts + 1
+          WHERE
+            account_id = ?;`,
+          [newAuthToken, accountID]
+        );
+
+        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
+        return;
+      };
+
       await dbPool.execute(
         `UPDATE
-          Accounts
+          accounts
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountDetails.accountID]
+        [accountID]
       );
-
-      if (accountDetails.failedSignInAttempts + 1 === 5) {
-        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
-        return;
-      };
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
       return;
     };
 
-    if (requestData.newDisplayName === accountDetails.displayName) {
-      res.status(409).json({ success: false, message: 'Account already has this display name.' });
+    if (requestData.newDisplayName === accountDetails.display_name) {
+      res.status(409).json({ success: false, message: 'New display name matches existing one.' });
       return;
     };
 
-    await dbPool.execute(
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
-        Accounts
+        accounts
       SET
         display_name = ?
       WHERE
         account_id = ?;`,
-      [requestData.newDisplayName, accountDetails.accountID]
+      [requestData.newDisplayName, accountID]
     );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
 
     res.json({ success: true, resData: { newDisplayName: requestData.newDisplayName } });
 
@@ -1684,12 +1688,13 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
+
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['requesteeUsername'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
@@ -1698,40 +1703,52 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
   };
 
   if (!userValidation.isValidUsernameString(requestData.requesteeUsername)) {
-    res.status(400).json({ success: false, message: 'Invalid username.' });
+    res.status(400).json({ success: false, message: 'Invalid requestee username.' });
     return;
   };
 
   try {
-    const [requesterRows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+      username: string,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        account_id,
+        auth_token,
         username
       FROM
-        Accounts
+        accounts
       WHERE
-        auth_token = ?;`,
-      [authToken]
+        account_id = ?;`,
+      [accountID]
     );
 
-    if (requesterRows.length === 0) {
+    if (accountRows.length === 0) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    const requesterID: number = requesterRows[0].account_id;
-    const requesterUsername: string = requesterRows[0].username;
+    const accountDetails: AccountDetails = accountRows[0];
 
-    if (requesterUsername === requestData.requesteeUsername) {
-      res.status(409).json({ success: false, message: 'Can not add yourself as a friend.' });
+    if (authToken !== accountDetails.auth_token) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    const [requesteeRows]: any = await dbPool.execute(
+    if (requestData.requesteeUsername === accountDetails.username) {
+      res.status(409).json({ success: false, message: 'Can not add yourself as a friend.' });
+    };
+
+    interface RequesteeDetails extends RowDataPacket {
+      account_id: number,
+    };
+
+    const [requesteeRows] = await dbPool.execute<RequesteeDetails[]>(
       `SELECT
         account_id
       FROM
-        Accounts
+        accounts
       WHERE
         username = ?
       LIMIT 1;`,
@@ -1744,16 +1761,16 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     };
 
     const requesteeID: number = requesteeRows[0].account_id;
-    const [friendshipRows]: any = await dbPool.execute(
+    const [friendshipRows] = await dbPool.execute<RowDataPacket[]>(
       `SELECT
-        friendship_id
+        1
       FROM
-        Friendships
+        friendships
       WHERE
         account_id = ? AND
         friend_id = ?
       LIMIT 1;`,
-      [requesterID, requesteeID]
+      [accountID, requesteeID]
     );
 
     if (friendshipRows.length > 0) {
@@ -1761,29 +1778,35 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       return;
     };
 
-    const [friendRequestRows]: any = await dbPool.execute(
+    interface FriendRequestDetails extends RowDataPacket {
+      request_id: number,
+      requester_id: number,
+      requestee_id: number,
+    };
+
+    const [friendRequestRows] = await dbPool.execute<FriendRequestDetails[]>(
       `SELECT
         request_id,
         requester_id,
         requestee_id
       FROM
-        FriendRequests
+        friend_requests
       WHERE
         (requester_id = ? AND requestee_id = ?) OR
         (requester_id = ? AND requestee_id = ?)
       LIMIT 2;`,
-      [requesterID, requesteeID, requesteeID, requesterID]
+      [accountID, requesteeID, requesteeID, accountID]
     );
 
     if (friendRequestRows.length === 0) {
       await dbPool.execute(
-        `INSERT INTO FriendRequests(
+        `INSERT INTO friend_requests(
           requester_id,
           requestee_id,
           request_timestamp
         )
         VALUES(${generatePlaceHolders(3)});`,
-        [requesterID, requesteeID, Date.now()]
+        [accountID, requesteeID, Date.now()]
       );
 
       res.json({ success: true, resData: {} });
@@ -1794,7 +1817,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     let toRequestee: boolean = false;
 
     for (const request of friendRequestRows) {
-      if (request.requester_id === requesterID) {
+      if (request.requester_id === accountID) {
         toRequestee = true;
       };
 
@@ -1808,12 +1831,18 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       return;
     };
 
-    const request: any = friendRequestRows.find((request: any) => request.requester_id === requesteeID);
+    const request: FriendRequestDetails | undefined = friendRequestRows.find((request: FriendRequestDetails) => request.requester_id === requesteeID);
+
+    if (!request) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
     res.status(409).json({
       success: false,
       message: 'Pending friend request.',
       resData: {
-        friendRequestID: request.request_id,
+        friendRequestID: request?.request_id,
       },
     });
 
@@ -1835,12 +1864,13 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
+
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['friendRequestID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
@@ -1856,14 +1886,18 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
   let connection;
 
   try {
-    const [accountRows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        account_id
+        auth_token
       FROM
-        Accounts
+        accounts
       WHERE
-        auth_token = ?;`,
-      [authToken]
+        account_id = ?;`,
+      [accountID]
     );
 
     if (accountRows.length === 0) {
@@ -1871,16 +1905,24 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
       return;
     };
 
-    const accountID: number = accountRows[0].account_id;
-    const [friendRequestRows]: any = await dbPool.execute(
+    const accountAuthToken: string = accountRows[0].auth_token;
+    if (authToken !== accountAuthToken) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    interface FriendRequestDetails extends RowDataPacket {
+      requester_id: number,
+    };
+
+    const [friendRequestRows] = await dbPool.execute<FriendRequestDetails[]>(
       `SELECT
         requester_id
       FROM
-        FriendRequests
+        friend_requests
       WHERE
-        request_id = ? AND
-        requestee_id = ?;`,
-      [requestData.friendRequestID, accountID]
+        request_id = ?;`,
+      [requestData.friendRequestID]
     );
 
     if (friendRequestRows.length === 0) {
@@ -1888,14 +1930,14 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
       return;
     };
 
-    const friendID: string = friendRequestRows[0].requester_id;
+    const requesterID: number = friendRequestRows[0].requester_id;
     const friendshipTimestamp: number = Date.now();
 
     connection = await dbPool.getConnection();
     await connection.beginTransaction();
 
-    connection.execute(
-      `INSERT INTO Friendships(
+    await connection.execute(
+      `INSERT INTO friendships(
         account_id,
         friend_id,
         friendship_timestamp
@@ -1903,17 +1945,23 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
       VALUES
         (${generatePlaceHolders(3)}),
         (${generatePlaceHolders(3)});`,
-      [accountID, friendID, friendshipTimestamp, friendID, accountID, friendshipTimestamp]
+      [accountID, requesterID, friendshipTimestamp, requesterID, accountID, friendshipTimestamp]
     );
 
-    connection.execute(
+    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `DELETE FROM
-        FriendRequests
+        friend_requests
       WHERE
-        requester_id = ? AND
-        requestee_id = ?;`,
-      [friendID, accountID]
+        request_id = ?;`,
+      [requestData.friendRequestID]
     );
+
+    if (resultSetHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
 
     await connection.commit();
     res.json({ success: true, resData: {} })
@@ -1931,6 +1979,7 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
     };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
+
   } finally {
     if (connection) {
       connection.release();
@@ -1950,12 +1999,13 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
+
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['friendRequestID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
@@ -1968,14 +2018,18 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
   };
 
   try {
-    const [accountRows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        account_id
+        auth_token
       FROM
-        Accounts
+        accounts
       WHERE
-        auth_token = ?;`,
-      [authToken]
+        account_id = ?;`,
+      [accountID]
     );
 
     if (accountRows.length === 0) {
@@ -1983,17 +2037,21 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
       return;
     };
 
-    const accountID: number = accountRows[0].account_id;
-    const [deletionData]: any = await dbPool.execute(
+    const accountAuthToken: string = accountRows[0].auth_token;
+    if (authToken !== accountAuthToken) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
-        FriendRequests
+        friend_requests
       WHERE
-        request_id = ? AND
-        requestee_id = ?;`,
-      [requestData.friendRequestID, accountID]
+        request_id = ?;`,
+      [requestData.friendRequestID]
     );
 
-    if (deletionData.affectedRows === 0) {
+    if (resultSetHeader.affectedRows === 0) {
       res.status(404).json({ success: false, message: 'Friend request not found.' });
       return;
     };
@@ -2018,14 +2076,15 @@ accountsRouter.delete('/friends/remove', async (req: Request, res: Response) => 
   };
 
   const authToken: string = authHeader.substring(7);
-  const requestData: RequestData = req.body;
-
   if (!userValidation.isValidAuthTokenString(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
 
-  const expectedKeys: string[] = ['friendRequestID'];
+  const accountID: number = userValidation.getUserID(authToken);
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['friendshipID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -2037,14 +2096,18 @@ accountsRouter.delete('/friends/remove', async (req: Request, res: Response) => 
   };
 
   try {
-    const [accountRows]: any = await dbPool.execute(
+    interface AccountDetails extends RowDataPacket {
+      auth_token: string,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        account_id
+        auth_token
       FROM
-        Accounts
+        accounts
       WHERE
-        auth_token = ?;`,
-      [authToken]
+        account_id = ?;`,
+      [accountID]
     );
 
     if (accountRows.length === 0) {
@@ -2052,12 +2115,21 @@ accountsRouter.delete('/friends/remove', async (req: Request, res: Response) => 
       return;
     };
 
-    const accountID: number = accountRows[0].account_id;
-    const [friendshipRows]: any = await dbPool.execute(
+    const accountAuthToken: string = accountRows[0].auth_token;
+    if (authToken !== accountAuthToken) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    interface FriendshipDetails extends RowDataPacket {
+      friend_id: number,
+    };
+
+    const [friendshipRows] = await dbPool.execute<FriendshipDetails[]>(
       `SELECT
         friend_id
       FROM
-        Friendships
+        friendships
       WHERE
         friendship_id = ?;`,
       [requestData.friendshipID]
@@ -2069,15 +2141,20 @@ accountsRouter.delete('/friends/remove', async (req: Request, res: Response) => 
     };
 
     const friendID: number = friendshipRows[0].friend_id;
-    await dbPool.execute(
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
-        Friendships
+        friendships
       WHERE
         (account_id = ? AND friend_id = ?) OR
         (account_id = ? AND friend_id = ?)
       LIMIT 2;`,
       [accountID, friendID, friendID, accountID]
     );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(404).json({ success: false, message: 'Friend not found.' });
+      return;
+    };
 
     res.json({ success: true, resData: {} });
 

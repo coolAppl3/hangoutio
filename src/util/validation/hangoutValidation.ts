@@ -3,7 +3,15 @@ export function isValidHangoutIDString(hangoutID: string): boolean {
     return false;
   };
 
-  if (hangoutID.length !== 32) {
+  if (hangoutID.length < 46) {
+    return false;
+  };
+
+  if (hangoutID[32] !== '_') {
+    return false;
+  };
+
+  if (!Number.isInteger(+hangoutID.substring(33))) {
     return false;
   };
 
@@ -38,13 +46,14 @@ export function isValidHangoutConfiguration(availabilityPeriod: number, suggesti
   return true;
 };
 
+export const globalHangoutMemberLimit: number = Number(process.env.GLOBAL_HANGOUT_LEADER_MEMBER) || 20;
 export function isValidHangoutMemberLimit(limit: number): boolean {
 
   if (!Number.isInteger(limit)) {
     return false;
   };
 
-  if (limit < 2 || limit > 20) {
+  if (limit < 2 || limit > globalHangoutMemberLimit) {
     return false;
   };
 
@@ -52,11 +61,11 @@ export function isValidHangoutMemberLimit(limit: number): boolean {
 };
 
 interface HangoutDetails {
-  currentStep: number,
-  stepTimestamp: number,
-  currentAvailabilityPeriod: number,
-  currentSuggestionsPeriod: number,
-  currentVotingPeriod: number,
+  current_step: number,
+  step_timestamp: number,
+  availability_period: number,
+  suggestions_period: number,
+  voting_period: number,
 };
 
 interface NewPeriods {
@@ -66,17 +75,16 @@ interface NewPeriods {
 };
 
 export function isValidNewPeriods(hangoutDetails: HangoutDetails, newPeriods: NewPeriods): boolean {
-  const daysPassed: number = getDaysPassed(hangoutDetails.stepTimestamp);
+  const daysPassed: number = getDaysPassed(hangoutDetails.step_timestamp);
 
-  if (hangoutDetails.currentStep === 1) {
-
+  if (hangoutDetails.current_step === 1) {
     if (newPeriods.newAvailabilityPeriod < daysPassed || newPeriods.newAvailabilityPeriod === daysPassed) {
       return false;
     };
   };
 
-  if (hangoutDetails.currentStep === 2) {
-    if (newPeriods.newAvailabilityPeriod !== hangoutDetails.currentAvailabilityPeriod) {
+  if (hangoutDetails.current_step === 2) {
+    if (newPeriods.newAvailabilityPeriod !== hangoutDetails.availability_period) {
       return false;
     };
 
@@ -85,12 +93,12 @@ export function isValidNewPeriods(hangoutDetails: HangoutDetails, newPeriods: Ne
     };
   };
 
-  if (hangoutDetails.currentStep === 3) {
-    if (newPeriods.newAvailabilityPeriod !== hangoutDetails.currentAvailabilityPeriod) {
+  if (hangoutDetails.current_step === 3) {
+    if (newPeriods.newAvailabilityPeriod !== hangoutDetails.availability_period) {
       return false;
     };
 
-    if (newPeriods.newSuggestionsPeriod !== hangoutDetails.currentSuggestionsPeriod) {
+    if (newPeriods.newSuggestionsPeriod !== hangoutDetails.suggestions_period) {
       return false;
     };
 

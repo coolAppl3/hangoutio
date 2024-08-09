@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidCodeString = exports.isValidToken = exports.isValidAuthTokenString = exports.isValidDisplayNameString = exports.isValidUsernameString = exports.isValidPasswordString = exports.isValidNewPasswordString = exports.isValidEmailString = void 0;
+exports.isValidCodeString = exports.isValidToken = exports.getUserType = exports.getUserID = exports.isValidAuthTokenString = exports.isValidDisplayNameString = exports.isValidUsernameString = exports.isValidPasswordString = exports.isValidNewPasswordString = exports.isValidEmailString = void 0;
 function isValidEmailString(email) {
     if (typeof email !== 'string') {
         return false;
@@ -59,7 +59,15 @@ function isValidAuthTokenString(authToken) {
         return false;
     }
     ;
-    if (authToken.length !== 32) {
+    if (authToken.length < 34) {
+        return false;
+    }
+    ;
+    if (authToken[32] !== '_') {
+        return false;
+    }
+    ;
+    if (!Number.isInteger(+authToken.substring(33))) {
         return false;
     }
     ;
@@ -70,6 +78,20 @@ function isValidAuthTokenString(authToken) {
     return true;
 }
 exports.isValidAuthTokenString = isValidAuthTokenString;
+;
+function getUserID(authToken) {
+    return +authToken.substring(33);
+}
+exports.getUserID = getUserID;
+;
+function getUserType(authToken) {
+    if (authToken.startsWith('a')) {
+        return 'account';
+    }
+    ;
+    return 'guest';
+}
+exports.getUserType = getUserType;
 ;
 function isValidToken(token) {
     if (typeof token !== 'string') {

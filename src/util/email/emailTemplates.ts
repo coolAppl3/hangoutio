@@ -1,4 +1,4 @@
-export function getVerificationEmailTemplate(accountID: number, verificationCode: string): string {
+export function getVerificationEmailTemplate(accountID: number, verificationCode: string, displayName: string): string {
   const htmlTemplate: string = `
     <!DOCTYPE html>
     <html lang="en">
@@ -63,7 +63,7 @@ export function getVerificationEmailTemplate(accountID: number, verificationCode
       </head>
       <body>
         <div class="email-body">
-          <p>Hey there,</p>
+          <p>Hey ${displayName},</p>
           <p>Welcome to Hangoutio!</p>
           <p>
             To complete your account creation, please enter the following verification code as instructed: <span id="verification-code">${verificationCode}</span>.
@@ -86,7 +86,7 @@ export function getVerificationEmailTemplate(accountID: number, verificationCode
   return htmlTemplate;
 };
 
-export function getRecoveryEmailTemplate(accountID: number, recoveryToken: string): string {
+export function getRecoveryEmailTemplate(accountID: number, recoveryToken: string, displayName: string): string {
   const htmlTemplate: string = `
     <!DOCTYPE html>
     <html lang="en">
@@ -151,7 +151,7 @@ export function getRecoveryEmailTemplate(accountID: number, recoveryToken: strin
       </head>
       <body>
         <div class="email-body">
-          <p>Hey there,</p>
+          <p>Hey ${displayName},</p>
           <p>We've received a recovery request for your account.</p>
           <p>
             To start the recovery process, please click the following link:
@@ -172,7 +172,7 @@ export function getRecoveryEmailTemplate(accountID: number, recoveryToken: strin
   return htmlTemplate;
 };
 
-export function getAccountDeletionTemplate(accountID: number, cancellationToken: string): string {
+export function getAccountDeletionTemplate(accountID: number, cancellationToken: string, displayName: string): string {
   const htmlTemplate: string = `
     <!DOCTYPE html>
     <html lang="en">
@@ -237,7 +237,7 @@ export function getAccountDeletionTemplate(accountID: number, cancellationToken:
       </head>
       <body>
         <div class="email-body">
-          <p>Hey there,</p>
+          <p>Hey ${displayName},</p>
           <p>We're reaching out to confirm your account deletion request.</p>
           <p>
             Your account has been marked for deletion, and will be fully removed from our records within the next 48-72 hours. In the meantime, it won't be
@@ -264,7 +264,7 @@ export function getAccountDeletionTemplate(accountID: number, cancellationToken:
   return htmlTemplate;
 };
 
-export function getEmailUpdateTemplate(accountID: number, verificationCode: string): string {
+export function getEmailUpdateTemplate(verificationCode: string, displayName: string): string {
   const htmlTemplate: string = `
     <!DOCTYPE html>
     <html lang="en">
@@ -329,18 +329,97 @@ export function getEmailUpdateTemplate(accountID: number, verificationCode: stri
       </head>
       <body>
         <div class="email-body">
-          <p>Hey there,</p>
+          <p>Hey ${displayName},</p>
           <p>We've received a request to change the registered email address for your Hangoutio account.</p>
           <p>
             To complete the process, please enter the following verification code as instructed: <span id="verification-code">${verificationCode}</span>.
             Alternatively, you can click the following link:
             <a
               target="_blank"
-              href="https://hangoutio.com/updateEmail.html?accountID:${accountID}&verificationCode=${verificationCode}"
-              >https://hangoutio.com/updateEmail.html?accountID:${accountID}&verificationCode=${verificationCode}</a
+              href="https://hangoutio.com/updateEmail.html?verificationCode=${verificationCode}"
+              >https://hangoutio.com/updateEmail.html?verificationCode=${verificationCode}</a
             >.
           </p>
           <p>If this request wasn't made by you, feel free to ignore it.</p>
+          <p id="end-of-email">Warmest regards,</p>
+          <p>Hangoutio</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return htmlTemplate;
+};
+
+export function getEmailUpdateWarningTemplate(displayName: string): string {
+  const htmlTemplate: string = `
+  <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+          rel="stylesheet"
+        />
+
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+          }
+
+          body {
+            color: #222222;
+            font-weight: 500 !important;
+            font-size: 16px;
+          }
+
+          p {
+            margin-bottom: 10px;
+            line-height: 1.2;
+          }
+
+          a {
+            text-decoration: none;
+            color: #1155cc;
+            text-decoration: underline;
+            transition: filter 200ms;
+          }
+
+          a:hover {
+            filter: brightness(0.8);
+          }
+
+          .email-body {
+            padding: 30px 10px;
+            max-height: fit-content;
+          }
+
+          #verification-code {
+            font-weight: bold;
+          }
+
+          #end-of-email {
+            margin-bottom: 0px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-body">
+          <p>Hey ${displayName},</p>
+          <p>We noticed 3 failed attempts made for your Hangoutio account's registered email address.</p>
+          <p>If this requests weren't made by you, please sign in and update your password to ensure your account is safe.</p>
+          <p>Further email update attempts have been suspended for the next 24 hours to protect your account.</p>
           <p id="end-of-email">Warmest regards,</p>
           <p>Hangoutio</p>
         </div>
