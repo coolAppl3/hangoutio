@@ -41,13 +41,13 @@ function generateUniqueToken() {
 }
 exports.generateUniqueToken = generateUniqueToken;
 ;
-function generateHangoutID() {
+function generateHangoutID(timestamp) {
     let hangoutID = 'h';
     while (hangoutID.length < 32) {
         hangoutID += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
     }
     ;
-    return hangoutID;
+    return `${hangoutID}_${timestamp}`;
 }
 exports.generateHangoutID = generateHangoutID;
 ;

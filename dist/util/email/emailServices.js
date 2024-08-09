@@ -23,16 +23,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmailUpdateEmail = exports.sendDeletionEmail = exports.sendRecoveryEmail = exports.sendVerificationEmail = void 0;
+exports.sendEmailUpdateWarningEmail = exports.sendEmailUpdateEmail = exports.sendDeletionEmail = exports.sendRecoveryEmail = exports.sendVerificationEmail = void 0;
 const emailTemplates = __importStar(require("./emailTemplates"));
 const initTransporter_1 = require("./initTransporter");
-async function sendVerificationEmail(to, accountID, code) {
+async function sendVerificationEmail(to, accountID, code, displayName) {
     try {
         const info = await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to,
             subject: 'Hangoutio - Account Verification',
-            html: emailTemplates.getVerificationEmailTemplate(accountID, code),
+            html: emailTemplates.getVerificationEmailTemplate(accountID, code, displayName),
         });
         console.log(`Email sent: ${info.response}`);
     }
@@ -43,13 +43,13 @@ async function sendVerificationEmail(to, accountID, code) {
 }
 exports.sendVerificationEmail = sendVerificationEmail;
 ;
-async function sendRecoveryEmail(to, accountID, recoveryToken) {
+async function sendRecoveryEmail(to, accountID, recoveryToken, displayName) {
     try {
         const info = await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to,
             subject: 'Hangoutio - Account Recovery',
-            html: emailTemplates.getRecoveryEmailTemplate(accountID, recoveryToken),
+            html: emailTemplates.getRecoveryEmailTemplate(accountID, recoveryToken, displayName),
         });
         console.log(`Email sent: ${info.response}`);
     }
@@ -60,13 +60,13 @@ async function sendRecoveryEmail(to, accountID, recoveryToken) {
 }
 exports.sendRecoveryEmail = sendRecoveryEmail;
 ;
-async function sendDeletionEmail(to, accountID, cancellationToken) {
+async function sendDeletionEmail(to, accountID, cancellationToken, displayName) {
     try {
         const info = await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to,
             subject: 'Hangoutio - Account Deletion',
-            html: emailTemplates.getAccountDeletionTemplate(accountID, cancellationToken),
+            html: emailTemplates.getAccountDeletionTemplate(accountID, cancellationToken, displayName),
         });
         console.log(`Email sent: ${info.response}`);
     }
@@ -77,13 +77,13 @@ async function sendDeletionEmail(to, accountID, cancellationToken) {
 }
 exports.sendDeletionEmail = sendDeletionEmail;
 ;
-async function sendEmailUpdateEmail(to, accountID, verificationCode) {
+async function sendEmailUpdateEmail(to, verificationCode, displayName) {
     try {
         const info = await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to,
             subject: 'Hangoutio - Email Update',
-            html: emailTemplates.getEmailUpdateTemplate(accountID, verificationCode),
+            html: emailTemplates.getEmailUpdateTemplate(verificationCode, displayName),
         });
         console.log(`Email sent: ${info.response}`);
     }
@@ -93,4 +93,21 @@ async function sendEmailUpdateEmail(to, accountID, verificationCode) {
     ;
 }
 exports.sendEmailUpdateEmail = sendEmailUpdateEmail;
+;
+async function sendEmailUpdateWarningEmail(to, displayName) {
+    try {
+        const info = await initTransporter_1.emailTransporter.sendMail({
+            from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
+            to,
+            subject: 'Hangoutio - Suspicious Activity',
+            html: emailTemplates.getEmailUpdateWarningTemplate(displayName),
+        });
+        console.log(`Email sent: ${info.response}`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+exports.sendEmailUpdateWarningEmail = sendEmailUpdateWarningEmail;
 ;
