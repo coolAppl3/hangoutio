@@ -70,18 +70,6 @@ export function isValidAuthTokenString(authToken: string): boolean {
   return true;
 };
 
-export function getUserID(authToken: string): number {
-  return +authToken.substring(33);
-};
-
-export function getUserType(authToken: string): 'account' | 'guest' {
-  if (authToken.startsWith('a')) {
-    return 'account';
-  };
-
-  return 'guest';
-};
-
 export function isValidToken(token: string): boolean {
   if (typeof token !== 'string') {
     return false;

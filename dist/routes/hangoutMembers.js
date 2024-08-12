@@ -12,6 +12,7 @@ const userValidation_1 = require("../util/validation/userValidation");
 const requestValidation_1 = require("../util/validation/requestValidation");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const tokenGenerator_1 = require("../util/tokenGenerator");
+const userUtils_1 = require("../util/userUtils");
 exports.hangoutMembersRouter = express_1.default.Router();
 exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
     ;
@@ -60,7 +61,7 @@ exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${hangoutValidation_1.globalHangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -68,7 +69,7 @@ exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
         ;
         const hangoutDetails = hangoutRows[0];
         const existingMembersCount = hangoutRows.length;
-        if (existingMembersCount === hangoutDetails.member_limit) {
+        if (existingMembersCount >= hangoutDetails.member_limit) {
             res.status(409).json({ success: false, message: 'Hangout full.' });
             return;
         }
@@ -168,7 +169,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
         return;
     }
     ;
-    const accountID = (0, userValidation_1.getUserID)(authToken);
+    const accountID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID', 'hangoutPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -204,6 +205,22 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
             return;
         }
         ;
+        const [ongoingHangoutsRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.hangout_id,
+        hangout_members.hangout_member_id
+      FROM
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      WHERE
+        hangouts.completed_on_timestamp IS NULL AND
+        hangout_members.account_id = ?
+      LIMIT ${hangoutValidation_1.ongoingHangoutsLimit};`, [accountID]);
+        if (ongoingHangoutsRows.length >= hangoutValidation_1.ongoingHangoutsLimit) {
+            res.status(403).json({ success: false, message: 'Ongoing hangouts limit reached.' });
+            return;
+        }
+        ;
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
         hangouts.hashed_password,
@@ -215,7 +232,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${hangoutValidation_1.globalHangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -243,7 +260,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
         }
         ;
         const existingMembersCount = hangoutRows.length;
-        if (existingMembersCount === hangoutDetails.member_limit) {
+        if (existingMembersCount >= hangoutDetails.member_limit) {
             res.status(409).json({ success: false, message: 'Hangout full.' });
             return;
         }
@@ -278,7 +295,7 @@ exports.hangoutMembersRouter.put('/details/leaveHangout', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -322,7 +339,7 @@ exports.hangoutMembersRouter.put('/details/leaveHangout', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation_1.globalHangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;

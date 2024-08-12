@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewPeriods = exports.isValidHangoutMemberLimit = exports.globalHangoutMemberLimit = exports.isValidHangoutConfiguration = exports.isValidHangoutIDString = void 0;
+exports.isValidNewPeriods = exports.isValidHangoutMemberLimit = exports.isValidHangoutConfiguration = exports.isValidHangoutIDString = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
+exports.hangoutMemberLimit = 20;
+exports.ongoingHangoutsLimit = 30;
 function isValidHangoutIDString(hangoutID) {
     if (typeof hangoutID !== 'string') {
         return false;
@@ -49,13 +51,12 @@ function isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, voti
 }
 exports.isValidHangoutConfiguration = isValidHangoutConfiguration;
 ;
-exports.globalHangoutMemberLimit = Number(process.env.GLOBAL_HANGOUT_LEADER_MEMBER) || 20;
 function isValidHangoutMemberLimit(limit) {
     if (!Number.isInteger(limit)) {
         return false;
     }
     ;
-    if (limit < 2 || limit > exports.globalHangoutMemberLimit) {
+    if (limit < 2 || limit > exports.hangoutMemberLimit) {
         return false;
     }
     ;

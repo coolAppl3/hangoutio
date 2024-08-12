@@ -35,6 +35,7 @@ const requestValidation_1 = require("../util/validation/requestValidation");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const userValidation_1 = require("../util/validation/userValidation");
 const tokenGenerator_1 = require("../util/tokenGenerator");
+const userUtils_1 = require("../util/userUtils");
 exports.hangoutsRouter = express_1.default.Router();
 exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     ;
@@ -50,7 +51,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         return;
     }
     ;
-    const accountID = (0, userValidation_1.getUserID)(authToken);
+    const accountID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityPeriod', 'suggestionsPeriod', 'votingPeriod'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -91,6 +92,22 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         const accountAuthToken = accountRows[0].auth_token;
         if (authToken !== accountAuthToken) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            return;
+        }
+        ;
+        const [ongoingHangoutsRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.hangout_id,
+        hangout_members.hangout_member_id
+      FROM
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      WHERE
+        hangouts.completed_on_timestamp IS NULL AND
+        hangout_members.account_id = ?
+      LIMIT ${hangoutValidation.ongoingHangoutsLimit};`, [accountID]);
+        if (ongoingHangoutsRows.length >= hangoutValidation.ongoingHangoutsLimit) {
+            res.status(403).json({ success: false, message: 'Ongoing hangouts limit reached.' });
             return;
         }
         ;
@@ -292,7 +309,7 @@ exports.hangoutsRouter.put('/details/updatePassword', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID', 'newPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -307,7 +324,7 @@ exports.hangoutsRouter.put('/details/updatePassword', async (req, res) => {
     ;
     try {
         ;
-        const userType = (0, userValidation_1.getUserType)(authToken);
+        const userType = (0, userUtils_1.getUserType)(authToken);
         const [userRows] = await db_1.dbPool.execute(`SELECT
         auth_token
       FROM
@@ -391,7 +408,7 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID', 'newLimit'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -412,7 +429,7 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
     let connection;
     try {
         ;
-        const userType = (0, userValidation_1.getUserType)(authToken);
+        const userType = (0, userUtils_1.getUserType)(authToken);
         const [userRows] = await db_1.dbPool.execute(`SELECT
         auth_token
       FROM
@@ -441,7 +458,7 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -473,7 +490,7 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         const [resultSetHeader] = await connection.execute(`UPDATE
         hangouts
       SET
@@ -519,7 +536,7 @@ exports.hangoutsRouter.put('/details/steps/changePeriods', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID', 'newAvailabilityPeriod', 'newSuggestionsPeriod', 'newVotingPeriod'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -540,7 +557,7 @@ exports.hangoutsRouter.put('/details/steps/changePeriods', async (req, res) => {
     ;
     try {
         ;
-        const userType = (0, userValidation_1.getUserType)(authToken);
+        const userType = (0, userUtils_1.getUserType)(authToken);
         const [userRows] = await db_1.dbPool.execute(`SELECT
         auth_token
       FROM
@@ -631,7 +648,7 @@ exports.hangoutsRouter.put('/details/steps/progressForward', async (req, res) =>
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -646,7 +663,7 @@ exports.hangoutsRouter.put('/details/steps/progressForward', async (req, res) =>
     ;
     try {
         ;
-        const userType = (0, userValidation_1.getUserType)(authToken);
+        const userType = (0, userUtils_1.getUserType)(authToken);
         const [userRows] = await db_1.dbPool.execute(`SELECT
         auth_token
       FROM
@@ -726,7 +743,7 @@ exports.hangoutsRouter.put('/details/members/kick', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID', 'hangoutMemberID'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -746,7 +763,7 @@ exports.hangoutsRouter.put('/details/members/kick', async (req, res) => {
     ;
     try {
         ;
-        const userType = (0, userValidation_1.getUserType)(authToken);
+        const userType = (0, userUtils_1.getUserType)(authToken);
         const [userRows] = await db_1.dbPool.execute(`SELECT
         auth_token
       FROM
@@ -773,7 +790,7 @@ exports.hangoutsRouter.put('/details/members/kick', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -841,7 +858,7 @@ exports.hangoutsRouter.put('/details/members/transferLeadership', async (req, re
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID', 'newLeaderMemberID'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -862,7 +879,7 @@ exports.hangoutsRouter.put('/details/members/transferLeadership', async (req, re
     let connection;
     try {
         ;
-        const userType = (0, userValidation_1.getUserType)(authToken);
+        const userType = (0, userUtils_1.getUserType)(authToken);
         const [userRows] = await db_1.dbPool.execute(`SELECT
         auth_token
       FROM
@@ -889,7 +906,7 @@ exports.hangoutsRouter.put('/details/members/transferLeadership', async (req, re
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -978,7 +995,7 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userValidation_1.getUserID)(authToken);
+    const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
     const expectedKeys = ['hangoutID'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -993,7 +1010,7 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
     ;
     try {
         ;
-        const userType = (0, userValidation_1.getUserType)(authToken);
+        const userType = (0, userUtils_1.getUserType)(authToken);
         const [userRows] = await db_1.dbPool.execute(`SELECT
         auth_token
       FROM

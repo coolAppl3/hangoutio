@@ -2,11 +2,12 @@ import { dbPool } from "../db/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import express, { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { globalHangoutMemberLimit, isValidHangoutIDString } from '../util/validation/hangoutValidation';
-import { getUserID, isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidPasswordString, isValidUsernameString } from '../util/validation/userValidation';
+import { hangoutMemberLimit, isValidHangoutIDString, ongoingHangoutsLimit } from '../util/validation/hangoutValidation';
+import { isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidPasswordString, isValidUsernameString } from '../util/validation/userValidation';
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { generateAuthToken } from "../util/tokenGenerator";
+import { getUserID } from "../util/userUtils";
 
 export const hangoutMembersRouter: Router = express.Router();
 
@@ -72,7 +73,7 @@ hangoutMembersRouter.post('/create/guestMember', async (req: Request, res: Respo
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${globalHangoutMemberLimit};`,
+      LIMIT ${hangoutMemberLimit};`,
       [requestData.hangoutID]
     );
 
@@ -84,7 +85,7 @@ hangoutMembersRouter.post('/create/guestMember', async (req: Request, res: Respo
     const hangoutDetails: HangoutDetails = hangoutRows[0];
 
     const existingMembersCount: number = hangoutRows.length;
-    if (existingMembersCount === hangoutDetails.member_limit) {
+    if (existingMembersCount >= hangoutDetails.member_limit) {
       res.status(409).json({ success: false, message: 'Hangout full.' });
       return;
     };
@@ -253,6 +254,26 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
       return;
     };
 
+    const [ongoingHangoutsRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT
+        hangouts.hangout_id,
+        hangout_members.hangout_member_id
+      FROM
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      WHERE
+        hangouts.completed_on_timestamp IS NULL AND
+        hangout_members.account_id = ?
+      LIMIT ${ongoingHangoutsLimit};`,
+      [accountID]
+    );
+
+    if (ongoingHangoutsRows.length >= ongoingHangoutsLimit) {
+      res.status(403).json({ success: false, message: 'Ongoing hangouts limit reached.' });
+      return;
+    };
+
     interface HangoutDetails extends RowDataPacket {
       hashed_password: string | null,
       member_limit: number,
@@ -270,7 +291,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${globalHangoutMemberLimit};`,
+      LIMIT ${hangoutMemberLimit};`,
       [requestData.hangoutID]
     );
 
@@ -302,7 +323,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
     };
 
     const existingMembersCount: number = hangoutRows.length;
-    if (existingMembersCount === hangoutDetails.member_limit) {
+    if (existingMembersCount >= hangoutDetails.member_limit) {
       res.status(409).json({ success: false, message: 'Hangout full.' });
       return;
     };
@@ -405,7 +426,7 @@ hangoutMembersRouter.put('/details/leaveHangout', async (req: Request, res: Resp
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${globalHangoutMemberLimit};`,
+      LIMIT ${hangoutMemberLimit};`,
       [requestData.hangoutID]
     );
 

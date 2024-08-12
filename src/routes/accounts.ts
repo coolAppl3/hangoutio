@@ -7,6 +7,7 @@ import * as tokenGenerator from '../util/tokenGenerator';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { sendDeletionEmail, sendEmailUpdateEmail, sendEmailUpdateWarningEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
+import * as userUtils from '../util/userUtils';
 
 export const accountsRouter: Router = express.Router();
 
@@ -217,7 +218,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
-    if (accountDetails.verification_emails_sent === 3) {
+    if (accountDetails.verification_emails_sent >= 3) {
       res.status(403).json({ success: false, message: 'Verification emails limit reached.' });
       return;
     };
@@ -311,7 +312,7 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
     };
 
     if (requestData.verificationCode !== accountDetails.verification_code) {
-      if (accountDetails.failed_verification_attempts === 2) {
+      if (accountDetails.failed_verification_attempts >= 2) {
         await dbPool.execute(
           `DELETE FROM
             accounts
@@ -454,7 +455,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
       return;
     };
 
-    if (accountDetails.failed_sign_in_attempts === 5) {
+    if (accountDetails.failed_sign_in_attempts >= 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
@@ -466,7 +467,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+      if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
         const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountDetails.account_id}`;
         await dbPool.execute(
           `UPDATE
@@ -542,8 +543,10 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       is_verified: boolean,
       marked_for_deletion: boolean,
       recovery_id: number,
-      recovery_emails_sent: number,
       recovery_token: string,
+      recovery_emails_sent: number,
+      failed_recovery_attempts: number,
+      latest_attempt_timestamp: number | null,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
@@ -553,8 +556,10 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
         accounts.is_verified,
         accounts.marked_for_deletion,
         account_recovery.recovery_id,
+        account_recovery.recovery_token,
         account_recovery.recovery_emails_sent,
-        account_recovery.recovery_token
+        account_recovery.failed_recovery_attempts,
+        account_recovery.latest_attempt_timestamp
       FROM
         accounts
       LEFT JOIN
@@ -589,10 +594,12 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
           account_id,
           recovery_token,
           request_timestamp,
-          recovery_emails_sent
+          recovery_emails_sent,
+          failed_recovery_attempts,
+          latest_attempt_timestamp
         )
-        VALUES(${generatePlaceHolders(4)});`,
-        [accountDetails.account_id, recoveryToken, Date.now(), 1]
+        VALUES(${generatePlaceHolders(6)});`,
+        [accountDetails.account_id, recoveryToken, Date.now(), 1, 0, null]
       );
 
       res.json({ success: true, resData: {} });
@@ -601,8 +608,21 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       return;
     };
 
-    if (accountDetails.recovery_emails_sent === 3) {
+    if (accountDetails.recovery_emails_sent >= 3) {
       res.status(403).json({ success: false, message: 'Recovery email limit reached.' });
+      return;
+    };
+
+    if (accountDetails.failed_recovery_attempts >= 3 && accountDetails.latest_attempt_timestamp) {
+      const { minutesRemaining } = userUtils.getTimeTillNextRequest(accountDetails.latest_attempt_timestamp, 'hour');
+      res.status(403).json({
+        success: false,
+        message: 'Too many failed attempts.',
+        resData: {
+          minutesRemaining: minutesRemaining || 1,
+        },
+      });
+
       return;
     };
 
@@ -664,12 +684,16 @@ accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Respons
     interface RecoveryDetails extends RowDataPacket {
       recovery_id: number,
       recovery_token: string,
+      failed_recovery_attempts: number,
+      latest_attempt_timestamp: number | null,
     };
 
     const [recoveryRows] = await dbPool.execute<RecoveryDetails[]>(
       `SELECT
         recovery_id,
-        recovery_token
+        recovery_token,
+        failed_recovery_attempts,
+        latest_attempt_timestamp
       FROM
         account_recovery
       WHERE
@@ -683,9 +707,38 @@ accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Respons
       return;
     };
 
-    const RecoveryDetails: RecoveryDetails = recoveryRows[0];
+    const recoveryDetails: RecoveryDetails = recoveryRows[0];
 
-    if (requestData.recoveryToken !== RecoveryDetails.recovery_token) {
+    if (recoveryDetails.failed_recovery_attempts >= 3 && recoveryDetails.latest_attempt_timestamp) {
+      const { minutesRemaining } = userUtils.getTimeTillNextRequest(recoveryDetails.latest_attempt_timestamp, 'hour');
+      res.status(403).json({
+        success: false,
+        message: 'Too many failed attempts.',
+        resData: {
+          minutesRemaining: minutesRemaining || 1,
+        },
+      });
+
+      return;
+    };
+
+    if (requestData.recoveryToken !== recoveryDetails.recovery_token) {
+      await dbPool.execute<ResultSetHeader>(
+        `UPDATE
+          account_recovery
+        SET
+          failed_recovery_attempts = failed_recovery_attempts + 1,
+          latest_attempt_timestamp = ?
+        WHERE
+          recovery_id = ?;`,
+        [Date.now(), recoveryDetails.recovery_id]
+      );
+
+      if (recoveryDetails.failed_recovery_attempts + 1 >= 3) {
+        res.status(401).json({ success: false, message: 'Incorrect recovery token. Recovery suspended.' });
+        return;
+      };
+
       res.status(401).json({ success: false, message: 'Incorrect recovery token.' });
       return;
     };
@@ -715,7 +768,7 @@ accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Respons
         account_recovery
       WHERE
         recovery_id = ?;`,
-      [RecoveryDetails.recovery_id]
+      [recoveryDetails.recovery_id]
     );
 
     res.json({ success: true, resData: { authToken: newAuthToken } });
@@ -743,7 +796,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password'];
@@ -794,14 +847,14 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       return;
     };
 
-    if (accountDetails.failed_sign_in_attempts === 5) {
+    if (accountDetails.failed_sign_in_attempts >= 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+      if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
         const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
         await dbPool.execute(
           `UPDATE
@@ -1065,7 +1118,7 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['currentPassword', 'newPassword'];
@@ -1115,14 +1168,14 @@ accountsRouter.put('/details/updatePassword', async (req: Request, res: Response
       return;
     };
 
-    if (accountDetails.failedSignInAttempts === 5) {
+    if (accountDetails.failedSignInAttempts >= 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.currentPassword, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+      if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
         const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
         await dbPool.execute(
           `UPDATE
@@ -1204,7 +1257,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password', 'newEmail'];
@@ -1277,7 +1330,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+      if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
         const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
         await dbPool.execute(
           `UPDATE
@@ -1353,11 +1406,17 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    if (accountDetails.failed_update_attempts === 3) {
-      const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-      const timeTillNextRequest: number = new Date(accountDetails.request_timestamp + dayMilliseconds - Date.now()).getHours() + 1;
+    if (accountDetails.failed_update_attempts >= 3) {
+      const { hoursRemaining, minutesRemaining } = userUtils.getTimeTillNextRequest(accountDetails.request_timestamp, 'day');
+      res.status(403).json({
+        success: false,
+        message: 'Too many failed attempts.',
+        resData: {
+          hoursRemaining,
+          minutesRemaining: minutesRemaining || 1,
+        },
+      });
 
-      res.status(403).json({ success: false, message: 'Too many failed attempts.', resData: { timeTillNextRequest } });
       return;
     };
 
@@ -1366,7 +1425,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    if (accountDetails.update_emails_sent === 3) {
+    if (accountDetails.update_emails_sent >= 3) {
       res.status(403).json({ success: false, message: 'Update email limit reached.' });
       return;
     };
@@ -1422,7 +1481,7 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['verificationCode'];
@@ -1485,11 +1544,17 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
       return;
     };
 
-    if (accountDetails.failed_update_attempts === 3) {
-      const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-      const timeTillNextRequest: number = new Date(accountDetails.request_timestamp + dayMilliseconds - Date.now()).getHours() + 1;
+    if (accountDetails.failed_update_attempts >= 3) {
+      const { hoursRemaining, minutesRemaining } = userUtils.getTimeTillNextRequest(accountDetails.request_timestamp, 'day');
+      res.status(403).json({
+        success: false,
+        message: 'Too many failed attempts.',
+        resData: {
+          hoursRemaining,
+          minutesRemaining: minutesRemaining || 1,
+        },
+      });
 
-      res.status(403).json({ success: false, message: 'Too many failed attempts.', resData: { timeTillNextRequest } });
       return;
     };
 
@@ -1504,7 +1569,7 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
         [accountDetails.update_id]
       );
 
-      if (accountDetails.failed_sign_in_attempts + 1 === 3) {
+      if (accountDetails.failed_sign_in_attempts + 1 >= 3) {
         res.status(401).json({ success: false, message: 'Incorrect verification code. Request suspended.' });
         await sendEmailUpdateWarningEmail(accountDetails.email, accountDetails.display_name);
 
@@ -1558,7 +1623,7 @@ accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Respo
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password', 'newDisplayName'];
@@ -1610,14 +1675,14 @@ accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Respo
       return;
     };
 
-    if (accountDetails.failed_sign_in_attempts === 5) {
+    if (accountDetails.failed_sign_in_attempts >= 5) {
       res.status(403).json({ success: false, message: 'Account locked.' });
       return;
     };
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      if (accountDetails.failed_sign_in_attempts + 1 === 5) {
+      if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
         const newAuthToken: string = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
         await dbPool.execute(
           `UPDATE
@@ -1693,7 +1758,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['requesteeUsername'];
@@ -1869,7 +1934,7 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['friendRequestID'];
@@ -2004,7 +2069,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['friendRequestID'];
@@ -2081,7 +2146,7 @@ accountsRouter.delete('/friends/remove', async (req: Request, res: Response) => 
     return;
   };
 
-  const accountID: number = userValidation.getUserID(authToken);
+  const accountID: number = userUtils.getUserID(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['friendshipID'];

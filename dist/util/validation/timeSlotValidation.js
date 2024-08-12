@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidTimeSlotsString = void 0;
-const validTimeFormatRegex = /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
 function isValidTimeSlotsString(slotsString) {
     const timeSlotsArray = [];
     if (typeof slotsString !== 'string') {
@@ -122,6 +121,7 @@ function getTimeNumber(time) {
     return timeNumber;
 }
 ;
+const validTimeFormatRegex = /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
 function isValidTimeFormat(timeValue) {
     return validTimeFormatRegex.test(timeValue);
 }

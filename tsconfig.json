@@ -7,7 +7,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "alwaysStrict": true,
-    "types": ["node", "express", "express-useragent", "cors", "bcrypt", "nodemailer"],
+    "types": ["node", "express", "express-useragent", "cors", "bcrypt", "nodemailer", "node-cron"],
     "typeRoots": ["./node_modules/@types"],
     "removeComments": true,
   },

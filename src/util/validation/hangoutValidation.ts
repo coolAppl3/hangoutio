@@ -1,3 +1,6 @@
+export const hangoutMemberLimit: number = 20;
+export const ongoingHangoutsLimit: number = 30;
+
 export function isValidHangoutIDString(hangoutID: string): boolean {
   if (typeof hangoutID !== 'string') {
     return false;
@@ -46,14 +49,13 @@ export function isValidHangoutConfiguration(availabilityPeriod: number, suggesti
   return true;
 };
 
-export const globalHangoutMemberLimit: number = Number(process.env.GLOBAL_HANGOUT_LEADER_MEMBER) || 20;
 export function isValidHangoutMemberLimit(limit: number): boolean {
 
   if (!Number.isInteger(limit)) {
     return false;
   };
 
-  if (limit < 2 || limit > globalHangoutMemberLimit) {
+  if (limit < 2 || limit > hangoutMemberLimit) {
     return false;
   };
 

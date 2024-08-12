@@ -9,6 +9,7 @@ import { accountsRouter } from './routes/accounts';
 import { hangoutsRouter } from './routes/hangouts';
 import { guestsRouter } from './routes/guests';
 import { hangoutMembersRouter } from './routes/hangoutMembers';
+import { initCronJobs } from './cron-jobs/cronInit';
 
 const port = process.env.PORT || 5000;
 const app: Application = express();
@@ -36,6 +37,9 @@ app.use('/api/accounts', accountsRouter);
 app.use('/api/hangouts', hangoutsRouter);
 app.use('/api/guests', guestsRouter);
 app.use('/api/hangoutMembers', hangoutMembersRouter);
+
+// cron-jobs
+initCronJobs();
 
 // init
 app.listen(port, () => {
