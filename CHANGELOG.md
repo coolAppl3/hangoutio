@@ -1,6 +1,35 @@
 # Changelog
 
 ---
+## [0.2.1] (2024-08-12)
+
+### Features
+
+- Implemented a limit of 30 ongoing hangouts an account can be included in at any given time.
+- Password recovery attempts now suspend the request for an hour after 3 failed attempts have been made.
+- Email update requests now inform the user of the remaining time before a new request can be made, after 3 failed attempts have been made.
+- **New cron-jobs:**
+  - `removeUnverifiedAccounts`:
+    - Removes accounts left unverified 20 minutes after they've been created.
+    - Runs every minute.
+  - `removeExpiredRecoveryRequests`:
+    - Removes account recovery requests if an hour has passed since they were created.
+    - Runs every minute.
+  - `removeExpiredEmailUpdateRequests`:
+    - Removes email update requests if a day has passed since they were created.
+    - Runs every minute.
+  - `deleteMarkedAccounts`:
+    - Completely deletes account marked for deletion for longer than 48 hours.
+    - Runs every hour.
+- Updated the account deletion email template to now specify that the account will be fully deleted after 48 hours.
+
+
+### Code Refactoring
+
+- Ditched the use of environmental variables for the hangout member limit.
+
+
+---
 ## [0.2.0] (2024-08-09)
 
 ### Features
@@ -43,10 +72,10 @@
 - Added a `username` column to the `Accounts` table schema.
 - Removed `friends_id_string` column from the `Accounts` table schema.
 - Removed GET `accounts/` endpoint.
-- **New tables**:
+- **New tables:**
   - `FriendRequests`: Tracks pending friend requests.
   - `Friendships`: Tracks a user's friends.
-- **New endpoints**:
+- **New endpoints:**
   - POST `accounts/friends/requests/send`: Sends a friend request.
   - PUT `accounts/friends/requests/accept`: Accepts a friend request.
   - DELETE `accounts/friends/requests/decline`: Declines a friend request.
@@ -70,7 +99,7 @@
 - Renamed `user_name` in the `Accounts` and `Guests` tables to `display_name`.
 - Guests now have to create a unique username apart from choosing their display name.
   - This is meant to help with guests logging into their accounts.
-- **New endpoints**:
+- **New endpoints:**
   - PUT `hangoutMembers/details/leaveHangout`: Leaves the hangout.
     - If the user has a guest account, it's automatically deleted.
     - If the user is the leader, a new leader is randomly assigned.
@@ -83,7 +112,7 @@
 
 ### Features
 
-- **New endpoints**:
+- **New endpoints:**
   - PUT `hangouts/details/changeLimit`: Changes the hangout member limit.
   - PUT `hangouts/details/steps/changePeriods`: Changes availability, suggestions, or voting periods for a given hangouts.
   - PUT `hangouts/details/steps/progress`: Progresses the hangout to the next step immediately.
@@ -108,13 +137,13 @@
   - They're now only created when a user wants to join or create a hangout.
   - Removed the `guests.ts` router.
 - Added `routerServices.ts`.
-- **New endpoints**:
+- **New endpoints:**
   - PUT `hangouts/details/updatePassword`: Updates the hangout password.
   - POST `hangoutMembers//create/accountMember`: Creates a hangout member from an existing account.
   - POST `hangoutMembers//create/guestMember`: Creates a guest account then a corresponding hangout member.
   - POST `hangouts//create/accountLeader`: Creates a hangout and a leader hangout member using the user's account.
   - POST `hangouts//create/guestLeader`: Creates a hangout, guest account, and a leader hangout member using the guest account.
-- **Removed endpoints**:
+- **Removed endpoints:**
   - POST `hangoutMembers/`.
   - POST `guests/`.
 - Removed the option to approve members from hangouts.
@@ -136,7 +165,7 @@
 
 ### Features
 
-- **New endpoints**:
+- **New endpoints:**
   - POST `accounts/details/updateEmail/start`: Initiates the email update process.
   - PUT `accounts/details/updateEmail/confirm`: Updates the user's email and generates a new authToken.
   - PUT `accounts/details/updateName`: Handles user name changes.

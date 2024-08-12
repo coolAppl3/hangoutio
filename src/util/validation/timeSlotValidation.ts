@@ -1,4 +1,3 @@
-const validTimeFormatRegex: RegExp = /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
 type TimeSlot = { from: string, to: string };
 
 export function isValidTimeSlotsString(slotsString: string): boolean {
@@ -127,6 +126,7 @@ function getTimeNumber(time: string): number {
   return timeNumber;
 };
 
+const validTimeFormatRegex: RegExp = /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
 function isValidTimeFormat(timeValue: string): boolean {
   return validTimeFormatRegex.test(timeValue);
 };

@@ -240,8 +240,7 @@ export function getAccountDeletionTemplate(accountID: number, cancellationToken:
           <p>Hey ${displayName},</p>
           <p>We're reaching out to confirm your account deletion request.</p>
           <p>
-            Your account has been marked for deletion, and will be fully removed from our records within the next 48-72 hours. In the meantime, it won't be
-            accessible and will behave as if it's fully deleted.
+            Your account has been marked for deletion, and will be fully removed from our records after 48 hours. In the meantime, it won't be accessible and will behave as if it's fully deleted.
           </p>
 
           <p>

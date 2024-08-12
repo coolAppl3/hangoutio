@@ -5,8 +5,9 @@ import bcrypt from 'bcrypt';
 import * as hangoutValidation from '../util/validation/hangoutValidation';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
-import { getUserID, getUserType, isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidUsernameString } from '../util/validation/userValidation';
+import { isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidUsernameString } from '../util/validation/userValidation';
 import { generateAuthToken, generateHangoutID } from '../util/tokenGenerator';
+import { getUserID, getUserType } from '../util/userUtils';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -81,6 +82,26 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     const accountAuthToken: string = accountRows[0].auth_token;
     if (authToken !== accountAuthToken) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const [ongoingHangoutsRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT
+        hangouts.hangout_id,
+        hangout_members.hangout_member_id
+      FROM
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      WHERE
+        hangouts.completed_on_timestamp IS NULL AND
+        hangout_members.account_id = ?
+      LIMIT ${hangoutValidation.ongoingHangoutsLimit};`,
+      [accountID]
+    );
+
+    if (ongoingHangoutsRows.length >= hangoutValidation.ongoingHangoutsLimit) {
+      res.status(403).json({ success: false, message: 'Ongoing hangouts limit reached.' });
       return;
     };
 
@@ -524,7 +545,7 @@ hangoutsRouter.put('/details/changeMemberLimit', async (req: Request, res: Respo
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`,
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`,
       [requestData.hangoutID]
     );
 
@@ -561,7 +582,7 @@ hangoutsRouter.put('/details/changeMemberLimit', async (req: Request, res: Respo
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`,
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`,
       [requestData.hangoutID]
     );
 
@@ -946,7 +967,7 @@ hangoutsRouter.put('/details/members/kick', async (req: Request, res: Response) 
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`,
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`,
       [requestData.hangoutID]
     );
 
@@ -1093,7 +1114,7 @@ hangoutsRouter.put('/details/members/transferLeadership', async (req: Request, r
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation.globalHangoutMemberLimit};`,
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`,
       [requestData.hangoutID]
     );
 
