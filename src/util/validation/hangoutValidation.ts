@@ -25,32 +25,7 @@ export function isValidHangoutIDString(hangoutID: string): boolean {
   return true;
 };
 
-export function isValidHangoutConfiguration(availabilityPeriod: number, suggestionsPeriod: number, votingPeriod: number): boolean {
-  if (availabilityPeriod < 1 || availabilityPeriod > 7) {
-    return false;
-  };
-
-  if (suggestionsPeriod < 1 || suggestionsPeriod > 14) {
-    return false;
-  };
-
-  if (votingPeriod < 1 || votingPeriod > 14) {
-    return false;
-  };
-
-  if (
-    !Number.isInteger(availabilityPeriod) ||
-    !Number.isInteger(suggestionsPeriod) ||
-    !Number.isInteger(votingPeriod)
-  ) {
-    return false;
-  };
-
-  return true;
-};
-
 export function isValidHangoutMemberLimit(limit: number): boolean {
-
   if (!Number.isInteger(limit)) {
     return false;
   };
@@ -62,49 +37,35 @@ export function isValidHangoutMemberLimit(limit: number): boolean {
   return true;
 };
 
-interface HangoutDetails {
-  current_step: number,
-  step_timestamp: number,
-  availability_period: number,
-  suggestions_period: number,
-  voting_period: number,
-};
-
-interface NewPeriods {
-  newAvailabilityPeriod: number,
-  newSuggestionsPeriod: number,
-  newVotingPeriod: number,
-};
-
-export function isValidNewPeriods(hangoutDetails: HangoutDetails, newPeriods: NewPeriods): boolean {
-  const daysPassed: number = getDaysPassed(hangoutDetails.step_timestamp);
-
-  if (hangoutDetails.current_step === 1) {
-    if (newPeriods.newAvailabilityPeriod < daysPassed || newPeriods.newAvailabilityPeriod === daysPassed) {
-      return false;
-    };
+function isValidStep(hangoutStep: number): boolean {
+  if (!Number.isInteger(hangoutStep)) {
+    return false;
   };
 
-  if (hangoutDetails.current_step === 2) {
-    if (newPeriods.newAvailabilityPeriod !== hangoutDetails.availability_period) {
-      return false;
-    };
-
-    if (newPeriods.newSuggestionsPeriod < daysPassed || newPeriods.newSuggestionsPeriod === daysPassed) {
-      return false;
-    };
+  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
+  if (hangoutStep % dayMilliseconds !== 0) {
+    return false;
   };
 
-  if (hangoutDetails.current_step === 3) {
-    if (newPeriods.newAvailabilityPeriod !== hangoutDetails.availability_period) {
-      return false;
+  const hangoutStepDays: number = hangoutStep / dayMilliseconds;
+  if (hangoutStepDays < 1 || hangoutStepDays > 7) {
+    return false;
+  };
+
+  return true;
+};
+
+export function isValidHangoutSteps(currentStep: number, hangoutSteps: number[]): boolean {
+  if (hangoutSteps.length === 0) {
+    return false;
+  };
+
+  for (let i = 0; i < hangoutSteps.length; i++) {
+    if (i < --currentStep) {
+      continue;
     };
 
-    if (newPeriods.newSuggestionsPeriod !== hangoutDetails.suggestions_period) {
-      return false;
-    };
-
-    if (newPeriods.newVotingPeriod < daysPassed || newPeriods.newVotingPeriod === daysPassed) {
+    if (!isValidStep(hangoutSteps[i])) {
       return false;
     };
   };
@@ -112,9 +73,78 @@ export function isValidNewPeriods(hangoutDetails: HangoutDetails, newPeriods: Ne
   return true;
 };
 
-function getDaysPassed(stepTimeStamp: number): number {
-  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-  const daysPassed: number = Math.floor((Date.now() - stepTimeStamp) / dayMilliseconds);
+interface HangoutDetails {
+  availability_step: number,
+  suggestions_step: number,
+  voting_step: number,
+  current_step: number,
+  current_step_timestamp: number,
+};
 
-  return daysPassed;
+interface NewSteps {
+  newAvailabilityStep: number,
+  newSuggestionsStep: number,
+  newVotingStep: number,
+};
+
+export function isValidNewHangoutSteps(hangoutDetails: HangoutDetails, newSteps: NewSteps): boolean {
+  for (const stepKey in newSteps) {
+    if (!Number.isInteger(newSteps[stepKey as keyof NewSteps])) {
+      return false;
+    };
+  };
+
+  if (noStepChange(hangoutDetails, newSteps)) {
+    return false;
+  };
+
+  const currentTimestamp: number = Date.now();
+
+  if (hangoutDetails.current_step === 1) {
+    if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newAvailabilityStep) <= currentTimestamp) {
+      return false;
+    };
+  };
+
+  if (hangoutDetails.current_step === 2) {
+    if (newSteps.newAvailabilityStep !== hangoutDetails.availability_step) {
+      return false;
+    };
+
+    if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newSuggestionsStep) <= currentTimestamp) {
+      return false;
+    };
+  };
+
+  if (hangoutDetails.current_step === 3) {
+    if (newSteps.newAvailabilityStep !== hangoutDetails.availability_step) {
+      return false;
+    };
+
+    if (newSteps.newSuggestionsStep !== hangoutDetails.suggestions_step) {
+      return false;
+    };
+
+    if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newVotingStep) <= currentTimestamp) {
+      return false;
+    };
+  };
+
+  return true;
+};
+
+function noStepChange(hangoutDetails: HangoutDetails, newSteps: NewSteps): boolean {
+  if (
+    newSteps.newAvailabilityStep === hangoutDetails.availability_step &&
+    newSteps.newSuggestionsStep === hangoutDetails.suggestions_step &&
+    newSteps.newVotingStep === hangoutDetails.voting_step
+  ) {
+    return true;
+  };
+
+  return false;
+};
+
+function getStepEndTimestamp(currentStepTimestamp: number, stepLength: number): number {
+  return currentStepTimestamp + stepLength;
 };

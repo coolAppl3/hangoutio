@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewPeriods = exports.isValidHangoutMemberLimit = exports.isValidHangoutConfiguration = exports.isValidHangoutIDString = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
+exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutMemberLimit = exports.isValidHangoutIDString = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
 exports.hangoutMemberLimit = 20;
 exports.ongoingHangoutsLimit = 30;
 function isValidHangoutIDString(hangoutID) {
@@ -28,29 +28,6 @@ function isValidHangoutIDString(hangoutID) {
 }
 exports.isValidHangoutIDString = isValidHangoutIDString;
 ;
-function isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, votingPeriod) {
-    if (availabilityPeriod < 1 || availabilityPeriod > 7) {
-        return false;
-    }
-    ;
-    if (suggestionsPeriod < 1 || suggestionsPeriod > 14) {
-        return false;
-    }
-    ;
-    if (votingPeriod < 1 || votingPeriod > 14) {
-        return false;
-    }
-    ;
-    if (!Number.isInteger(availabilityPeriod) ||
-        !Number.isInteger(suggestionsPeriod) ||
-        !Number.isInteger(votingPeriod)) {
-        return false;
-    }
-    ;
-    return true;
-}
-exports.isValidHangoutConfiguration = isValidHangoutConfiguration;
-;
 function isValidHangoutMemberLimit(limit) {
     if (!Number.isInteger(limit)) {
         return false;
@@ -64,38 +41,35 @@ function isValidHangoutMemberLimit(limit) {
 }
 exports.isValidHangoutMemberLimit = isValidHangoutMemberLimit;
 ;
-;
-;
-function isValidNewPeriods(hangoutDetails, newPeriods) {
-    const daysPassed = getDaysPassed(hangoutDetails.step_timestamp);
-    if (hangoutDetails.current_step === 1) {
-        if (newPeriods.newAvailabilityPeriod < daysPassed || newPeriods.newAvailabilityPeriod === daysPassed) {
-            return false;
-        }
-        ;
+function isValidStep(hangoutStep) {
+    if (!Number.isInteger(hangoutStep)) {
+        return false;
     }
     ;
-    if (hangoutDetails.current_step === 2) {
-        if (newPeriods.newAvailabilityPeriod !== hangoutDetails.availability_period) {
-            return false;
-        }
-        ;
-        if (newPeriods.newSuggestionsPeriod < daysPassed || newPeriods.newSuggestionsPeriod === daysPassed) {
-            return false;
-        }
-        ;
+    const dayMilliseconds = 1000 * 60 * 60 * 24;
+    if (hangoutStep % dayMilliseconds !== 0) {
+        return false;
     }
     ;
-    if (hangoutDetails.current_step === 3) {
-        if (newPeriods.newAvailabilityPeriod !== hangoutDetails.availability_period) {
-            return false;
+    const hangoutStepDays = hangoutStep / dayMilliseconds;
+    if (hangoutStepDays < 1 || hangoutStepDays > 7) {
+        return false;
+    }
+    ;
+    return true;
+}
+;
+function isValidHangoutSteps(currentStep, hangoutSteps) {
+    if (hangoutSteps.length === 0) {
+        return false;
+    }
+    ;
+    for (let i = 0; i < hangoutSteps.length; i++) {
+        if (i < --currentStep) {
+            continue;
         }
         ;
-        if (newPeriods.newSuggestionsPeriod !== hangoutDetails.suggestions_period) {
-            return false;
-        }
-        ;
-        if (newPeriods.newVotingPeriod < daysPassed || newPeriods.newVotingPeriod === daysPassed) {
+        if (!isValidStep(hangoutSteps[i])) {
             return false;
         }
         ;
@@ -103,11 +77,71 @@ function isValidNewPeriods(hangoutDetails, newPeriods) {
     ;
     return true;
 }
-exports.isValidNewPeriods = isValidNewPeriods;
+exports.isValidHangoutSteps = isValidHangoutSteps;
 ;
-function getDaysPassed(stepTimeStamp) {
-    const dayMilliseconds = 1000 * 60 * 60 * 24;
-    const daysPassed = Math.floor((Date.now() - stepTimeStamp) / dayMilliseconds);
-    return daysPassed;
+;
+;
+function isValidNewHangoutSteps(hangoutDetails, newSteps) {
+    for (const stepKey in newSteps) {
+        if (!Number.isInteger(newSteps[stepKey])) {
+            return false;
+        }
+        ;
+    }
+    ;
+    if (noStepChange(hangoutDetails, newSteps)) {
+        return false;
+    }
+    ;
+    const currentTimestamp = Date.now();
+    if (hangoutDetails.current_step === 1) {
+        if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newAvailabilityStep) <= currentTimestamp) {
+            return false;
+        }
+        ;
+    }
+    ;
+    if (hangoutDetails.current_step === 2) {
+        if (newSteps.newAvailabilityStep !== hangoutDetails.availability_step) {
+            return false;
+        }
+        ;
+        if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newSuggestionsStep) <= currentTimestamp) {
+            return false;
+        }
+        ;
+    }
+    ;
+    if (hangoutDetails.current_step === 3) {
+        if (newSteps.newAvailabilityStep !== hangoutDetails.availability_step) {
+            return false;
+        }
+        ;
+        if (newSteps.newSuggestionsStep !== hangoutDetails.suggestions_step) {
+            return false;
+        }
+        ;
+        if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newVotingStep) <= currentTimestamp) {
+            return false;
+        }
+        ;
+    }
+    ;
+    return true;
+}
+exports.isValidNewHangoutSteps = isValidNewHangoutSteps;
+;
+function noStepChange(hangoutDetails, newSteps) {
+    if (newSteps.newAvailabilityStep === hangoutDetails.availability_step &&
+        newSteps.newSuggestionsStep === hangoutDetails.suggestions_step &&
+        newSteps.newVotingStep === hangoutDetails.voting_step) {
+        return true;
+    }
+    ;
+    return false;
+}
+;
+function getStepEndTimestamp(currentStepTimestamp, stepLength) {
+    return currentStepTimestamp + stepLength;
 }
 ;

@@ -29,16 +29,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initCronJobs = void 0;
 const node_cron_1 = __importDefault(require("node-cron"));
 const accountCronJobs = __importStar(require("./accountCronJobs"));
+const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
         await accountCronJobs.removeUnverifiedAccounts();
         await accountCronJobs.removeExpiredRecoveryRequests();
         await accountCronJobs.removeExpiredEmailUpdateRequests();
+        await hangoutCronJobs.progressHangouts();
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
         await accountCronJobs.deleteMarkedAccounts();
-    });
-    node_cron_1.default.schedule('0 0 * * *', async () => {
     });
 }
 exports.initCronJobs = initCronJobs;

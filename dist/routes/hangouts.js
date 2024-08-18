@@ -31,6 +31,7 @@ const db_1 = require("../db/db");
 const express_1 = __importDefault(require("express"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const hangoutValidation = __importStar(require("../util/validation/hangoutValidation"));
+const hangoutUtils = __importStar(require("../util/hangoutUtils"));
 const requestValidation_1 = require("../util/validation/requestValidation");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const userValidation_1 = require("../util/validation/userValidation");
@@ -53,7 +54,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     ;
     const accountID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityPeriod', 'suggestionsPeriod', 'votingPeriod'];
+    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -69,9 +70,9 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         return;
     }
     ;
-    const { availabilityPeriod, suggestionsPeriod, votingPeriod } = requestData;
-    if (!hangoutValidation.isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, votingPeriod)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout configuration.' });
+    const { availabilityStep, suggestionsStep, votingStep } = requestData;
+    if (!hangoutValidation.isValidHangoutSteps(1, [availabilityStep, suggestionsStep, votingStep])) {
+        res.status(400).json({ success: false, message: 'Invalid hangout steps.' });
         return;
     }
     ;
@@ -103,7 +104,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.completed_on_timestamp IS NULL AND
+        hangouts.is_concluded = FALSE AND
         hangout_members.account_id = ?
       LIMIT ${hangoutValidation.ongoingHangoutsLimit};`, [accountID]);
         if (ongoingHangoutsRows.length >= hangoutValidation.ongoingHangoutsLimit) {
@@ -114,21 +115,25 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         const createdOnTimestamp = Date.now();
         const hangoutID = (0, tokenGenerator_1.generateHangoutID)(createdOnTimestamp);
         const hashedPassword = requestData.hangoutPassword ? await bcrypt_1.default.hash(requestData.hangoutPassword, 10) : null;
+        const nextStepTimestamp = createdOnTimestamp + availabilityStep;
+        const conclusionTimestamp = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
         await connection.execute(`INSERT INTO hangouts(
         hangout_id,
         hashed_password,
         member_limit,
-        availability_period,
-        suggestions_period,
-        voting_period,
+        availability_step,
+        suggestions_step,
+        voting_step,
         current_step,
-        step_timestamp,
+        current_step_timestamp,
+        next_step_timestamp,
         created_on_timestamp,
-        completed_on_timestamp
+        conclusion_timestamp,
+        is_concluded
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(10)});`, [hangoutID, hashedPassword, requestData.memberLimit, availabilityPeriod, suggestionsPeriod, votingPeriod, 1, createdOnTimestamp, createdOnTimestamp, null]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(12)});`, [hangoutID, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
         await connection.execute(`INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -164,7 +169,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
 exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityPeriod', 'suggestionsPeriod', 'votingPeriod', 'username', 'password', 'displayName'];
+    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep', 'username', 'password', 'displayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -180,9 +185,9 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         return;
     }
     ;
-    const { availabilityPeriod, suggestionsPeriod, votingPeriod } = requestData;
-    if (!hangoutValidation.isValidHangoutConfiguration(availabilityPeriod, suggestionsPeriod, votingPeriod)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout configuration.' });
+    const { availabilityStep, suggestionsStep, votingStep } = requestData;
+    if (!hangoutValidation.isValidHangoutSteps(1, [availabilityStep, suggestionsStep, votingStep])) {
+        res.status(400).json({ success: false, message: 'Invalid hangout steps.' });
         return;
     }
     ;
@@ -203,13 +208,6 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     ;
     let connection;
     try {
-        const createdOnTimestamp = Date.now();
-        const hangoutID = (0, tokenGenerator_1.generateHangoutID)(createdOnTimestamp);
-        let hashedHangoutPassword = null;
-        if (requestData.hangoutPassword) {
-            hashedHangoutPassword = await bcrypt_1.default.hash(requestData.hangoutPassword, 10);
-        }
-        ;
         connection = await db_1.dbPool.getConnection();
         await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
         await connection.beginTransaction();
@@ -226,19 +224,26 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
             return;
         }
         ;
+        const createdOnTimestamp = Date.now();
+        const hangoutID = (0, tokenGenerator_1.generateHangoutID)(createdOnTimestamp);
+        const hashedHangoutPassword = requestData.hangoutPassword ? await bcrypt_1.default.hash(requestData.hangoutPassword, 10) : null;
+        const nextStepTimestamp = createdOnTimestamp + availabilityStep;
+        const conclusionTimestamp = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
         await connection.execute(`INSERT INTO hangouts(
         hangout_id,
         hashed_password,
         member_limit,
-        availability_period,
-        suggestions_period,
-        voting_period,
+        availability_step,
+        suggestions_step,
+        voting_step,
         current_step,
-        step_timestamp,
+        current_step_timestamp,
+        next_step_timestamp,
         created_on_timestamp,
-        completed_on_timestamp
+        conclusion_timestamp,
+        is_concluded
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(10)});`, [hangoutID, hashedHangoutPassword, requestData.memberLimit, availabilityPeriod, suggestionsPeriod, votingPeriod, 1, createdOnTimestamp, createdOnTimestamp, null]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(12)});`, [hangoutID, hashedHangoutPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
         const authToken = (0, tokenGenerator_1.generateAuthToken)('guest');
         const hashedGuestPassword = await bcrypt_1.default.hash(requestData.password, 10);
         const [firstResultSetHeader] = await connection.execute(`INSERT INTO guests(
@@ -345,43 +350,44 @@ exports.hangoutsRouter.put('/details/updatePassword', async (req, res) => {
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
         hangouts.hashed_password,
         hangout_members.account_id,
-        hangout_members.guest_id
+        hangout_members.guest_id,
+        hangout_members.is_leader
       FROM
         hangouts
       LEFT JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.is_leader = TRUE
-      LIMIT 1;`, [requestData.hangoutID]);
+        hangouts.hangout_id = ?
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
         }
         ;
         const hangoutDetails = hangoutRows[0];
-        if (hangoutDetails[`${userType}_id`] !== userID) {
+        const hangoutLeader = hangoutRows.find((member) => member[`${userType}_id`] === userID && member.is_leader);
+        if (!hangoutLeader) {
             res.status(401).json({ success: false, message: 'Not hangout leader.' });
             return;
         }
         ;
         if (hangoutDetails.hashed_password) {
-            const isSamePassword = await bcrypt_1.default.compare(requestData.newPassword, hangoutDetails.hashed_password);
-            if (isSamePassword) {
-                res.status(409).json({ success: false, message: 'Hangout already has this password.' });
+            const isIdenticalPassword = await bcrypt_1.default.compare(requestData.newPassword, hangoutDetails.hashed_password);
+            if (isIdenticalPassword) {
+                res.status(409).json({ success: false, message: 'Identical password.' });
                 return;
             }
             ;
         }
         ;
         const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
-        const [ResultSetHeader] = await db_1.dbPool.execute(`UPDATE
+        const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         hangouts
       SET
         hashed_password = ?
       WHERE
         hangout_id = ?;`, [newHashedPassword, requestData.hangoutID]);
-        if (ResultSetHeader.affectedRows === 0) {
+        if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
@@ -435,7 +441,7 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?`, [userID]);
+        ${userType}_id = ?;`, [userID]);
         if (userRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -447,7 +453,10 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
         }
         ;
         ;
-        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        connection = await db_1.dbPool.getConnection();
+        await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+        await connection.beginTransaction();
+        const [hangoutMemberRows] = await connection.execute(`SELECT
         hangouts.member_limit,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -460,37 +469,31 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
         hangouts.hangout_id = ?
       LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutMemberRows.length === 0) {
+            await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
         }
         ;
         const hangoutLeader = hangoutMemberRows.find((member) => member[`${userType}_id`] === userID && member.is_leader);
         if (!hangoutLeader) {
+            await connection.rollback();
             res.status(401).json({ success: false, message: 'Not hangout leader.' });
             return;
         }
         ;
         if (hangoutMemberRows[0].member_limit === requestData.newLimit) {
+            await connection.rollback();
             res.status(409).json({ success: false, message: `Member limit is already set to ${requestData.newLimit}.` });
             return;
         }
         ;
         const numberOfCurrentMembers = hangoutMemberRows.length;
         if (requestData.newLimit < numberOfCurrentMembers) {
+            await connection.rollback();
             res.status(409).json({ success: false, message: 'New member limit is less than the number of existing members.' });
             return;
         }
         ;
-        connection = await db_1.dbPool.getConnection();
-        await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
-        await connection.beginTransaction();
-        await connection.execute(`SELECT
-        1
-      FROM
-        hangout_members
-      WHERE
-        hangout_id = ?
-      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         const [resultSetHeader] = await connection.execute(`UPDATE
         hangouts
       SET
@@ -522,7 +525,7 @@ exports.hangoutsRouter.put('/details/changeMemberLimit', async (req, res) => {
     }
     ;
 });
-exports.hangoutsRouter.put('/details/steps/changePeriods', async (req, res) => {
+exports.hangoutsRouter.put('/details/steps/update', async (req, res) => {
     ;
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
@@ -538,7 +541,7 @@ exports.hangoutsRouter.put('/details/steps/changePeriods', async (req, res) => {
     ;
     const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'newAvailabilityPeriod', 'newSuggestionsPeriod', 'newVotingPeriod'];
+    const expectedKeys = ['hangoutID', 'newAvailabilityStep', 'newSuggestionsStep', 'newVotingStep'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -546,12 +549,6 @@ exports.hangoutsRouter.put('/details/steps/changePeriods', async (req, res) => {
     ;
     if (!hangoutValidation.isValidHangoutIDString(requestData.hangoutID)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
-        return;
-    }
-    ;
-    const { newAvailabilityPeriod, newSuggestionsPeriod, newVotingPeriod } = requestData;
-    if (!hangoutValidation.isValidHangoutConfiguration(newAvailabilityPeriod, newSuggestionsPeriod, newVotingPeriod)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout configuration.' });
         return;
     }
     ;
@@ -576,57 +573,92 @@ exports.hangoutsRouter.put('/details/steps/changePeriods', async (req, res) => {
         ;
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.availability_step,
+        hangouts.suggestions_step,
+        hangouts.voting_step,
         hangouts.current_step,
-        hangouts.step_timestamp,
-        hangouts.availability_period,
-        hangouts.suggestions_period,
-        hangouts.voting_period,
+        hangouts.current_step_timestamp,
+        hangouts.next_step_timestamp,
+        hangouts.created_on_timestamp,
+        hangouts.is_concluded,
         hangout_members.account_id,
-        hangout_members.guest_id
+        hangout_members.guest_id,
+        hangout_members.is_leader
       FROM
         hangouts
       LEFT JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.is_leader = TRUE
-      LIMIT 1;`, [requestData.hangoutID]);
+        hangouts.hangout_id = ?
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutDetails = hangoutRows[0];
-        if (hangoutDetails[`${userType}_id`] !== userID) {
+        const hangoutLeader = hangoutRows.find((member) => member[`${userType}_id`] === userID && member.is_leader);
+        if (!hangoutLeader) {
             res.status(401).json({ success: false, message: 'Not hangout leader.' });
             return;
         }
         ;
-        const newPeriods = {
-            newAvailabilityPeriod,
-            newSuggestionsPeriod,
-            newVotingPeriod,
-        };
-        if (!hangoutValidation.isValidNewPeriods(hangoutDetails, newPeriods)) {
-            res.status(409).json({ success: false, message: 'Invalid new configuration.' });
+        const hangoutDetails = hangoutRows[0];
+        if (hangoutDetails.is_concluded) {
+            res.status(409).json({ success: false, message: 'Hangout already concluded.' });
             return;
         }
         ;
-        const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
+        const { newAvailabilityStep, newSuggestionsStep, newVotingStep } = requestData;
+        if (!hangoutValidation.isValidHangoutSteps(hangoutDetails.current_step, [newAvailabilityStep, newSuggestionsStep, newVotingStep])) {
+            res.status(400).json({ success: false, message: 'Invalid mew hangout steps.' });
+            return;
+        }
+        ;
+        const newSteps = {
+            newAvailabilityStep,
+            newSuggestionsStep,
+            newVotingStep,
+        };
+        if (!hangoutValidation.isValidNewHangoutSteps(hangoutDetails, newSteps)) {
+            res.status(400).json({ success: false, message: 'Invalid new hangout steps.' });
+            return;
+        }
+        ;
+        const newConclusionTimestamp = hangoutDetails.created_on_timestamp + newAvailabilityStep + newSuggestionsStep + newVotingStep;
+        const newNextStepTimestamp = hangoutUtils.getNextStepTimestamp(hangoutDetails.current_step, hangoutDetails.current_step_timestamp, hangoutDetails.availability_step, hangoutDetails.suggestions_step, hangoutDetails.voting_step);
+        const [firstResultSetHeader] = await db_1.dbPool.execute(`UPDATE
         hangouts
       SET
-        availability_period = ?,
-        suggestions_period = ?,
-        voting_period = ?
+        availability_step = ?,
+        suggestions_step = ?,
+        voting_step = ?,
+        next_step_timestamp = ?,
+        conclusion_timestamp = ?
       WHERE
-        hangout_id = ?
-      LIMIT 1;`, [newAvailabilityPeriod, newSuggestionsPeriod, newVotingPeriod, requestData.hangoutID]);
-        if (resultSetHeader.affectedRows === 0) {
+        hangout_id = ?;`, [newAvailabilityStep, newSuggestionsStep, newVotingStep, newNextStepTimestamp, newConclusionTimestamp, requestData.hangoutID]);
+        if (firstResultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: { newAvailabilityPeriod, newSuggestionsPeriod, newVotingPeriod } });
+        const yearMilliseconds = 1000 * 60 * 60 * 24 * 365;
+        const [secondResultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
+        availability_slots
+      WHERE
+        hangout_id = ? AND
+        (slot_start_timestamp < ? OR slot_start_timestamp > ?);`, [requestData.hangoutID, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]);
+        const affectedAvailabilitySlots = secondResultSetHeader.affectedRows;
+        res.json({
+            success: true,
+            resData: {
+                newAvailabilityStep,
+                newSuggestionsStep,
+                newVotingStep,
+                newNextStepTimestamp,
+                newConclusionTimestamp,
+                affectedAvailabilitySlots,
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -682,46 +714,122 @@ exports.hangoutsRouter.put('/details/steps/progressForward', async (req, res) =>
         ;
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.availability_step,
+        hangouts.suggestions_step,
+        hangouts.voting_step,
         hangouts.current_step,
+        hangouts.current_step_timestamp,
+        hangouts.created_on_timestamp,
+        hangouts.is_concluded,
         hangout_members.account_id,
-        hangout_members.guest_id
+        hangout_members.guest_id,
+        hangout_members.is_leader
       FROM
         hangouts
       LEFT JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.is_leader = TRUE
-      LIMIT 1;`, [requestData.hangoutID]);
+        hangouts.hangout_id = ?
+      LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutDetails = hangoutRows[0];
-        if (hangoutDetails[`${userType}_id`] !== userID) {
+        const hangoutLeader = hangoutRows.find((member) => member[`${userType}_id`] === userID && member.is_leader);
+        if (!hangoutLeader) {
             res.status(401).json({ success: false, message: 'Not hangout leader.' });
             return;
         }
         ;
-        if (hangoutDetails.current_step === 4) {
-            res.status(400).json({ success: false, message: 'Hangout is completed.' });
+        const hangoutDetails = hangoutRows[0];
+        if (hangoutDetails.is_concluded) {
+            res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+            return;
+        }
+        ;
+        const requestTimestamp = Date.now();
+        const updatedCurrentStep = requestTimestamp - hangoutDetails.current_step_timestamp;
+        const currentStepName = hangoutUtils.getCurrentStepName(hangoutDetails.current_step);
+        hangoutDetails[`${currentStepName}_step`] = updatedCurrentStep;
+        const newCurrentStep = hangoutDetails.current_step + 1;
+        const newNextStepTimestamp = hangoutUtils.getNextStepTimestamp(newCurrentStep, requestTimestamp, hangoutDetails.availability_step, hangoutDetails.suggestions_step, hangoutDetails.voting_step);
+        const { created_on_timestamp, availability_step, suggestions_step, voting_step } = hangoutDetails;
+        const newConclusionTimestamp = created_on_timestamp + availability_step + suggestions_step + voting_step;
+        if (hangoutDetails.current_step === 3) {
+            const [firstResultSetHeader] = await db_1.dbPool.execute(`UPDATE
+          hangouts
+        SET
+          availability_step = ?,
+          suggestions_step = ?,
+          voting_step = ?,
+          current_step = ?,
+          current_step_timestamp = ?,
+          next_step_timestamp = ?,
+          conclusion_timestamp = ?,
+          is_concluded = ?
+        WHERE
+          hangout_id = ?;`, [availability_step, suggestions_step, voting_step, 4, requestTimestamp, newNextStepTimestamp, requestTimestamp, true, requestData.hangoutID]);
+            if (firstResultSetHeader.affectedRows === 0) {
+                res.status(500).json({ success: false, message: 'Internal server error.' });
+                return;
+            }
+            ;
+            const yearMilliseconds = 1000 * 60 * 60 * 24 * 365;
+            const [secondResultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
+          availability_slots
+        WHERE
+          hangout_id = ? AND
+          (slot_start_timestamp < ? OR slot_start_timestamp > ?);`, [requestData.hangoutID, requestTimestamp, (requestTimestamp + yearMilliseconds)]);
+            const affectedAvailabilitySlots = secondResultSetHeader.affectedRows;
+            res.json({
+                success: true,
+                resData: {
+                    newCurrentStep: 4,
+                    newNextStepTimestamp,
+                    newConclusionTimestamp: requestTimestamp,
+                    isConcluded: true,
+                    affectedAvailabilitySlots,
+                },
+            });
             return;
         }
         ;
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         hangouts
       SET
-        current_step = current_step + 1
+        availability_step = ?,
+        suggestions_step = ?,
+        voting_step = ?,
+        current_step = ?,
+        current_step_timestamp = ?,
+        next_step_timestamp = ?,
+        conclusion_timestamp = ?,
+        is_concluded = ?
       WHERE
-        hangout_id = ?;`, [requestData.hangoutID]);
+        hangout_id = ?;`, [availability_step, suggestions_step, voting_step, newCurrentStep, requestTimestamp, newNextStepTimestamp, newConclusionTimestamp, false, requestData.hangoutID]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
         ;
-        const hangoutCompleted = hangoutDetails.current_step < 3 ? false : true;
-        res.json({ success: true, resData: { newStep: hangoutDetails.current_step + 1, hangoutCompleted } });
+        const yearMilliseconds = 1000 * 60 * 60 * 24 * 365;
+        const [secondResultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
+        availability_slots
+      WHERE
+        hangout_id = ? AND
+        (slot_start_timestamp < ? OR slot_start_timestamp > ?);`, [requestData.hangoutID, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]);
+        const affectedAvailabilitySlots = secondResultSetHeader.affectedRows;
+        res.json({
+            success: true,
+            resData: {
+                newCurrentStep,
+                newNextStepTimestamp,
+                newConclusionTimestamp,
+                isConcluded: false,
+                affectedAvailabilitySlots,
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -796,8 +904,8 @@ exports.hangoutsRouter.put('/details/members/kick', async (req, res) => {
             return;
         }
         ;
-        const hangoutLeader = hangoutMemberRows.find((member) => member.is_leader);
-        if (!hangoutLeader || hangoutLeader[`${userType}_id`] !== userID) {
+        const hangoutLeader = hangoutMemberRows.find((member) => member[`${userType}_id`] === userID && member.is_leader);
+        if (!hangoutLeader) {
             res.status(401).json({ success: false, message: 'Not hangout leader.' });
             return;
         }
@@ -897,7 +1005,10 @@ exports.hangoutsRouter.put('/details/members/transferLeadership', async (req, re
         }
         ;
         ;
-        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        connection = await db_1.dbPool.getConnection();
+        await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+        await connection.beginTransaction();
+        const [hangoutMemberRows] = await connection.execute(`SELECT
         hangout_member_id,
         account_id,
         guest_id,
@@ -908,36 +1019,31 @@ exports.hangoutsRouter.put('/details/members/transferLeadership', async (req, re
         hangout_id = ?
       LIMIT ${hangoutValidation.hangoutMemberLimit};`, [requestData.hangoutID]);
         if (hangoutMemberRows.length === 0) {
+            await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutLeader = hangoutMemberRows.find((member) => member.is_leader);
-        if (!hangoutLeader || hangoutLeader[`${userType}_id`] !== userID) {
+        const hangoutLeader = hangoutMemberRows.find((member) => member[`${userType}_id`] === userID && member.is_leader);
+        if (!hangoutLeader) {
+            await connection.rollback();
             res.status(401).json({ success: false, message: 'Not hangout leader.' });
             return;
         }
         ;
         if (hangoutLeader.hangout_member_id === requestData.newLeaderMemberID) {
+            await connection.rollback();
             res.status(409).json({ success: false, message: 'Already hangout leader.' });
             return;
         }
         ;
         const newHangoutLeader = hangoutMemberRows.find((member) => member.hangout_member_id === requestData.newLeaderMemberID);
         if (!newHangoutLeader) {
+            await connection.rollback();
             res.status(404).json({ success: false, message: 'Member not found.' });
             return;
         }
         ;
-        connection = await db_1.dbPool.getConnection();
-        await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
-        await connection.beginTransaction();
-        await connection.execute(`SELECT
-        1
-      FROM
-        hangout_members
-      WHERE
-        hangout_member_id IN (?, ?);`, [hangoutLeader.hangout_member_id, newHangoutLeader.hangout_member_id]);
         const [firstResultSetHeader] = await connection.execute(`UPDATE
         hangout_members
       SET

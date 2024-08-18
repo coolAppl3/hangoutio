@@ -1,6 +1,46 @@
 # Changelog
 
 ---
+## [0.2.2] (2024-08-18)
+
+### Features
+
+- Reworked the `hangouts` table:
+  - Renamed `availability_period`, `suggestions_period`, and `voting_period` to `availability_step`, `suggestions_step`, and `voting_step`.
+  - The data types for these steps is now `BIGINT` and they represent days in milliseconds.
+  - Renamed `step_timestamp` to `current_step_timestamp`.
+  - Added `next_step_timestamp`. It represents the timestamp when the next step is supposed to start.
+  - Replaced `concluded_on_timestamp` with `conclusion_timestamp`. It represents the timestamp of when all 3 hangouts steps are concluded, and is updated dynamically whenever steps are changed or progressed.
+  - Added `is_concluded` as a boolean.
+  - Hangout steps are now all limited between 1 and 7 days.
+  - These changes were implemented to help with ensuring availability slots added by the user are not set before the hangout is concluded, which would render them pointless.
+- Renamed the `availability` table to `availability_slots` and completely reworked it:
+  - Slots now consists of a starting and ending timestamp to represent both the date and time.
+  - Slots can't start before their respective hangout's conclusion timestamp.
+    - If a hangout's conclusion timestamp is updated for whatever reason, any availability slots starting before the new conclusion timestamp are automatically deleted.
+  - Slots can't start beyond a year from their respective hangout's conclusion timestamp.
+    - If a hangout's conclusion timestamp is updated for whatever reason, any availability slots starting a year beyond the new conclusion timestamp are automatically deleted.
+  - Slots can't be shorter than an hour or longer than 24 hours.
+  - Slots can't intersect.
+  - Slots can't connect. The start of a slot has to at least be a minute after the end of a nearby slot.
+  - Hangout members are limited to a maximum of 10 availability slots.
+- **New endpoints:**
+  - POST `availabilitySlots/`: Adds an availability slot.
+  - PUT `availabilitySlots/`: Updates an existing availability slot.
+  - DELETE `availabilitySlots/`: Deletes an availability slot.
+  - DELETE `availabilitySlots/clear`: Deletes all availability slots for its respective hangout member. 
+- **New cron jobs:**
+  - `progressHangouts`:
+    - Progresses unconcluded hangouts to their respective next step.
+
+
+### Bug Fixes
+
+- Fixed a few spots where transactions weren't rolled back before a failed response is returned.
+- Fixed a few `LEFT JOIN` statements indirectly acting as an `INNER JOIN` due to how their `WHERE` constraint was constructed.
+
+
+---
 ## [0.2.1] (2024-08-12)
 
 ### Features
@@ -8,7 +48,7 @@
 - Implemented a limit of 30 ongoing hangouts an account can be included in at any given time.
 - Password recovery attempts now suspend the request for an hour after 3 failed attempts have been made.
 - Email update requests now inform the user of the remaining time before a new request can be made, after 3 failed attempts have been made.
-- **New cron-jobs:**
+- **New cron jobs:**
   - `removeUnverifiedAccounts`:
     - Removes accounts left unverified 20 minutes after they've been created.
     - Runs every minute.
