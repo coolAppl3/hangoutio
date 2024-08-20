@@ -49,6 +49,11 @@ function isValidDisplayNameString(displayName) {
         return false;
     }
     ;
+    const doubleSpacesRemoved = displayName.split(' ').filter((char) => char !== '').join(' ');
+    if (displayName !== doubleSpacesRemoved) {
+        return false;
+    }
+    ;
     const regex = /^[A-Za-z ]{1,25}$/;
     return regex.test(displayName);
 }
@@ -63,6 +68,10 @@ function isValidAuthTokenString(authToken) {
         return false;
     }
     ;
+    if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
+        return false;
+    }
+    ;
     if (authToken[32] !== '_') {
         return false;
     }
@@ -71,11 +80,8 @@ function isValidAuthTokenString(authToken) {
         return false;
     }
     ;
-    if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
-        return false;
-    }
-    ;
-    return true;
+    const regex = /^[A-Za-z0-9_]{34,}$/;
+    return regex.test(authToken);
 }
 exports.isValidAuthTokenString = isValidAuthTokenString;
 ;

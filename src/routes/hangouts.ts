@@ -135,7 +135,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       [hangoutID, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
-    await connection.execute(
+    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -148,7 +148,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     );
 
     await connection.commit();
-    res.json({ success: true, resData: { hangoutID } });
+    res.json({ success: true, resData: { hangoutID, hangoutMemberID: resultSetHeader.insertId } });
 
   } catch (err: any) {
     console.log(err);
@@ -308,7 +308,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
       return;
     };
 
-    await connection.execute(
+    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -321,7 +321,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     );
 
     await connection.commit();
-    res.json({ success: true, resData: { hangoutID, authToken: idMarkedAuthToken } })
+    res.json({ success: true, resData: { hangoutID, hangoutMemberID: resultSetHeader.insertId, authToken: idMarkedAuthToken } })
 
   } catch (err: any) {
     console.log(err);
@@ -430,14 +430,13 @@ hangoutsRouter.put('/details/updatePassword', async (req: Request, res: Response
       return;
     };
 
-    const hangoutDetails: HangoutDetails = hangoutRows[0];
-
-    const hangoutLeader: HangoutDetails | undefined = hangoutRows.find((member: HangoutDetails) => member[`${userType}_id`] === userID && member.is_leader);
-
-    if (!hangoutLeader) {
+    const isHangoutLeader: boolean = hangoutRows.find((member: HangoutDetails) => member[`${userType}_id`] === userID && member.is_leader) !== undefined;
+    if (!isHangoutLeader) {
       res.status(401).json({ success: false, message: 'Not hangout leader.' });
       return;
     };
+
+    const hangoutDetails: HangoutDetails = hangoutRows[0];
 
     if (hangoutDetails.hashed_password) {
       const isIdenticalPassword: boolean = await bcrypt.compare(requestData.newPassword, hangoutDetails.hashed_password);
@@ -570,8 +569,8 @@ hangoutsRouter.put('/details/changeMemberLimit', async (req: Request, res: Respo
       return;
     };
 
-    const hangoutLeader: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member[`${userType}_id`] === userID && member.is_leader);
-    if (!hangoutLeader) {
+    const isHangoutLeader: boolean = hangoutMemberRows.find((member: HangoutMember) => member[`${userType}_id`] === userID && member.is_leader) !== undefined;
+    if (!isHangoutLeader) {
       await connection.rollback();
       res.status(401).json({ success: false, message: 'Not hangout leader.' });
 
@@ -731,8 +730,8 @@ hangoutsRouter.put('/details/steps/update', async (req: Request, res: Response) 
       return;
     };
 
-    const hangoutLeader: HangoutDetails | undefined = hangoutRows.find((member: HangoutDetails) => member[`${userType}_id`] === userID && member.is_leader);
-    if (!hangoutLeader) {
+    const isHangoutLeader: boolean = hangoutRows.find((member: HangoutDetails) => member[`${userType}_id`] === userID && member.is_leader) !== undefined;
+    if (!isHangoutLeader) {
       res.status(401).json({ success: false, message: 'Not hangout leader.' });
       return;
     };
@@ -916,8 +915,8 @@ hangoutsRouter.put('/details/steps/progressForward', async (req: Request, res: R
       return;
     };
 
-    const hangoutLeader: HangoutDetails | undefined = hangoutRows.find((member: HangoutDetails) => member[`${userType}_id`] === userID && member.is_leader);
-    if (!hangoutLeader) {
+    const isHangoutLeader: boolean = hangoutRows.find((member: HangoutDetails) => member[`${userType}_id`] === userID && member.is_leader) !== undefined;
+    if (!isHangoutLeader) {
       res.status(401).json({ success: false, message: 'Not hangout leader.' });
       return;
     };

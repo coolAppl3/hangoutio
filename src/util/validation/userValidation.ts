@@ -42,6 +42,11 @@ export function isValidDisplayNameString(displayName: string): boolean {
     return false;
   };
 
+  const doubleSpacesRemoved: string = displayName.split(' ').filter((char: string) => char !== '').join(' ');
+  if (displayName !== doubleSpacesRemoved) {
+    return false;
+  };
+
   const regex: RegExp = /^[A-Za-z ]{1,25}$/;
   return regex.test(displayName);
 };
@@ -55,6 +60,10 @@ export function isValidAuthTokenString(authToken: string): boolean {
     return false;
   };
 
+  if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
+    return false;
+  };
+
   if (authToken[32] !== '_') {
     return false;
   };
@@ -63,11 +72,8 @@ export function isValidAuthTokenString(authToken: string): boolean {
     return false;
   };
 
-  if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
-    return false;
-  };
-
-  return true;
+  const regex: RegExp = /^[A-Za-z0-9_]{34,}$/;
+  return regex.test(authToken);
 };
 
 export function isValidToken(token: string): boolean {

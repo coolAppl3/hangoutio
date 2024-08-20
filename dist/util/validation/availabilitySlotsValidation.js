@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.intersectsWithExistingSlots = exports.isValidTimestamp = exports.isValidAvailabilitySlot = exports.availabilitySlotsLimit = void 0;
+exports.intersectsWithExistingSlots = exports.isInitiallyValidAvailabilitySlot = exports.isValidTimestamp = exports.isValidAvailabilitySlot = exports.availabilitySlotsLimit = void 0;
 exports.availabilitySlotsLimit = 10;
 function isValidAvailabilitySlot(hangoutConclusionTimestamp, slotStart, slotEnd) {
     const hourMilliseconds = 1000 * 60 * 60;
@@ -45,6 +45,21 @@ function isValidTimestamp(timestamp) {
     return true;
 }
 exports.isValidTimestamp = isValidTimestamp;
+;
+function isInitiallyValidAvailabilitySlot(slotStart, slotEnd) {
+    if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
+        return false;
+    }
+    ;
+    const hourMilliseconds = 1000 * 60 * 60;
+    const slotLength = slotEnd - slotStart;
+    if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
+        return false;
+    }
+    ;
+    return true;
+}
+exports.isInitiallyValidAvailabilitySlot = isInitiallyValidAvailabilitySlot;
 ;
 ;
 ;

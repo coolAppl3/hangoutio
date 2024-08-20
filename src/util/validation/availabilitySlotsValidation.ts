@@ -46,6 +46,21 @@ export function isValidTimestamp(timestamp: number): boolean {
   return true;
 };
 
+export function isInitiallyValidAvailabilitySlot(slotStart: number, slotEnd: number): boolean {
+  if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
+    return false;
+  };
+
+  const hourMilliseconds: number = 1000 * 60 * 60;
+  const slotLength: number = slotEnd - slotStart;
+
+  if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
+    return false;
+  };
+
+  return true;
+};
+
 interface ExistingAvailabilitySlot {
   slot_start_timestamp: number,
   slot_end_timestamp: number,

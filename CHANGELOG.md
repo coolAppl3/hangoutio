@@ -1,6 +1,39 @@
 # Changelog
 
 ---
+## [0.2.3] (2024-08-20)
+
+### Features
+
+- Successfully creating a hangout now also returns the hangoutMemberID.
+- Updated the string validation for suggestions titles and descriptions:
+  - Title:
+    - Allowed characters: English alphanumerical characters, whitespace, parentheses, exclamation marks, question marks, fullstops, and hyphens.
+    - Double whitespace not allowed
+    - Length: Between 3 and 40 (inclusive).
+  - Description:
+    - Allowed characters: All printable ASCII characters, line breaks, and the euro symbol.
+    - Length: Between 10 and 500 (inclusive).
+- Improved the validation of user display names to now prevent double spaces.
+- Improved authToken and hangoutID validation.
+- **New endpoints:**:
+  - POST `suggestions/`: Adds a suggestions.
+  - PUT `suggestions/`: Updates an existing suggestion.
+  - DELETE `suggestions/`: Deletes a suggestion.
+  - DELETE `suggestions/clear`: Deletes all suggestions for its respective hangout member. 
+
+
+### Code Refactoring
+
+- Slight efficiency improvements for the `availabilitySlots` router.
+
+
+### Bug Fixes
+
+- Fixed the `availabilitySlots` router not accurately authenticating the requester using their hangoutMemberID.
+
+
+---
 ## [0.2.2] (2024-08-18)
 
 ### Features
