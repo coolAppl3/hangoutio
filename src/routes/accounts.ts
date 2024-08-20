@@ -1896,9 +1896,8 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       return;
     };
 
-    const request: FriendRequestDetails | undefined = friendRequestRows.find((request: FriendRequestDetails) => request.requester_id === requesteeID);
-
-    if (!request) {
+    const friendRequest: FriendRequestDetails | undefined = friendRequestRows.find((request: FriendRequestDetails) => request.requester_id === requesteeID);
+    if (!friendRequest) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
       return;
     };
@@ -1907,7 +1906,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       success: false,
       message: 'Pending friend request.',
       resData: {
-        friendRequestID: request?.request_id,
+        friendRequestID: friendRequest.request_id,
       },
     });
 

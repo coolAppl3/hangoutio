@@ -1,20 +1,12 @@
 export const hangoutMemberLimit: number = 20;
 export const ongoingHangoutsLimit: number = 30;
 
-export function isValidHangoutIDString(hangoutID: string): boolean {
+export function isValidHangoutIDString(hangoutID: string): boolean { // will work till 2268 AD ;)
   if (typeof hangoutID !== 'string') {
     return false;
   };
 
-  if (hangoutID.length < 46) {
-    return false;
-  };
-
-  if (hangoutID[32] !== '_') {
-    return false;
-  };
-
-  if (!Number.isInteger(+hangoutID.substring(33))) {
+  if (hangoutID.length !== 46) {
     return false;
   };
 
@@ -22,7 +14,16 @@ export function isValidHangoutIDString(hangoutID: string): boolean {
     return false;
   };
 
-  return true;
+  if (hangoutID[32] !== '_') {
+    return false;
+  };
+
+  if (hangoutID.substring(33).length !== 13 || !Number.isInteger(+hangoutID.substring(33))) {
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z0-9_]{46,}$/;
+  return regex.test(hangoutID);
 };
 
 export function isValidHangoutMemberLimit(limit: number): boolean {

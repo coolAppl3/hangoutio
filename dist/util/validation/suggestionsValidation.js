@@ -1,13 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidSuggestionDescription = exports.isValidSuggestionTitle = void 0;
-const titleRegex = /^[a-zA-Z0-9]{1,50}$/;
-const descriptionRegex = /^.{0,500}$/s;
+exports.isValidSuggestionDescription = exports.isValidSuggestionTitle = exports.suggestionsLimit = void 0;
+exports.suggestionsLimit = 10;
 function isValidSuggestionTitle(title) {
     if (typeof title !== 'string') {
         return false;
     }
     ;
+    if (title.trim() !== title) {
+        return false;
+    }
+    ;
+    const doubleSpacesRemoved = title.split(' ').filter((char) => char !== '').join(' ');
+    if (title !== doubleSpacesRemoved) {
+        return false;
+    }
+    ;
+    const titleRegex = /^[-A-Za-z0-9 ()!?.]{3,40}$/;
     return titleRegex.test(title);
 }
 exports.isValidSuggestionTitle = isValidSuggestionTitle;
@@ -17,6 +26,8 @@ function isValidSuggestionDescription(description) {
         return false;
     }
     ;
+    description = description.trim();
+    const descriptionRegex = /^[ -~\u20AC\r\n]{10,500}$/;
     return descriptionRegex.test(description);
 }
 exports.isValidSuggestionDescription = isValidSuggestionDescription;
