@@ -20,15 +20,10 @@ export function isValidAvailabilitySlot(hangoutConclusionTimestamp: number, slot
     return false;
   };
 
-  const slotLength: number = slotEnd - slotStart;
-  if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
-    return false;
-  };
-
   return true;
 };
 
-export function isValidTimestamp(timestamp: number): boolean {
+function isValidTimestamp(timestamp: number): boolean {
   const timeStampLength: number = 13;
 
   if (!Number.isInteger(timestamp)) {
@@ -52,8 +47,8 @@ export function isInitiallyValidAvailabilitySlot(slotStart: number, slotEnd: num
   };
 
   const hourMilliseconds: number = 1000 * 60 * 60;
-  const slotLength: number = slotEnd - slotStart;
 
+  const slotLength: number = slotEnd - slotStart;
   if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
     return false;
   };
