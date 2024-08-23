@@ -1,6 +1,34 @@
 # Changelog
 
 ---
+## [0.2.4] (2024-09-23)
+
+### Features
+
+- Reworked the suggestions router and table to now support a time slot for when the suggestion is supposed to take place.
+- Added time slot validation functions into `suggestionValidation.ts`.
+  - These functions are nearly identical to the ones in `availabilitySlotValidation.ts`, but adding an extra layer of abstraction solely for time slots is not worth the additional complexity it will bring to the abstraction hierarchy, at least for now.
+- **New endpoints:**
+  - POST `votes/`: Adds a vote for its respective hangout member.
+  - DELETE `votes/`: Removes a vote.
+- Members have a limit of 3 votes per hangout.
+- Members can't vote for a suggestion if they don't have an availability slot that intersects with the suggestion time window for at least an hour.
+
+
+### Code Refactoring
+
+- **Renamed validation modules:**
+  - `availabilitySlotsValidation.ts` to `availabilitySlotValidation.ts`.
+  - `suggestionsValidation.ts` to `suggestionValidation.ts`.
+- Improved the efficiency of validating the hangoutMember details in `suggestions.ts` and `availabilitySlots.ts`.
+
+
+### Bug Fixes
+
+- Fixed a missing placeholder in `availabilitySlots.ts`.
+
+
+---
 ## [0.2.3] (2024-08-20)
 
 ### Features

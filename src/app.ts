@@ -11,6 +11,7 @@ import { guestsRouter } from './routes/guests';
 import { hangoutMembersRouter } from './routes/hangoutMembers';
 import { availabilitySlotsRouter } from './routes/availabilitySlots';
 import { suggestionsRouter } from './routes/suggestions';
+import { votesRouter } from './routes/votes';
 
 // other
 import { initCronJobs } from './cron-jobs/cronInit';
@@ -43,6 +44,7 @@ app.use('/api/guests', guestsRouter);
 app.use('/api/hangoutMembers', hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlotsRouter);
 app.use('/api/suggestions', suggestionsRouter);
+app.use('/api/votes', votesRouter);
 
 // cron-jobs
 initCronJobs();
