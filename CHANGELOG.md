@@ -1,7 +1,46 @@
 # Changelog
 
 ---
-## [0.2.4] (2024-09-23)
+## [0.2.5] (2024-08-24)
+
+### Features
+
+- Hangout requests that change its conclusion timestamp now also delete suggestions with a no-longer valid start timestamp.
+- Added a `is_edited` column to the `suggestions` table, which is set to true if a suggestion is at any point edited.
+- If a suggestion's title is edited, it will automatically remove any votes it had accumulated to prevent abuse.
+- Added a `display_name` column to the `hangout_member` table to better streamline some requests and updates.
+- Added a `hangout_logs` table, and implemented logging functionality for relevant hangout-related requests.
+- **New cron jobs:**:
+  - `concludeNoSuggestionHangouts()`:
+    - Concludes hangouts that are within the voting step without any suggestions, and creates a log for it.
+    - Runs every minute.
+
+
+### Bug Fixes
+
+- Fixed `hangoutMembers.ts` not returning the hangout member ID when users join a hangout.
+
+
+### Code Refactoring
+
+- Slight readability improvements to `availabilitySlots.ts`.
+
+
+### Documentation Changes
+
+- Fixed incorrect date in last patch.
+
+
+---
+## [0.2.4a] (2024-08-23)
+
+### Bug Fixes
+
+- Fixed missing build files in `dist`.
+
+
+---
+## [0.2.4] (2024-08-23)
 
 ### Features
 
@@ -91,8 +130,9 @@
   - DELETE `availabilitySlots/`: Deletes an availability slot.
   - DELETE `availabilitySlots/clear`: Deletes all availability slots for its respective hangout member. 
 - **New cron jobs:**
-  - `progressHangouts`:
+  - `progressHangouts()`:
     - Progresses unconcluded hangouts to their respective next step.
+    - Runs every minute.
 
 
 ### Bug Fixes
@@ -110,16 +150,16 @@
 - Password recovery attempts now suspend the request for an hour after 3 failed attempts have been made.
 - Email update requests now inform the user of the remaining time before a new request can be made, after 3 failed attempts have been made.
 - **New cron jobs:**
-  - `removeUnverifiedAccounts`:
+  - `removeUnverifiedAccounts()`:
     - Removes accounts left unverified 20 minutes after they've been created.
     - Runs every minute.
-  - `removeExpiredRecoveryRequests`:
+  - `removeExpiredRecoveryRequests()`:
     - Removes account recovery requests if an hour has passed since they were created.
     - Runs every minute.
-  - `removeExpiredEmailUpdateRequests`:
+  - `removeExpiredEmailUpdateRequests()`:
     - Removes email update requests if a day has passed since they were created.
     - Runs every minute.
-  - `deleteMarkedAccounts`:
+  - `deleteMarkedAccounts()`:
     - Completely deletes account marked for deletion for longer than 48 hours.
     - Runs every hour.
 - Updated the account deletion email template to now specify that the account will be fully deleted after 48 hours.

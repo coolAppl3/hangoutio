@@ -1,13 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.intersectsWithExistingSlots = exports.isInitiallyValidAvailabilitySlot = exports.isValidAvailabilitySlot = exports.availabilitySlotsLimit = void 0;
+exports.intersectsWithExistingSlots = exports.isValidAvailabilitySlot = exports.isValidAvailabilitySlotStart = exports.availabilitySlotsLimit = void 0;
 exports.availabilitySlotsLimit = 10;
-function isValidAvailabilitySlot(hangoutConclusionTimestamp, slotStart, slotEnd) {
+function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
     const hourMilliseconds = 1000 * 60 * 60;
     const yearMilliseconds = hourMilliseconds * 24 * 365;
-    if (!isValidTimestamp(hangoutConclusionTimestamp) ||
-        !isValidTimestamp(slotStart) ||
-        !isValidTimestamp(slotEnd)) {
+    if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
         return false;
     }
     ;
@@ -21,7 +19,7 @@ function isValidAvailabilitySlot(hangoutConclusionTimestamp, slotStart, slotEnd)
     ;
     return true;
 }
-exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
+exports.isValidAvailabilitySlotStart = isValidAvailabilitySlotStart;
 ;
 function isValidTimestamp(timestamp) {
     const timeStampLength = 13;
@@ -40,7 +38,7 @@ function isValidTimestamp(timestamp) {
     return true;
 }
 ;
-function isInitiallyValidAvailabilitySlot(slotStart, slotEnd) {
+function isValidAvailabilitySlot(slotStart, slotEnd) {
     if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
         return false;
     }
@@ -53,7 +51,7 @@ function isInitiallyValidAvailabilitySlot(slotStart, slotEnd) {
     ;
     return true;
 }
-exports.isInitiallyValidAvailabilitySlot = isInitiallyValidAvailabilitySlot;
+exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
 ;
 ;
 ;

@@ -68,7 +68,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    if (!availabilitySlotValidation.isInitiallyValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
+    if (!availabilitySlotValidation.isValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
         res.status(400).json({ success: false, message: 'Invalid slot.' });
         return;
     }
@@ -124,7 +124,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        if (!availabilitySlotValidation.isValidAvailabilitySlot(hangoutDetails.conclusion_timestamp, requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
+        if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
             res.status(400).json({ success: false, message: 'Invalid slot.' });
             return;
         }
@@ -216,7 +216,7 @@ exports.availabilitySlotsRouter.put('/', async (req, res) => {
         return;
     }
     ;
-    if (!availabilitySlotValidation.isInitiallyValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
+    if (!availabilitySlotValidation.isValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
         res.status(400).json({ success: false, message: 'Invalid slot.' });
         return;
     }
@@ -272,7 +272,7 @@ exports.availabilitySlotsRouter.put('/', async (req, res) => {
             return;
         }
         ;
-        if (!availabilitySlotValidation.isValidAvailabilitySlot(hangoutDetails.conclusion_timestamp, requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
+        if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
             res.status(400).json({ success: false, message: 'Invalid slot.' });
             return;
         }

@@ -1642,6 +1642,8 @@ accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Respo
     return;
   };
 
+  let connection;
+
   try {
     interface AccountDetails extends RowDataPacket {
       auth_token: string,
@@ -1732,6 +1734,16 @@ accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Respo
       res.status(500).json({ success: false, message: 'Internal server error.' });
       return;
     };
+
+    await dbPool.execute(
+      `UPDATE
+        hangout_members
+      SET
+        display_name = ?
+      WHERE
+        account_id = ?;`,
+      [requestData.newDisplayName]
+    );
 
     res.json({ success: true, resData: { newDisplayName: requestData.newDisplayName } });
 

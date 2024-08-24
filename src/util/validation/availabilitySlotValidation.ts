@@ -1,14 +1,10 @@
 export const availabilitySlotsLimit: number = 10;
 
-export function isValidAvailabilitySlot(hangoutConclusionTimestamp: number, slotStart: number, slotEnd: number): boolean {
+export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
   const hourMilliseconds: number = 1000 * 60 * 60;
   const yearMilliseconds: number = hourMilliseconds * 24 * 365;
 
-  if (
-    !isValidTimestamp(hangoutConclusionTimestamp) ||
-    !isValidTimestamp(slotStart) ||
-    !isValidTimestamp(slotEnd)
-  ) {
+  if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
     return false;
   };
 
@@ -41,7 +37,7 @@ function isValidTimestamp(timestamp: number): boolean {
   return true;
 };
 
-export function isInitiallyValidAvailabilitySlot(slotStart: number, slotEnd: number): boolean {
+export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boolean {
   if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
     return false;
   };

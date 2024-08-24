@@ -175,10 +175,11 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
         suggestion_title,
         suggestion_description,
         suggestion_start_timestamp,
-        suggestion_end_timestamp
+        suggestion_end_timestamp,
+        is_edited
       )
-      VALUES(${generatePlaceHolders(6)});`,
-      [requestData.hangoutMemberID, requestData.hangoutID, requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp]
+      VALUES(${generatePlaceHolders(7)});`,
+      [requestData.hangoutMemberID, requestData.hangoutID, requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, false]
     );
 
     await connection.commit();
@@ -262,6 +263,8 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
     return;
   };
 
+  let connection;
+
   try {
     interface UserDetails extends RowDataPacket {
       auth_token: string,
@@ -289,6 +292,7 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
     };
 
     interface HangoutDetails extends RowDataPacket {
+      current_step: number,
       conclusion_timestamp: number,
       hangout_member_id: number,
       account_id: number | null,
@@ -302,6 +306,7 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
+        hangouts.current_step,
         hangouts.conclusion_timestamp,
         hangout_members.hangout_member_id,
         hangout_members.account_id,
@@ -334,6 +339,16 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
       return;
     };
 
+    if (hangoutRows[0].current_step === 1) {
+      res.status(409).json({ success: false, message: 'Not in suggestions step.' });
+      return;
+    };
+
+    if (hangoutRows[0].current_step === 4) {
+      res.status(409).json({ success: false, message: 'Hangout concluded.' });
+      return;
+    };
+
     const suggestionToEdit: HangoutDetails | undefined = hangoutRows.find((suggestion: HangoutDetails) => suggestion.suggestion_id === requestData.suggestionID);
     if (!suggestionToEdit) {
       res.status(404).json({ success: false, message: 'Suggestion not found.' });
@@ -357,18 +372,34 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
         suggestion_title = ?,
         suggestion_description = ?,
         suggestion_start_timestamp = ?,
-        suggestion_end_timestamp = ?
+        suggestion_end_timestamp = ?,
+        is_edited = ?
       WHERE
         suggestion_id = ?;`,
-      [requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, requestData.suggestionID]
+      [requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, requestData.suggestionID, true]
     );
 
     if (resultSetHeader.affectedRows === 0) {
+      await dbPool.rollback();
       res.status(500).json({ success: false, message: 'Internal server error.' });
+
       return;
     };
 
-    res.json({ success: true, resData: {} })
+    let deletedVotes: number = 0;
+    if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title) {
+      const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+        `DELETE FROM
+          votes
+        WHERE
+          suggestion_id = ?;`,
+        [requestData.suggestionID]
+      );
+
+      deletedVotes = resultSetHeader.affectedRows;
+    };
+
+    res.json({ success: true, resData: { deletedVotes } })
 
   } catch (err: any) {
     console.log(err);
