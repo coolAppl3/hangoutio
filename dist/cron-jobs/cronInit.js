@@ -36,6 +36,7 @@ function initCronJobs() {
         await accountCronJobs.removeExpiredRecoveryRequests();
         await accountCronJobs.removeExpiredEmailUpdateRequests();
         await hangoutCronJobs.progressHangouts();
+        await hangoutCronJobs.concludeNoSuggestionHangouts();
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
         await accountCronJobs.deleteMarkedAccounts();

@@ -162,9 +162,10 @@ exports.suggestionsRouter.post('/', async (req, res) => {
         suggestion_title,
         suggestion_description,
         suggestion_start_timestamp,
-        suggestion_end_timestamp
+        suggestion_end_timestamp,
+        is_edited
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutMemberID, requestData.hangoutID, requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(7)});`, [requestData.hangoutMemberID, requestData.hangoutID, requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, false]);
         await connection.commit();
         res.json({ success: true, resData: { suggestionID: resultSetHeader.insertId } });
     }
@@ -236,6 +237,7 @@ exports.suggestionsRouter.put('/', async (req, res) => {
         return;
     }
     ;
+    let connection;
     try {
         ;
         const userType = (0, userUtils_1.getUserType)(authToken);
@@ -257,6 +259,7 @@ exports.suggestionsRouter.put('/', async (req, res) => {
         ;
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.current_step,
         hangouts.conclusion_timestamp,
         hangout_members.hangout_member_id,
         hangout_members.account_id,
@@ -286,6 +289,16 @@ exports.suggestionsRouter.put('/', async (req, res) => {
             return;
         }
         ;
+        if (hangoutRows[0].current_step === 1) {
+            res.status(409).json({ success: false, message: 'Not in suggestions step.' });
+            return;
+        }
+        ;
+        if (hangoutRows[0].current_step === 4) {
+            res.status(409).json({ success: false, message: 'Hangout concluded.' });
+            return;
+        }
+        ;
         const suggestionToEdit = hangoutRows.find((suggestion) => suggestion.suggestion_id === requestData.suggestionID);
         if (!suggestionToEdit) {
             res.status(404).json({ success: false, message: 'Suggestion not found.' });
@@ -308,15 +321,26 @@ exports.suggestionsRouter.put('/', async (req, res) => {
         suggestion_title = ?,
         suggestion_description = ?,
         suggestion_start_timestamp = ?,
-        suggestion_end_timestamp = ?
+        suggestion_end_timestamp = ?,
+        is_edited = ?
       WHERE
-        suggestion_id = ?;`, [requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, requestData.suggestionID]);
+        suggestion_id = ?;`, [requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, requestData.suggestionID, true]);
         if (resultSetHeader.affectedRows === 0) {
+            await db_1.dbPool.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        let deletedVotes = 0;
+        if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title) {
+            const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
+          votes
+        WHERE
+          suggestion_id = ?;`, [requestData.suggestionID]);
+            deletedVotes = resultSetHeader.affectedRows;
+        }
+        ;
+        res.json({ success: true, resData: { deletedVotes } });
     }
     catch (err) {
         console.log(err);

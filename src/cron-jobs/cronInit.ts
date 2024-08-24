@@ -9,6 +9,7 @@ export function initCronJobs(): void {
     await accountCronJobs.removeExpiredRecoveryRequests();
     await accountCronJobs.removeExpiredEmailUpdateRequests();
     await hangoutCronJobs.progressHangouts();
+    await hangoutCronJobs.concludeNoSuggestionHangouts();
   });
 
   // every hour

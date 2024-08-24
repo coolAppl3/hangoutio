@@ -9,6 +9,8 @@ import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import { isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidUsernameString } from '../util/validation/userValidation';
 import { generateAuthToken, generateHangoutID } from '../util/tokenGenerator';
 import { getUserID, getUserType } from '../util/userUtils';
+import { addHangoutLog } from '../util/hangoutLogger';
+import { getDateAndTimeSTring } from '../util/globalUtils';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -308,20 +310,21 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
       return;
     };
 
-    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
+    const [thirdResultSetheader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
         account_id,
         guest_id,
+        display_name,
         is_leader
       )
       VALUES(${generatePlaceHolders(5)});`,
-      [hangoutID, 'guest', null, guestID, true]
+      [hangoutID, 'guest', null, guestID, requestData.displayName, true]
     );
 
     await connection.commit();
-    res.json({ success: true, resData: { hangoutID, hangoutMemberID: resultSetHeader.insertId, authToken: idMarkedAuthToken } })
+    res.json({ success: true, resData: { hangoutID, hangoutMemberID: thirdResultSetheader.insertId, authToken: idMarkedAuthToken } })
 
   } catch (err: any) {
     console.log(err);
@@ -447,7 +450,7 @@ hangoutsRouter.put('/details/updatePassword', async (req: Request, res: Response
     };
 
     const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
-    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+    const [firstResultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
         hangouts
       SET
@@ -457,12 +460,15 @@ hangoutsRouter.put('/details/updatePassword', async (req: Request, res: Response
       [newHashedPassword, requestData.hangoutID]
     );
 
-    if (resultSetHeader.affectedRows === 0) {
+    if (firstResultSetHeader.affectedRows === 0) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
       return;
     };
 
     res.json({ success: true, resData: {} });
+
+    const logDescription: string = 'Hangout password was updated.';
+    await addHangoutLog(requestData.hangoutID, logDescription);
 
   } catch (err: any) {
     console.log(err);
@@ -611,6 +617,9 @@ hangoutsRouter.put('/details/changeMemberLimit', async (req: Request, res: Respo
 
     await connection.commit();
     res.json({ success: true, resData: {} });
+
+    const logDescription: string = `Hangout member limit was changed to ${requestData.newLimit}.`;
+    await addHangoutLog(requestData.hangoutID, logDescription);
 
   } catch (err: any) {
     console.log(err);
@@ -789,6 +798,7 @@ hangoutsRouter.put('/details/steps/update', async (req: Request, res: Response) 
     };
 
     const yearMilliseconds: number = 1000 * 60 * 60 * 24 * 365;
+
     const [secondResultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
         availability_slots
@@ -798,7 +808,17 @@ hangoutsRouter.put('/details/steps/update', async (req: Request, res: Response) 
       [requestData.hangoutID, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]
     );
 
-    const affectedAvailabilitySlots: number = secondResultSetHeader.affectedRows;
+    const [thirdResultSetheader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
+        suggestions
+      WHERE
+        hangout_id = ? AND
+        (suggestion_start_timestamp < ? OR suggestion_start_timestamp > ?);`,
+      [requestData.hangoutID, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]
+    );
+
+    const deletedAvailabilitySlots: number = secondResultSetHeader.affectedRows;
+    const deletedSuggestions: number = thirdResultSetheader.affectedRows;
 
     res.json({
       success: true,
@@ -808,9 +828,13 @@ hangoutsRouter.put('/details/steps/update', async (req: Request, res: Response) 
         newVotingStep,
         newNextStepTimestamp,
         newConclusionTimestamp,
-        affectedAvailabilitySlots,
+        deletedAvailabilitySlots,
+        deletedSuggestions,
       },
     });
+
+    const logDescription: string = `Hangout steps have been updated and will now be concluded on ${getDateAndTimeSTring(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+    await addHangoutLog(requestData.hangoutID, logDescription);
 
   } catch (err: any) {
     console.log(err);
@@ -971,6 +995,7 @@ hangoutsRouter.put('/details/steps/progressForward', async (req: Request, res: R
       };
 
       const yearMilliseconds: number = 1000 * 60 * 60 * 24 * 365;
+
       const [secondResultSetHeader] = await dbPool.execute<ResultSetHeader>(
         `DELETE FROM
           availability_slots
@@ -980,7 +1005,17 @@ hangoutsRouter.put('/details/steps/progressForward', async (req: Request, res: R
         [requestData.hangoutID, requestTimestamp, (requestTimestamp + yearMilliseconds)]
       );
 
-      const affectedAvailabilitySlots: number = secondResultSetHeader.affectedRows;
+      const [thirdResultSetheader] = await dbPool.execute<ResultSetHeader>(
+        `DELETE FROM
+          suggestions
+        WHERE
+          hangout_id = ? AND
+          (suggestion_start_timestamp < ? OR suggestion_start_timestamp > ?);`,
+        [requestData.hangoutID, requestTimestamp, (requestTimestamp + yearMilliseconds)]
+      );
+
+      const deletedAvailabilitySlots: number = secondResultSetHeader.affectedRows;
+      const deletedSuggestions: number = thirdResultSetheader.affectedRows;
 
       res.json({
         success: true,
@@ -989,9 +1024,13 @@ hangoutsRouter.put('/details/steps/progressForward', async (req: Request, res: R
           newNextStepTimestamp,
           newConclusionTimestamp: requestTimestamp,
           isConcluded: true,
-          affectedAvailabilitySlots,
+          deletedAvailabilitySlots,
+          deletedSuggestions,
         },
       });
+
+      const logDescription: string = `Hangout has been manually progressed and is now concluded. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+      await addHangoutLog(requestData.hangoutID, logDescription);
 
       return;
     };
@@ -1019,6 +1058,7 @@ hangoutsRouter.put('/details/steps/progressForward', async (req: Request, res: R
     };
 
     const yearMilliseconds: number = 1000 * 60 * 60 * 24 * 365;
+
     const [secondResultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
         availability_slots
@@ -1028,7 +1068,17 @@ hangoutsRouter.put('/details/steps/progressForward', async (req: Request, res: R
       [requestData.hangoutID, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]
     );
 
-    const affectedAvailabilitySlots: number = secondResultSetHeader.affectedRows;
+    const [thirdResultSetheader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
+        suggestions
+      WHERE
+        hangout_id = ? AND
+        (suggestion_start_timestamp < ? OR suggestion_start_timestamp > ?);`,
+      [requestData.hangoutID, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]
+    );
+
+    const deletedAvailabilitySlots: number = secondResultSetHeader.affectedRows;
+    const deletedSuggestions: number = thirdResultSetheader.affectedRows;
 
     res.json({
       success: true,
@@ -1037,9 +1087,13 @@ hangoutsRouter.put('/details/steps/progressForward', async (req: Request, res: R
         newNextStepTimestamp,
         newConclusionTimestamp,
         isConcluded: false,
-        affectedAvailabilitySlots,
+        deletedAvailabilitySlots,
+        deletedSuggestions,
       },
     });
+
+    const logDescription: string = `Hangout has been manually progressed, and will now be concluded on ${getDateAndTimeSTring(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+    await addHangoutLog(requestData.hangoutID, logDescription);
 
   } catch (err: any) {
     console.log(err);
@@ -1114,6 +1168,7 @@ hangoutsRouter.put('/details/members/kick', async (req: Request, res: Response) 
       hangout_member_id: number,
       account_id: number | null,
       guest_id: number | null,
+      display_name: string,
       is_leader: boolean,
     };
 
@@ -1122,6 +1177,7 @@ hangoutsRouter.put('/details/members/kick', async (req: Request, res: Response) 
         hangout_member_id,
         account_id,
         guest_id,
+        display_name,
         is_leader
       FROM
         hangout_members
@@ -1185,6 +1241,9 @@ hangoutsRouter.put('/details/members/kick', async (req: Request, res: Response) 
     };
 
     res.json({ success: true, resData: {} });
+
+    const logDescription: string = `${memberToKick.display_name} was kicked by hangout leader.`;
+    await addHangoutLog(requestData.hangoutID, logDescription);
 
   } catch (err: any) {
     console.log(err);
@@ -1261,6 +1320,7 @@ hangoutsRouter.put('/details/members/transferLeadership', async (req: Request, r
       hangout_member_id: number,
       account_id: number | null,
       guest_id: number | null,
+      display_name: string,
       is_leader: boolean,
     };
 
@@ -1273,6 +1333,7 @@ hangoutsRouter.put('/details/members/transferLeadership', async (req: Request, r
         hangout_member_id,
         account_id,
         guest_id,
+        display_name,
         is_leader
       FROM
         hangout_members
@@ -1348,6 +1409,9 @@ hangoutsRouter.put('/details/members/transferLeadership', async (req: Request, r
 
     await connection.commit();
     res.json({ success: true, resData: {} });
+
+    const logDescription: string = `${hangoutLeader.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
+    await addHangoutLog(requestData.hangoutID, logDescription);
 
   } catch (err: any) {
     console.log(err);

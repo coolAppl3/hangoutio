@@ -1303,6 +1303,7 @@ exports.accountsRouter.put('/details/updateDisplayName', async (req, res) => {
         return;
     }
     ;
+    let connection;
     try {
         ;
         const [accountRows] = await db_1.dbPool.execute(`SELECT
@@ -1371,6 +1372,12 @@ exports.accountsRouter.put('/details/updateDisplayName', async (req, res) => {
             return;
         }
         ;
+        await db_1.dbPool.execute(`UPDATE
+        hangout_members
+      SET
+        display_name = ?
+      WHERE
+        account_id = ?;`, [requestData.newDisplayName]);
         res.json({ success: true, resData: { newDisplayName: requestData.newDisplayName } });
     }
     catch (err) {
