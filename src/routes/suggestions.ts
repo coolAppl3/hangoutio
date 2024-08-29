@@ -323,8 +323,7 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
       LEFT JOIN
         suggestions ON hangout_members.hangout_member_id = suggestions.hangout_member_id
       WHERE
-        hangouts.hangout_id = ?
-      LIMIT ${hangoutMemberLimit};`,
+        hangouts.hangout_id = ?;`,
       [requestData.hangoutID]
     );
 
@@ -602,7 +601,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
         suggestions ON hangout_members.hangout_member_id = suggestions.hangout_member_id
       WHERE
         hangout_members.hangout_member_id = ?
-      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      LIMIT 1;`,
       [requestData.hangoutMemberID]
     );
 
@@ -611,12 +610,14 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    if (memberSuggestionRows[0][`${userType}_id`] !== userID) {
+    const memberSuggestion: MemberSuggestion = memberSuggestionRows[0];
+
+    if (memberSuggestion[`${userType}_id`] !== userID) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    if (memberSuggestionRows[0].suggestion_id === null) {
+    if (!memberSuggestion.suggestion_id) {
       res.status(409).json({ success: false, message: 'No suggestions to clear.' });
       return;
     };

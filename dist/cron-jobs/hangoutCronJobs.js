@@ -4,6 +4,7 @@ exports.concludeNoSuggestionHangouts = exports.progressHangouts = void 0;
 const db_1 = require("../db/db");
 async function progressHangouts() {
     const currentTimestamp = Date.now();
+    const weekMilliseconds = 1000 * 60 * 60 * 24 * 7;
     try {
         await db_1.dbPool.execute(`UPDATE
         hangouts
@@ -11,7 +12,7 @@ async function progressHangouts() {
         next_step_timestamp = CASE
           WHEN current_step = 1 THEN suggestions_step + ${currentTimestamp}
           WHEN current_step = 2 THEN voting_step + ${currentTimestamp}
-          ELSE NULL
+          ELSE current_step = ${currentTimestamp + weekMilliseconds}
         END,
         is_concluded = CASE
           WHEN current_step = 3 THEN TRUE
@@ -27,7 +28,8 @@ async function progressHangouts() {
         next_step_timestamp <= ${currentTimestamp};`);
     }
     catch (err) {
-        console.log(`CRON JOB ERROR (${progressHangouts.name}): ${err}`);
+        console.log(`CRON JOB ERROR: ${progressHangouts.name}`);
+        console.log(err);
     }
     ;
 }
@@ -62,7 +64,15 @@ async function concludeNoSuggestionHangouts() {
         is_concluded = ?
       WHERE
         hangout_id IN (${hangoutIdsString});`, [4, currentTimestamp, null, currentTimestamp, true]);
-        const logDescription = 'Hangout progressed into the voting step without any suggestions, and was automatically concluded as a result.';
+        if (resultSetHeader.affectedRows !== hangoutRows.length) {
+            console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
+            console.log({
+                resultSetHeader,
+                hangoutIds,
+            });
+        }
+        ;
+        const logDescription = 'Hangout could not progress into the voting step due to not having any suggestion, and is now concluded as a result.';
         let hangoutValuesString = '';
         for (const id of hangoutIds) {
             hangoutValuesString += `('${id}', '${logDescription}', ${currentTimestamp}),`;
@@ -77,7 +87,8 @@ async function concludeNoSuggestionHangouts() {
       VALUES ${hangoutValuesString};`);
     }
     catch (err) {
-        console.log(`CRON JOB ERROR (${concludeNoSuggestionHangouts.name}): ${err}`);
+        console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
+        console.log(err);
     }
     ;
 }

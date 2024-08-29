@@ -708,44 +708,53 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
             return;
         }
         ;
+        connection = await db_1.dbPool.getConnection();
+        await connection.execute('SET TRANSACTION LEVEL ISOLATION LEVEL SERIALIZABLE;');
+        await connection.beginTransaction();
         ;
-        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
-        hangout_id
+        const [hangoutRows] = await connection.execute(`SELECT
+        hangouts.hangout_id,
+        hangouts.current_step,
+        hangout_members.hangout_member_id
       FROM
-        hangout_members
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        account_id = ? AND
-        is_leader = TRUE;`, [accountID]);
+        hangout_members.account_id = ?;`, [accountID]);
         if (hangoutRows.length > 0) {
-            let hangoutIdsToDelete = ``;
-            for (let i = 0; i < hangoutRows.length; i++) {
-                if (i + 1 === hangoutRows.length) {
-                    hangoutIdsToDelete += `'${hangoutRows[i].hangout_id}'`;
-                    continue;
+            const hangoutsInVotingStep = hangoutRows.filter((hangout) => hangout.current_step === 3);
+            if (hangoutsInVotingStep.length > 0) {
+                const hangoutMemberIDs = hangoutsInVotingStep.map((hangout) => hangout.hangout_member_id);
+                const [resultSetHeader] = await connection.execute(`DELETE FROM
+            votes
+          WHERE
+            hangout_member_id IN (${hangoutMemberIDs.join(', ')})
+          LIMIT ${hangoutMemberIDs.length};`);
+                if (resultSetHeader.affectedRows !== hangoutMemberIDs.length) {
+                    await connection.rollback();
+                    res.status(500).json({ success: false, message: 'Internal server error.' });
+                    return;
                 }
                 ;
-                hangoutIdsToDelete += `'${hangoutRows[i].hangout_id}', `;
             }
             ;
-            const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
-          hangouts
+            const hangoutMemberIDs = hangoutRows.map((hangout) => hangout.hangout_member_id);
+            const [resultSetHeader] = await connection.execute(`DELETE FROM
+          hangout_members
         WHERE
-          hangout_id IN (${hangoutIdsToDelete});`);
-            if (resultSetHeader.affectedRows === 0) {
+          hangout_member_id IN (${hangoutMemberIDs.join(', ')})
+        LIMIT ${hangoutMemberIDs.length};`);
+            if (resultSetHeader.affectedRows !== hangoutMemberIDs.length) {
+                await connection.rollback();
                 res.status(500).json({ success: false, message: 'Internal server error.' });
                 return;
             }
             ;
-            await db_1.dbPool.execute(`DELETE FROM
-          hangout_members
-        WHERE
-          account_id = ?;`, [accountID]);
         }
         ;
         const markedAuthToken = `d_${authToken}`;
         const cancellationToken = tokenGenerator.generateUniqueToken();
-        connection = await db_1.dbPool.getConnection();
-        await connection.beginTransaction();
         const [resultSetHeader] = await connection.execute(`UPDATE
         accounts
       SET
@@ -767,6 +776,20 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountID, cancellationToken, Date.now()]);
         await connection.commit();
         res.status(202).json({ success: true, resData: {} });
+        const logDescription = `${accountDetails.display_name} has left the hangout.`;
+        const currentTimestamp = Date.now();
+        let logValues = '';
+        for (const hangout of hangoutRows) {
+            logValues += `('${hangout.hangout_id}', '${logDescription})', ${currentTimestamp}),`;
+        }
+        ;
+        logValues.slice(0, -1);
+        await db_1.dbPool.execute(`INSERT INTO hangout_logs(
+        hangout_id,
+        log_description,
+        log_timestamp
+      )
+      VALUES(${logValues});`);
         await (0, emailServices_1.sendDeletionEmail)(accountDetails.email, accountID, cancellationToken, accountDetails.display_name);
     }
     catch (err) {

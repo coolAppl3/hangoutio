@@ -1,6 +1,27 @@
 # Changelog
 
 ---
+## [0.2.6] (2024-08-29)
+
+### Features
+
+- Suggestions are no longer removed if their respective member leaves the hangout.
+  - This will improve the user experience, as the member's suggestion might be one others would like to vote for. It also prevents a situation where no suggestions remain during the voting step, rendering the whole hangout pointless.
+- Votes are no longer removed if their respective member leaves the hangout, but the hangout has been concluded.
+  - This prevents a winning suggestion from losing its spot due to members who've voted for it leaving.
+- Reworked PUT `hangoutMembers/details/leaveHangout` to DELETE `hangoutMembers/` to align with the aforementioned reworks.
+- A new hangout leader is no longer automatically assigned to a random member. Instead, an option to become the hangout leader is presented to all members, and the first member to click it becomes the new leader.
+  - This will prevent situations where a barely active, or inactive, member being randomly assigned as leader.
+- Hangouts will remain accessible for 7 days after being concluded, after which they will be archived.
+  - Archiving will be introduced in future patches.
+
+
+### Bug Fixes
+
+- Fixed `hangoutMembers.ts` having an incorrect number of mysql2 placeholders when creating a new hangout member.
+
+
+---
 ## [0.2.5] (2024-08-24)
 
 ### Features

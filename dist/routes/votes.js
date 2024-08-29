@@ -228,9 +228,14 @@ exports.votesRouter.delete('/', async (req, res) => {
     ;
     const userID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutMemberID', 'voteID'];
+    const expectedKeys = ['hangoutID', 'hangoutMemberID', 'voteID'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!(0, hangoutValidation_1.isValidHangoutIDString)(requestData.hangoutID)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
@@ -264,30 +269,31 @@ exports.votesRouter.delete('/', async (req, res) => {
         }
         ;
         ;
-        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.current_step,
+        hangout_members.hangout_member_id,
         hangout_members.account_id,
-        hangout_members.guest_id,
-        votes.vote_id
+        hangout_members.guest_id
       FROM
-        hangout_members
+        hangouts
       LEFT JOIN
-        votes ON hangout_members.hangout_member_id = votes.hangout_member_id
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangout_members.hangout_member_id = ?
-      LIMIT ${voteValidation.votesLimit};`, [requestData.hangoutMemberID]);
-        if (hangoutMemberRows.length === 0) {
+        hangout_id = ?
+      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutID]);
+        if (hangoutRows.length === 0) {
+            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            return;
+        }
+        ;
+        const isMember = hangoutRows.find((member) => member.hangout_member_id === requestData.hangoutMemberID && member[`${userType}_id`] === userID) !== undefined;
+        if (!isMember) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
         }
         ;
-        if (hangoutMemberRows[0][`${userType}_id`] !== userID) {
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
-            return;
-        }
-        ;
-        const voteFound = hangoutMemberRows.find((member) => member.vote_id === requestData.voteID) !== undefined;
-        if (!voteFound) {
-            res.status(404).json({ success: false, message: 'Vote not found.' });
+        if (hangoutRows[0].current_step !== 3) {
+            res.status(409).json({ success: false, message: 'Not in voting step.' });
             return;
         }
         ;
@@ -296,7 +302,7 @@ exports.votesRouter.delete('/', async (req, res) => {
       WHERE
         vote_id = ?;`, [requestData.voteID]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(404).json({ success: false, message: 'Vote not found.' });
             return;
         }
         ;

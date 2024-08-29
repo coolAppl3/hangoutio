@@ -24,7 +24,8 @@ function getNextStepTimestamp(currentStep, currentStepTimestamp, availabilitySte
         return currentStepTimestamp + votingStep;
     }
     ;
-    return null;
+    const weekMilliseconds = 1000 * 60 * 60 * 24 * 7;
+    return currentStepTimestamp + weekMilliseconds;
 }
 exports.getNextStepTimestamp = getNextStepTimestamp;
 ;
