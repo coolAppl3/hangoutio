@@ -33,7 +33,8 @@ export function getNextStepTimestamp(
     return currentStepTimestamp + votingStep;
   };
 
-  return null;
+  const weekMilliseconds: number = 1000 * 60 * 60 * 24 * 7;
+  return currentStepTimestamp + weekMilliseconds;
 };
 
 export function getCurrentStepName(currentStep: number): string {

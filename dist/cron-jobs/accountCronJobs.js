@@ -13,6 +13,7 @@ async function removeUnverifiedAccounts() {
         created_on_timestamp < ?;`, [minimumAllowedTimestamp]);
     }
     catch (err) {
+        console.log(`CRON JOB ERROR: ${removeUnverifiedAccounts.name}`);
         console.log(err);
     }
     ;
@@ -29,6 +30,7 @@ async function removeExpiredRecoveryRequests() {
         request_timestamp < ?;`, [minimumAllowedTimestamp]);
     }
     catch (err) {
+        console.log(`CRON JOB ERROR: ${removeExpiredRecoveryRequests.name}`);
         console.log(err);
     }
     ;
@@ -45,6 +47,7 @@ async function removeExpiredEmailUpdateRequests() {
         request_timestamp < ?;`, [minimumAllowedTimestamp]);
     }
     catch (err) {
+        console.log(`CRON JOB ERROR: ${removeExpiredEmailUpdateRequests.name}`);
         console.log(err);
     }
     ;
@@ -78,6 +81,7 @@ async function deleteMarkedAccounts() {
         account_id IN (?);`, [accountsToDelete.join(', ')]);
     }
     catch (err) {
+        console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`);
         console.log(err);
         if (connection) {
             await connection.rollback();

@@ -16,6 +16,7 @@ export async function removeUnverifiedAccounts(): Promise<void> {
     );
 
   } catch (err: any) {
+    console.log(`CRON JOB ERROR: ${removeUnverifiedAccounts.name}`)
     console.log(err);
   };
 };
@@ -34,6 +35,7 @@ export async function removeExpiredRecoveryRequests(): Promise<void> {
     );
 
   } catch (err: any) {
+    console.log(`CRON JOB ERROR: ${removeExpiredRecoveryRequests.name}`)
     console.log(err);
   };
 };
@@ -52,6 +54,7 @@ export async function removeExpiredEmailUpdateRequests(): Promise<void> {
     );
 
   } catch (err: any) {
+    console.log(`CRON JOB ERROR: ${removeExpiredEmailUpdateRequests.name}`)
     console.log(err);
   };
 };
@@ -96,6 +99,7 @@ export async function deleteMarkedAccounts(): Promise<void> {
     );
 
   } catch (err: any) {
+    console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`)
     console.log(err);
 
     if (connection) {

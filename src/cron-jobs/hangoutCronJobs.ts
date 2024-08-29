@@ -1,9 +1,9 @@
 import { dbPool } from "../db/db";
 import { RowDataPacket } from "mysql2";
-import { generatePlaceHolders } from "../util/generatePlaceHolders";
 
 export async function progressHangouts(): Promise<void> {
   const currentTimestamp: number = Date.now();
+  const weekMilliseconds: number = 1000 * 60 * 60 * 24 * 7
 
   try {
     await dbPool.execute(
@@ -13,7 +13,7 @@ export async function progressHangouts(): Promise<void> {
         next_step_timestamp = CASE
           WHEN current_step = 1 THEN suggestions_step + ${currentTimestamp}
           WHEN current_step = 2 THEN voting_step + ${currentTimestamp}
-          ELSE NULL
+          ELSE current_step = ${currentTimestamp + weekMilliseconds}
         END,
         is_concluded = CASE
           WHEN current_step = 3 THEN TRUE
@@ -30,7 +30,8 @@ export async function progressHangouts(): Promise<void> {
     );
 
   } catch (err: any) {
-    console.log(`CRON JOB ERROR (${progressHangouts.name}): ${err}`);
+    console.log(`CRON JOB ERROR: ${progressHangouts.name}`)
+    console.log(err);
   };
 };
 
@@ -75,7 +76,15 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       [4, currentTimestamp, null, currentTimestamp, true]
     );
 
-    const logDescription: string = 'Hangout progressed into the voting step without any suggestions, and was automatically concluded as a result.';
+    if (resultSetHeader.affectedRows !== hangoutRows.length) {
+      console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`)
+      console.log({
+        resultSetHeader,
+        hangoutIds,
+      })
+    };
+
+    const logDescription: string = 'Hangout could not progress into the voting step due to not having any suggestion, and is now concluded as a result.';
 
     let hangoutValuesString: string = '';
     for (const id of hangoutIds) {
@@ -93,6 +102,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
     );
 
   } catch (err: any) {
-    console.log(`CRON JOB ERROR (${concludeNoSuggestionHangouts.name}): ${err}`)
+    console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`)
+    console.log(err);
   };
 };
