@@ -5,6 +5,10 @@ exports.votesLimit = 3;
 ;
 ;
 function isAvailableForSuggestion(suggestionTimeSlot, availabilitySlots) {
+    if (availabilitySlots.length === 0) {
+        return false;
+    }
+    ;
     for (const slot of availabilitySlots) {
         if (intersectsWithAvailabilitySlot(suggestionTimeSlot, slot)) {
             return true;

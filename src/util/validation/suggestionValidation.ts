@@ -1,4 +1,4 @@
-export const suggestionsLimit: number = 10;
+export const suggestionsLimit: number = 3;
 
 export function isValidSuggestionTitle(title: string): boolean {
   if (typeof title !== 'string') {

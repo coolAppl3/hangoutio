@@ -6,7 +6,7 @@ import { isValidAuthTokenString } from "../util/validation/userValidation";
 import { getUserID, getUserType } from "../util/userUtils";
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
-import { hangoutMemberLimit, isValidHangoutIDString } from "../util/validation/hangoutValidation";
+import { isValidHangoutID } from "../util/validation/hangoutValidation";
 
 export const suggestionsRouter: Router = express.Router();
 
@@ -41,7 +41,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidHangoutIDString(requestData.hangoutID)) {
+  if (!isValidHangoutID(requestData.hangoutID)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
@@ -94,74 +94,69 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface HangoutDetails extends RowDataPacket {
+    interface HangoutMember extends RowDataPacket {
       current_step: number,
       conclusion_timestamp: number,
-      hangout_member_id: number,
       account_id: number | null,
       guest_id: number | null,
-    };
-
-    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
-      `SELECT
-        hangouts.current_step,
-        hangouts.conclusion_timestamp,
-        hangout_members.hangout_member_id,
-        hangout_members.account_id,
-        hangout_members.guest_id
-      FROM
-        hangouts
-      LEFT JOIN
-        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
-      WHERE
-        hangouts.hangout_id = ?
-      LIMIT ${hangoutMemberLimit};`,
-      [requestData.hangoutID]
-    );
-
-    if (hangoutRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Hangout not found.' });
-      return;
-    };
-
-    const isMember: boolean = hangoutRows.find((member: HangoutDetails) => member.hangout_member_id === requestData.hangoutMemberID && member[`${userType}_id`] === userID) !== undefined;
-    if (!isMember) {
-      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
-      return;
-    };
-
-    const hangoutDetails: HangoutDetails = hangoutRows[0];
-
-    if (hangoutDetails.current_step !== 2) {
-      res.status(409).json({ success: false, message: 'Not in suggestions step.' });
-      return;
-    };
-
-    if (!suggestionValidation.isValidSuggestionSlotStart(hangoutDetails.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
-      res.status(400).json({ success: false, message: 'Invalid suggestion time slot.' });
-      return;
+      suggestion_id: number,
     };
 
     connection = await dbPool.getConnection();
     await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
     await connection.beginTransaction();
 
-    interface Suggestion extends RowDataPacket {
-      suggestion_id: number,
-    };
-
-    const [suggestionRows] = await connection.execute<Suggestion[]>(
+    const [hangoutMemberRows] = await connection.execute<HangoutMember[]>(
       `SELECT
-        suggestion_id
+        hangouts.current_step,
+        hangouts.conclusion_timestamp,
+        hangout_members.account_id,
+        hangout_members.guest_id,
+        suggestions.suggestion_id
       FROM
-        suggestions
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      LEFT JOIN
+        suggestions ON hangout_members.hangout_member_id = suggestions.hangout_member_id
       WHERE
-        hangout_member_id = ?
+        hangouts.hangout_id = ? AND
+        hangout_members.hangout_member_id = ?
       LIMIT ${suggestionValidation.suggestionsLimit};`,
-      [requestData.hangoutMemberID]
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
-    if (suggestionRows.length === suggestionValidation.suggestionsLimit) {
+    if (hangoutMemberRows.length === 0) {
+      await connection.rollback();
+      res.status(404).json({ success: false, message: 'Hangout not found.' });
+
+      return;
+    };
+
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
+      await connection.rollback();
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
+      return;
+    };
+
+    if (hangoutMember.current_step !== 2) {
+      await connection.rollback();
+      res.status(409).json({ success: false, message: 'Not in suggestions step.' });
+
+      return;
+    };
+
+    if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMember.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
+      await connection.rollback();
+      res.status(400).json({ success: false, message: 'Invalid suggestion time slot.' });
+
+      return;
+    };
+
+    if (hangoutMemberRows.length === suggestionValidation.suggestionsLimit) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Suggestion limit reached.' });
 
@@ -183,7 +178,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     );
 
     await connection.commit();
-    res.json({ success: true, resData: { suggestionID: resultSetHeader.insertId } });
+    res.status(201).json({ success: true, resData: { suggestionID: resultSetHeader.insertId } });
 
   } catch (err: any) {
     console.log(err);
@@ -201,7 +196,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
   };
 });
 
-suggestionsRouter.put('/', async (req: Request, res: Response) => {
+suggestionsRouter.patch('/', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutID: string,
     hangoutMemberID: number,
@@ -233,7 +228,7 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidHangoutIDString(requestData.hangoutID)) {
+  if (!isValidHangoutID(requestData.hangoutID)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
@@ -263,8 +258,6 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
     return;
   };
 
-  let connection;
-
   try {
     interface UserDetails extends RowDataPacket {
       auth_token: string,
@@ -291,10 +284,9 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface HangoutDetails extends RowDataPacket {
+    interface HangoutMember extends RowDataPacket {
       current_step: number,
       conclusion_timestamp: number,
-      hangout_member_id: number,
       account_id: number | null,
       guest_id: number | null,
       suggestion_id: number,
@@ -304,11 +296,10 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
       suggestion_end_timestamp: number,
     };
 
-    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
       `SELECT
         hangouts.current_step,
         hangouts.conclusion_timestamp,
-        hangout_members.hangout_member_id,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id,
@@ -318,48 +309,46 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
         suggestions.suggestion_end_timestamp
       FROM
         hangouts
-      LEFT JOIN
+      INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       LEFT JOIN
         suggestions ON hangout_members.hangout_member_id = suggestions.hangout_member_id
       WHERE
-        hangouts.hangout_id = ?;`,
-      [requestData.hangoutID]
+        hangouts.hangout_id = ? AND
+        hangout_members.hangout_member_id = ?
+      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
-    if (hangoutRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Hangout not found.' });
-      return;
-    };
-
-    const isMember: boolean = hangoutRows.find((member: HangoutDetails) => member.hangout_member_id === requestData.hangoutMemberID && member[`${userType}_id`] === userID) !== undefined;
-    if (!isMember) {
+    if (hangoutMemberRows.length === 0) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    if (hangoutRows[0].current_step === 1) {
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    if (hangoutMember.current_step === 1) {
       res.status(409).json({ success: false, message: 'Not in suggestions step.' });
       return;
     };
 
-    if (hangoutRows[0].current_step === 4) {
+    if (hangoutMember.current_step === 4) {
       res.status(409).json({ success: false, message: 'Hangout concluded.' });
       return;
     };
 
-    const suggestionToEdit: HangoutDetails | undefined = hangoutRows.find((suggestion: HangoutDetails) => suggestion.suggestion_id === requestData.suggestionID);
+    const suggestionToEdit: HangoutMember | undefined = hangoutMemberRows.find((suggestion: HangoutMember) => suggestion.suggestion_id === requestData.suggestionID);
     if (!suggestionToEdit) {
       res.status(404).json({ success: false, message: 'Suggestion not found.' });
       return;
     };
 
-    if (suggestionToEdit.hangout_member_id !== requestData.hangoutMemberID) {
-      res.status(401).json({ success: false, message: 'Not suggestion owner.' });
-      return;
-    };
-
-    if (!suggestionValidation.isValidSuggestionSlotStart(hangoutRows[0].conclusion_timestamp, requestData.suggestionStartTimestamp)) {
+    if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMember.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
       res.status(400).json({ success: false, message: 'Invalid suggestion time slot.' });
       return;
     };
@@ -375,18 +364,16 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
         is_edited = ?
       WHERE
         suggestion_id = ?;`,
-      [requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, requestData.suggestionID, true]
+      [requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, true, requestData.suggestionID]
     );
 
     if (resultSetHeader.affectedRows === 0) {
-      await dbPool.rollback();
       res.status(500).json({ success: false, message: 'Internal server error.' });
-
       return;
     };
 
     let deletedVotes: number = 0;
-    if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title) {
+    if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMember.current_step === 3) {
       const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
         `DELETE FROM
           votes
@@ -398,7 +385,7 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
       deletedVotes = resultSetHeader.affectedRows;
     };
 
-    res.json({ success: true, resData: { deletedVotes } })
+    res.json({ success: true, resData: { deletedVotes } });
 
   } catch (err: any) {
     console.log(err);
@@ -408,6 +395,7 @@ suggestionsRouter.put('/', async (req: Request, res: Response) => {
 
 suggestionsRouter.delete('/', async (req: Request, res: Response) => {
   interface RequestData {
+    hangoutID: string,
     hangoutMemberID: number,
     suggestionID: number,
   };
@@ -427,9 +415,14 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
   const userID: number = getUserID(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutMemberID', 'suggestionID'];
+  const expectedKeys: string[] = ['hangoutID', 'hangoutMemberID', 'suggestionID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutID(requestData.hangoutID)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
@@ -469,38 +462,50 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface MemberSuggestion extends RowDataPacket {
+    interface HangoutMember extends RowDataPacket {
+      current_step: number,
       account_id: number | null,
       guest_id: number | null,
       suggestion_id: number,
     };
 
-    const [memberSuggestionRows] = await dbPool.execute<MemberSuggestion[]>(
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
       `SELECT
+        hangouts.current_step,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id
       FROM
-        hangout_members
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       LEFT JOIN
         suggestions ON hangout_members.hangout_member_id = suggestions.hangout_member_id
       WHERE
+        hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
       LIMIT ${suggestionValidation.suggestionsLimit};`,
-      [requestData.hangoutMemberID]
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
-    if (memberSuggestionRows.length === 0) {
+    if (hangoutMemberRows.length === 0) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    if (memberSuggestionRows[0][`${userType}_id`] !== userID) {
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    const suggestionFound: boolean = memberSuggestionRows.find((suggestion: MemberSuggestion) => suggestion.suggestion_id === requestData.suggestionID) !== undefined;
+    if (hangoutMember.current_step !== 2) {
+      res.status(409).json({ success: false, message: 'Not in suggestions step.' });
+      return;
+    };
+
+    const suggestionFound: boolean = hangoutMemberRows.find((suggestion: HangoutMember) => suggestion.suggestion_id === requestData.suggestionID) !== undefined;
     if (!suggestionFound) {
       res.status(404).json({ success: false, message: 'Suggestion not found.' });
       return;
@@ -529,6 +534,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
 
 suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
   interface RequestData {
+    hangoutID: string,
     hangoutMemberID: number,
   };
 
@@ -547,9 +553,14 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
   const userID: number = getUserID(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutMemberID'];
+  const expectedKeys: string[] = ['hangoutID', 'hangoutMemberID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutID(requestData.hangoutID)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
@@ -584,41 +595,51 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    interface MemberSuggestion extends RowDataPacket {
+    interface HangoutMember extends RowDataPacket {
+      current_step: number,
       account_id: number | null,
       guest_id: number | null,
       suggestion_id: number,
     };
 
-    const [memberSuggestionRows] = await dbPool.execute<MemberSuggestion[]>(
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
       `SELECT
+        hangouts.current_step AS current_step,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id
       FROM
-        hangout_members
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       LEFT JOIN
         suggestions ON hangout_members.hangout_member_id = suggestions.hangout_member_id
       WHERE
+        hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT 1;`,
-      [requestData.hangoutMemberID]
+      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
-    if (memberSuggestionRows.length === 0) {
+    if (hangoutMemberRows.length === 0) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    const memberSuggestion: MemberSuggestion = memberSuggestionRows[0];
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
 
-    if (memberSuggestion[`${userType}_id`] !== userID) {
+    if (hangoutMember[`${userType}_id`] !== userID) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    if (!memberSuggestion.suggestion_id) {
-      res.status(409).json({ success: false, message: 'No suggestions to clear.' });
+    if (hangoutMember.current_step !== 2) {
+      res.status(409).json({ success: false, message: 'Not in suggestions step.' });
+      return;
+    };
+
+    if (!hangoutMember.suggestion_id) {
+      res.status(404).json({ success: false, message: 'No suggestions found.' });
       return;
     };
 
@@ -626,7 +647,8 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
       `DELETE FROM
         suggestions
       WHERE
-        hangout_member_id = ?;`,
+        hangout_member_id = ?
+      LIMIT ${suggestionValidation.suggestionsLimit};`,
       [requestData.hangoutMemberID]
     );
 
@@ -635,7 +657,150 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    res.json({ success: true, resData: { suggestionsDeleted: resultSetHeader.affectedRows } });
+    res.json({ success: true, resData: { deletedSuggestions: resultSetHeader.affectedRows } });
+
+  } catch (err: any) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
+suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) => {
+  interface RequestData {
+    hangoutID: string,
+    hangoutMemberID: number,
+    suggestionID: number,
+  };
+
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
+  if (!isValidAuthTokenString(authToken)) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const userID: number = getUserID(authToken);
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['hangoutID', 'hangoutMemberID', 'suggestionID'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutID(requestData.hangoutID)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.hangoutMemberID)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.suggestionID)) {
+    res.status(400).json({ success: false, message: 'Invalid suggestion ID.' });
+    return;
+  };
+
+  try {
+    interface UserDetails extends RowDataPacket {
+      auth_token: string,
+    };
+
+    const userType: 'account' | 'guest' = getUserType(authToken);
+    const [userRows] = await dbPool.execute<UserDetails[]>(
+      `SELECT
+        auth_token
+      FROM
+        ${userType}s
+      WHERE
+        ${userType}_id = ?;`,
+      [userID]
+    );
+
+    if (userRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    if (authToken !== userRows[0].auth_token) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    interface HangoutMember extends RowDataPacket {
+      current_step: number,
+      account_id: number | null,
+      guest_id: number | null,
+      is_leader: boolean,
+      suggestion_found: boolean,
+    };
+
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
+      `SELECT
+        hangouts.current_step,
+        hangout_members.account_id,
+        hangout_members.guest_id,
+        hangout_members.is_leader,
+        (SELECT 1 FROM suggestions WHERE suggestion_id = ?) as suggestion_found
+      FROM
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id,
+      WHERE
+        hangouts.hangout_id = ? AND
+        hangout_members.hangout_member_id = ?
+      LIMIT 1;`,
+      [requestData.suggestionID, requestData.hangoutID, requestData.hangoutMemberID]
+    );
+
+    if (hangoutMemberRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    if (!hangoutMember.is_leader) {
+      res.status(401).json({ success: false, message: 'Not hangout leader.' });
+      return;
+    };
+
+    if (hangoutMember.current_step !== 2) {
+      res.status(409).json({ success: false, message: 'Not in suggestions step.' });
+      return;
+    };
+
+    if (!hangoutMember.suggestion_found) {
+      res.status(404).json({ success: false, message: 'Suggestion not found.' });
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
+        suggestions
+      WHERE
+        suggestion_id = ?;`,
+      [requestData.suggestionID]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    res.json({ success: true, resData: {} });
 
   } catch (err: any) {
     console.log(err);

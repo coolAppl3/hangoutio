@@ -117,7 +117,7 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
       )
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [accountID, verificationCode, 1, 0]);
         await connection.commit();
-        res.json({ success: true, resData: { accountID } });
+        res.status(201).json({ success: true, resData: { accountID } });
         await (0, emailServices_1.sendVerificationEmail)(requestData.email, accountID, verificationCode, requestData.displayName);
     }
     catch (err) {
@@ -222,7 +222,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.post('/verification/verify', async (req, res) => {
+exports.accountsRouter.patch('/verification/verify', async (req, res) => {
     ;
     const requestData = req.body;
     const expectedKeys = ['accountID', 'verificationCode'];
@@ -293,9 +293,9 @@ exports.accountsRouter.post('/verification/verify', async (req, res) => {
         const [updateHeader] = await connection.execute(`UPDATE
         accounts
       SET
-        is_verified = TRUE
+        is_verified = ?
       WHERE
-        account_id = ?;`, [requestData.accountID]);
+        account_id = ?;`, [true, requestData.accountID]);
         if (updateHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -529,7 +529,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.put('/recovery/updatePassword', async (req, res) => {
+exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
     ;
     const requestData = req.body;
     const expectedKeys = ['accountID', 'recoveryToken', 'newPassword'];
@@ -759,9 +759,9 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         accounts
       SET
         auth_token = ?,
-        marked_for_deletion = TRUE
+        marked_for_deletion = ?
       WHERE
-        account_id = ?;`, [markedAuthToken, accountID]);
+        account_id = ?;`, [markedAuthToken, true, accountID]);
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -808,7 +808,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.put('/deletion/cancel', async (req, res) => {
+exports.accountsRouter.patch('/deletion/cancel', async (req, res) => {
     ;
     const requestData = req.body;
     const expectedKeys = ['cancellationToken', 'accountID'];
@@ -856,9 +856,9 @@ exports.accountsRouter.put('/deletion/cancel', async (req, res) => {
         accounts
       SET
         auth_token = ?,
-        marked_for_deletion = FALSE
+        marked_for_deletion = ?
       WHERE
-        account_id = ?;`, [newAuthToken, requestData.accountID]);
+        account_id = ?;`, [newAuthToken, false, requestData.accountID]);
         if (updateHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -894,7 +894,7 @@ exports.accountsRouter.put('/deletion/cancel', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.put('/details/updatePassword', async (req, res) => {
+exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
     ;
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
@@ -1182,7 +1182,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.put('/details/updateEmail/confirm', async (req, res) => {
+exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) => {
     ;
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
@@ -1294,7 +1294,7 @@ exports.accountsRouter.put('/details/updateEmail/confirm', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.put('/details/updateDisplayName', async (req, res) => {
+exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
     ;
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
@@ -1547,7 +1547,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.put('/friends/requests/accept', async (req, res) => {
+exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
     ;
     const authHeader = req.headers['authorization'];
     if (!authHeader) {

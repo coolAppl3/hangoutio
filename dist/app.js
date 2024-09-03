@@ -15,6 +15,7 @@ const hangoutMembers_1 = require("./routes/hangoutMembers");
 const availabilitySlots_1 = require("./routes/availabilitySlots");
 const suggestions_1 = require("./routes/suggestions");
 const votes_1 = require("./routes/votes");
+const cronInit_1 = require("./cron-jobs/cronInit");
 const port = process.env.PORT || 5000;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
@@ -35,6 +36,7 @@ app.use('/api/hangoutMembers', hangoutMembers_1.hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlots_1.availabilitySlotsRouter);
 app.use('/api/suggestions', suggestions_1.suggestionsRouter);
 app.use('/api/votes', votes_1.votesRouter);
+(0, cronInit_1.initCronJobs)();
 app.listen(port, () => {
     console.log(`Server running on port ${port}.`);
 });

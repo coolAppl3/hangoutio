@@ -12,6 +12,10 @@ interface AvailabilitySlot {
 };
 
 export function isAvailableForSuggestion(suggestionTimeSlot: SuggestionTimeSlot, availabilitySlots: AvailabilitySlot[]): boolean {
+  if (availabilitySlots.length === 0) {
+    return false;
+  };
+
   for (const slot of availabilitySlots) {
     if (intersectsWithAvailabilitySlot(suggestionTimeSlot, slot)) {
       return true;

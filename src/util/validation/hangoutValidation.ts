@@ -1,7 +1,7 @@
 export const hangoutMemberLimit: number = 20;
-export const ongoingHangoutsLimit: number = 30;
+export const ongoingHangoutsLimit: number = 20;
 
-export function isValidHangoutIDString(hangoutID: string): boolean { // will work till 2268 AD ;)
+export function isValidHangoutID(hangoutID: string): boolean { // will work till 2268 AD ;)
   if (typeof hangoutID !== 'string') {
     return false;
   };
@@ -18,7 +18,7 @@ export function isValidHangoutIDString(hangoutID: string): boolean { // will wor
     return false;
   };
 
-  if (hangoutID.substring(33).length !== 13 || !Number.isInteger(+hangoutID.substring(33))) {
+  if (hangoutID.substring(33).length !== 13 || !isValidTimestamp(+hangoutID.substring(33))) {
     return false;
   };
 
@@ -38,8 +38,26 @@ export function isValidHangoutMemberLimit(limit: number): boolean {
   return true;
 };
 
-function isValidStep(hangoutStep: number): boolean {
-  if (!Number.isInteger(hangoutStep)) {
+function isValidTimestamp(timestamp: number): boolean {
+  const timeStampLength: number = 13;
+
+  if (!Number.isInteger(timestamp)) {
+    return false;
+  };
+
+  if (timestamp.toString().length !== timeStampLength) {
+    return false;
+  };
+
+  if (timestamp < 0) {
+    return false;
+  };
+
+  return true;
+};
+
+export function isValidHangoutStep(hangoutStep: number): boolean {
+  if (!Number.isInteger(hangoutStep) || hangoutStep <= 0) {
     return false;
   };
 
@@ -66,7 +84,7 @@ export function isValidHangoutSteps(currentStep: number, hangoutSteps: number[])
       continue;
     };
 
-    if (!isValidStep(hangoutSteps[i])) {
+    if (!isValidHangoutStep(hangoutSteps[i])) {
       return false;
     };
   };

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutMemberLimit = exports.isValidHangoutIDString = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
+exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutID = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
 exports.hangoutMemberLimit = 20;
-exports.ongoingHangoutsLimit = 30;
-function isValidHangoutIDString(hangoutID) {
+exports.ongoingHangoutsLimit = 20;
+function isValidHangoutID(hangoutID) {
     if (typeof hangoutID !== 'string') {
         return false;
     }
@@ -20,14 +20,14 @@ function isValidHangoutIDString(hangoutID) {
         return false;
     }
     ;
-    if (hangoutID.substring(33).length !== 13 || !Number.isInteger(+hangoutID.substring(33))) {
+    if (hangoutID.substring(33).length !== 13 || !isValidTimestamp(+hangoutID.substring(33))) {
         return false;
     }
     ;
     const regex = /^[A-Za-z0-9_]{46,}$/;
     return regex.test(hangoutID);
 }
-exports.isValidHangoutIDString = isValidHangoutIDString;
+exports.isValidHangoutID = isValidHangoutID;
 ;
 function isValidHangoutMemberLimit(limit) {
     if (!Number.isInteger(limit)) {
@@ -42,8 +42,25 @@ function isValidHangoutMemberLimit(limit) {
 }
 exports.isValidHangoutMemberLimit = isValidHangoutMemberLimit;
 ;
-function isValidStep(hangoutStep) {
-    if (!Number.isInteger(hangoutStep)) {
+function isValidTimestamp(timestamp) {
+    const timeStampLength = 13;
+    if (!Number.isInteger(timestamp)) {
+        return false;
+    }
+    ;
+    if (timestamp.toString().length !== timeStampLength) {
+        return false;
+    }
+    ;
+    if (timestamp < 0) {
+        return false;
+    }
+    ;
+    return true;
+}
+;
+function isValidHangoutStep(hangoutStep) {
+    if (!Number.isInteger(hangoutStep) || hangoutStep <= 0) {
         return false;
     }
     ;
@@ -59,6 +76,7 @@ function isValidStep(hangoutStep) {
     ;
     return true;
 }
+exports.isValidHangoutStep = isValidHangoutStep;
 ;
 function isValidHangoutSteps(currentStep, hangoutSteps) {
     if (hangoutSteps.length === 0) {
@@ -70,7 +88,7 @@ function isValidHangoutSteps(currentStep, hangoutSteps) {
             continue;
         }
         ;
-        if (!isValidStep(hangoutSteps[i])) {
+        if (!isValidHangoutStep(hangoutSteps[i])) {
             return false;
         }
         ;
