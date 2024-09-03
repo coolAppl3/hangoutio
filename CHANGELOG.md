@@ -1,6 +1,45 @@
 # Changelog
 
 ---
+## [0.2.7] (2024-08-30)
+
+### Features
+
+- **New endpoints:**
+  - DELETE `suggestions/leader/delete`: Allows the hangout leader to delete unwanted suggestions during the suggestions step.
+  - DELETE `votes/clear`: Clears a member's votes unless the hangout is concluded.
+- Hangouts can no longer be progressed to the voting step if they contain no suggestions.
+- Reduced the number of suggestions a member can make from 10 down to 3.
+  - This change is meant to prevent members from being overwhelmed with choices during the voting step.
+- Suggestions can no longer be deleted after the suggestions step is completed.
+  - Suggestions remain editable in both the suggestions and voting steps.
+  - This is done to prevent unwanted edge cases as well as potential confusion within the hangout.
+- reduced the number of allowed ongoing hangouts from 30 down to 30.
+- Changed request for `hangouts/details/members/claimLeadership` from PUT to POST.
+
+
+### Code Refactoring
+
+- Renamed `isValidHangoutIDString()` to `isValidHangoutID()`.
+- Fixed hangout member ID validation not being well implemented in `hangouts.ts`.
+- Improved the efficiency of all endpoints by using an INNER JOIN where appropriate.
+- Replaced PUT with PATCH where it makes sense to better align with REST conventions and semantics.
+
+
+### Bug Fixes
+
+- Fixed a few minor bugs in `hangouts.ts`.
+- `availabilitySlots.ts`:
+  - Fixed an invalid LEFT JOIN in the POST request under.
+  - Fixed an issue where availability slots being updated with identical timestamps didn't return a 409 in the PUT request.
+
+
+### Documentation Changes
+
+- Added a missing new endpoint in last patch's notes.
+
+
+---
 ## [0.2.6] (2024-08-29)
 
 ### Features
@@ -14,6 +53,8 @@
   - This will prevent situations where a barely active, or inactive, member being randomly assigned as leader.
 - Hangouts will remain accessible for 7 days after being concluded, after which they will be archived.
   - Archiving will be introduced in future patches.
+- **New endpoints:**
+  - DELETE `hangouts/details/members/claimLeadership`: Allows a member to become the hangout leader if the leader has left.
 
 
 ### Bug Fixes

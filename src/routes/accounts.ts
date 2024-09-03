@@ -120,7 +120,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     );
 
     await connection.commit();
-    res.json({ success: true, resData: { accountID } });
+    res.status(201).json({ success: true, resData: { accountID } });
 
     await sendVerificationEmail(requestData.email, accountID, verificationCode, requestData.displayName);
 
@@ -247,7 +247,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
   };
 });
 
-accountsRouter.post('/verification/verify', async (req: Request, res: Response) => {
+accountsRouter.patch('/verification/verify', async (req: Request, res: Response) => {
   interface RequestData {
     accountID: number,
     verificationCode: string,
@@ -346,10 +346,10 @@ accountsRouter.post('/verification/verify', async (req: Request, res: Response) 
       `UPDATE
         accounts
       SET
-        is_verified = TRUE
+        is_verified = ?
       WHERE
         account_id = ?;`,
-      [requestData.accountID]
+      [true, requestData.accountID]
     );
 
     if (updateHeader.affectedRows === 0) {
@@ -641,7 +641,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       return;
     };
 
-    res.json({ success: true, resData: {} })
+    res.json({ success: true, resData: {} });
     await sendRecoveryEmail(requestData.email, accountDetails.account_id, accountDetails.recovery_token, accountDetails.display_name);
 
   } catch (err: any) {
@@ -650,7 +650,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
   };
 });
 
-accountsRouter.put('/recovery/updatePassword', async (req: Request, res: Response) => {
+accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Response) => {
   interface RequestData {
     accountID: number,
     recoveryToken: string,
@@ -955,10 +955,10 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         accounts
       SET
         auth_token = ?,
-        marked_for_deletion = TRUE
+        marked_for_deletion = ?
       WHERE
         account_id = ?;`,
-      [markedAuthToken, accountID]
+      [markedAuthToken, true, accountID]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -1018,7 +1018,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
   };
 });
 
-accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
+accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => {
   interface RequestData {
     accountID: number,
     cancellationToken: string,
@@ -1083,10 +1083,10 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
         accounts
       SET
         auth_token = ?,
-        marked_for_deletion = FALSE
+        marked_for_deletion = ?
       WHERE
         account_id = ?;`,
-      [newAuthToken, requestData.accountID]
+      [newAuthToken, false, requestData.accountID]
     );
 
     if (updateHeader.affectedRows === 0) {
@@ -1130,7 +1130,7 @@ accountsRouter.put('/deletion/cancel', async (req: Request, res: Response) => {
   };
 });
 
-accountsRouter.put('/details/updatePassword', async (req: Request, res: Response) => {
+accountsRouter.patch('/details/updatePassword', async (req: Request, res: Response) => {
   interface RequestData {
     currentPassword: string,
     newPassword: string
@@ -1494,7 +1494,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
   };
 });
 
-accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Response) => {
+accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: Response) => {
   interface RequestData {
     verificationCode: string,
   };
@@ -1635,7 +1635,7 @@ accountsRouter.put('/details/updateEmail/confirm', async (req: Request, res: Res
   };
 });
 
-accountsRouter.put('/details/updateDisplayName', async (req: Request, res: Response) => {
+accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Response) => {
   interface RequestData {
     password: string,
     newDisplayName: string,
@@ -1958,7 +1958,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
   };
 });
 
-accountsRouter.put('/friends/requests/accept', async (req: Request, res: Response) => {
+accountsRouter.post('/friends/requests/accept', async (req: Request, res: Response) => {
   interface RequestData {
     friendRequestID: number,
   };
@@ -2070,7 +2070,7 @@ accountsRouter.put('/friends/requests/accept', async (req: Request, res: Respons
     };
 
     await connection.commit();
-    res.json({ success: true, resData: {} })
+    res.json({ success: true, resData: {} });
 
   } catch (err: any) {
     console.log(err);

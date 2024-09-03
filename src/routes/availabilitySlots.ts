@@ -4,7 +4,7 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { isValidAuthTokenString } from '../util/validation/userValidation';
 import { getUserID, getUserType } from '../util/userUtils';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { hangoutMemberLimit, isValidHangoutIDString } from '../util/validation/hangoutValidation';
+import { isValidHangoutID } from '../util/validation/hangoutValidation';
 import * as availabilitySlotValidation from '../util/validation/availabilitySlotValidation';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
@@ -39,7 +39,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidHangoutIDString(requestData.hangoutID)) {
+  if (!isValidHangoutID(requestData.hangoutID)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
@@ -82,83 +82,88 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface HangoutDetails extends RowDataPacket {
-      conclusion_timestamp: number,
-      is_concluded: boolean,
-      hangout_member_id: number,
-      account_id: number | null,
-      guest_id: number | null,
-    };
-
-    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
-      `SELECT
-        hangouts.conclusion_timestamp,
-        hangouts.is_concluded,
-        hangout_members.hangout_member_id,
-        hangout_members.account_id,
-        hangout_members.guest_id
-      FROM
-        hangouts
-      LEFT JOIN
-        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
-      WHERE
-        hangouts.hangout_id = ?
-      LIMIT ${hangoutMemberLimit};`,
-      [requestData.hangoutID]
-    );
-
-    if (hangoutRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Hangout not found.' });
-      return;
-    };
-
-    const isMember: boolean = hangoutRows.find((member: HangoutDetails) => member.hangout_member_id === requestData.hangoutMemberID && member[`${userType}_id`] === userID) !== undefined;
-    if (!isMember) {
-      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
-      return;
-    };
-
-    const hangoutDetails: HangoutDetails = hangoutRows[0];
-
-    if (hangoutDetails.is_concluded) {
-      res.status(409).json({ success: false, message: 'Hangout concluded.' });
-      return;
-    };
-
-    if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
-      res.status(400).json({ success: false, message: 'Invalid slot.' });
-      return;
-    };
-
     connection = await dbPool.getConnection();
     await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
     await connection.beginTransaction();
 
-    interface AvailabilitySlot extends RowDataPacket {
+    interface HangoutMember extends RowDataPacket {
+      conclusion_timestamp: number,
+      is_concluded: boolean,
+      account_id: number | null,
+      guest_id: number | null,
       slot_start_timestamp: number,
       slot_end_timestamp: number,
     };
 
-    const [availabilitySlotRows] = await connection.execute<AvailabilitySlot[]>(
+    const [hangoutMemberRows] = await connection.execute<HangoutMember[]>(
       `SELECT
-        slot_start_timestamp,
-        slot_end_timestamp
+        hangouts.conclusion_timestamp,
+        hangouts.is_concluded,
+        hangout_members.account_id,
+        hangout_members.guest_id,
+        availability_slots.slot_start_timestamp,
+        availability_slots.slot_end_timestamp
       FROM
-        availability_slots
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      LEFT JOIN
+        availability_slots ON hangout_members.hangout_member_id = availability_slots.hangout_member_id
       WHERE
-        hangout_member_id = ?
+        hangouts.hangout_id = ? AND
+        hangout_members.hangout_member_id = ?
       LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
-      [requestData.hangoutMemberID]
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
-    if (availabilitySlotRows.length === availabilitySlotValidation.availabilitySlotsLimit) {
+    if (hangoutMemberRows.length === 0) {
+      await connection.rollback();
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
+      return;
+    };
+
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
+      await connection.rollback();
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
+      return;
+    };
+
+    if (hangoutMember.is_concluded) {
+      await connection.rollback();
+      res.status(409).json({ success: false, message: 'Hangout concluded.' });
+
+      return;
+    };
+
+    if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMember.conclusion_timestamp, requestData.slotStartTimestamp)) {
+      await connection.rollback();
+      res.status(400).json({ success: false, message: 'Invalid slot.' });
+
+      return;
+    };
+
+    interface ExistingAvailabilitySlot {
+      slot_start_timestamp: number,
+      slot_end_timestamp: number,
+    };
+
+    const existingAvailabilitySlots: ExistingAvailabilitySlot[] = hangoutMemberRows.map((member: HangoutMember) => ({
+      slot_start_timestamp: member.slot_start_timestamp,
+      slot_end_timestamp: member.slot_end_timestamp,
+    }));
+
+    if (existingAvailabilitySlots.length >= availabilitySlotValidation.availabilitySlotsLimit) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Availability slot limit reached.' });
 
       return;
     };
 
-    if (availabilitySlotValidation.intersectsWithExistingSlots(availabilitySlotRows, requestData)) {
+    if (availabilitySlotValidation.intersectsWithExistingSlots(existingAvailabilitySlots, requestData)) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Slot intersection detected.' });
 
@@ -177,7 +182,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
     );
 
     await connection.commit();
-    res.json({ success: true, resData: { availabilitySlotID: resultSetHeader.insertId } });
+    res.status(201).json({ success: true, resData: { availabilitySlotID: resultSetHeader.insertId } });
 
   } catch (err: any) {
     console.log(err);
@@ -195,7 +200,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
   };
 });
 
-availabilitySlotsRouter.put('/', async (req: Request, res: Response) => {
+availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutID: string,
     hangoutMemberID: number,
@@ -225,7 +230,7 @@ availabilitySlotsRouter.put('/', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidHangoutIDString(requestData.hangoutID)) {
+  if (!isValidHangoutID(requestData.hangoutID)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
@@ -273,85 +278,92 @@ availabilitySlotsRouter.put('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface HangoutDetails extends RowDataPacket {
-      conclusion_timestamp: number,
-      is_concluded: boolean,
-      hangout_member_id: number,
-      account_id: number | null,
-      guest_id: number | null,
-    };
-
-    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
-      `SELECT
-        hangouts.conclusion_timestamp,
-        hangouts.is_concluded,
-        hangout_members.hangout_member_id,
-        hangout_members.account_id,
-        hangout_members.guest_id
-      FROM
-        hangouts
-      LEFT JOIN
-        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
-      WHERE
-        hangouts.hangout_id = ?
-      LIMIT ${hangoutMemberLimit};`,
-      [requestData.hangoutID]
-    );
-
-    if (hangoutRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Hangout not found.' });
-      return;
-    };
-
-    const isMember: boolean = hangoutRows.find((member: HangoutDetails) => member.hangout_member_id === requestData.hangoutMemberID && member[`${userType}_id`] === userID) !== undefined;
-    if (!isMember) {
-      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
-      return;
-    };
-
-    const hangoutDetails: HangoutDetails = hangoutRows[0];
-
-    if (hangoutDetails.is_concluded) {
-      res.status(409).json({ success: false, message: 'Hangout concluded.' });
-      return;
-    };
-
-    if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
-      res.status(400).json({ success: false, message: 'Invalid slot.' });
-      return;
-    };
-
     connection = await dbPool.getConnection();
     await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
     await connection.beginTransaction();
 
-    interface AvailabilitySlot extends RowDataPacket {
+    interface HangoutMember extends RowDataPacket {
+      conclusion_timestamp: number,
+      is_concluded: boolean,
+      account_id: number | null,
+      guest_id: number | null,
       availability_slot_id: number,
       slot_start_timestamp: number,
       slot_end_timestamp: number,
     };
 
-    const [availabilitySlotRows] = await connection.execute<AvailabilitySlot[]>(
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
       `SELECT
-        availability_slot_id,
-        slot_start_timestamp,
-        slot_end_timestamp
+        hangouts.conclusion_timestamp,
+        hangouts.is_concluded,
+        hangout_members.account_id,
+        hangout_members.guest_id,
+        availability_slots.availability_slot_id,
+        availability_slots.slot_start_timestamp,
+        availability_slots.slot_end_timestamp
       FROM
-        availability_slots
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      LEFT JOIN
+        availability_slots ON hangout_members.hangout_member_id = availability_slots.hangout_member_id
       WHERE
-        hangout_member_id = ?
+        hangouts.hangout_id = ? AND
+        hangout_members.hangout_member_id = ?
       LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
-      [requestData.hangoutMemberID]
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
-    if (availabilitySlotRows.length === 0) {
+    if (hangoutMemberRows.length === 0) {
+      await connection.rollback();
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
+      return;
+    };
+
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
+      await connection.rollback();
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
+      return;
+    };
+
+    if (hangoutMember.is_concluded) {
+      await connection.rollback();
+      res.status(409).json({ success: false, message: 'Hangout concluded.' });
+
+      return;
+    };
+
+    if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMember.conclusion_timestamp, requestData.slotStartTimestamp)) {
+      await connection.rollback();
+      res.status(400).json({ success: false, message: 'Invalid slot.' });
+
+      return;
+    };
+
+    if (!hangoutMember.availability_slot_id) {
       await connection.rollback();
       res.status(404).json({ success: false, message: 'Slot not found.' });
 
       return;
     };
 
-    const slotToUpdate: AvailabilitySlot | undefined = availabilitySlotRows.find((slot: AvailabilitySlot) => slot.availability_slot_id === requestData.availabilitySlotID);
+    interface ExistingAvailabilitySlot {
+      availability_slot_id: number,
+      slot_start_timestamp: number,
+      slot_end_timestamp: number,
+    };
+
+    const existingAvailabilitySlots: ExistingAvailabilitySlot[] = hangoutMemberRows.map((member: HangoutMember) => ({
+      availability_slot_id: member.availability_slot_id,
+      slot_start_timestamp: member.slot_start_timestamp,
+      slot_end_timestamp: member.slot_end_timestamp,
+    }));
+
+    const slotToUpdate: ExistingAvailabilitySlot | undefined = existingAvailabilitySlots.find((slot: ExistingAvailabilitySlot) => slot.availability_slot_id === requestData.availabilitySlotID);
     if (!slotToUpdate) {
       await connection.rollback();
       res.status(404).json({ success: false, message: 'Slot not found.' });
@@ -361,7 +373,7 @@ availabilitySlotsRouter.put('/', async (req: Request, res: Response) => {
 
     if (
       slotToUpdate.slot_start_timestamp === requestData.slotStartTimestamp &&
-      slotToUpdate.slot_end_timestamp === requestData.slotStartTimestamp
+      slotToUpdate.slot_end_timestamp === requestData.slotEndTimestamp
     ) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Slot identical.' });
@@ -369,7 +381,7 @@ availabilitySlotsRouter.put('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const filteredExistingSlots: AvailabilitySlot[] = availabilitySlotRows.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== requestData.availabilitySlotID);
+    const filteredExistingSlots: ExistingAvailabilitySlot[] = existingAvailabilitySlots.filter((slot: ExistingAvailabilitySlot) => slot.availability_slot_id !== requestData.availabilitySlotID);
 
     if (filteredExistingSlots.length === 0) {
       const [resultSetHeader] = await connection.execute<ResultSetHeader>(
@@ -422,7 +434,7 @@ availabilitySlotsRouter.put('/', async (req: Request, res: Response) => {
     };
 
     await connection.commit();
-    res.json({ success: true, resData: {} })
+    res.json({ success: true, resData: {} });
 
   } catch (err: any) {
     console.log(err);
@@ -442,6 +454,7 @@ availabilitySlotsRouter.put('/', async (req: Request, res: Response) => {
 
 availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
   interface RequestData {
+    hangoutID: string,
     hangoutMemberID: number,
     availabilitySlotID: number,
   };
@@ -461,9 +474,14 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
   const userID: number = getUserID(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutMemberID', 'availabilitySlotID'];
+  const expectedKeys: string[] = ['hangoutID', 'hangoutMemberID', 'availabilitySlotID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutID(requestData.hangoutID)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
@@ -503,38 +521,55 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface AvailabilitySlot extends RowDataPacket {
+    interface HangoutMember extends RowDataPacket {
+      is_concluded: boolean,
       account_id: number | null,
       guest_id: number | null,
       availability_slot_id: number,
     };
 
-    const [availabilitySlotRows] = await dbPool.execute<AvailabilitySlot[]>(
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
       `SELECT
+        hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
         availability_slots.availability_slot_id
       FROM
-        hangout_members
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       LEFT JOIN
         availability_slots ON hangout_members.hangout_member_id = availability_slots.hangout_member_id
       WHERE
+        hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
       LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
-      [requestData.hangoutMemberID]
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
-    if (availabilitySlotRows.length === 0) {
+    if (hangoutMemberRows.length === 0) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    if (availabilitySlotRows[0][`${userType}_id`] !== userID) {
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    const slotFound: boolean = availabilitySlotRows.find((slot: AvailabilitySlot) => slot.availability_slot_id === requestData.availabilitySlotID) !== undefined;
+    if (hangoutMember.is_concluded) {
+      res.status(409).json({ success: false, message: 'Hangout concluded.' });
+      return;
+    };
+
+    if (!hangoutMember.availability_slot_id) {
+      res.status(404).json({ success: false, message: 'Slot not found.' });
+      return;
+    };
+
+    const slotFound: boolean = hangoutMemberRows.find((member: HangoutMember) => member.availability_slot_id === requestData.availabilitySlotID) !== undefined;
     if (!slotFound) {
       res.status(404).json({ success: false, message: 'Slot not found.' });
       return;
@@ -563,6 +598,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
 
 availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => {
   interface RequestData {
+    hangoutID: string,
     hangoutMemberID: number,
   };
 
@@ -581,9 +617,14 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
   const userID: number = getUserID(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutMemberID'];
+  const expectedKeys: string[] = ['hangoutID', 'hangoutMemberID'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutID(requestData.hangoutID)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
@@ -619,6 +660,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     };
 
     interface HangoutMember extends RowDataPacket {
+      is_concluded: boolean,
       account_id: number,
       guest_id: number,
       availability_slot_id: number,
@@ -626,16 +668,21 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
       `SELECT
+        hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
         availability_slots.availability_slot_id
       FROM
-        hangout_members
+        hangouts
+      INNER JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       LEFT JOIN
-        availabilitY_slots ON hangout_members.hangout_member_id = availability_slots.hangout_member_id
+        availability_slots ON hangout_members.hangout_member_id = availability_slots.hangout_member_id
       WHERE
-        hangout_members.hangout_member_id = ?;`,
-      [requestData.hangoutMemberID]
+        hangouts.hangout_id = ? AND
+        hangout_members.hangout_member_id = ?
+      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
+      [requestData.hangoutID, requestData.hangoutMemberID]
     );
 
     if (hangoutMemberRows.length === 0) {
@@ -643,21 +690,29 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
       return;
     };
 
-    if (hangoutMemberRows[0][`${userType}_id`] !== userID) {
+    const hangoutMember: HangoutMember = hangoutMemberRows[0];
+
+    if (hangoutMember[`${userType}_id`] !== userID) {
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
       return;
     };
 
-    if (hangoutMemberRows[0].availability_slot_id === null) {
-      res.status(409).json({ success: false, message: 'No slots to clear.' });
+    if (hangoutMember.is_concluded) {
+      res.status(409).json({ success: false, message: 'Hangout concluded.' });
+      return;
+    };
+
+    if (!hangoutMember.availability_slot_id) {
+      res.status(404).json({ success: false, message: 'No slots found.' });
       return;
     };
 
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
-        availabilitY_slots
+        availability_slots
       WHERE
-        hangout_member_id = ?;`,
+        hangout_member_id = ?
+      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
       [requestData.hangoutMemberID]
     );
 
@@ -666,7 +721,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
       return;
     };
 
-    res.json({ success: true, resData: { slotsDeleted: resultSetHeader.affectedRows } });
+    res.json({ success: true, resData: { deletedSlots: resultSetHeader.affectedRows } });
 
   } catch (err: any) {
     console.log(err);

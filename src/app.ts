@@ -47,7 +47,7 @@ app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
 
 // cron-jobs
-// initCronJobs();
+initCronJobs();
 
 // init
 app.listen(port, () => {

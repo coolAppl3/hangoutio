@@ -1,7 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.intersectsWithExistingSlots = exports.isValidAvailabilitySlot = exports.isValidAvailabilitySlotStart = exports.availabilitySlotsLimit = void 0;
+exports.intersectsWithExistingSlots = exports.isValidAvailabilitySlotStart = exports.isValidAvailabilitySlot = exports.availabilitySlotsLimit = void 0;
 exports.availabilitySlotsLimit = 10;
+function isValidAvailabilitySlot(slotStart, slotEnd) {
+    if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
+        return false;
+    }
+    ;
+    const hourMilliseconds = 1000 * 60 * 60;
+    const slotLength = slotEnd - slotStart;
+    if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
+        return false;
+    }
+    ;
+    return true;
+}
+exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
+;
 function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
     const hourMilliseconds = 1000 * 60 * 60;
     const yearMilliseconds = hourMilliseconds * 24 * 365;
@@ -38,24 +53,13 @@ function isValidTimestamp(timestamp) {
     return true;
 }
 ;
-function isValidAvailabilitySlot(slotStart, slotEnd) {
-    if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
-        return false;
-    }
-    ;
-    const hourMilliseconds = 1000 * 60 * 60;
-    const slotLength = slotEnd - slotStart;
-    if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
-        return false;
-    }
-    ;
-    return true;
-}
-exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
-;
 ;
 ;
 function intersectsWithExistingSlots(existingSlots, newSlot) {
+    if (existingSlots.length === 0) {
+        return false;
+    }
+    ;
     for (const slot of existingSlots) {
         if (isWithinExistingSlot(slot, newSlot.slotStartTimestamp) || isWithinExistingSlot(slot, newSlot.slotEndTimestamp)) {
             return true;

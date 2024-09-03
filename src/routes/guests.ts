@@ -64,7 +64,7 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
       return;
     };
 
-    res.json({ success: true, resData: { authToken: guestDetails.auth_token, hangoutID: guestDetails.hangout_id } })
+    res.json({ success: true, resData: { authToken: guestDetails.auth_token, hangoutID: guestDetails.hangout_id } });
 
   } catch (err: any) {
     console.log(err);
