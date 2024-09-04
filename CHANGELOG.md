@@ -1,7 +1,20 @@
 # Changelog
 
 ---
-## [0.2.7] (2024-08-30)
+## [0.2.8] (2024-09-04)
+
+### Features
+
+- **New cron jobs:**
+  - `archiveHangouts()`:
+    - Runs every hour.
+    - Archives hangouts, as well as their respective members, if they have been concluded for a week or longer.
+    - Archived hangouts contain basic information about the hangout and the overall conclusion.
+    - The function isn't extremely efficient, and is subject to changes in the future, but will do for now.
+- Moving on to the front end after this patch. Rate limiting will be implemented later. 
+
+---
+## [0.2.7] (2024-09-03)
 
 ### Features
 

@@ -40,6 +40,7 @@ function initCronJobs() {
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
         await accountCronJobs.deleteMarkedAccounts();
+        await hangoutCronJobs.archiveHangouts();
     });
 }
 exports.initCronJobs = initCronJobs;
