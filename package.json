@@ -1,11 +1,11 @@
 {
   "name": "hangoutio",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Hangoutio is an app designed to organize hangouts with your friends easily and efficiently.",
   "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node app.js",
+    "start": "node ./dist/app.js",
     "dev-nodemon": "nodemon ./dist/app.js",
     "dev-ts": "tsc --watch",
     "ts-clean": "tsc --build --clean"

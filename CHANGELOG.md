@@ -1,6 +1,31 @@
 # Changelog
 
 ---
+## [0.2.9] (2024-09-04)
+
+**Note:**: Development was paused for 9 days due to personal reasons.
+
+### Features
+
+- Redesigned the hangout creation form, and started with reworking its code.
+- Implemented form navigation. 
+
+
+### Code Refactoring
+
+- Renamed `hangoutFormConfig.ts` to `hangoutFormStepsConfig.ts`
+- The progress bar in the hangout form is now filled by the percentage value of the current step divided by the total number of steps.
+  - This change makes it more intuitive for users, despite not being technically completely accurate.
+- Reworked all 200ms transition properties to 150ms.
+
+
+
+### Bug Fixes
+
+- Potential fix for transitions causing dark theme colors to flash for a moment before the light theme is applied.
+
+
+---
 ## [0.2.8] (2024-09-04)
 
 ### Features
