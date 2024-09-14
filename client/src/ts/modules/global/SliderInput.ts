@@ -1,5 +1,6 @@
 export default class SliderInput {
   private readonly inputID: string;
+  private readonly keyword: string;
   private readonly sliderMinValue: number;
   private readonly sliderMaxValue: number;
 
@@ -15,8 +16,9 @@ export default class SliderInput {
 
   private sliderValue: number;
 
-  public constructor(inputID: string, sliderMinValue: number, sliderMaxValue: number) {
+  public constructor(inputID: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, startingValue: number = sliderMinValue) {
     this.inputID = inputID;
+    this.keyword = keyword;
 
     if (sliderMinValue >= 0 && sliderMaxValue > sliderMinValue) {
       this.sliderMinValue = sliderMinValue;
@@ -36,8 +38,9 @@ export default class SliderInput {
     this.isDragging = false;
     this.isTouchDevice = false;
 
-    this.sliderValue = this.sliderMinValue;
+    this.sliderValue = startingValue;
 
+    this.adjustSliderWidth();
     this.loadEventListeners();
   };
 
@@ -125,17 +128,10 @@ export default class SliderInput {
     this.sliderThumb.style.width = `${slidePercentage}%`;
 
     const stepNumber: number = (slidePercentage / (100 / this.sliderMaxValue)) | 0;
-    this.sliderValue = Math.max(1, stepNumber);
+    this.sliderValue = Math.max(this.sliderMinValue, stepNumber);
 
     this.updateSliderTextValue();
     this.actualInput?.setAttribute('value', `${this.sliderValue}`);
-  };
-
-  private dispatchSliderUpdatedEvent(): void {
-    const sliderInfo: { id: string, value: number } = { id: this.inputID, value: this.sliderValue };
-    const sliderUpdatedEVent: CustomEvent = new CustomEvent<{ id: string, value: number }>('sliderUpdated', { detail: sliderInfo });
-
-    window.dispatchEvent(sliderUpdatedEVent);
   };
 
   private updateSliderTextValue(): void {
@@ -144,11 +140,11 @@ export default class SliderInput {
     };
 
     if (this.sliderValue === 1) {
-      this.sliderTextSpan.textContent = `${this.sliderValue} day`;
+      this.sliderTextSpan.textContent = `${this.sliderValue} ${this.keyword}`;
       return;
     };
 
-    this.sliderTextSpan.textContent = `${this.sliderValue} days`;
+    this.sliderTextSpan.textContent = `${this.sliderValue} ${this.keyword}s`;
   };
 
   // keyboard navigation

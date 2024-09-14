@@ -1,6 +1,6 @@
 {
   "name": "hangoutio",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Hangoutio is an app designed to organize hangouts with your friends easily and efficiently.",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,8 @@
     "dev": "webpack serve",
     "test": "jest",
     "clear-test-cache": "jest --clearCache",
-    "ts": "tsc"
+    "ts": "tsc",
+    "dev-ts": "tsc --watch"
   },
   "keywords": [],
   "author": "Yanal Mohsen",

@@ -94,7 +94,15 @@
     }
 
     &.disabled {
-      @apply opacity-25 cursor-not-allowed hover:brightness-100;
+      @apply opacity-25 cursor-default hover:brightness-100;
+    }
+  }
+
+  .btn-secondary {
+    @apply block min-w-fit p-0 underline transition-colors duration-200 ease-out font-bold text-description dark:text-description-dark hover:text-cta dark:hover:text-cta-dark;
+
+    &.disabled {
+      @apply opacity-25 cursor-default hover:text-description dark:hover:text-description-dark;
     }
   }
 
@@ -104,6 +112,10 @@
     svg {
       @apply overflow-hidden h-fit;
     }
+  }
+
+  .link {
+    @apply text-blue-500 underline;
   }
 
   .triangle {
@@ -133,7 +145,7 @@
   }
 
   .checkbox-btn {
-    @apply w-2 h-2 bg-light-gray dark:bg-light-black rounded transition-[filter] hover:brightness-75 relative before:absolute after:absolute;
+    @apply w-2 h-2 bg-light-gray dark:bg-light-black rounded transition-[filter] hover:brightness-75 relative before:absolute after:absolute cursor-pointer flex justify-center items-center;
 
     .svg {
       @apply scale-0 rotate-[360deg] transition-transform;
@@ -152,97 +164,7 @@
   }
 }
 
-// direct component styling --- --- ---
-
-
-
-// create-hangout.html ---
-
-// content
-section.content {
-  #steps-form {
-    height: fit-content;
-
-    .sub-form {
-      transform: translate3d(0, 150%, 0);
-      transition: transform 200ms;
-      position: absolute;
-      visibility: hidden;
-
-      &.completed {
-        transform: translate3d(-50rem, 0, 0) !important;
-      }
-
-      &.current {
-        visibility: visible;
-        position: static;
-
-        &.in-position {
-          transform: translate3d(0, 0, 0);
-        }
-      }
-
-      &.animating {
-        visibility: visible;
-      }
-
-      // selected time slots (tags below the time picker)
-      #selected-time-slots {
-
-        .selected-time-slots-container {
-          @apply grid grid-cols-3 gap-1;
-
-          .selected-time-slots-item {
-            @apply relative text-xs leading-[1] font-medium text-description dark:text-description-dark p-[6px] border-1 border-light-gray dark:border-light-black rounded cursor-pointer before:absolute after:absolute;
-
-            &::before {
-              @apply right-[9px] top-[7px] h-1 w-[2px] rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
-            }
-
-            &::after {
-              @apply right-[9px] top-[7px] h-1 w-[2px] -rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
-            }
-
-            &:hover {
-              @apply border-danger dark:border-danger-dark;
-
-              &::before {
-                @apply bg-danger dark:bg-danger-dark;
-              }
-
-              &::after {
-                @apply bg-danger dark:bg-danger-dark;
-              }
-            }
-          }
-        }
-      }
-    }
-
-  }
-
-  #form-navigation {
-
-    &.first-step {
-
-      #previous-step-btn {
-        display: none;
-      }
-    }
-
-    &.last-step {
-
-      #next-step-btn {
-        display: none;
-      }
-    }
-  }
-
-}
-
-
-
-// Other ---
+// custom components --- --- --- --- --- --- --- --- ---
 
 // form groups
 .form-group {
@@ -289,8 +211,6 @@ section.content {
 
     .slider-input {
       @apply mt-1;
-      outline-offset: 2px;
-
 
       &-pane {
         @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem];
@@ -331,12 +251,24 @@ section.content {
       @apply pr-4 cursor-pointer relative;
 
       &.disabled {
-        @apply opacity-25 cursor-not-allowed hover:brightness-100;
+        @apply opacity-25 cursor-default hover:brightness-100;
       }
     }
 
     .svg {
       @apply z-0;
+    }
+  }
+
+  &.disabled {
+
+    input,
+    textarea {
+      @apply opacity-25 cursor-default hover:brightness-100;
+    }
+
+    .password-icon {
+      display: none;
     }
   }
 
@@ -351,10 +283,6 @@ section.content {
   input,
   textarea {
     @apply block w-full bg-transparent text-sm font-medium leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none focus:border-cta dark:focus:border-cta-dark;
-
-    &.disabled {
-      @apply opacity-25 cursor-not-allowed hover:brightness-100;
-    }
   }
 
   .error-span {
@@ -472,7 +400,7 @@ section.content {
         @apply btn w-full bg-cta dark:bg-cta-dark;
 
         &.disabled {
-          @apply opacity-25 cursor-not-allowed hover:brightness-100;
+          @apply opacity-25 cursor-default hover:brightness-100;
         }
       }
     }
@@ -566,7 +494,7 @@ section.content {
         @apply btn w-full bg-cta dark:bg-cta-dark;
 
         &.disabled {
-          @apply opacity-25 cursor-not-allowed hover:brightness-100;
+          @apply opacity-25 cursor-default hover:brightness-100;
         }
       }
     }
@@ -594,5 +522,39 @@ section.content {
     100% {
       transform: rotate(360deg);
     }
+  }
+}
+
+
+// create-hangout.html --- --- --- --- --- --- --- --- ---
+#hangout-form {
+  @apply grid grid-cols-[100%_100%_100%] gap-x-4 transition-transform duration-200;
+
+  // transform: translateX(calc(1 * (-100% - 4rem)));
+
+  .content-item {
+    display: none;
+
+    &.current {
+      display: grid;
+    }
+  }
+
+}
+
+#account-option-toggle {
+
+  button {
+    transition: text-decoration 2000ms;
+
+    &.selected {
+      &::after {
+        display: none !important;
+      }
+    }
+  }
+
+  button.selected {
+    @apply dark:text-title;
   }
 }

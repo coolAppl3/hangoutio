@@ -4,14 +4,13 @@ import Cookies from "./Cookies";
 export default function topNavbar(): void {
   themeSwitcher();
   displayAdditionalLinks();
-
 };
 
 function displayAdditionalLinks(): void {
-  const AuthToken: string | undefined = Cookies.get('AuthToken');
+  const authToken: string | undefined = Cookies.get('authToken');
   const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
 
-  if (!AuthToken || AuthToken.length !== 32 || !AuthToken.startsWith('a')) {
+  if (!authToken || authToken.length !== 32 || !authToken.startsWith('a')) {
     return;
   };
 
