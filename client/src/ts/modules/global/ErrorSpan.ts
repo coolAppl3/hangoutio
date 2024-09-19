@@ -1,5 +1,5 @@
 export default class ErrorSpan {
-  public static display(input: HTMLElement, message: string): void {
+  public static display(input: HTMLInputElement, message: string): void {
     ErrorSpan.hide(input);
 
     const span: HTMLSpanElement | null = document.querySelector(`[data-target="${input.id}"]`);
@@ -9,7 +9,7 @@ export default class ErrorSpan {
     inputFormGroup?.classList.add('error');
   };
 
-  public static hide(input: HTMLElement): void {
+  public static hide(input: HTMLInputElement): void {
     const inputFormGroup: HTMLElement | null = input.parentElement;
 
     if (!inputFormGroup?.classList.contains('error')) {

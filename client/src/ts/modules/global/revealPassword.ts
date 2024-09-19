@@ -1,12 +1,12 @@
-export default function revealPassword(passwordIcon: HTMLElement): void {
-  const inputElement: Element | null = passwordIcon.previousElementSibling;
+export default function revealPassword(passwordRevealBtn: HTMLButtonElement): void {
+  const inputElement: Element | null = passwordRevealBtn.previousElementSibling;
 
-  if (passwordIcon?.classList.contains('revealed')) {
-    passwordIcon.classList.remove('revealed');
+  if (passwordRevealBtn?.classList.contains('revealed')) {
+    passwordRevealBtn.classList.remove('revealed');
     inputElement?.setAttribute('type', 'password');
     return;
   };
 
-  passwordIcon?.classList.add('revealed');
+  passwordRevealBtn?.classList.add('revealed');
   inputElement?.setAttribute('type', 'text');
 };

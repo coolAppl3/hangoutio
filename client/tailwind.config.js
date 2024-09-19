@@ -37,7 +37,7 @@ module.exports = {
         'overlay-dark': 'rgba(30, 30, 30, 0.8)',
 
         'danger-popup': '#bd2130',
-        'danger': '#b91c1c',
+        'danger': '#c9291c',
         'danger-dark': '#f87171',
 
         'success': '#28a745',
@@ -71,7 +71,7 @@ module.exports = {
         'light-black': 'rgba(200, 200, 200, 0.6)',
 
         'danger-popup': '#bd2130',
-        'danger': '#b91c1c',
+        'danger': '#c9291c',
         'danger-dark': '#f87171',
 
         'success': '#28a745',
