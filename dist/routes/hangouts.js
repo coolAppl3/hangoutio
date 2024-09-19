@@ -39,6 +39,7 @@ const tokenGenerator_1 = require("../util/tokenGenerator");
 const userUtils_1 = require("../util/userUtils");
 const hangoutLogger_1 = require("../util/hangoutLogger");
 const globalUtils_1 = require("../util/globalUtils");
+const isSqlError_1 = require("../util/isSqlError");
 exports.hangoutsRouter = express_1.default.Router();
 exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     ;
@@ -49,7 +50,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -62,7 +63,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         return;
     }
     ;
-    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidNewPasswordString)(requestData.hangoutPassword)) {
+    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidNewPassword)(requestData.hangoutPassword)) {
         res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
         return;
     }
@@ -155,7 +156,13 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
             await connection.rollback();
         }
         ;
-        if (err.errno === 1062) {
+        if (!(0, isSqlError_1.isSqlError)(err)) {
+            res.status(500).json({ success: false, message: 'Internal server error.' });
+            return;
+        }
+        ;
+        const sqlError = err;
+        if (sqlError.errno === 1062) {
             res.status(409).json({ success: false, message: 'Duplicate hangout ID.', reason: 'duplicateHangoutID' });
             return;
         }
@@ -179,7 +186,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         return;
     }
     ;
-    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidNewPasswordString)(requestData.hangoutPassword)) {
+    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidNewPassword)(requestData.hangoutPassword)) {
         res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
         return;
     }
@@ -195,17 +202,17 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidUsernameString)(requestData.username)) {
+    if (!(0, userValidation_1.isValidUsername)(requestData.username)) {
         res.status(400).json({ success: false, message: 'Invalid guest username.', reason: 'username' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidNewPasswordString)(requestData.password)) {
+    if (!(0, userValidation_1.isValidNewPassword)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid guest password.', reason: 'guestPassword' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidDisplayNameString)(requestData.displayName)) {
+    if (!(0, userValidation_1.isValidDisplayName)(requestData.displayName)) {
         res.status(400).json({ success: false, message: 'Invalid guest display name.', reason: 'guestDisplayName' });
         return;
     }
@@ -290,7 +297,13 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
             await connection.rollback();
         }
         ;
-        if (err.errno === 1062) {
+        if (!(0, isSqlError_1.isSqlError)(err)) {
+            res.status(500).json({ success: false, message: 'Internal server error.' });
+            return;
+        }
+        ;
+        const sqlError = err;
+        if (sqlError.errno === 1062) {
             res.status(409).json({ success: false, message: 'Internal server error.', reason: 'duplicateHangoutID' });
             return;
         }
@@ -314,7 +327,7 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -337,7 +350,7 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidNewPasswordString)(requestData.newPassword)) {
+    if (!(0, userValidation_1.isValidNewPassword)(requestData.newPassword)) {
         res.status(400).json({ success: false, message: 'Invalid new hangout password.' });
         return;
     }
@@ -431,7 +444,7 @@ exports.hangoutsRouter.patch('/details/changeMemberLimit', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -570,7 +583,7 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -760,7 +773,7 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -960,7 +973,7 @@ exports.hangoutsRouter.delete('/details/members/kick', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1090,7 +1103,7 @@ exports.hangoutsRouter.patch('/details/members/transferLeadership', async (req, 
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1238,7 +1251,7 @@ exports.hangoutsRouter.patch('/details/members/claimLeadership', async (req, res
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1365,7 +1378,7 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }

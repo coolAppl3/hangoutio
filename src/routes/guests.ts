@@ -3,7 +3,7 @@ import { RowDataPacket } from "mysql2";
 import express, { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
-import { isValidPasswordString, isValidUsernameString } from "../util/validation/userValidation";
+import { isValidPassword, isValidUsername } from "../util/validation/userValidation";
 
 export const guestsRouter: Router = express.Router();
 
@@ -21,12 +21,12 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!isValidUsernameString(requestData.username)) {
+  if (!isValidUsername(requestData.username)) {
     res.status(400).json({ success: false, message: 'Invalid username.' });
     return;
   };
 
-  if (!isValidPasswordString(requestData.password)) {
+  if (!isValidPassword(requestData.password)) {
     res.status(400).json({ success: false, message: 'Invalid password.' });
     return;
   };
@@ -66,7 +66,7 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: { authToken: guestDetails.auth_token, hangoutID: guestDetails.hangout_id } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };

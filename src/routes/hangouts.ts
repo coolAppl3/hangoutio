@@ -6,11 +6,12 @@ import * as hangoutValidation from '../util/validation/hangoutValidation';
 import * as hangoutUtils from '../util/hangoutUtils';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
-import { isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidUsernameString } from '../util/validation/userValidation';
+import { isValidAuthToken, isValidDisplayName, isValidNewPassword, isValidUsername } from '../util/validation/userValidation';
 import { generateAuthToken, generateHangoutID } from '../util/tokenGenerator';
 import { getUserID, getUserType } from '../util/userUtils';
 import { addHangoutLog } from '../util/hangoutLogger';
 import { getDateAndTimeSTring } from '../util/globalUtils';
+import { isSqlError } from '../util/isSqlError';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -30,7 +31,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -44,7 +45,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     return;
   };
 
-  if (requestData.hangoutPassword !== null && !isValidNewPasswordString(requestData.hangoutPassword)) {
+  if (requestData.hangoutPassword !== null && !isValidNewPassword(requestData.hangoutPassword)) {
     res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
     return;
   };
@@ -155,14 +156,21 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     await connection.commit();
     res.status(201).json({ success: true, resData: { hangoutID } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
       await connection.rollback();
     };
 
-    if (err.errno === 1062) {
+    if (!isSqlError(err)) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    const sqlError = err as SqlError;
+
+    if (sqlError.errno === 1062) {
       res.status(409).json({ success: false, message: 'Duplicate hangout ID.', reason: 'duplicateHangoutID' });
       return;
     };
@@ -196,7 +204,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     return;
   };
 
-  if (requestData.hangoutPassword !== null && !isValidNewPasswordString(requestData.hangoutPassword)) {
+  if (requestData.hangoutPassword !== null && !isValidNewPassword(requestData.hangoutPassword)) {
     res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
     return;
   };
@@ -212,17 +220,17 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     return;
   };
 
-  if (!isValidUsernameString(requestData.username)) {
+  if (!isValidUsername(requestData.username)) {
     res.status(400).json({ success: false, message: 'Invalid guest username.', reason: 'username' });
     return;
   };
 
-  if (!isValidNewPasswordString(requestData.password)) {
+  if (!isValidNewPassword(requestData.password)) {
     res.status(400).json({ success: false, message: 'Invalid guest password.', reason: 'guestPassword' });
     return;
   };
 
-  if (!isValidDisplayNameString(requestData.displayName)) {
+  if (!isValidDisplayName(requestData.displayName)) {
     res.status(400).json({ success: false, message: 'Invalid guest display name.', reason: 'guestDisplayName' });
     return;
   };
@@ -329,14 +337,21 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     await connection.commit();
     res.status(201).json({ success: true, resData: { hangoutID, authToken: idMarkedAuthToken } })
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
       await connection.rollback();
     };
 
-    if (err.errno === 1062) {
+    if (!isSqlError(err)) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    const sqlError = err as SqlError;
+
+    if (sqlError.errno === 1062) {
       res.status(409).json({ success: false, message: 'Internal server error.', reason: 'duplicateHangoutID' });
       return;
     };
@@ -364,7 +379,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -388,7 +403,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     return;
   };
 
-  if (!isValidNewPasswordString(requestData.newPassword)) {
+  if (!isValidNewPassword(requestData.newPassword)) {
     res.status(400).json({ success: false, message: 'Invalid new hangout password.' });
     return;
   };
@@ -489,7 +504,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     const logDescription: string = 'Hangout password was updated.';
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -509,7 +524,7 @@ hangoutsRouter.patch('/details/changeMemberLimit', async (req: Request, res: Res
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -655,7 +670,7 @@ hangoutsRouter.patch('/details/changeMemberLimit', async (req: Request, res: Res
     const logDescription: string = `Hangout member limit was changed to ${requestData.newLimit}.`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -687,7 +702,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -917,7 +932,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
     const logDescription: string = `Hangout steps have been updated and will now be concluded on ${getDateAndTimeSTring(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -946,7 +961,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -1199,7 +1214,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
     const logDescription: string = `Hangout has been manually progressed, and will now be concluded on ${getDateAndTimeSTring(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -1219,7 +1234,7 @@ hangoutsRouter.delete('/details/members/kick', async (req: Request, res: Respons
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -1364,7 +1379,7 @@ hangoutsRouter.delete('/details/members/kick', async (req: Request, res: Respons
     const logDescription: string = `${memberToKick.display_name} was kicked.`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -1384,7 +1399,7 @@ hangoutsRouter.patch('/details/members/transferLeadership', async (req: Request,
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -1543,7 +1558,7 @@ hangoutsRouter.patch('/details/members/transferLeadership', async (req: Request,
     const logDescription: string = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -1572,7 +1587,7 @@ hangoutsRouter.patch('/details/members/claimLeadership', async (req: Request, re
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -1706,7 +1721,7 @@ hangoutsRouter.patch('/details/members/claimLeadership', async (req: Request, re
     const logDescription: string = `${userDetails.display_name} has claimed the hangout leader role.`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -1735,7 +1750,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -1836,7 +1851,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: {} });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };

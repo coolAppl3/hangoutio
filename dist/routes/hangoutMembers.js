@@ -25,7 +25,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -43,7 +43,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
         return;
     }
     ;
-    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidPasswordString)(requestData.hangoutPassword)) {
+    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidPassword)(requestData.hangoutPassword)) {
         res.status(400).json({ success: false, message: 'Invalid hangout password.' });
         return;
     }
@@ -161,22 +161,22 @@ exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
         return;
     }
     ;
-    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidPasswordString)(requestData.hangoutPassword)) {
+    if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidPassword)(requestData.hangoutPassword)) {
         res.status(400).json({ success: false, message: 'Invalid hangout password.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidUsernameString)(requestData.username)) {
+    if (!(0, userValidation_1.isValidUsername)(requestData.username)) {
         res.status(400).json({ success: false, message: 'Invalid username.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidNewPasswordString)(requestData.password)) {
+    if (!(0, userValidation_1.isValidNewPassword)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidDisplayNameString)(requestData.displayName)) {
+    if (!(0, userValidation_1.isValidDisplayName)(requestData.displayName)) {
         res.status(400).json({ success: false, message: 'Invalid display name.' });
         return;
     }
@@ -300,7 +300,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }

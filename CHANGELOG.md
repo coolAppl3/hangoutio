@@ -1,6 +1,16 @@
 # Changelog
 
 ---
+## [0.2.11] (2024-09-19)
+
+### Features
+
+- Improved how POST `accounts/signUp` checks if username is already taken.
+- Improved error type checking in all routers.
+- Improved authToken validation for requests in `accounts.ts`.
+
+
+---
 ## [0.2.10a] (2024-09-19)
 
 ### Bug Fixes

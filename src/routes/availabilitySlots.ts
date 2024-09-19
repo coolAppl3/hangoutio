@@ -1,7 +1,7 @@
 import express, { Router, Request, Response } from 'express';
 import { dbPool } from '../db/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
-import { isValidAuthTokenString } from '../util/validation/userValidation';
+import { isValidAuthToken } from '../util/validation/userValidation';
 import { getUserID, getUserType } from '../util/userUtils';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { isValidHangoutID } from '../util/validation/hangoutValidation';
@@ -25,7 +25,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -184,7 +184,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
     await connection.commit();
     res.status(201).json({ success: true, resData: { availabilitySlotID: resultSetHeader.insertId } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -216,7 +216,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -436,7 +436,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
     await connection.commit();
     res.json({ success: true, resData: {} });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -466,7 +466,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -590,7 +590,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: {} });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -609,7 +609,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -723,7 +723,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
 
     res.json({ success: true, resData: { deletedSlots: resultSetHeader.affectedRows } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };

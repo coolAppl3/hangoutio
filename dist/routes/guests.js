@@ -19,12 +19,12 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidUsernameString)(requestData.username)) {
+    if (!(0, userValidation_1.isValidUsername)(requestData.username)) {
         res.status(400).json({ success: false, message: 'Invalid username.' });
         return;
     }
     ;
-    if (!(0, userValidation_1.isValidPasswordString)(requestData.password)) {
+    if (!(0, userValidation_1.isValidPassword)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }

@@ -1,7 +1,7 @@
 import { dbPool } from "../db/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import express, { Router, Request, Response } from "express";
-import { isValidAuthTokenString } from "../util/validation/userValidation";
+import { isValidAuthToken } from "../util/validation/userValidation";
 import { getUserID, getUserType } from "../util/userUtils";
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { isValidHangoutID } from "../util/validation/hangoutValidation";
@@ -25,7 +25,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -231,7 +231,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     await connection.commit();
     res.status(201).json({ success: true, resData: { voteID: resultSetHeader.insertId } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -261,7 +261,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -381,7 +381,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: {} });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -400,7 +400,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -514,7 +514,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: { votesDeleted: resultSetHeader.affectedRows } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
