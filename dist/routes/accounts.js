@@ -334,19 +334,19 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
 exports.accountsRouter.post('/signIn', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['username', 'password'];
+    const expectedKeys = ['email', 'password'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ success: false, message: 'Invalid request data.', reason: null });
         return;
     }
     ;
-    if (!userValidation.isValidUsernameString(requestData.username)) {
-        res.status(400).json({ success: false, message: 'Invalid username.' });
+    if (!userValidation.isValidEmailString(requestData.email)) {
+        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
         return;
     }
     ;
     if (!userValidation.isValidPasswordString(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.' });
+        res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'password' });
         return;
     }
     ;
@@ -362,8 +362,8 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
       FROM
         accounts
       WHERE
-        username = ?
-      LIMIT 1;`, [requestData.username]);
+        email = ?
+      LIMIT 1;`, [requestData.email]);
         if (accountRows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
             return;
@@ -376,12 +376,12 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         if (accountDetails.failed_sign_in_attempts >= 5) {
-            res.status(403).json({ success: false, message: 'Account locked.' });
+            res.status(403).json({ success: false, message: 'Account is locked.' });
             return;
         }
         ;
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: 'Account unverified.' });
+            res.status(403).json({ success: false, message: 'Account is not yet unverified.' });
             return;
         }
         ;
@@ -396,7 +396,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
             account_id = ?;`, [newAuthToken, accountDetails.account_id]);
-                res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
+                res.status(401).json({ success: false, message: 'Incorrect account password. Account has been locked.' });
                 return;
             }
             ;
@@ -406,7 +406,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`, [accountDetails.account_id]);
-            res.status(401).json({ success: false, message: 'Incorrect password.' });
+            res.status(401).json({ success: false, message: 'Incorrect account password.' });
             return;
         }
         ;

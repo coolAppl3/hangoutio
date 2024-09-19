@@ -63,18 +63,18 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     }
     ;
     if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidNewPasswordString)(requestData.hangoutPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout password.' });
+        res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
         return;
     }
     ;
     if (!hangoutValidation.isValidHangoutMemberLimit(requestData.memberLimit)) {
-        res.status(400).json({ success: false, message: 'Invalid member limit.' });
+        res.status(400).json({ success: false, message: 'Invalid hangout member limit.', reason: 'memberLimit' });
         return;
     }
     ;
     const { availabilityStep, suggestionsStep, votingStep } = requestData;
     if (!hangoutValidation.isValidHangoutSteps(1, [availabilityStep, suggestionsStep, votingStep])) {
-        res.status(400).json({ success: false, message: 'Invalid hangout steps.' });
+        res.status(400).json({ success: false, message: 'Invalid hangout steps duration.', reason: 'hangoutSteps' });
         return;
     }
     ;
@@ -137,7 +137,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         is_concluded
       )
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(12)});`, [hangoutID, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
-        const [resultSetHeader] = await connection.execute(`INSERT INTO hangout_members(
+        await connection.execute(`INSERT INTO hangout_members(
         hangout_id,
         user_type,
         account_id,
@@ -147,7 +147,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
       )
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutID, 'account', accountID, null, accountDetails.display_name, true]);
         await connection.commit();
-        res.status(201).json({ success: true, resData: { hangoutID, hangoutMemberID: resultSetHeader.insertId } });
+        res.status(201).json({ success: true, resData: { hangoutID } });
     }
     catch (err) {
         console.log(err);
@@ -156,7 +156,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         }
         ;
         if (err.errno === 1062) {
-            res.status(409).json({ success: false, message: 'Duplicate hangout ID.' });
+            res.status(409).json({ success: false, message: 'Duplicate hangout ID.', reason: 'duplicateHangoutID' });
             return;
         }
         ;
@@ -180,33 +180,33 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     }
     ;
     if (requestData.hangoutPassword !== null && !(0, userValidation_1.isValidNewPasswordString)(requestData.hangoutPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout password.' });
+        res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
         return;
     }
     ;
     if (!hangoutValidation.isValidHangoutMemberLimit(requestData.memberLimit)) {
-        res.status(400).json({ success: false, message: 'Invalid member limit.' });
+        res.status(400).json({ success: false, message: 'Invalid member limit.', reason: 'memberLimit' });
         return;
     }
     ;
     const { availabilityStep, suggestionsStep, votingStep } = requestData;
     if (!hangoutValidation.isValidHangoutSteps(1, [availabilityStep, suggestionsStep, votingStep])) {
-        res.status(400).json({ success: false, message: 'Invalid hangout steps.' });
+        res.status(400).json({ success: false, message: 'Invalid hangout steps duration.', reason: 'hangoutSteps' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidUsernameString)(requestData.username)) {
-        res.status(400).json({ success: false, message: 'Invalid username.' });
+        res.status(400).json({ success: false, message: 'Invalid guest username.', reason: 'username' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidNewPasswordString)(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid guest password.' });
+        res.status(400).json({ success: false, message: 'Invalid guest password.', reason: 'guestPassword' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidDisplayNameString)(requestData.displayName)) {
-        res.status(400).json({ success: false, message: 'Invalid display name.' });
+        res.status(400).json({ success: false, message: 'Invalid guest display name.', reason: 'guestDisplayName' });
         return;
     }
     ;
@@ -224,7 +224,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
       LIMIT 1;`, [requestData.username]);
         if (guestRows.length > 0) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Username taken.' });
+            res.status(409).json({ success: false, message: 'Username already taken.', reason: 'guestUsernameTaken' });
             return;
         }
         ;
@@ -272,7 +272,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
             return;
         }
         ;
-        const [thirdResultSetheader] = await connection.execute(`INSERT INTO hangout_members(
+        await connection.execute(`INSERT INTO hangout_members(
         hangout_id,
         user_type,
         account_id,
@@ -282,7 +282,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
       )
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutID, 'guest', null, guestID, requestData.displayName, true]);
         await connection.commit();
-        res.status(201).json({ success: true, resData: { hangoutID, hangoutMemberID: thirdResultSetheader.insertId, authToken: idMarkedAuthToken } });
+        res.status(201).json({ success: true, resData: { hangoutID, authToken: idMarkedAuthToken } });
     }
     catch (err) {
         console.log(err);
@@ -291,7 +291,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         }
         ;
         if (err.errno === 1062) {
-            res.status(409).json({ success: false, message: 'Duplicate hangout ID.' });
+            res.status(409).json({ success: false, message: 'Internal server error.', reason: 'duplicateHangoutID' });
             return;
         }
         ;
