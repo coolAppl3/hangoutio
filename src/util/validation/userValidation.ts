@@ -1,4 +1,4 @@
-export function isValidEmailString(email: string): boolean {
+export function isValidEmail(email: string): boolean {
   if (typeof email !== 'string') {
     return false;
   };
@@ -7,7 +7,7 @@ export function isValidEmailString(email: string): boolean {
   return regex.test(email);
 };
 
-export function isValidNewPasswordString(password: string): boolean {
+export function isValidNewPassword(password: string): boolean {
   if (typeof password !== 'string') {
     return false;
   };
@@ -16,7 +16,7 @@ export function isValidNewPasswordString(password: string): boolean {
   return regex.test(password);
 };
 
-export function isValidPasswordString(password: string): boolean {
+export function isValidPassword(password: string): boolean {
   if (typeof password !== 'string' || password.trim() === '') {
     return false;
   };
@@ -24,7 +24,7 @@ export function isValidPasswordString(password: string): boolean {
   return true;
 };
 
-export function isValidUsernameString(username: string): boolean {
+export function isValidUsername(username: string): boolean {
   if (typeof username !== 'string') {
     return false;
   };
@@ -33,7 +33,7 @@ export function isValidUsernameString(username: string): boolean {
   return regex.test(username);
 };
 
-export function isValidDisplayNameString(displayName: string): boolean {
+export function isValidDisplayName(displayName: string): boolean {
   if (typeof displayName !== 'string') {
     return false;
   };
@@ -51,7 +51,7 @@ export function isValidDisplayNameString(displayName: string): boolean {
   return regex.test(displayName);
 };
 
-export function isValidAuthTokenString(authToken: string): boolean {
+export function isValidAuthToken(authToken: string): boolean {
   if (typeof authToken !== 'string') {
     return false;
   };
@@ -88,7 +88,7 @@ export function isValidToken(token: string): boolean {
   return true;
 };
 
-export function isValidCodeString(verificationCode: string): boolean {
+export function isValidCode(verificationCode: string): boolean {
   if (typeof verificationCode !== 'string') {
     return false;
   };

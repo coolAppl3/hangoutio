@@ -45,7 +45,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -191,7 +191,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -384,7 +384,7 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -500,7 +500,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }

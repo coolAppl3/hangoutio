@@ -3,7 +3,7 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 import express, { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { hangoutMemberLimit, isValidHangoutID, ongoingHangoutsLimit } from '../util/validation/hangoutValidation';
-import { isValidAuthTokenString, isValidDisplayNameString, isValidNewPasswordString, isValidPasswordString, isValidUsernameString } from '../util/validation/userValidation';
+import { isValidAuthToken, isValidDisplayName, isValidNewPassword, isValidPassword, isValidUsername } from '../util/validation/userValidation';
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { generateAuthToken } from "../util/tokenGenerator";
@@ -26,7 +26,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -45,7 +45,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
     return;
   };
 
-  if (requestData.hangoutPassword !== null && !isValidPasswordString(requestData.hangoutPassword)) {
+  if (requestData.hangoutPassword !== null && !isValidPassword(requestData.hangoutPassword)) {
     res.status(400).json({ success: false, message: 'Invalid hangout password.' });
     return;
   };
@@ -171,7 +171,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
     const logDescription: string = `${accountDetails.display_name} has joined the hangout.`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -199,22 +199,22 @@ hangoutMembersRouter.post('/create/guestMember', async (req: Request, res: Respo
     return;
   };
 
-  if (requestData.hangoutPassword !== null && !isValidPasswordString(requestData.hangoutPassword)) {
+  if (requestData.hangoutPassword !== null && !isValidPassword(requestData.hangoutPassword)) {
     res.status(400).json({ success: false, message: 'Invalid hangout password.' });
     return;
   };
 
-  if (!isValidUsernameString(requestData.username)) {
+  if (!isValidUsername(requestData.username)) {
     res.status(400).json({ success: false, message: 'Invalid username.' });
     return;
   };
 
-  if (!isValidNewPasswordString(requestData.password)) {
+  if (!isValidNewPassword(requestData.password)) {
     res.status(400).json({ success: false, message: 'Invalid password.' });
     return;
   };
 
-  if (!isValidDisplayNameString(requestData.displayName)) {
+  if (!isValidDisplayName(requestData.displayName)) {
     res.status(400).json({ success: false, message: 'Invalid display name.' });
     return;
   };
@@ -346,7 +346,7 @@ hangoutMembersRouter.post('/create/guestMember', async (req: Request, res: Respo
     const logDescription: string = `${requestData.displayName} has joined the hangout.`;
     addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -375,7 +375,7 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -563,7 +563,7 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
     const logDescription: string = `${userRows[0].display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
     await addHangoutLog(requestData.hangoutID, logDescription);
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {

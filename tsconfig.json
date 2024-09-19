@@ -11,6 +11,6 @@
     "typeRoots": ["./node_modules/@types"],
     "removeComments": true,
   },
-  "include": ["src/**/*", "global.d.ts"],
+  "include": ["src/**/*", "globals.d.ts"],
   "exclude": ["node_modules"],
 }

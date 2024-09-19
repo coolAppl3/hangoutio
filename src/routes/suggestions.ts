@@ -2,7 +2,7 @@ import { dbPool } from "../db/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import express, { Router, Request, Response } from 'express';
 import * as suggestionValidation from '../util/validation/suggestionValidation';
-import { isValidAuthTokenString } from "../util/validation/userValidation";
+import { isValidAuthToken } from "../util/validation/userValidation";
 import { getUserID, getUserType } from "../util/userUtils";
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
@@ -27,7 +27,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -180,7 +180,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     await connection.commit();
     res.status(201).json({ success: true, resData: { suggestionID: resultSetHeader.insertId } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
 
     if (connection) {
@@ -214,7 +214,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -387,7 +387,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: { deletedVotes } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -407,7 +407,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -526,7 +526,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: {} });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -545,7 +545,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -659,7 +659,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: { deletedSuggestions: resultSetHeader.affectedRows } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
@@ -679,7 +679,7 @@ suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) =
   };
 
   const authToken: string = authHeader.substring(7);
-  if (!isValidAuthTokenString(authToken)) {
+  if (!isValidAuthToken(authToken)) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
     return;
   };
@@ -802,7 +802,7 @@ suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) =
 
     res.json({ success: true, resData: {} });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };

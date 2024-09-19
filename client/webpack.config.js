@@ -6,7 +6,7 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
 
-process.env.NODE_ENV = 'production';
+process.env.NODE_ENV = 'development';
 
 module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',

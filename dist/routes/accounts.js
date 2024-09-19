@@ -36,6 +36,7 @@ const requestValidation_1 = require("../util/validation/requestValidation");
 const emailServices_1 = require("../util/email/emailServices");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const userUtils = __importStar(require("../util/userUtils"));
+const isSqlError_1 = require("../util/isSqlError");
 exports.accountsRouter = express_1.default.Router();
 exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
@@ -46,23 +47,23 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidEmailString(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.' });
+    if (!userValidation.isValidEmail(requestData.email)) {
+        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
         return;
     }
     ;
-    if (!userValidation.isValidNewPasswordString(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.' });
+    if (!userValidation.isValidNewPassword(requestData.password)) {
+        res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'password' });
         return;
     }
     ;
-    if (!userValidation.isValidUsernameString(requestData.username)) {
-        res.status(400).json({ success: false, message: 'Invalid username.' });
+    if (!userValidation.isValidUsername(requestData.username)) {
+        res.status(400).json({ success: false, message: 'Invalid account username.', reason: 'username' });
         return;
     }
     ;
-    if (!userValidation.isValidDisplayNameString(requestData.displayName)) {
-        res.status(400).json({ success: false, message: 'Invalid display name.' });
+    if (!userValidation.isValidDisplayName(requestData.displayName)) {
+        res.status(400).json({ success: false, message: 'Invalid account display name.', reason: 'displayName' });
         return;
     }
     ;
@@ -71,12 +72,35 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         connection = await db_1.dbPool.getConnection();
         await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
         await connection.beginTransaction();
-        const [emailRows] = await connection.execute(`(SELECT 1 FROM accounts WHERE email = ? LIMIT 1)
+        const [emailRows] = await connection.execute(`(SELECT 1 AS taken_status FROM accounts WHERE email = ? LIMIT 1)
       UNION ALL
-      (SELECT 1 FROM email_update WHERE new_email = ? LIMIT 1);`, [requestData.email, requestData.email]);
+      (SELECT 1 AS taken_status FROM email_update WHERE new_email = ? LIMIT 1)
+      UNION ALL
+      (SELECT 2 AS taken_status FROM accounts WHERE username = ? LIMIT 1);`, [requestData.email, requestData.email, requestData.username]);
         if (emailRows.length > 0) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Email already in use.' });
+            const takenDataSet = new Set();
+            emailRows.forEach((row) => takenDataSet.add(row.taken_status));
+            if (takenDataSet.has(1) && takenDataSet.has(2)) {
+                res.status(409).json({
+                    success: false,
+                    message: 'Email address and username are both already taken.',
+                    reason: 'emailAndUsernameTaken',
+                });
+                return;
+            }
+            ;
+            if (takenDataSet.has(1)) {
+                res.status(409).json({ success: false, message: 'Email address is already taken.', reason: 'emailTaken' });
+                return;
+            }
+            ;
+            if (takenDataSet.has(2)) {
+                res.status(409).json({ success: false, message: 'Username is already taken.', reason: 'usernameTaken' });
+                return;
+            }
+            ;
+            res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
         ;
@@ -126,18 +150,24 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
             await connection.rollback();
         }
         ;
-        if (!err.errno) {
+        if (!(0, isSqlError_1.isSqlError)(err)) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
         ;
-        if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'auth_token'`)) {
-            res.status(409).json({ success: false, message: 'Duplicate authToken.' });
+        const sqlError = err;
+        if (sqlError.errno === 1062 && sqlError.sqlMessage?.endsWith(`for key 'auth_token'`)) {
+            res.status(409).json({ success: false, message: 'Duplicate authToken.', reason: 'duplicateAuthToken' });
             return;
         }
         ;
-        if (err.errno === 1062 && err.sqlMessage.endsWith(`for key 'username'`)) {
-            res.status(409).json({ success: false, message: 'Username taken.' });
+        if (sqlError.errno === 1062 && sqlError.sqlMessage?.endsWith(`for key 'email'`)) {
+            res.status(409).json({ success: false, message: 'Email address is already taken.', reason: 'emailTaken' });
+            return;
+        }
+        ;
+        if (sqlError.errno === 1062 && sqlError.sqlMessage?.endsWith(`for key 'username'`)) {
+            res.status(409).json({ success: false, message: 'Username is already taken.', reason: 'usernameTaken' });
             return;
         }
         ;
@@ -161,7 +191,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
     }
     ;
     if (!Number.isInteger(requestData.accountID)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.' });
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
         return;
     }
     ;
@@ -188,7 +218,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         ;
         const accountDetails = accountRows[0];
         if (accountDetails.is_verified) {
-            res.status(400).json({ success: false, message: 'Account already verified.' });
+            res.status(400).json({ success: false, message: 'Account has already been verified.' });
             return;
         }
         ;
@@ -236,8 +266,8 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidCodeString(requestData.verificationCode)) {
-        res.status(400).json({ success: false, message: 'Invalid verification code.' });
+    if (!userValidation.isValidCode(requestData.verificationCode)) {
+        res.status(400).json({ success: false, message: 'Invalid verification code.', reason: 'verificationCode' });
         return;
     }
     ;
@@ -336,16 +366,16 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['email', 'password'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.', reason: null });
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!userValidation.isValidEmailString(requestData.email)) {
+    if (!userValidation.isValidEmail(requestData.email)) {
         res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
         return;
     }
     ;
-    if (!userValidation.isValidPasswordString(requestData.password)) {
+    if (!userValidation.isValidPassword(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'password' });
         return;
     }
@@ -436,7 +466,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidEmailString(requestData.email)) {
+    if (!userValidation.isValidEmail(requestData.email)) {
         res.status(400).json({ success: false, message: 'Invalid email address.' });
         return;
     }
@@ -548,7 +578,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidNewPasswordString(requestData.newPassword)) {
+    if (!userValidation.isValidNewPassword(requestData.newPassword)) {
         res.status(400).json({ success: false, message: 'Invalid new password.' });
         return;
     }
@@ -636,7 +666,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -649,7 +679,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidPasswordString(requestData.password)) {
+    if (!userValidation.isValidPassword(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
@@ -903,7 +933,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -916,12 +946,12 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidPasswordString(requestData.currentPassword)) {
+    if (!userValidation.isValidPassword(requestData.currentPassword)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
     ;
-    if (!userValidation.isValidNewPasswordString(requestData.newPassword)) {
+    if (!userValidation.isValidNewPassword(requestData.newPassword)) {
         res.status(400).json({ success: false, message: 'Invalid new password.' });
         return;
     }
@@ -1014,7 +1044,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1027,12 +1057,12 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidEmailString(requestData.newEmail)) {
+    if (!userValidation.isValidEmail(requestData.newEmail)) {
         res.status(400).json({ success: false, message: 'Invalid email address.' });
         return;
     }
     ;
-    if (!userValidation.isValidPasswordString(requestData.password)) {
+    if (!userValidation.isValidPassword(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
@@ -1191,7 +1221,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1204,7 +1234,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         return;
     }
     ;
-    if (!userValidation.isValidCodeString(requestData.verificationCode)) {
+    if (!userValidation.isValidCode(requestData.verificationCode)) {
         res.status(400).json({ success: false, message: 'Invalid verification code.' });
         return;
     }
@@ -1303,7 +1333,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1316,12 +1346,12 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidPasswordString(requestData.password)) {
+    if (!userValidation.isValidPassword(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid password.' });
         return;
     }
     ;
-    if (!userValidation.isValidDisplayNameString(requestData.newDisplayName)) {
+    if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
         res.status(400).json({ success: false, message: 'Invalid display name.' });
         return;
     }
@@ -1418,7 +1448,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1431,7 +1461,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidUsernameString(requestData.requesteeUsername)) {
+    if (!userValidation.isValidUsername(requestData.requesteeUsername)) {
         res.status(400).json({ success: false, message: 'Invalid requestee username.' });
         return;
     }
@@ -1556,7 +1586,7 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1637,7 +1667,13 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
             await connection.rollback();
         }
         ;
-        if (err.errno === 1062) {
+        if (!(0, isSqlError_1.isSqlError)(err)) {
+            res.status(500).json({ success: false, message: 'Internal server error.' });
+            return;
+        }
+        ;
+        const sqlError = err;
+        if (sqlError.errno === 1062) {
             res.status(409).json({ success: false, message: 'Already friends.' });
             return;
         }
@@ -1661,7 +1697,7 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -1723,7 +1759,7 @@ exports.accountsRouter.delete('/friends/remove', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!userValidation.isValidAuthTokenString(authToken)) {
+    if (!userValidation.isValidAuthToken(authToken) || !authToken.startsWith('a')) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }

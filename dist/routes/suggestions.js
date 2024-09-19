@@ -45,7 +45,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -192,7 +192,7 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -348,7 +348,7 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -459,7 +459,7 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -565,7 +565,7 @@ exports.suggestionsRouter.delete('/leader/delete', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }

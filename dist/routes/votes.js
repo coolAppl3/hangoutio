@@ -46,7 +46,7 @@ exports.votesRouter.post('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -220,7 +220,7 @@ exports.votesRouter.delete('/', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
@@ -331,7 +331,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
     }
     ;
     const authToken = authHeader.substring(7);
-    if (!(0, userValidation_1.isValidAuthTokenString)(authToken)) {
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
         return;
     }
