@@ -1,3 +1,6 @@
+import popup from "../global/popup";
+import { formState } from "./formState";
+
 interface FormNavigationState {
   currentStep: number,
   totalSteps: number,
@@ -10,9 +13,11 @@ const formNavigationState: FormNavigationState = {
 
 const hangoutForm: HTMLDivElement | null = document.querySelector('#hangout-form');
 const hangoutFormNav: HTMLDivElement | null = document.querySelector('#hangout-form-nav');
-const previousStepBtn: HTMLButtonElement | null = document.querySelector('#hangout-form-prev');
-const nextStepBtn: HTMLButtonElement | null = document.querySelector('#hangout-form-next');
+const previousStepBtn: HTMLButtonElement | null = document.querySelector('#hangout-form-prev-btn');
+const nextStepBtn: HTMLButtonElement | null = document.querySelector('#hangout-form-next-btn');
+
 const progressBarThumb: HTMLElement | null = document.querySelector('#progress-bar-thumb');
+const progressNumber: HTMLSpanElement | null = document.querySelector('#progress-number');
 
 export function formNavigation(): void {
   loadEventListeners();
@@ -29,15 +34,15 @@ function navigateHangoutForm(e: MouseEvent): void {
   };
 
   if (e.target.id === previousStepBtn?.id) {
-    moveBack();
+    moveBackwards();
   };
 
   if (e.target.id === nextStepBtn?.id) {
-    moveForward();
+    moveForwards();
   };
 };
 
-function moveBack(): void {
+function moveBackwards(): void {
   if (formNavigationState.currentStep === 1) {
     return;
   };
@@ -53,12 +58,20 @@ function moveBack(): void {
   formNavigationState.currentStep--;
 
   displayNavButtons();
-  updateProgressBase();
+  updateProgressBar();
+  triggerDOMRectUpdateEvent();
 };
 
-function moveForward(): void {
+function moveForwards(): void {
   if (formNavigationState.currentStep + 1 > formNavigationState.totalSteps) {
     return;
+  };
+
+  if (formNavigationState.currentStep === 1) {
+    if (formState.isPasswordProtected && !formState.hangoutPassword) {
+      popup('A valid hangout password is required.', 'error');
+      return;
+    };
   };
 
   const nextForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${formNavigationState.currentStep + 1}`);
@@ -69,7 +82,8 @@ function moveForward(): void {
   formNavigationState.currentStep++;
 
   displayNavButtons();
-  updateProgressBase();
+  updateProgressBar();
+  triggerDOMRectUpdateEvent();
 };
 
 function displayNavButtons(): void {
@@ -94,7 +108,13 @@ function displayNavButtons(): void {
   };
 };
 
-function updateProgressBase(): void {
+function updateProgressBar(): void {
   const newWidth: string = ((formNavigationState.currentStep / 3) * 100).toFixed(2);
   progressBarThumb ? progressBarThumb.style.width = `${newWidth}%` : undefined;
+
+  progressNumber ? progressNumber.innerText = `${formNavigationState.currentStep}` : undefined;
+};
+
+function triggerDOMRectUpdateEvent(): void {
+  window.dispatchEvent(new CustomEvent('updateDOMRect'));
 };

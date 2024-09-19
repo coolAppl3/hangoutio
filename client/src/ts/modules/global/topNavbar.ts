@@ -7,7 +7,7 @@ export default function topNavbar(): void {
 };
 
 function displayAdditionalLinks(): void {
-  const authToken: string | undefined = Cookies.get('authToken');
+  const authToken: string | null = Cookies.get('authToken');
   const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
 
   if (!authToken || authToken.length !== 32 || !authToken.startsWith('a')) {

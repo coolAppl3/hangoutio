@@ -45,7 +45,7 @@
   }
 
   body {
-    @apply font-main text-base bg-primary relative;
+    @apply font-main text-base bg-primary dark:bg-primary-dark pt-6 relative;
   }
 
   h1,
@@ -115,7 +115,7 @@
   }
 
   .link {
-    @apply text-blue-500 underline;
+    @apply text-blue-700 dark:text-blue-500 underline;
   }
 
   .triangle {
@@ -216,7 +216,7 @@
         @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem];
 
         &-thumb {
-          @apply h-full w-3 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:-top-[5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%];
+          @apply h-full w-1 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:-top-[5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%];
         }
       }
     }
@@ -293,7 +293,7 @@
 
 // popup
 #popup {
-  @apply fixed top-8 left-0 right-0 mx-auto py-1 px-[1.4rem] w-fit max-w-[32rem] text-sm text-center font-bold rounded z-[30];
+  @apply fixed top-8 left-0 right-0 mx-auto py-1 px-[1.4rem] w-fit max-w-[32rem] text-sm text-center font-bold rounded z-[35];
   transform: translate3d(0, 3rem, 0);
   opacity: 0;
   transition: transform 150ms, opacity 150ms;
@@ -312,7 +312,7 @@
   }
 
   &.info {
-    @apply bg-cta dark:bg-cta-dark text-dark;
+    @apply bg-secondary-dark text-title-dark dark:bg-primary dark:text-title;
   }
 }
 
@@ -503,7 +503,7 @@
 
 // loading modal
 #loading-modal {
-  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[50] place-items-center hidden;
+  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[30] place-items-center hidden;
 
   &.displayed {
     @apply grid;
@@ -535,26 +535,53 @@
   .content-item {
     display: none;
 
-    &.current {
+    &:first-child {
       display: grid;
     }
   }
 
 }
 
-#account-option-toggle {
+#hangout-form-step-3 {
 
-  button {
-    transition: text-decoration 2000ms;
+  &-container {
+    #account-preferences {
 
-    &.selected {
-      &::after {
-        display: none !important;
+      &.guest {
+
+        &::after {
+          @apply translate-x-full;
+        }
+      }
+
+      button {
+        transition: text-decoration 2000ms;
+
+        &.selected {
+          &::after {
+            display: none !important;
+          }
+        }
+      }
+
+      button.selected {
+        @apply dark:text-title;
       }
     }
-  }
 
-  button.selected {
-    @apply dark:text-title;
+    #already-signed-in {
+      @apply hidden;
+    }
+
+    &.disabled {
+
+      div {
+        @apply hidden;
+      }
+
+      #already-signed-in {
+        @apply block;
+      }
+    }
   }
 }

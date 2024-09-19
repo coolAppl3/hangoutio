@@ -16,6 +16,9 @@ export default class SliderInput {
 
   private sliderValue: number;
 
+  private boundDragSlider: (e: MouseEvent | TouchEvent) => void;
+  private boundStopDrag: () => void;
+
   public constructor(inputID: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, startingValue: number = sliderMinValue) {
     this.inputID = inputID;
     this.keyword = keyword;
@@ -40,6 +43,9 @@ export default class SliderInput {
 
     this.sliderValue = startingValue;
 
+    this.boundDragSlider = this.dragSlider.bind(this);
+    this.boundStopDrag = this.stopDrag.bind(this);
+
     this.adjustSliderWidth();
     this.loadEventListeners();
   };
@@ -50,6 +56,7 @@ export default class SliderInput {
   }
 
   private loadEventListeners(): void {
+    window.addEventListener('updateDOMRect', () => { setTimeout(() => this.updateSliderDomRect(), 200) });
     window.addEventListener('resize', this.updateSliderDomRect.bind(this));
 
     if ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) {
@@ -70,13 +77,13 @@ export default class SliderInput {
     document.body.style.userSelect = 'none';
 
     if (this.isTouchDevice) {
-      document.body.addEventListener('touchmove', this.dragSlider.bind(this), { passive: true });
-      document.body.addEventListener('touchend', this.stopDrag.bind(this), { passive: true });
+      document.body.addEventListener('touchmove', this.boundDragSlider, { passive: true });
+      document.body.addEventListener('touchend', this.boundStopDrag, { passive: true });
       return;
     };
 
-    document.body.addEventListener('mousemove', this.dragSlider.bind(this));
-    document.body.addEventListener('mouseup', this.stopDrag.bind(this));
+    document.body.addEventListener('mousemove', this.boundDragSlider);
+    document.body.addEventListener('mouseup', this.boundStopDrag);
   };
 
   private dragSlider(e: MouseEvent | TouchEvent): void {
@@ -113,7 +120,9 @@ export default class SliderInput {
     };
 
     document.body.removeEventListener('mousemove', this.dragSlider);
-    document.body.removeEventListener('mousemove', this.stopDrag);
+    document.body.removeEventListener('mouseup', this.stopDrag);
+
+    window.dispatchEvent(new CustomEvent(`${this.inputID}-value-change`));
   };
 
   public updateSliderDomRect(): void {

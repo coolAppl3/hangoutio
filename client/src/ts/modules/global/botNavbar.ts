@@ -9,12 +9,7 @@ export default function botNavbar(): void {
 
 
 function displayAdditionalLinks(botNavbarElement: HTMLElement | null): void {
-  const AuthToken: string | undefined = Cookies.get('AuthToken');
-
-  // if (!AuthToken || AuthToken.length !== 32 || !AuthToken.startsWith('a')) {
-  //   return;
-  // };
-
+  const authToken: string | null = Cookies.get('authToken');
   botNavbarElement?.classList.add('signed-in');
 };
 

@@ -2,11 +2,15 @@
   "compilerOptions": {
     "outDir": "./src/ts-built",
     "module": "ESNext",
-    "target": "ES2015",
+    "target": "ES2016",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "strictNullChecks": true,
     "alwaysStrict": true, 
-  }
+    "types": ["axios"],
+  },
+  "include": ["src/**/*", "globals.d.ts"],
+  "exclude": ["node_modules"],
 }
  

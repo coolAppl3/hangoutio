@@ -1,30 +1,30 @@
 export default class Cookies {
-  public static get(cookieName: string): string | undefined {
+  public static get(cookieName: string): string | null {
     const cookieMap: Map<string, string> = this.createCookieMap();
     const cookie: string | undefined = cookieMap.get(cookieName);
 
     if (!cookie) {
-      return;
+      return null;
     };
 
     return cookie;
   };
 
-  public static set(cookieName: string, cookieValue: string, maxAgeInSeconds?: number | undefined): void {
-    if (this.isEmptyString(cookieName) || this.isEmptyString(cookieValue)) {
+  public static set(cookieName: string, cookieValue: string, maxAgeSeconds?: number | undefined): void {
+    if (cookieName.trim() === '' || cookieValue.trim() === '') {
       return;
     };
 
-    if (!maxAgeInSeconds) {
+    if (!maxAgeSeconds) {
       document.cookie = `${cookieName}=${cookieValue}; path=/; Secure`;
       return;
     };
 
-    document.cookie = `${cookieName}=${cookieValue}; max-age=${maxAgeInSeconds}; path=/; Secure`;
+    document.cookie = `${cookieName}=${cookieValue}; max-age=${maxAgeSeconds}; path=/; Secure`;
   };
 
   public static remove(cookieName: string): void {
-    if (this.isEmptyString(cookieName)) {
+    if (cookieName.trim() === '') {
       return;
     };
 
@@ -48,13 +48,5 @@ export default class Cookies {
     };
 
     return cookieMap;
-  };
-
-  private static isEmptyString(string: string): boolean {
-    if (!string || string.trim() === '') {
-      return true;
-    };
-
-    return false;
   };
 };
