@@ -395,25 +395,25 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
 
 accountsRouter.post('/signIn', async (req: Request, res: Response) => {
   interface RequestData {
-    username: string,
+    email: string,
     password: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['username', 'password'];
+  const expectedKeys: string[] = ['email', 'password'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
-    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    res.status(400).json({ success: false, message: 'Invalid request data.', reason: null });
     return;
   };
 
-  if (!userValidation.isValidUsernameString(requestData.username)) {
-    res.status(400).json({ success: false, message: 'Invalid username.' });
+  if (!userValidation.isValidEmailString(requestData.email)) {
+    res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
     return;
   };
 
   if (!userValidation.isValidPasswordString(requestData.password)) {
-    res.status(400).json({ success: false, message: 'Invalid password.' });
+    res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'password' });
     return;
   };
 
@@ -438,9 +438,9 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
       FROM
         accounts
       WHERE
-        username = ?
+        email = ?
       LIMIT 1;`,
-      [requestData.username]
+      [requestData.email]
     );
 
     if (accountRows.length === 0) {
@@ -456,12 +456,12 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     };
 
     if (accountDetails.failed_sign_in_attempts >= 5) {
-      res.status(403).json({ success: false, message: 'Account locked.' });
+      res.status(403).json({ success: false, message: 'Account is locked.' });
       return;
     };
 
     if (!accountDetails.is_verified) {
-      res.status(403).json({ success: false, message: 'Account unverified.' });
+      res.status(403).json({ success: false, message: 'Account is not yet unverified.' });
       return;
     };
 
@@ -480,7 +480,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
           [newAuthToken, accountDetails.account_id]
         );
 
-        res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
+        res.status(401).json({ success: false, message: 'Incorrect account password. Account has been locked.' });
         return;
       };
 
@@ -494,7 +494,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
         [accountDetails.account_id]
       );
 
-      res.status(401).json({ success: false, message: 'Incorrect password.' });
+      res.status(401).json({ success: false, message: 'Incorrect account password.' });
       return;
     };
 

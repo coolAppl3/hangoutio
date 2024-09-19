@@ -1,14 +1,50 @@
 # Changelog
 
 ---
-## [0.2.9] (2024-09-04)
+## [0.2.10a] (2024-09-19)
+
+### Bug Fixes
+
+- Fixed not all updates being pushed in the last patch.
+
+
+---
+## [0.2.10] (2024-09-19)
+
+### Features
+
+- Changed account sign up for registered users to now require an email address instead of a username to improve security.
+- Fully reworked `create-hangout.html`.
+- Added a `reason` key-value pair in error responses for some of API's endpoints to improve the front-end flow.
+  - Further improvements to be expected in future patches.
+- Added a `globals.d.ts` file to share global types in `client`.
+- Added `validation.ts` as a global module in `client`.
+
+
+### Bug Fixes
+
+- Fixed a bug in `SliderInput.ts` where event listeners weren't being removed properly due to an incorrect use of binding.
+- Fixed DOMRect issues with `SliderInput.ts` caused by elements being hidden or moving around in the hangout creation form.
+
+
+### Code Refactoring
+
+- Updated the text and border error color for the light theme to improve border error visibility.
+- Updated some of the error messages in `accounts.ts`.
+- Slightly improved `Cookies.ts`.
+- Fixed navigating the form not updating the current step number above the progress bar.
+- Changed the color of informative popups to now have a neutral background.
+
+
+---
+## [0.2.9] (2024-09-14)
 
 **Note:**: Development was paused for 9 days due to personal reasons.
 
 ### Features
 
 - Redesigned the hangout creation form, and started with reworking its code.
-- Implemented form navigation. 
+- Implemented form navigation for the hangout creation form. 
 
 
 ### Code Refactoring
@@ -17,7 +53,6 @@
 - The progress bar in the hangout form is now filled by the percentage value of the current step divided by the total number of steps.
   - This change makes it more intuitive for users, despite not being technically completely accurate.
 - Reworked all 200ms transition properties to 150ms.
-
 
 
 ### Bug Fixes
