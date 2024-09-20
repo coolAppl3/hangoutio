@@ -44,7 +44,7 @@
               >
                 <path
                   d="M483.07 70.1754C483.07 108.932 451.652 140.351 412.895 140.351C374.138 140.351 342.719 108.932 342.719 70.1754C342.719 31.4186 374.138 0 412.895 0C451.652 0 483.07 31.4186 483.07 70.1754Z"
-                  fill="#29D0C5"
+                  class="fill-cta"
                 />
                 <path
                   d="M263 256C263 196.78 311.008 148.772 370.228 148.772H456.123C515.343 148.772 563.351 196.78 563.351 256H263Z"
@@ -52,7 +52,7 @@
                 />
                 <path
                   d="M633.07 181.175C633.07 219.932 601.652 251.351 562.895 251.351C524.138 251.351 492.719 219.932 492.719 181.175C492.719 142.419 524.138 111 562.895 111C601.652 111 633.07 142.419 633.07 181.175Z"
-                  fill="#29D0C5"
+                  class="fill-cta"
                 />
                 <path
                   d="M413 367C413 307.78 461.008 259.772 520.228 259.772H606.123C665.343 259.772 713.351 307.78 713.351 367H413Z"
@@ -60,7 +60,7 @@
                 />
                 <path
                   d="M337.779 134.71C337.779 194.197 289.556 242.421 230.069 242.421C170.582 242.421 122.359 194.197 122.359 134.71C122.359 75.2235 170.582 27 230.069 27C289.556 27 337.779 75.2235 337.779 134.71Z"
-                  fill="#E7BF23"
+                  class="fill-cta-dark"
                 />
                 <path
                   d="M0 419.927C0 329.031 73.6856 255.346 164.581 255.346H296.419C387.314 255.346 461 329.031 461 419.927H0Z"
@@ -97,9 +97,9 @@
 
             <li class="group pl-2 hidden group-[.signed-in]:block">
               <a
-                href="events.html"
+                href="ongoing-hangouts.html"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors after:hover:bg-cta dark:after:hover:bg-cta-dark group-[.selected]:after:bg-cta group-[.selected]:dark:after:bg-cta-dark"
-                >Events</a
+                >Ongoing</a
               >
             </li>
 
@@ -166,21 +166,6 @@
             <!-- button container (sign in/sign up) -->
             <div class="btn-container flex justify-center items-center ml-2 md:hidden">
               <a
-                href="#"
-                id="top-navbar-signout-btn"
-                class="hidden group-[.signed-in]:block btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark"
-              >
-                Sign out
-              </a>
-
-              <a
-                href="account.html"
-                id="top-navbar-signout-btn"
-                class="hidden group-[.signed-in]:block btn btn-mini bg-description text-light dark:bg-description-dark dark:text-dark border-description dark:border-description-dark ml-[4px]"
-              >
-                Account
-              </a>
-              <a
                 href="sign-in.html"
                 class="group-[.signed-in]:hidden btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark"
                 >Sign in</a
@@ -191,6 +176,43 @@
                 class="group-[.signed-in]:hidden btn btn-mini bg-cta dark:bg-cta-dark text-title ml-[4px]"
                 >Sign up</a
               >
+            </div>
+
+            <!-- account nav container -->
+            <div
+              id="account-nav-container"
+              class="ml-1 relative justify-center items-center hidden"
+            >
+              <button
+                id="account-nav-container-btn"
+                class="overflow-hidden group/account-btn flex justify-center items-center border-[2px] border-title dark:border-title-dark rounded-[100%] p-[8px] transition-colors hover:border-cta dark:hover:border-cta-dark"
+              >
+                <div class="svg w-3 h-3 overflow-hidden">
+                  <svg
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M413.5 197C413.5 259.684 362.684 310.5 300 310.5C237.316 310.5 186.5 259.684 186.5 197C186.5 134.316 237.316 83.5 300 83.5C362.684 83.5 413.5 134.316 413.5 197ZM224 348.5H377C472.272 348.5 550.208 422.724 556.138 516.5H44.8624C50.7917 422.724 128.728 348.5 224 348.5Z"
+                      class="stroke-title dark:stroke-title-dark transition-colors group-hover/account-btn:stroke-cta dark:group-hover/account-btn:stroke-cta-dark"
+                      stroke-width="28"
+                    />
+                  </svg>
+                </div>
+              </button>
+
+              <div
+                id="account-nav-container-links"
+                class="absolute top-[6rem] block right-0 w-[14rem] transition-opacity opacity-0"
+              >
+                <div>
+                  <a href="account.html">My account</a>
+                  <a href="#">Sign out</a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -222,7 +244,7 @@
           </div>
           <a
             href="index.html"
-            class="text-xs font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
+            class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
             >Home</a
           >
         </div>
@@ -247,9 +269,9 @@
             </svg>
           </div>
           <a
-            href="events.html"
-            class="text-xs font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
-            >Events</a
+            href="ongoing-hangouts.html"
+            class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
+            >Ongoing</a
           >
         </div>
 
@@ -275,10 +297,10 @@
             </div>
           </a>
           <a
+            id="bot-nav-hangout-btn"
             href="create-hangout.html"
-            class="text-s font-bold text-title dark:text-title-dark mt-[2.4rem] after:absolute after:top-0 after:left-0 after:w-full after:h-full"
-            tabindex="-1"
-            >Hangout</a
+            class="text-sm 2xs:text-xs font-bold text-title dark:text-title-dark mt-[3.6rem] after:absolute after:top-0 after:left-0 after:w-full after:h-full"
+            >New Hangout</a
           >
         </div>
 
@@ -303,7 +325,7 @@
           </div>
           <a
             href="history.html"
-            class="text-xs font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
+            class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
             >History</a
           >
         </div>
@@ -322,33 +344,46 @@
               <path
                 class="stroke-title dark:stroke-title-dark"
                 d="M382.5 125C382.5 188.789 330.789 240.5 267 240.5C203.211 240.5 151.5 188.789 151.5 125C151.5 61.2111 203.211 9.5 267 9.5C330.789 9.5 382.5 61.2111 382.5 125ZM191 274.5H344C441.053 274.5 520.315 350.676 525.256 446.5H9.74435C14.6855 350.676 93.9468 274.5 191 274.5Z"
-                stroke="#D9D9D9"
                 stroke-width="19"
               />
             </svg>
           </div>
           <p
             id="account-list-btn"
-            class="text-xs font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full peer"
+            class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full peer"
           >
             Account
           </p>
 
           <div
             id="account-list-container"
-            class="absolute w-[16rem] h-fit bottom-8 right-0 bg-description dark:bg-description-dark triangle-bottom after:absolute after:border-b-description dark:after:border-b-description-dark transition-opacity opacity-0 hidden peer-[.expanded]:block"
+            class="absolute w-[16rem] h-fit bottom-8 right-1 bg-description dark:bg-description-dark triangle-bottom after:absolute after:border-b-description dark:after:border-b-description-dark transition-opacity opacity-0 hidden peer-[.expanded]:block rounded-sm"
           >
             <div class="account-list-container-links">
+              <!-- signed in -->
               <a
                 href="account.html"
-                class="block p-[1.4rem] text-light dark:text-dark text-base font-bold border-b-1 border-light-black dark:border-light-gray"
+                class="hidden p-[1.4rem] text-light dark:text-dark text-base font-bold border-b-1 border-light-black dark:border-light-gray group-[.signed-in]:block"
               >
                 My account</a
               >
               <a
                 href="#"
-                class="block p-[1.4rem] text-light k dark:text-dark text-base font-bold"
+                class="hidden p-[1.4rem] text-light k dark:text-dark text-base font-bold group-[.signed-in]:block"
                 >Sign out</a
+              >
+
+              <!-- signed out -->
+              <a
+                href="signIn.html"
+                class="block p-[1.4rem] text-light dark:text-dark text-base font-bold border-b-1 border-light-black dark:border-light-gray group-[.signed-in]:hidden"
+              >
+                Sign in</a
+              >
+              <a
+                href="signUp.html"
+                class="block p-[1.4rem] text-light k dark:text-dark text-base font-bold group-[.signed-in]:hidden"
+                >Sign up</a
               >
             </div>
           </div>
@@ -772,6 +807,7 @@
                   class="mb-2 bg-overlay dark:bg-overlay-dark p-2 rounded-sm"
                 >
                   <p class="text-sm font-medium text-title-dark mb-1">Already signed in.</p>
+                  <p class="text-sm font-medium text-title-dark mb-2">Your account will be used to create this hangout.</p>
                   <button
                     id="already-signed-in-sign-out"
                     class="btn bg-secondary dark:bg-description-dark w-full"
@@ -798,10 +834,33 @@
           >
             <button
               id="hangout-form-prev-btn"
-              class="btn-secondary text-sm mr-auto hidden"
+              class="btn-secondary text-sm mr-auto justify-center items-center hidden group relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
             >
+              <div class="svg w-2 h-2 mr-[4px]">
+                <svg
+                  width="435"
+                  height="325"
+                  viewBox="0 0 435 325"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M35 112.782L187.028 264.81C200.696 278.478 200.696 300.639 187.028 314.307C173.36 327.976 151.199 327.976 137.53 314.307L10.2513 187.028C-3.41709 173.36 -3.41709 151.199 10.2513 137.53L35 112.782Z"
+                    class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
+                  />
+                  <path
+                    d="M10.2513 187.028C-3.41709 173.36 -3.41709 151.199 10.2513 137.53L137.53 10.2513C151.199 -3.41709 173.36 -3.41709 187.028 10.2513C200.696 23.9196 200.696 46.0804 187.028 59.7487L35 211.777L10.2513 187.028Z"
+                    class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
+                  />
+                  <path
+                    d="M84.5026 127.503H399.503C418.832 127.503 434.503 143.173 434.503 162.503C434.503 181.832 418.833 197.503 399.503 197.503H84.5026V127.503Z"
+                    class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
+                  />
+                </svg>
+              </div>
               Previous step
             </button>
+            <div></div>
             <button
               id="hangout-form-next-btn"
               class="btn bg-cta dark:bg-cta-dark ml-auto"
@@ -830,7 +889,7 @@
                 >
                   <path
                     d="M483.07 70.1754C483.07 108.932 451.652 140.351 412.895 140.351C374.138 140.351 342.719 108.932 342.719 70.1754C342.719 31.4186 374.138 0 412.895 0C451.652 0 483.07 31.4186 483.07 70.1754Z"
-                    fill="#29D0C5"
+                    class="fill-cta"
                   />
                   <path
                     d="M263 256C263 196.78 311.008 148.772 370.228 148.772H456.123C515.343 148.772 563.351 196.78 563.351 256H263Z"
@@ -838,7 +897,7 @@
                   />
                   <path
                     d="M633.07 181.175C633.07 219.932 601.652 251.351 562.895 251.351C524.138 251.351 492.719 219.932 492.719 181.175C492.719 142.419 524.138 111 562.895 111C601.652 111 633.07 142.419 633.07 181.175Z"
-                    fill="#29D0C5"
+                    class="fill-cta"
                   />
                   <path
                     d="M413 367C413 307.78 461.008 259.772 520.228 259.772H606.123C665.343 259.772 713.351 307.78 713.351 367H413Z"
@@ -846,7 +905,7 @@
                   />
                   <path
                     d="M337.779 134.71C337.779 194.197 289.556 242.421 230.069 242.421C170.582 242.421 122.359 194.197 122.359 134.71C122.359 75.2235 170.582 27 230.069 27C289.556 27 337.779 75.2235 337.779 134.71Z"
-                    fill="#E7BF23"
+                    class="fill-cta-dark"
                   />
                   <path
                     d="M0 419.927C0 329.031 73.6856 255.346 164.581 255.346H296.419C387.314 255.346 461 329.031 461 419.927H0Z"

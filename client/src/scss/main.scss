@@ -74,6 +74,51 @@
     @apply max-w-[1200px] px-2 my-0 mx-auto h-full;
   }
 
+  .top-nav {
+
+    &.signed-in {
+
+      .btn-container {
+        @apply hidden;
+      }
+
+      #account-nav-container {
+        @apply flex md:hidden;
+      }
+    }
+
+    &-container {
+
+      #account-nav-container {
+
+        &-links {
+          @apply hidden;
+
+          &.expanded {
+            @apply block;
+          }
+
+          a {
+            @apply bg-description dark:bg-description-dark text-title-dark dark:text-title p-[1.4rem] block w-full text-sm font-medium border-b-1 border-b-light-black dark:border-b-light-gray hover:brightness-75 transition-[filter] last:border-b-0 last:rounded-bl-sm last:rounded-br-sm first:rounded-tl-sm first:rounded-tr-sm;
+          }
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 1.9rem;
+            height: 0;
+            width: 0;
+            display: block;
+            border-width: 0 6px 8px 6px;
+            border-color: transparent transparent transparent transparent;
+            @apply border-b-description dark:border-b-description-dark;
+          }
+        }
+      }
+    }
+  }
+
   .bot-nav {
     &-container {
 
@@ -81,6 +126,13 @@
 
         &.selected {
           @apply bg-light-gray dark:bg-light-black;
+        }
+      }
+
+      #account-list-btn {
+
+        &.expanded {
+          @apply text-cta dark:text-cta-dark;
         }
       }
     }

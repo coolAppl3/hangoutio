@@ -107,6 +107,7 @@ module.exports = {
       'md': { 'max': '830px' },
       'sm': { 'max': '650px' },
       'xs': { 'max': '450px' },
+      '2xs': { 'max': '390px' },
     },
 
     fontFamily: {
