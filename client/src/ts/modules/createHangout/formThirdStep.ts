@@ -535,7 +535,6 @@ function detectAuthToken(): void {
 
   if (!authToken.startsWith('a') || !isValidAuthToken(authToken)) {
     Cookies.remove('authToken');
-    Cookies.remove('username');
     return;
   };
 
@@ -561,5 +560,4 @@ function removeSignedInStatus(e: MouseEvent): void {
   popup('Signed out.', 'info');
 
   Cookies.remove('authToken');
-  Cookies.remove('username');
 };

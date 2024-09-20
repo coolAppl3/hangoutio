@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutID = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
 exports.hangoutMemberLimit = 20;
-exports.ongoingHangoutsLimit = 20;
+exports.ongoingHangoutsLimit = 12;
 function isValidHangoutID(hangoutID) {
     if (typeof hangoutID !== 'string') {
         return false;

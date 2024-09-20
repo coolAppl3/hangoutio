@@ -1,6 +1,17 @@
 # Changelog
 
 ---
+## [0.2.12] (2024-09-20)
+
+### Features
+
+- Added a left arrow icon to next to the previous step button in the hangout creation form.
+- Improved the look and functionality of both navbars.
+- Reworked the top navbar to now include a better signed-in menu with user-relevant links.
+- Reduced ongoing hangouts limit from 20 down to 12.
+
+
+---
 ## [0.2.11] (2024-09-19)
 
 ### Features

@@ -1,24 +1,38 @@
 import Cookies from "./Cookies";
+import { isValidAuthToken } from "./validation";
+
+const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
+const accountListBtn: HTMLElement | null = document.querySelector('#account-list-btn');
+const accountListContainer: HTMLElement | null = document.querySelector('#account-list-container');
+const botNavHangoutBtn: HTMLAnchorElement | null = document.querySelector('#bot-nav-hangout-btn');
 
 export default function botNavbar(): void {
-  const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
-
-  displayAdditionalLinks(botNavbarElement);
-  botNavbarElement?.addEventListener('click', expandAccountList);
+  init();
+  loadEventListeners();
 };
 
+function init(): void {
+  displayAdditionalLinks(botNavbarElement);
+};
+
+function loadEventListeners(): void {
+  accountListBtn?.addEventListener('click', expandAccountList);
+  botNavHangoutBtn?.addEventListener('click', handleGuestClicks);
+};
 
 function displayAdditionalLinks(botNavbarElement: HTMLElement | null): void {
   const authToken: string | null = Cookies.get('authToken');
+
+  if (!authToken || !isValidAuthToken(authToken)) {
+    return;
+  };
+
   botNavbarElement?.classList.add('signed-in');
 };
 
 function expandAccountList(): void {
-  const accountListBtn: HTMLElement | null = document.querySelector('#account-list-btn');
-  const accountListContainer: HTMLElement | null = document.querySelector('#account-list-container');
-
   if (accountListBtn?.classList.contains('expanded')) {
-    accountListBtn?.classList.remove('expanded');
+    setTimeout(() => accountListBtn?.classList.remove('expanded'), 150);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (accountListContainer) {
@@ -40,9 +54,14 @@ function expandAccountList(): void {
   });
 };
 
+function handleGuestClicks(e: MouseEvent): void {
+  e.preventDefault();
 
-const test: HTMLElement | null = document.querySelector('#test');
+  const authToken: string | null = Cookies.get('authToken');
+  if (authToken && isValidAuthToken(authToken) && authToken.startsWith('g')) {
+    window.location.href = 'hangouts.html';
+    return;
+  };
 
-test?.addEventListener('click', () => {
-  console.log(true)
-});
+  window.location.href = 'create-hangout.html';
+};

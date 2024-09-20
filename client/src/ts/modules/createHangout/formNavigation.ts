@@ -98,7 +98,7 @@ function displayNavButtons(): void {
   nextStepBtn.setAttribute('disabled', '');
 
   if (formNavigationState.currentStep > 1) {
-    previousStepBtn.style.display = 'block';
+    previousStepBtn.style.display = 'flex';
     previousStepBtn.removeAttribute('disabled');
   };
 
