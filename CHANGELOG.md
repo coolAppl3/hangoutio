@@ -1,6 +1,20 @@
 # Changelog
 
 ---
+## [0.2.13] (2024-09-21)
+
+### Features
+
+- Completely reworked both navbars.
+- Added a full favicon collection as well as a manifest for all html files.
+
+
+### Bug Fixes
+
+- Fixed a few minor typing issues in `hangoutCronJobs.ts`.
+
+
+---
 ## [0.2.12] (2024-09-20)
 
 ### Features
