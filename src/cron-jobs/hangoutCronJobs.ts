@@ -118,8 +118,6 @@ export async function archiveHangouts(): Promise<void> {
       created_on_timestamp: number,
       conclusion_timestamp: number,
       total_members: number,
-      suggestion_title: string | null,
-      suggestion_description: string | null,
     };
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
@@ -146,6 +144,7 @@ export async function archiveHangouts(): Promise<void> {
 
     const hangoutIds: string[] = hangoutRows.map((hangout: HangoutDetails) => hangout.hangout_id);
     const hangoutIdsString: string = `'${hangoutIds.join(`', '`)}'`;
+    console.log(hangoutIdsString)
 
     interface HangoutMember extends RowDataPacket {
       hangout_id: string,
@@ -319,7 +318,7 @@ function getWinningSuggestion(filteredSuggestions: Suggestion[]): Suggestion | n
     return null;
   };
 
-  const winningSuggestion: Suggestion = filteredSuggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === winningSuggestionID)!;
+  const winningSuggestion: Suggestion | null = filteredSuggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === winningSuggestionID) || null;
 
   return winningSuggestion;
 };

@@ -2,9 +2,11 @@ import themeSwitcher from "./themeSwitcher"
 import Cookies from "./Cookies";
 import { isValidAuthToken } from "./validation";
 
+const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
+
 export default function topNavbar(): void {
   themeSwitcher();
-  displayAdditionalLinks();
+  displayRelevantLinks();
   enableAccountNavBtn();
 };
 
@@ -16,6 +18,8 @@ function enableAccountNavBtn(): void {
     const accountContainerLinks: HTMLDivElement | null = document.querySelector('#account-nav-container-links');
 
     if (accountContainerLinks?.classList.contains('expanded')) {
+      accountNavBtn.classList.remove('expanded')
+
       setTimeout(() => accountContainerLinks.classList.remove('expanded'), 150);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -26,6 +30,7 @@ function enableAccountNavBtn(): void {
       return;
     };
 
+    accountNavBtn.classList.add('expanded')
     accountContainerLinks?.classList.add('expanded');
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -35,14 +40,22 @@ function enableAccountNavBtn(): void {
   });
 };
 
-function displayAdditionalLinks(): void {
+function displayRelevantLinks(): void {
   const authToken: string | null = Cookies.get('authToken');
 
-  if (!authToken || !isValidAuthToken(authToken)) {
+  if (!authToken) {
+    return;
+  };
+
+  if (!isValidAuthToken(authToken)) {
     Cookies.remove('authToken');
     return;
   };
 
-  const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
-  topNavbarElement?.classList.add('signed-in');
+  if (authToken.startsWith('g')) {
+    topNavbarElement?.classList.add('guest-user');
+    return;
+  };
+
+  topNavbarElement?.classList.add('account-user');
 };

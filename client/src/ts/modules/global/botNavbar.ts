@@ -4,7 +4,6 @@ import { isValidAuthToken } from "./validation";
 const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
 const accountListBtn: HTMLElement | null = document.querySelector('#account-list-btn');
 const accountListContainer: HTMLElement | null = document.querySelector('#account-list-container');
-const botNavHangoutBtn: HTMLAnchorElement | null = document.querySelector('#bot-nav-hangout-btn');
 
 export default function botNavbar(): void {
   init();
@@ -12,22 +11,31 @@ export default function botNavbar(): void {
 };
 
 function init(): void {
-  displayAdditionalLinks(botNavbarElement);
+  displayRelevantLinks(botNavbarElement);
 };
 
 function loadEventListeners(): void {
   accountListBtn?.addEventListener('click', expandAccountList);
-  botNavHangoutBtn?.addEventListener('click', handleGuestClicks);
 };
 
-function displayAdditionalLinks(botNavbarElement: HTMLElement | null): void {
+function displayRelevantLinks(botNavbarElement: HTMLElement | null): void {
   const authToken: string | null = Cookies.get('authToken');
 
-  if (!authToken || !isValidAuthToken(authToken)) {
+  if (!authToken) {
     return;
   };
 
-  botNavbarElement?.classList.add('signed-in');
+  if (!isValidAuthToken(authToken)) {
+    Cookies.remove('authToken');
+    return;
+  };
+
+  if (authToken.startsWith('g')) {
+    botNavbarElement?.classList.add('guest-user');
+    return;
+  };
+
+  botNavbarElement?.classList.add('account-user');
 };
 
 function expandAccountList(): void {
@@ -52,16 +60,4 @@ function expandAccountList(): void {
       };
     });
   });
-};
-
-function handleGuestClicks(e: MouseEvent): void {
-  e.preventDefault();
-
-  const authToken: string | null = Cookies.get('authToken');
-  if (authToken && isValidAuthToken(authToken) && authToken.startsWith('g')) {
-    window.location.href = 'hangouts.html';
-    return;
-  };
-
-  window.location.href = 'create-hangout.html';
 };

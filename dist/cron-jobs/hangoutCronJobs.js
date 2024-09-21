@@ -119,6 +119,7 @@ async function archiveHangouts() {
         ;
         const hangoutIds = hangoutRows.map((hangout) => hangout.hangout_id);
         const hangoutIdsString = `'${hangoutIds.join(`', '`)}'`;
+        console.log(hangoutIdsString);
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
         hangout_id,
@@ -247,7 +248,7 @@ function getWinningSuggestion(filteredSuggestions) {
         return null;
     }
     ;
-    const winningSuggestion = filteredSuggestions.find((suggestion) => suggestion.suggestion_id === winningSuggestionID);
+    const winningSuggestion = filteredSuggestions.find((suggestion) => suggestion.suggestion_id === winningSuggestionID) || null;
     return winningSuggestion;
 }
 ;
