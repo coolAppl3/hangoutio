@@ -26,6 +26,24 @@ export function isValidHangoutID(hangoutID: string): boolean { // will work till
   return regex.test(hangoutID);
 };
 
+export function isValidHangoutTitle(title: string): boolean {
+  if (typeof title !== 'string') {
+    return false;
+  };
+
+  if (title.trim() !== title) {
+    return false;
+  };
+
+  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
+  if (title !== doubleSpacesRemoved) {
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z ]{3,25}$/;
+  return regex.test(title);
+};
+
 export function isValidHangoutMemberLimit(limit: number): boolean {
   if (!Number.isInteger(limit)) {
     return false;

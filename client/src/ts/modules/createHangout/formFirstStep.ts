@@ -1,10 +1,10 @@
 import { formState } from "./formState";
 import revealPassword from "../global/revealPassword";
-import SliderInput from "../global/SliderInput";
 import ErrorSpan from "../global/ErrorSpan";
-import { validateNewPassword } from "../global/validation";
+import { validateHangoutTitle, validateNewPassword } from "../global/validation";
+import popup from "../global/popup";
 
-const memberLimitSlider: SliderInput = new SliderInput('member-limit-input', 'member', 2, 20, 10);
+const hangoutTitleInput: HTMLInputElement | null = document.querySelector('#hangout-title-input');
 
 const hangoutPasswordToggleBtn: HTMLElement | null = document.querySelector('#hangout-password-toggle-btn');
 const hangoutPasswordInput: HTMLInputElement | null = document.querySelector('#hangout-password-input');
@@ -16,13 +16,10 @@ export function formFirstStep(): void {
 };
 
 function loadEventListeners(): void {
+  hangoutTitleInput?.addEventListener('input', () => { validateHangoutTitle(hangoutTitleInput) });
+  hangoutPasswordInput?.addEventListener('input', () => { validateNewPassword(hangoutPasswordInput) });
+
   hangoutPasswordToggleBtn?.addEventListener('click', toggleHangoutPassword);
-  hangoutPasswordInput?.addEventListener('input', setHangoutPassword);
-
-  window.addEventListener('member-limit-value-change', () => {
-    formState.memberLimit = memberLimitSlider.value;
-  });
-
   hangoutPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
     e.preventDefault();
     revealPassword(hangoutPasswordRevealBtn);
@@ -60,18 +57,33 @@ function clearPasswordInput(): void {
   hangoutPasswordInput ? hangoutPasswordInput.value = '' : undefined;
 };
 
-function setHangoutPassword(): void {
-  if (!hangoutPasswordInput) {
-    formState.hangoutPassword = null;
-    return;
+export function isValidFormFirstStepDetails(): boolean {
+  if (!hangoutTitleInput || !hangoutPasswordInput) {
+    popup('Invalid configuration.', 'error');
+    return false;
   };
 
-  const isValidHangoutPassword: boolean = validateNewPassword(hangoutPasswordInput);
+  const isValidHangoutTitle: boolean = validateHangoutTitle(hangoutTitleInput);
 
-  if (!isValidHangoutPassword) {
-    formState.hangoutPassword = null;
-    return;
+  if (isValidHangoutTitle) {
+    formState.hangoutTitle = hangoutTitleInput.value;
+
+  } else {
+    popup(`A valid hangout title is required.`, 'error');
+    return false;
   };
 
-  formState.hangoutPassword = hangoutPasswordInput.value;
+  if (formState.isPasswordProtected) {
+    const isValidHangoutPassword: boolean = validateNewPassword(hangoutPasswordInput);
+
+    if (isValidHangoutPassword) {
+      formState.hangoutPassword = hangoutPasswordInput.value;
+
+    } else {
+      popup('A valid hangout password is required.', 'error');
+      return false;
+    };
+  };
+
+  return true;
 };

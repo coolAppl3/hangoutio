@@ -50,14 +50,13 @@ export default class SliderInput {
     this.loadEventListeners();
   };
 
-
   public get value(): number {
     return this.sliderValue;
   }
 
   private loadEventListeners(): void {
-    window.addEventListener('updateDOMRect', () => { setTimeout(() => this.updateSliderDomRect(), 200) });
-    window.addEventListener('resize', this.updateSliderDomRect.bind(this));
+    document.addEventListener('updateDOMRect', () => { setTimeout(() => this.updateSliderDomRect(), 200) });
+    document.addEventListener('resize', this.updateSliderDomRect.bind(this));
 
     if ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) {
       this.isTouchDevice = true;
@@ -122,7 +121,7 @@ export default class SliderInput {
     document.body.removeEventListener('mousemove', this.dragSlider);
     document.body.removeEventListener('mouseup', this.stopDrag);
 
-    window.dispatchEvent(new CustomEvent(`${this.inputID}-value-change`));
+    document.dispatchEvent(new CustomEvent(`${this.inputID}_valueChange`));
   };
 
   public updateSliderDomRect(): void {

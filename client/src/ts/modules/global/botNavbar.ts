@@ -1,4 +1,6 @@
 import Cookies from "./Cookies";
+import popup from "./popup";
+import { signOut } from "./signOut";
 import { isValidAuthToken } from "./validation";
 
 const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
@@ -6,27 +8,39 @@ const accountListBtn: HTMLElement | null = document.querySelector('#account-list
 const accountListContainer: HTMLElement | null = document.querySelector('#account-list-container');
 
 export default function botNavbar(): void {
-  init();
+  displayRelevantLinks();
   loadEventListeners();
-};
-
-function init(): void {
-  displayRelevantLinks(botNavbarElement);
 };
 
 function loadEventListeners(): void {
   accountListBtn?.addEventListener('click', expandAccountList);
+  document.addEventListener('signedOut', displayRelevantLinks);
+  botNavbarElement?.addEventListener('click', handleBotNavbarClicks);
 };
 
-function displayRelevantLinks(botNavbarElement: HTMLElement | null): void {
+function handleBotNavbarClicks(e: MouseEvent): void {
+  if (e.target instanceof HTMLElement && e.target.classList.contains('sign-out-btn')) {
+    e.preventDefault();
+
+    signOut();
+    popup('Signed out successfully.', 'success');
+
+    return;
+  };
+};
+
+function displayRelevantLinks(): void {
   const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken) {
+    botNavbarElement?.classList.remove('guest-user', 'account-user');
     return;
   };
 
   if (!isValidAuthToken(authToken)) {
     Cookies.remove('authToken');
+    botNavbarElement?.classList.remove('guest-user', 'account-user');
+
     return;
   };
 

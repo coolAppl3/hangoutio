@@ -57,9 +57,14 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     ;
     const accountID = (0, userUtils_1.getUserID)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep'];
+    const expectedKeys = ['hangoutTitle', 'hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!hangoutValidation.isValidHangoutTitle(requestData.hangoutTitle)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout title.', reason: 'hangoutTitle' });
         return;
     }
     ;
@@ -125,6 +130,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         await connection.beginTransaction();
         await connection.execute(`INSERT INTO hangouts(
         hangout_id,
+        hangout_title,
         hashed_password,
         member_limit,
         availability_step,
@@ -137,7 +143,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         conclusion_timestamp,
         is_concluded
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(12)});`, [hangoutID, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(13)});`, [hangoutID, requestData.hangoutTitle, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
         await connection.execute(`INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -180,9 +186,14 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
 exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep', 'username', 'password', 'displayName'];
+    const expectedKeys = ['hangoutTitle', 'hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep', 'username', 'password', 'displayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!hangoutValidation.isValidHangoutTitle(requestData.hangoutTitle)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout title.', reason: 'hangoutTitle' });
         return;
     }
     ;
@@ -242,6 +253,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         const conclusionTimestamp = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
         await connection.execute(`INSERT INTO hangouts(
         hangout_id,
+        hangout_title,
         hashed_password,
         member_limit,
         availability_step,
@@ -254,7 +266,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         conclusion_timestamp,
         is_concluded
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(12)});`, [hangoutID, hashedHangoutPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(13)});`, [hangoutID, requestData.hangoutTitle, hashedHangoutPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
         const authToken = (0, tokenGenerator_1.generateAuthToken)('guest');
         const hashedGuestPassword = await bcrypt_1.default.hash(requestData.password, 10);
         const [firstResultSetHeader] = await connection.execute(`INSERT INTO guests(

@@ -17,6 +17,7 @@ export const hangoutsRouter: Router = express.Router();
 
 hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response) => {
   interface RequestData {
+    hangoutTitle: string,
     hangoutPassword: string | null,
     memberLimit: number,
     availabilityStep: number,
@@ -39,9 +40,14 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
   const accountID: number = getUserID(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep'];
+  const expectedKeys: string[] = ['hangoutTitle', 'hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!hangoutValidation.isValidHangoutTitle(requestData.hangoutTitle)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout title.', reason: 'hangoutTitle' });
     return;
   };
 
@@ -124,6 +130,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     await connection.execute(
       `INSERT INTO hangouts(
         hangout_id,
+        hangout_title,
         hashed_password,
         member_limit,
         availability_step,
@@ -136,8 +143,8 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
         conclusion_timestamp,
         is_concluded
       )
-      VALUES(${generatePlaceHolders(12)});`,
-      [hangoutID, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
+      VALUES(${generatePlaceHolders(13)});`,
+      [hangoutID, requestData.hangoutTitle, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
     await connection.execute<ResultSetHeader>(
@@ -186,6 +193,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
 hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) => {
   interface RequestData {
+    hangoutTitle: string,
     hangoutPassword: string | null,
     memberLimit: number,
     availabilityStep: number,
@@ -198,9 +206,14 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep', 'username', 'password', 'displayName'];
+  const expectedKeys: string[] = ['hangoutTitle', 'hangoutPassword', 'memberLimit', 'availabilityStep', 'suggestionsStep', 'votingStep', 'username', 'password', 'displayName'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!hangoutValidation.isValidHangoutTitle(requestData.hangoutTitle)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout title.', reason: 'hangoutTitle' });
     return;
   };
 
@@ -270,6 +283,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     await connection.execute(
       `INSERT INTO hangouts(
         hangout_id,
+        hangout_title,
         hashed_password,
         member_limit,
         availability_step,
@@ -282,8 +296,8 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
         conclusion_timestamp,
         is_concluded
       )
-      VALUES(${generatePlaceHolders(12)});`,
-      [hangoutID, hashedHangoutPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
+      VALUES(${generatePlaceHolders(13)});`,
+      [hangoutID, requestData.hangoutTitle, hashedHangoutPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
     const authToken: string = generateAuthToken('guest');

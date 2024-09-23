@@ -193,7 +193,7 @@
                       fill-rule="evenodd"
                       clip-rule="evenodd"
                       d="M102.507 304C128.727 326.444 162.78 340 200 340C271.505 340 331.324 289.967 346.358 223L249.5 223C247.843 223 246.5 221.657 246.5 220C246.5 218.343 247.843 217 249.5 217L347.577 217C349.169 208.241 350 199.218 350 190H50C50 232.414 67.6038 270.717 95.9037 298L164 298C165.657 298 167 299.343 167 301C167 302.657 165.657 304 164 304L102.507 304ZM204.5 239.5C204.5 241.157 203.157 242.5 201.5 242.5L126.5 242.5C124.843 242.5 123.5 241.157 123.5 239.5C123.5 237.843 124.843 236.5 126.5 236.5L201.5 236.5C203.157 236.5 204.5 237.843 204.5 239.5ZM297.5 274C299.157 274 300.5 272.657 300.5 271C300.5 269.343 299.157 268 297.5 268L201.5 268C199.843 268 198.5 269.343 198.5 271C198.5 272.657 199.843 274 201.5 274L297.5 274ZM129.5 278.5C129.5 280.157 128.157 281.5 126.5 281.5H104C102.343 281.5 101 280.157 101 278.5C101 276.843 102.343 275.5 104 275.5H126.5C128.157 275.5 129.5 276.843 129.5 278.5ZM255.5 310C257.157 310 258.5 308.657 258.5 307C258.5 305.343 257.157 304 255.5 304H213.5C211.843 304 210.5 305.343 210.5 307C210.5 308.657 211.843 310 213.5 310H255.5ZM225.5 214C225.5 215.657 224.157 217 222.5 217H188C186.343 217 185 215.657 185 214C185 212.343 186.343 211 188 211H222.5C224.157 211 225.5 212.343 225.5 214ZM144.5 211C146.157 211 147.5 209.657 147.5 208C147.5 206.343 146.157 205 144.5 205H87.5C85.8431 205 84.5 206.343 84.5 208C84.5 209.657 85.8431 211 87.5 211H144.5Z"
-                      class="fill-cta"
+                      class="fill-cta group-[.dark-theme]:fill-title-dark"
                     />
                   </svg>
                 </div>
@@ -214,7 +214,9 @@
                 >Sign up</a
               >
 
-              <button class="btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark hidden">
+              <button
+                class="sign-out-btn btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark hidden"
+              >
                 Sign out
               </button>
             </div>
@@ -254,7 +256,11 @@
               >
                 <div>
                   <a href="account.html">My account</a>
-                  <a href="#">Sign out</a>
+                  <a
+                    href="#"
+                    class="sign-out-btn"
+                    >Sign out</a
+                  >
                 </div>
               </div>
             </div>
@@ -442,7 +448,7 @@
               >
               <a
                 href="#"
-                class="p-[1.4rem] text-light k dark:text-dark text-base font-bold block"
+                class="sign-out-btn p-[1.4rem] text-light k dark:text-dark text-base font-bold block"
                 >Sign out</a
               >
             </div>
@@ -527,7 +533,9 @@
               />
             </svg>
           </div>
-          <button class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full">Sign out</button>
+          <button class="sign-out-btn text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full">
+            Sign out
+          </button>
         </div>
       </div>
     </nav>
@@ -539,7 +547,7 @@
           <div class="hero-container-content flex-1 h-full flex flex-col justify-center items-start">
             <h1 class="text-[4.2rem] sm:text-[3rem] text-title dark:text-title-dark font-medium mb-1">Plan the perfect hangout effortlessly!</h1>
             <p class="text-lg sm:text-md xs:text-base text-description dark:text-description-dark font-bold mb-2">
-              Share, suggest, and vote on ideas with friends to create unforgettable moments.
+              Share and vote on great ideas with friends to create unforgettable moments.
             </p>
             <a
               href="create-hangout.html"
@@ -873,21 +881,28 @@
               <div class="header mb-1 flex justify-start items-center">
                 <div class="svg w-[2.4rem] h-[2.4rem] mr-1">
                   <svg
-                    width="420"
-                    height="420"
-                    viewBox="0 0 420 420"
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
+                    fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
+                      d="M270 500V330H100V270H270V100H330V270H500V330H330V500H270Z"
                       class="fill-title dark:fill-cta-dark"
-                      d="M384 198.154C393.333 203.543 393.333 217.014 384 222.403L51 414.661C41.6667 420.049 30 413.313 30 402.536V18.0209C30 7.24368 41.6667 0.507929 51 5.89653L384 198.154Z"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M565 300C565 446.355 446.355 565 300 565C153.645 565 35 446.355 35 300C35 153.645 153.645 35 300 35C446.355 35 565 153.645 565 300ZM535 300C535 429.787 429.787 535 300 535C170.213 535 65 429.787 65 300C65 170.213 170.213 65 300 65C429.787 65 535 170.213 535 300Z"
+                      class="fill-title dark:fill-cta-dark"
                     />
                   </svg>
                 </div>
                 <p class="text-lg text-title dark:text-title-dark font-medium">Create a hangout</p>
               </div>
               <p class="description text-base text-description dark:text-description-dark font-bold">
-                Start a hangout with a few clicks and obtain a link you can share. No account needed!
+                Set everything up with a few clicks and invite your friends. No account needed!
               </p>
             </div>
 
@@ -895,23 +910,29 @@
               <div class="header mb-1 flex justify-start items-center">
                 <div class="svg w-[2.4rem] h-[2.4rem] mr-1">
                   <svg
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
+                    fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    width="858"
-                    height="858"
-                    viewBox="0 0 858 858"
                   >
+                    <circle
+                      cx="300"
+                      cy="300"
+                      r="230"
+                      stroke-width="40"
+                      class="stroke-title dark:stroke-cta-dark"
+                    />
                     <path
+                      d="M285 306.804L380.074 361.695C386.887 364.423 394.847 361.803 398.624 355.261C402.766 348.087 400.308 338.913 393.134 334.771L315 289.66V144C315 135.716 308.284 129 300 129C291.716 129 285 135.716 285 144L285 306.804Z"
                       class="fill-title dark:fill-cta-dark"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M430.622 73.3244C372.787 131.159 349.213 210.281 359.899 285.469L44.2291 601.139C-14.3495 659.717 -14.3495 754.692 44.2291 813.271C102.808 871.85 197.783 871.85 256.361 813.271L572.031 497.601C647.219 508.287 726.341 484.713 784.176 426.878C852.054 359 872.739 261.8 846.233 176.051C843.678 167.786 833.327 165.594 827.21 171.712L706.358 292.564C704.482 294.439 701.939 295.493 699.286 295.493H572.007C566.484 295.493 562.007 291.016 562.007 285.493V158.214C562.007 155.561 563.061 153.018 564.936 151.142L685.788 30.2903C691.906 24.1729 689.714 13.8218 681.449 11.2669C595.7 -15.2394 498.5 5.4464 430.622 73.3244ZM97.6688 651.75C67.823 681.596 67.8229 729.985 97.6688 759.831C127.515 789.677 175.904 789.677 205.75 759.831C235.596 729.985 235.596 681.596 205.75 651.75C175.904 621.904 127.515 621.904 97.6688 651.75Z"
                     />
                   </svg>
                 </div>
-                <p class="text-lg text-title dark:text-title-dark font-medium">Configure it</p>
+                <p class="text-lg text-title dark:text-title-dark font-medium">Share your availability</p>
               </div>
               <p class="description text-base text-description dark:text-description-dark font-bold">
-                Choose the settings you need to make this a perfect meetup.
+                Make it easy for everyone to coordinate by letting them know when you'd be free.
               </p>
             </div>
 
@@ -935,7 +956,34 @@
                 <p class="text-lg text-title dark:text-title-dark font-medium">Suggest ideas</p>
               </div>
               <p class="description text-base text-description dark:text-description-dark font-bold">
-                Once you've invited your friends, it's time for everyone to share their ideas. Go wild!
+                Contribute your best ideas for the meetup and inspire others to do the same.
+              </p>
+            </div>
+
+            <div class="steps-item">
+              <div class="header mb-1 flex justify-start items-center">
+                <div class="svg w-[2.4rem] h-[2.4rem] mr-1">
+                  <svg
+                    width="601"
+                    height="600"
+                    viewBox="0 0 601 600"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M577.276 280C577.276 390.457 465.347 480 327.276 480C189.205 480 77.2762 390.457 77.2762 280C77.2762 169.543 189.205 80 327.276 80C465.347 80 577.276 169.543 577.276 280Z"
+                      class="fill-title dark:fill-cta-dark"
+                    />
+                    <path
+                      d="M29.2489 520.217C25.7619 521.13 23.355 515.181 26.3735 513.211C98.5674 466.093 134.491 387.332 155.4 277.672C155.914 274.976 159.487 274.277 160.935 276.609L270.549 453.028C271.615 454.743 270.715 457.001 268.761 457.513L29.2489 520.217Z"
+                      class="fill-title dark:fill-cta-dark"
+                    />
+                  </svg>
+                </div>
+                <p class="text-lg text-title dark:text-title-dark font-medium">Discuss</p>
+              </div>
+              <p class="description text-base text-description dark:text-description-dark font-bold">
+                Share your thoughts and comments through the hangout group chat.
               </p>
             </div>
 
@@ -976,10 +1024,10 @@
                     />
                   </svg>
                 </div>
-                <p class="text-lg text-title dark:text-title-dark font-medium">Time to vote</p>
+                <p class="text-lg text-title dark:text-title-dark font-medium">Vote</p>
               </div>
               <p class="description text-base text-description dark:text-description-dark font-bold">
-                You now have a plenty of great ideas. Vote together on which one is best!
+                Vote on which ideas sound most exciting, and let a winner immerge!
               </p>
             </div>
 
@@ -1000,33 +1048,11 @@
                     />
                   </svg>
                 </div>
-                <p class="text-lg text-title dark:text-title-dark font-medium">Choose a date</p>
+                <p class="text-lg text-title dark:text-title-dark font-medium">Enjoy</p>
               </div>
               <p class="description text-base text-description dark:text-description-dark font-bold">
-                Almost there! Just need a date and a time. Suggest a few options and vote on what's best.
+                You're all set! Mark your calendar and remember to have fun!
               </p>
-            </div>
-
-            <div class="steps-item">
-              <div class="header mb-1 flex justify-start items-center">
-                <div class="svg w-[2.4rem] h-[2.4rem] mr-1">
-                  <svg
-                    width="500"
-                    height="500"
-                    viewBox="0 0 500 500"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      class="fill-title dark:fill-cta-dark"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M140.955 113C131.408 113 122.629 118.232 118.087 126.629L68.6564 218H196.75V113H140.955ZM100.496 117.112L45.8639 218.099C20.2633 219.716 0 240.992 0 267V346C0 358.15 9.84975 368 22 368H36C43.732 368 49.8019 361.609 51.9353 354.177C57.9323 333.286 77.181 318 100 318C122.819 318 142.068 333.286 148.065 354.177C150.198 361.609 156.268 368 164 368H336C343.732 368 349.802 361.609 351.935 354.177C357.932 333.286 377.181 318 400 318C422.819 318 442.068 333.286 448.065 354.177C450.198 361.609 456.268 368 464 368H478C490.15 368 500 358.15 500 346V271.5H476C467.992 271.5 461.5 265.008 461.5 257C461.5 248.992 467.992 242.5 476 242.5H500V240C500 227.85 490.15 218 478 218H423L423.071 217.929L311.615 106.473C302.989 97.8464 291.288 93 279.088 93H206.75H140.955C124.065 93 108.533 102.257 100.496 117.112ZM500 247.5H476C470.753 247.5 466.5 251.753 466.5 257C466.5 262.247 470.753 266.5 476 266.5H500V247.5ZM297.473 120.615L394.858 218H216.75V113H279.088C285.984 113 292.597 115.739 297.473 120.615ZM140 368C140 390.091 122.091 408 100 408C77.9086 408 60 390.091 60 368C60 345.909 77.9086 328 100 328C122.091 328 140 345.909 140 368ZM440 368C440 390.091 422.091 408 400 408C377.909 408 360 390.091 360 368C360 345.909 377.909 328 400 328C422.091 328 440 345.909 440 368Z"
-                    />
-                  </svg>
-                </div>
-                <p class="text-lg text-title dark:text-title-dark font-medium">Have fun</p>
-              </div>
-              <p class="description text-base text-description dark:text-description-dark font-bold">You've created the perfect plan. Enjoy your hangout!</p>
             </div>
           </div>
         </div>
@@ -1041,7 +1067,7 @@
           <div class="why-container-content flex-1">
             <h3 class="text-title dark:text-title-dark text-4xl font-medium mb-1">Why Hangoutio?</h3>
             <p class="description text-base text-description dark:text-description-dark font-bold mb-1">
-              Planning a meeting with your friends can be very difficult. Everyone has jobs, responsibilities, and a full schedule.
+              Planning a meeting with your friends can be very difficult. Everyone has work, responsibilities, and a full schedule.
             </p>
 
             <p class="description text-base text-description dark:text-description-dark font-bold mb-2">
@@ -1071,13 +1097,16 @@
                     width="500"
                     height="500"
                     viewBox="0 0 500 500"
+                    fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
+                      d="M470 105V305H270V155H70V5H370C425.228 5 470 49.7715 470 105Z"
                       class="fill-title dark:fill-cta-dark"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M470 105V305H270V155H70V5H270H370C425.228 5 470 49.7715 470 105ZM30 195H230V345H430V495H230H130C74.7715 495 30 450.228 30 395V195Z"
+                    />
+                    <path
+                      d="M30 195H230V345H430V495H130C74.7715 495 30 450.228 30 395V195Z"
+                      class="fill-title dark:fill-cta-dark"
                     />
                   </svg>
                 </div>
@@ -1095,32 +1124,33 @@
                     width="700"
                     height="700"
                     viewBox="0 0 700 700"
+                    fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      class="fill-title dark:fill-cta-dark"
                       fill-rule="evenodd"
                       clip-rule="evenodd"
-                      d="M67.5867 250.91L42.3237 233.902L58.9075 190.282L89.0889 194.353C98.1887 182.874 109.605 173.696 122.372 167.252L124.472 136.84L170.54 129.391L182.108 157.571C189.109 158.614 196.106 160.422 202.993 163.041C209.881 165.659 216.311 168.957 222.237 172.828L249.604 159.45L279.089 195.623L260.454 219.749C265.715 233.047 268.151 247.491 267.326 262.116L292.589 279.124L276.005 322.744L245.824 318.673C236.724 330.152 225.308 339.33 212.541 345.774L210.441 376.187L164.373 383.635L152.805 355.455C145.804 354.412 138.807 352.604 131.92 349.986C125.032 347.367 118.602 344.07 112.675 340.199L85.3087 353.576L55.8241 317.404L74.459 293.277C69.1976 279.979 66.7624 265.535 67.5867 250.91ZM207.182 271.616C215.524 249.676 204.5 225.129 182.56 216.787C160.62 208.446 136.072 219.47 127.731 241.41C119.389 263.35 130.413 287.898 152.353 296.239C174.293 304.58 198.841 293.556 207.182 271.616Z"
+                      d="M66.2629 233.913L41 216.905L57.5838 173.284L87.7652 177.355C96.8649 165.877 108.281 156.699 121.048 150.255L123.148 119.842L169.216 112.394L180.784 140.573C187.785 141.617 194.782 143.424 201.669 146.043C208.557 148.661 214.988 151.959 220.914 155.83L248.281 142.453L277.765 178.625L259.13 202.751C264.392 216.05 266.827 230.494 266.003 245.118L291.265 262.126L274.682 305.747L244.5 301.676C235.401 313.154 223.985 322.332 211.218 328.776L209.118 359.189L163.049 366.637L151.482 338.458C144.481 337.414 137.484 335.607 130.596 332.988C123.708 330.37 117.278 327.072 111.352 323.201L83.985 336.578L54.5004 300.406L73.1353 276.28C67.8739 262.982 65.4387 248.538 66.2629 233.913ZM205.859 254.619C214.2 232.679 203.176 208.131 181.236 199.79C159.296 191.448 134.748 202.472 126.407 224.412C118.066 246.352 129.09 270.9 151.03 279.241C172.97 287.583 197.517 276.559 205.859 254.619Z"
+                      class="fill-title dark:fill-cta-dark"
                     />
                     <path
-                      class="fill-title dark:fill-cta-dark"
                       fill-rule="evenodd"
                       clip-rule="evenodd"
-                      d="M602.228 186.754C607.169 196.312 611.165 206.544 614.064 217.363C616.962 228.181 618.618 239.04 619.118 249.788L659.948 271.62L641.589 340.137L595.276 338.628C583.565 356.941 567.928 372.791 549.169 384.783L550.677 431.049L482.16 449.408L460.332 408.587C438.09 407.581 416.624 401.673 397.325 391.669L357.971 416.132L307.814 365.975L332.258 326.652C327.317 317.094 323.321 306.862 320.422 296.044C317.523 285.225 315.868 274.366 315.368 263.618L274.537 241.786L292.896 173.269L339.209 174.778C350.92 156.465 366.557 140.616 385.316 128.623L383.809 82.3565L452.325 63.9976L474.153 104.819C496.395 105.826 517.862 111.733 537.161 121.737L576.514 97.274L626.672 147.431L602.228 186.754ZM483.963 319.102C518.424 309.868 538.876 274.445 529.642 239.983C520.408 205.521 484.985 185.07 450.523 194.304C416.061 203.538 395.61 238.961 404.844 273.423C414.078 307.885 449.501 328.336 483.963 319.102Z"
+                      d="M600.904 169.757C605.845 179.314 609.841 189.546 612.74 200.365C615.639 211.184 617.294 222.043 617.794 232.79L658.624 254.623L640.266 323.139L593.953 321.63C582.242 339.944 566.605 355.793 547.846 367.785L549.353 414.052L480.837 432.411L459.009 391.589C436.767 390.583 415.3 384.676 396.001 374.671L356.647 399.134L306.49 348.977L330.934 309.654C325.993 300.097 321.997 289.865 319.098 279.046C316.199 268.227 314.544 257.368 314.044 246.621L273.214 224.788L291.573 156.272L337.885 157.78C349.596 139.467 365.233 123.618 383.993 111.626L382.485 65.3589L451.002 47L472.83 87.8217C495.072 88.8279 516.538 94.7352 535.837 104.74L575.191 80.2764L625.348 130.434L600.904 169.757ZM482.639 302.104C517.101 292.87 537.552 257.448 528.318 222.986C519.084 188.524 483.661 168.073 449.199 177.307C414.737 186.541 394.286 221.963 403.52 256.425C412.754 290.887 448.177 311.338 482.639 302.104Z"
+                      class="fill-title dark:fill-cta-dark"
                     />
                     <path
-                      class="fill-title dark:fill-cta-dark"
                       fill-rule="evenodd"
                       clip-rule="evenodd"
-                      d="M386.778 496.772C388.319 505.125 388.991 513.771 388.7 522.608C388.409 531.446 387.169 540.029 385.082 548.262L410.92 574.119L381.338 621.668L346.698 609.908C333.651 621.056 318.204 629.443 301.282 634.201L291.811 669.498L235.841 667.654L228.713 631.81C212.141 625.949 197.28 616.564 184.995 604.58L149.656 614.035L123.268 564.642L150.752 540.542C149.211 532.189 148.539 523.543 148.83 514.706C149.121 505.868 150.361 497.285 152.448 489.052L126.61 463.195L156.192 415.646L190.832 427.406C203.879 416.258 219.326 407.871 236.247 403.113L245.719 367.816L301.689 369.66L308.817 405.504C325.388 411.365 340.25 420.75 352.535 432.734L387.874 423.278L414.262 472.672L386.778 496.772ZM267.086 569.629C295.237 570.557 318.81 548.487 319.737 520.336C320.665 492.185 298.595 468.612 270.444 467.685C242.293 466.757 218.72 488.826 217.792 516.978C216.865 545.129 238.934 568.702 267.086 569.629Z"
+                      d="M385.454 479.774C386.995 488.127 387.667 496.773 387.376 505.611C387.085 514.448 385.845 523.031 383.758 531.265L409.596 557.121L380.014 604.671L345.374 592.91C332.327 604.059 316.88 612.446 299.958 617.203L290.487 652.5L234.517 650.656L227.389 614.812C210.818 608.951 195.956 599.566 183.671 587.583L148.332 597.038L121.944 547.645L149.428 523.545C147.887 515.192 147.215 506.546 147.506 497.708C147.797 488.871 149.037 480.288 151.124 472.054L125.286 446.197L154.868 398.648L189.508 410.409C202.555 399.26 218.002 390.873 234.924 386.116L244.395 350.819L300.365 352.663L307.493 388.506C324.065 394.367 338.926 403.753 351.211 415.736L386.55 406.281L412.938 455.674L385.454 479.774ZM265.762 552.632C293.913 553.559 317.486 531.49 318.413 503.339C319.341 475.187 297.272 451.614 269.12 450.687C240.969 449.76 217.396 471.829 216.469 499.98C215.541 528.131 237.611 551.704 265.762 552.632Z"
+                      class="fill-title dark:fill-cta-dark"
                     />
                   </svg>
                 </div>
                 <p class="text-lg text-title dark:text-title-dark font-medium">Customizable</p>
               </div>
               <p class="description text-base text-description dark:text-description-dark font-bold">
-                You have many options to configure things like a budget, voting period, and much more to suit your meetup needs.
+                You're in control. It's easy to tailor all the aspects of a hangout to your needs when creating it, then edit it later if needed.
               </p>
             </div>
 
@@ -1214,7 +1244,7 @@
                 <p class="text-lg text-title dark:text-title-dark font-medium">Free</p>
               </div>
               <p class="description text-base text-description dark:text-description-dark font-bold">
-                Hangoutio is free for everyone and an account is not needed to get the party started.
+                Hangoutio is completely free for everyone, and can be used without registering an account.
               </p>
             </div>
           </div>
@@ -1357,12 +1387,17 @@
               <li
                 class="description text-sm text-description dark:text-description-dark font-bold mb-[5px] relative after:absolute after:top-[50%] after:translate-y-[-50%] after:my-auto after:-left-[1.4rem] after:w-[5px] after:h-[5px] after:rounded-[50%] after:bg-title after:dark:bg-title-dark"
               >
+                Access multiple hangouts with the same account.
+              </li>
+              <li
+                class="description text-sm text-description dark:text-description-dark font-bold mb-[5px] relative after:absolute after:top-[50%] after:translate-y-[-50%] after:my-auto after:-left-[1.4rem] after:w-[5px] after:h-[5px] after:rounded-[50%] after:bg-title after:dark:bg-title-dark"
+              >
                 View all your previous and upcoming hangouts.
               </li>
               <li
                 class="description text-sm text-description dark:text-description-dark font-bold mb-[5px] relative after:absolute after:top-[50%] after:translate-y-[-50%] after:my-auto after:-left-[1.4rem] after:w-[5px] after:h-[5px] after:rounded-[50%] after:bg-title after:dark:bg-title-dark"
               >
-                Set email reminders and receive notifications.
+                Set customizable email notification for your hangouts.
               </li>
               <li
                 class="description text-sm text-description dark:text-description-dark font-bold mb-[5px] relative after:absolute after:top-[50%] after:translate-y-[-50%] after:my-auto after:-left-[1.4rem] after:w-[5px] after:h-[5px] after:rounded-[50%] after:bg-title after:dark:bg-title-dark"

@@ -1,4 +1,5 @@
 interface FormState {
+  hangoutTitle: string | null,
   memberLimit: number,
   isPasswordProtected: boolean,
   hangoutPassword: string | null,
@@ -8,6 +9,7 @@ interface FormState {
 };
 
 export const formState: FormState = {
+  hangoutTitle: null,
   memberLimit: 10,
   isPasswordProtected: false,
   hangoutPassword: null,
