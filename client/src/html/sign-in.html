@@ -122,7 +122,7 @@
               >
             </li>
 
-            <li class="group ml-2 selected default-user">
+            <li class="group ml-2 default-user">
               <a
                 href="create-hangout.html"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors after:hover:bg-cta dark:after:hover:bg-cta-dark group-[.selected]:after:bg-cta dark:group-[.selected]:after:bg-cta-dark"
@@ -204,13 +204,13 @@
             <div class="btn-container flex justify-center items-center ml-2 md:hidden">
               <a
                 href="sign-in.html"
-                class="btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark"
+                class="btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark hidden"
                 >Sign in</a
               >
 
               <a
                 href="sign-up.html"
-                class="btn btn-mini bg-cta dark:bg-cta-dark text-title ml-[4px]"
+                class="btn btn-mini bg-cta dark:bg-cta-dark text-title"
                 >Sign up</a
               >
 
@@ -304,7 +304,7 @@
         </div>
 
         <div
-          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer selected"
+          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
         >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
@@ -330,7 +330,7 @@
         </div>
 
         <div
-          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer selected"
         >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
@@ -362,7 +362,7 @@
         class="bot-nav-container h-full grid-cols-12 place-items-center hidden"
       >
         <div
-          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer selected"
         >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
@@ -462,7 +462,7 @@
         class="bot-nav-container h-full grid-cols-12 place-items-center hidden"
       >
         <div
-          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+          class="bot-nav-container-item col-span-4 relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer selected"
         >
           <div class="svg w-3 h-3 mb-[6px]">
             <svg
@@ -540,78 +540,65 @@
       </div>
     </nav>
 
-    <!-- content -->
-    <section class="content relative">
+    <!-- sign in -->
+    <section class="sign-in">
       <div class="container h-available flex justify-center items-center">
-        <div
-          class="content-container bg-secondary dark:bg-secondary-dark w-[36rem] max-w-[36rem] my-3 py-3 px-2 rounded-sm shadow-centered dark:shadow-none overflow-hidden"
+        <form
+          id="sign-in-form"
+          class="bg-secondary dark:bg-secondary-dark w-[36rem] max-w-[36rem] py-3 px-2 rounded-sm shadow-centered dark:shadow-none overflow-hidden"
         >
-          <div class="content-container-progress mb-2">
-            <div class="progress-text flex justify-center items-center">
-              <p class="text-sm font-bold text-description dark:text-description-dark mb-1">
-                Step
-                <span
-                  id="progress-number"
-                  class="text-sm font-bold text-description dark:text-description-dark"
-                  >1</span
-                >
-                out of 3
-              </p>
-            </div>
+          <div class="form-header mb-3">
+            <h3 class="text-2xl font-medium text-title text-center dark:text-title-dark mb-2">Sign into your account</h3>
 
-            <div class="progress-bar w-full h-2">
-              <div class="progress-bar-pane h-full w-full bg-description dark:bg-primary-dark rounded-3xl">
-                <div
-                  id="progress-bar-thumb"
-                  class="bg-cta dark:bg-cta-dark h-full w-1/3 rounded-3xl scale-x-[101%] transition-[width]"
-                ></div>
+            <div class="h-line mb-2"></div>
+
+            <div class="w-full">
+              <div
+                id="sign-in-options"
+                class="flex justify-between items-center max-w-[20rem] mx-auto bg-light-gray dark:bg-dark rounded-3xl relative after:absolute after:left-0 after:w-1/2 after:h-full after:bg-cta dark:after:bg-cta-dark after:rounded-3xl after:transition-transform"
+              >
+                <button
+                  id="account-option-btn"
+                  class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark selected"
+                >
+                  Account
+                </button>
+                <button
+                  id="guest-option-btn"
+                  class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
+                >
+                  Guest
+                </button>
               </div>
             </div>
           </div>
 
-          <form
-            id="hangout-form"
-            class="content-container-items"
-          >
-            <!-- step 1 -->
-            <div
-              id="hangout-form-step-1"
-              class="content-item mb-2"
-            >
-              <div class="content-item-header mb-2">
-                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Title & Password</h3>
-                <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
-                  Give your hangout a title, and protect it with a password if needed.
-                </p>
-                <p class="font-medium text-sm text-description dark:text-description-dark">
-                  Hangouts can't be accessed without their unique ID, but a password can be set up for additional security.
-                </p>
-              </div>
-
+          <div id="sign-in-form-container">
+            <!-- account form -->
+            <div id="account-form">
               <div class="form-group">
-                <label for="hangout-title-input">Hangout title</label>
+                <label for="account-email-input">Email address</label>
                 <input
                   type="text"
-                  id="hangout-title-input"
-                  autocomplete="name"
+                  id="account-email-input"
+                  autocomplete="email"
                 />
                 <span
                   class="error-span"
-                  data-target="hangout-title-input"
+                  data-target="account-email-input"
                 ></span>
               </div>
 
-              <div class="form-group form-group-password relative disabled">
-                <label for="hangout-password-input">Password</label>
+              <div class="form-group form-group-password relative">
+                <label for="account-password-input">Password</label>
                 <input
                   type="password"
-                  id="hangout-password-input"
-                  autocomplete="new-password"
-                  disabled
+                  id="account-password-input"
+                  autocomplete="current-password"
                 />
                 <button
                   class="password-icon svg w-2 h-2 group"
-                  id="hangout-password-input-reveal-btn"
+                  id="account-password-input-reveal-btn"
                 >
                   <svg
                     width="500"
@@ -630,444 +617,84 @@
                 </button>
                 <span
                   class="error-span"
-                  data-target="hangout-password-input"
+                  data-target="account-password-input"
                 ></span>
-
-                <div class="mt-1 flex justify-between items-center">
-                  <span class="text-sm font-medium text-description dark:text-description-dark">Protect with a password:</span>
-                  <button
-                    id="hangout-password-toggle-btn"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
-                  >
-                    <div class="svg w-2 h-2">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                </div>
               </div>
+
+              <p class="font-medium text-sm text-description dark:text-description-dark mb-2">
+                Don't have an account?
+                <a
+                  href="sign-up.html"
+                  class="link"
+                  >Sign up</a
+                >
+                for free with just a few steps.
+              </p>
             </div>
 
-            <!-- step 2 -->
+            <!-- guest form -->
             <div
-              id="hangout-form-step-2"
-              class="content-item mb-2"
+              id="guest-form"
+              class="hidden"
             >
-              <div class="content-item-header mb-2">
-                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Time & Member Limit</h3>
-                <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
-                  Determine how long each step will take, as well as how many people can join.
-                </p>
-                <p class="font-medium text-sm text-description dark:text-description-dark">
-                  Don't overthink it, these settings can be changed later, and hangout steps can be skipped if necessary.
-                </p>
+              <div class="form-group">
+                <label for="guest-username-input">Username</label>
+                <input
+                  type="text"
+                  id="guest-username-input"
+                  autocomplete="email"
+                />
+                <span
+                  class="error-span"
+                  data-target="guest-username-input"
+                ></span>
               </div>
 
-              <div class="form-group form-group-slider">
-                <label for="member-limit-input">Member Limit: <span data-slider-text="member-limit-input">10 members</span></label>
-                <span class="extra-info">Maximum number of members allowed.</span>
+              <div class="form-group form-group-password relative">
+                <label for="guest-password-input">Password</label>
                 <input
-                  type="range"
-                  min="2"
-                  max="20"
-                  step="1"
-                  value="10"
-                  id="member-limit-input"
+                  type="password"
+                  id="guest-password-input"
+                  autocomplete="current-password"
                 />
-                <div
-                  class="slider-input"
-                  data-slider-target="member-limit-input"
-                  tabindex="0"
+                <button
+                  class="password-icon svg w-2 h-2 group"
+                  id="guest-password-input-reveal-btn"
                 >
-                  <div class="slider-input-pane">
-                    <div class="slider-input-pane-thumb"></div>
-                  </div>
-                </div>
+                  <svg
+                    width="500"
+                    height="500"
+                    viewBox="0 0 500 500"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M485.416 267.826C450.744 307.575 358.471 400 250.091 400C141.71 400 49.4376 307.575 14.7649 267.826C5.74504 257.485 5.74504 242.515 14.7649 232.174C49.4376 192.425 141.71 100 250.091 100C358.471 100 450.744 192.425 485.416 232.174C494.436 242.515 494.436 257.485 485.416 267.826ZM250.091 326C292.064 326 326.091 291.974 326.091 250C326.091 208.026 292.064 174 250.091 174C243.954 174 237.988 174.727 232.273 176.1C230.721 176.473 230.286 178.459 231.391 179.611C237.342 185.81 241 194.228 241 203.5C241 222.554 225.554 238 206.5 238C196.426 238 187.36 233.682 181.052 226.796C179.974 225.619 177.965 225.924 177.492 227.448C175.281 234.574 174.091 242.148 174.091 250C174.091 291.974 208.117 326 250.091 326ZM250.091 350C305.319 350 350.091 305.228 350.091 250C350.091 194.772 305.319 150 250.091 150C194.862 150 150.091 194.772 150.091 250C150.091 305.228 194.862 350 250.091 350Z"
+                    ></path>
+                  </svg>
+                </button>
+                <span
+                  class="error-span"
+                  data-target="guest-password-input"
+                ></span>
               </div>
 
-              <div class="form-group form-group-slider">
-                <label for="availability-step-input">Availability sharing period: <span data-slider-text="availability-step-input">1 day</span></label>
-                <span class="extra-info">Allocated time for members to share their availability.</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="7"
-                  step="1"
-                  value="1"
-                  id="availability-step-input"
-                />
-                <div
-                  class="slider-input"
-                  data-slider-target="availability-step-input"
-                  tabindex="0"
-                >
-                  <div class="slider-input-pane">
-                    <div class="slider-input-pane-thumb"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group form-group-slider">
-                <label for="suggestions-step-input">Suggestions period: <span data-slider-text="suggestions-step-input">1 day</span></label>
-                <span class="extra-info">Allocated time to suggest ideas.</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="7"
-                  step="1"
-                  value="1"
-                  id="suggestions-step-input"
-                />
-                <div
-                  class="slider-input"
-                  data-slider-target="suggestions-step-input"
-                  tabindex="0"
-                >
-                  <div class="slider-input-pane">
-                    <div class="slider-input-pane-thumb"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group form-group-slider">
-                <label for="voting-step-input">Voting period: <span data-slider-text="voting-step-input">1 day</span></label>
-                <span class="extra-info">Allocated time to vote on suggestions.</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="7"
-                  step="1"
-                  value="1"
-                  id="voting-step-input"
-                />
-                <div
-                  class="slider-input"
-                  data-slider-target="voting-step-input"
-                  tabindex="0"
-                >
-                  <div class="slider-input-pane">
-                    <div class="slider-input-pane-thumb"></div>
-                  </div>
-                </div>
-              </div>
+              <p class="font-medium text-sm text-description dark:text-description-dark mb-2">
+                Learn more about the benefits of having a free registered account
+                <a
+                  href="#"
+                  class="link"
+                  >here</a
+                >.
+              </p>
             </div>
-
-            <!-- step 3 -->
-            <div
-              id="hangout-form-step-3"
-              class="content-item mb-2"
-            >
-              <div class="content-item-header mb-2">
-                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Account Preferences</h3>
-                <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
-                  Choose whether you'd like to create this hangout as a guest, or through your account.
-                </p>
-                <p class="font-medium text-sm text-descrip tion dark:text-description-dark mb-2">
-                  Learn more about the benefits of creating an account
-                  <a
-                    href="#"
-                    class="link"
-                    >here</a
-                  >.
-                </p>
-              </div>
-
-              <div
-                id="hangout-form-step-3-container"
-                class="relative"
-              >
-                <!-- account preferences -->
-                <div class="w-full mb-2">
-                  <div
-                    id="account-preferences"
-                    class="flex justify-between items-center max-w-[20rem] mx-auto bg-light-gray dark:bg-dark rounded-3xl relative after:absolute after:left-0 after:w-1/2 after:h-full after:bg-cta dark:after:bg-cta-dark after:rounded-3xl after:transition-transform"
-                  >
-                    <button
-                      id="account-option-btn"
-                      class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark selected"
-                    >
-                      Account
-                    </button>
-                    <button
-                      id="guest-option-btn"
-                      class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
-                    >
-                      Guest
-                    </button>
-                  </div>
-                </div>
-
-                <!-- account form -->
-                <div id="account-form">
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-1">Enter your account's credentials below.</p>
-                  <p class="font-medium text-xs text-description dark:text-description-dark mb-1">
-                    Don't have an account?
-                    <a
-                      href="#"
-                      target="_blank"
-                      class="link font-medium"
-                      >Sign up</a
-                    >
-                    with a few short steps, and enjoy all the added benefits for free!
-                  </p>
-
-                  <div class="form-group">
-                    <label for="account-email-input">Email address</label>
-                    <input
-                      type="text"
-                      id="account-email-input"
-                      autocomplete="email"
-                    />
-                    <span
-                      class="error-span"
-                      data-target="account-email-input"
-                    ></span>
-                  </div>
-
-                  <div class="form-group form-group-password relative">
-                    <label for="account-password-input">Password</label>
-                    <input
-                      type="password"
-                      id="account-password-input"
-                      autocomplete="current-password"
-                    />
-                    <button
-                      class="password-icon svg w-2 h-2 group"
-                      id="account-password-input-reveal-btn"
-                    >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                          fill-rule="evenodd"
-                          clip-rule="evenodd"
-                          d="M485.416 267.826C450.744 307.575 358.471 400 250.091 400C141.71 400 49.4376 307.575 14.7649 267.826C5.74504 257.485 5.74504 242.515 14.7649 232.174C49.4376 192.425 141.71 100 250.091 100C358.471 100 450.744 192.425 485.416 232.174C494.436 242.515 494.436 257.485 485.416 267.826ZM250.091 326C292.064 326 326.091 291.974 326.091 250C326.091 208.026 292.064 174 250.091 174C243.954 174 237.988 174.727 232.273 176.1C230.721 176.473 230.286 178.459 231.391 179.611C237.342 185.81 241 194.228 241 203.5C241 222.554 225.554 238 206.5 238C196.426 238 187.36 233.682 181.052 226.796C179.974 225.619 177.965 225.924 177.492 227.448C175.281 234.574 174.091 242.148 174.091 250C174.091 291.974 208.117 326 250.091 326ZM250.091 350C305.319 350 350.091 305.228 350.091 250C350.091 194.772 305.319 150 250.091 150C194.862 150 150.091 194.772 150.091 250C150.091 305.228 194.862 350 250.091 350Z"
-                        ></path>
-                      </svg>
-                    </button>
-                    <span
-                      class="error-span"
-                      data-target="account-password-input"
-                    ></span>
-                  </div>
-                </div>
-
-                <!-- guest form -->
-                <div
-                  id="guest-form"
-                  class="hidden"
-                >
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-1">Create a hangout with a guest username and password.</p>
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
-                    Guest accounts are linked to the hangout they were created for, and are deleted a week after its conclusion.
-                  </p>
-
-                  <div class="form-group">
-                    <label for="guest-display-name-input">Display name</label>
-                    <input
-                      type="text"
-                      id="guest-display-name-input"
-                      autocomplete="email"
-                    />
-                    <span
-                      class="error-span"
-                      data-target="guest-display-name-input"
-                    ></span>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="guest-username-input">Username</label>
-                    <input
-                      type="text"
-                      id="guest-username-input"
-                      autocomplete="email"
-                    />
-                    <span
-                      class="error-span"
-                      data-target="guest-username-input"
-                    ></span>
-                  </div>
-
-                  <div class="form-group form-group-password relative">
-                    <label for="guest-password-input">Password</label>
-                    <input
-                      type="password"
-                      id="guest-password-input"
-                      autocomplete="current-password"
-                    />
-                    <button
-                      class="password-icon svg w-2 h-2 group"
-                      id="guest-password-input-reveal-btn"
-                    >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                          fill-rule="evenodd"
-                          clip-rule="evenodd"
-                          d="M485.416 267.826C450.744 307.575 358.471 400 250.091 400C141.71 400 49.4376 307.575 14.7649 267.826C5.74504 257.485 5.74504 242.515 14.7649 232.174C49.4376 192.425 141.71 100 250.091 100C358.471 100 450.744 192.425 485.416 232.174C494.436 242.515 494.436 257.485 485.416 267.826ZM250.091 326C292.064 326 326.091 291.974 326.091 250C326.091 208.026 292.064 174 250.091 174C243.954 174 237.988 174.727 232.273 176.1C230.721 176.473 230.286 178.459 231.391 179.611C237.342 185.81 241 194.228 241 203.5C241 222.554 225.554 238 206.5 238C196.426 238 187.36 233.682 181.052 226.796C179.974 225.619 177.965 225.924 177.492 227.448C175.281 234.574 174.091 242.148 174.091 250C174.091 291.974 208.117 326 250.091 326ZM250.091 350C305.319 350 350.091 305.228 350.091 250C350.091 194.772 305.319 150 250.091 150C194.862 150 150.091 194.772 150.091 250C150.091 305.228 194.862 350 250.091 350Z"
-                        ></path>
-                      </svg>
-                    </button>
-                    <span
-                      class="error-span"
-                      data-target="guest-password-input"
-                    ></span>
-                  </div>
-
-                  <div class="form-group form-group-password relative">
-                    <label for="guest-password-confirm-input">Confirm password</label>
-                    <input
-                      type="password"
-                      id="guest-password-confirm-input"
-                      autocomplete="current-password"
-                    />
-                    <button
-                      class="password-icon svg w-2 h-2 group"
-                      id="guest-password-confirm-input-reveal-btn"
-                    >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                          fill-rule="evenodd"
-                          clip-rule="evenodd"
-                          d="M485.416 267.826C450.744 307.575 358.471 400 250.091 400C141.71 400 49.4376 307.575 14.7649 267.826C5.74504 257.485 5.74504 242.515 14.7649 232.174C49.4376 192.425 141.71 100 250.091 100C358.471 100 450.744 192.425 485.416 232.174C494.436 242.515 494.436 257.485 485.416 267.826ZM250.091 326C292.064 326 326.091 291.974 326.091 250C326.091 208.026 292.064 174 250.091 174C243.954 174 237.988 174.727 232.273 176.1C230.721 176.473 230.286 178.459 231.391 179.611C237.342 185.81 241 194.228 241 203.5C241 222.554 225.554 238 206.5 238C196.426 238 187.36 233.682 181.052 226.796C179.974 225.619 177.965 225.924 177.492 227.448C175.281 234.574 174.091 242.148 174.091 250C174.091 291.974 208.117 326 250.091 326ZM250.091 350C305.319 350 350.091 305.228 350.091 250C350.091 194.772 305.319 150 250.091 150C194.862 150 150.091 194.772 150.091 250C150.091 305.228 194.862 350 250.091 350Z"
-                        ></path>
-                      </svg>
-                    </button>
-                    <span
-                      class="error-span"
-                      data-target="guest-password-confirm-input"
-                    ></span>
-                  </div>
-                </div>
-
-                <!-- sign-in-preferences -->
-                <div class="sign-in-preferences flex justify-start items-center mb-2">
-                  <button
-                    id="keep-signed-in"
-                    class="checkbox-btn mr-1 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
-                  >
-                    <div class="svg w-2 h-2">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="text-sm font-medium text-title dark:text-title-dark">Keep my signed in</p>
-                </div>
-
-                <!-- already signed in -->
-                <div
-                  id="already-signed-in"
-                  class="mb-2 bg-overlay dark:bg-overlay-dark p-2 h-full rounded-sm"
-                >
-                  <p class="text-sm font-medium text-title-dark mb-1">Already signed in.</p>
-                  <p class="text-sm font-medium text-title-dark mb-2">Your account will be used to create this hangout.</p>
-                  <button
-                    id="already-signed-in-sign-out"
-                    class="btn bg-secondary dark:bg-description-dark w-full"
-                  >
-                    Use a different account
-                  </button>
-                </div>
-              </div>
-
-              <!-- form submission -->
-              <button
-                id="hangout-form-submit-btn"
-                type="submit"
-                class="btn bg-cta dark:bg-cta-dark w-full mb-2"
-              >
-                Create hangout
-              </button>
-            </div>
-          </form>
-
-          <div
-            id="hangout-form-nav"
-            class="content-container-nav flex justify-between items-center"
-          >
-            <button
-              id="hangout-form-prev-btn"
-              class="btn-secondary text-sm mr-auto justify-center items-center hidden group relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
-            >
-              <div class="svg w-2 h-2 mr-[4px]">
-                <svg
-                  width="435"
-                  height="325"
-                  viewBox="0 0 435 325"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M35 112.782L187.028 264.81C200.696 278.478 200.696 300.639 187.028 314.307C173.36 327.976 151.199 327.976 137.53 314.307L10.2513 187.028C-3.41709 173.36 -3.41709 151.199 10.2513 137.53L35 112.782Z"
-                    class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                  />
-                  <path
-                    d="M10.2513 187.028C-3.41709 173.36 -3.41709 151.199 10.2513 137.53L137.53 10.2513C151.199 -3.41709 173.36 -3.41709 187.028 10.2513C200.696 23.9196 200.696 46.0804 187.028 59.7487L35 211.777L10.2513 187.028Z"
-                    class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                  />
-                  <path
-                    d="M84.5026 127.503H399.503C418.832 127.503 434.503 143.173 434.503 162.503C434.503 181.832 418.833 197.503 399.503 197.503H84.5026V127.503Z"
-                    class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                  />
-                </svg>
-              </div>
-              Previous step
-            </button>
-            <div></div>
-            <button
-              id="hangout-form-next-btn"
-              class="btn bg-cta dark:bg-cta-dark ml-auto"
-            >
-              Next step
-            </button>
           </div>
-        </div>
+
+          <button class="btn bg-cta dark:bg-cta-dark w-full">Sign in</button>
+        </form>
       </div>
     </section>
 
@@ -1222,191 +849,5 @@
         </div>
       </div>
     </footer>
-
-    <!-- modals -->
-    <div id="date-picker-modal">
-      <div id="date-picker">
-        <div id="date-picker-container">
-          <!-- nav -->
-          <div id="date-picker-navbar">
-            <button
-              type="button"
-              id="date-picker-back"
-            >
-              <span class="svg w-1 h-1">
-                <svg
-                  width="500"
-                  height="500"
-                  viewBox="0 0 500 500"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    class="stroke-description dark:stroke-description-dark"
-                    d="M350 50L150 250L350 450"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-
-            <p
-              id="date-picker-navbar-header"
-              class="mx-auto"
-            >
-              <span id="date-picker-month"></span>
-              <span id="date-picker-year"></span>
-            </p>
-
-            <button
-              type="button"
-              id="date-picker-forward"
-            >
-              <span class="svg w-1 h-1">
-                <svg
-                  width="500"
-                  height="500"
-                  viewBox="0 0 500 500"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    class="stroke-description dark:stroke-description-dark"
-                    d="M150 450L350 250L150 50"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-
-          <!-- days -->
-          <div id="date-picker-days">
-            <p>Mon</p>
-            <p>Tue</p>
-            <p>Wed</p>
-            <p>Thu</p>
-            <p>Fri</p>
-            <p>Sat</p>
-            <p>Sun</p>
-          </div>
-
-          <!-- dates -->
-          <div id="date-picker-dates"></div>
-
-          <!-- date text -->
-          <p class="text-sm font-bold text-description dark:text-description-dark mt-1">
-            Selected date:
-            <span
-              id="selected-date-text"
-              class="text-sm font-bold text-description dark:text-description-dark"
-              >None</span
-            >
-          </p>
-
-          <!-- btn container -->
-          <div id="date-picker-btn-container">
-            <button
-              type="button"
-              id="date-picker-close"
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              id="date-picker-confirm"
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="time-picker-modal">
-      <div id="time-picker">
-        <!-- header -->
-        <div id="time-picker-header">
-          <p>Selected date: <span id="time-picker-selected-date"></span>.</p>
-          <p>You can add up to 3 time slots per date.</p>
-        </div>
-
-        <!-- inputs -->
-        <div
-          id="time-picker-inputs"
-          class="mb-2"
-        >
-          <div class="form-group">
-            <label for="time-picker-from">From</label>
-            <input
-              type="text"
-              id="time-picker-from"
-              name="time-picker-from"
-              maxlength="5"
-              placeholder="Example: 19:30"
-              autocomplete="bday-year"
-            />
-            <span
-              class="error-span"
-              data-target="time-picker-from"
-            ></span>
-          </div>
-
-          <div class="form-group">
-            <label for="time-picker-to">To</label>
-            <input
-              type="text"
-              id="time-picker-to"
-              name="time-picker-to"
-              maxlength="5"
-              placeholder="Example: 21:45"
-              autocomplete="bday-year"
-            />
-            <span
-              class="error-span"
-              data-target="time-picker-to"
-            ></span>
-          </div>
-
-          <button
-            type="button"
-            id="time-picker-input-add"
-            class="btn bg-dark dark:bg-light text-light dark:text-dark w-full"
-          >
-            Add slot
-          </button>
-        </div>
-
-        <div id="time-picker-slots">
-          <p class="">Selected time slots:</p>
-
-          <div id="time-picker-slots-container"></div>
-        </div>
-
-        <!-- btn container -->
-        <div id="time-picker-btn-container">
-          <button
-            type="button"
-            id="time-picker-close"
-          >
-            Close
-          </button>
-          <button
-            type="button"
-            id="time-picker-confirm"
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div id="loading-modal">
-      <div class="spinner"></div>
-    </div>
   </body>
 </html>

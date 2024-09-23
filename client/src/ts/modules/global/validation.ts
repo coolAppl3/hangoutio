@@ -29,7 +29,7 @@ export function validateEmail(input: HTMLInputElement): boolean {
     return false;
   };
 
-  if (email.trim() !== email) {
+  if (email.includes(' ')) {
     ErrorSpan.display(input, 'Email address must not contain whitespace.');
     return false;
   };
@@ -37,6 +37,45 @@ export function validateEmail(input: HTMLInputElement): boolean {
   const regex: RegExp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
   if (!regex.test(email)) {
     ErrorSpan.display(input, 'Invalid email address.');
+    return false;
+  };
+
+  ErrorSpan.hide(input);
+  return true;
+};
+
+export function validateHangoutTitle(input: HTMLInputElement): boolean {
+  const title: string = input.value;
+
+  if (title === '') {
+    ErrorSpan.display(input, 'A valid hangout title is required.');
+    return false;
+  };
+
+  if (title.length < 3) {
+    ErrorSpan.display(input, 'Title must contain at least 3 characters.');
+    return false;
+  };
+
+  if (title.length > 25) {
+    ErrorSpan.display(input, 'Title must not exceed 25 characters.');
+    return false;
+  };
+
+  if (title.trim() !== title) {
+    ErrorSpan.display(input, 'Whitespace must not exist at either ends of the title.');
+    return false;
+  };
+
+  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
+  if (title !== doubleSpacesRemoved) {
+    ErrorSpan.display(input, 'Only one whitespace is allowed between words.');
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z ]{3,25}$/;
+  if (!regex.test(title)) {
+    ErrorSpan.display(input, 'Only Latin letters and a single space between words are allowed.');
     return false;
   };
 
@@ -52,7 +91,7 @@ export function validateNewPassword(input: HTMLInputElement): boolean {
     return false;
   };
 
-  if (password.trim() !== password) {
+  if (password.includes(' ')) {
     ErrorSpan.display(input, 'Password must not contain whitespace.');
     return false;
   };
@@ -85,12 +124,27 @@ export function validatePassword(input: HTMLInputElement): boolean {
     return false;
   };
 
-  if (password.trim() !== password) {
+  if (password.includes(' ')) {
     ErrorSpan.display(input, 'Password must not contain whitespace.');
     return false;
   };
 
   ErrorSpan.hide(input);
+  return true;
+};
+
+export function validateConfirmPassword(confirmInput: HTMLInputElement, referenceInput: HTMLInputElement): boolean {
+  if (confirmInput.value.trim() === '') {
+    ErrorSpan.display(confirmInput, 'Password confirmation is required.');
+    return false;
+  };
+
+  if (confirmInput.value !== referenceInput.value) {
+    ErrorSpan.display(confirmInput, `Passwords don't match.`);
+    return false;
+  };
+
+  ErrorSpan.hide(confirmInput);
   return true;
 };
 
@@ -135,7 +189,7 @@ export function validateUsername(input: HTMLInputElement): boolean {
     return false;
   };
 
-  if (username.trim() !== username) {
+  if (username.includes(' ')) {
     ErrorSpan.display(input, 'Username must not contain whitespace.');
     return false;
   };
@@ -164,7 +218,7 @@ export function validateDisplayName(input: HTMLInputElement): boolean {
 
   const doubleSpacesRemoved: string = displayName.split(' ').filter((char: string) => char !== '').join(' ');
   if (displayName !== doubleSpacesRemoved) {
-    ErrorSpan.display(input, 'Only one space is allowed between words.');
+    ErrorSpan.display(input, 'Only one whitespace is allowed between words.');
     return false;
   };
 

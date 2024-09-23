@@ -277,7 +277,7 @@
   }
 
   .link {
-    @apply text-blue-700 dark:text-blue-500 underline;
+    @apply text-blue-700 dark:text-blue-500 underline transition-[filter] hover:brightness-200 dark:hover:brightness-150;
   }
 
   .triangle {
@@ -375,7 +375,7 @@
       @apply mt-1;
 
       &-pane {
-        @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem];
+        @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem] cursor-pointer;
 
         &-thumb {
           @apply h-full w-1 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:-top-[5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%];
@@ -743,6 +743,38 @@
 
       #already-signed-in {
         @apply block;
+      }
+    }
+  }
+}
+
+
+// sign-in.html --- --- --- --- --- --- --- --- ---
+#sign-in-form {
+
+  .form-header {
+
+    #sign-in-options {
+
+      &.guest {
+
+        &::after {
+          @apply translate-x-full;
+        }
+      }
+
+      button {
+        transition: text-decoration 2000ms;
+
+        &.selected {
+          &::after {
+            display: none !important;
+          }
+        }
+      }
+
+      button.selected {
+        @apply dark:text-title;
       }
     }
   }

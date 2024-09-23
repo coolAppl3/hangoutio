@@ -1,4 +1,5 @@
 import popup from "../global/popup";
+import { isValidFormFirstStepDetails } from "./formFirstStep";
 import { formState } from "./formState";
 
 interface FormNavigationState {
@@ -68,8 +69,7 @@ function moveForwards(): void {
   };
 
   if (formNavigationState.currentStep === 1) {
-    if (formState.isPasswordProtected && !formState.hangoutPassword) {
-      popup('A valid hangout password is required.', 'error');
+    if (!isValidFormFirstStepDetails()) {
       return;
     };
   };
@@ -116,5 +116,5 @@ function updateProgressBar(): void {
 };
 
 function triggerDOMRectUpdateEvent(): void {
-  window.dispatchEvent(new CustomEvent('updateDOMRect'));
+  document.dispatchEvent(new CustomEvent('updateDOMRect'));
 };

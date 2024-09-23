@@ -101,6 +101,7 @@ async function archiveHangouts() {
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
         hangouts.hangout_id,
+        hangouts.hangout_title,
         hangouts.created_on_timestamp,
         hangouts.conclusion_timestamp,
         COUNT(hangout_members.hangout_member_id) as total_members
@@ -172,7 +173,7 @@ async function archiveHangouts() {
         ;
         let archivedHangoutValues = '';
         for (const hangout of hangoutRows) {
-            archivedHangoutValues += `('${hangout.hangout_id}', ${hangout.created_on_timestamp}, ${hangout.conclusion_timestamp}, ${hangout.total_members}, '${hangout.suggestion_title}', '${hangout.suggestion_description}'),`;
+            archivedHangoutValues += `('${hangout.hangout_id}', '${hangout.hangout_title}', ${hangout.created_on_timestamp}, ${hangout.conclusion_timestamp}, ${hangout.total_members}, '${hangout.suggestion_title}', '${hangout.suggestion_description}'),`;
         }
         ;
         archivedHangoutValues = archivedHangoutValues.slice(0, -1);
@@ -180,6 +181,7 @@ async function archiveHangouts() {
         await connection.beginTransaction();
         await connection.execute(`INSERT INTO hangouts_archive(
         hangout_id,
+        title,
         created_on_timestamp,
         conclusion_timestamp,
         total_members,

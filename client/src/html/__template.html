@@ -193,7 +193,7 @@
                       fill-rule="evenodd"
                       clip-rule="evenodd"
                       d="M102.507 304C128.727 326.444 162.78 340 200 340C271.505 340 331.324 289.967 346.358 223L249.5 223C247.843 223 246.5 221.657 246.5 220C246.5 218.343 247.843 217 249.5 217L347.577 217C349.169 208.241 350 199.218 350 190H50C50 232.414 67.6038 270.717 95.9037 298L164 298C165.657 298 167 299.343 167 301C167 302.657 165.657 304 164 304L102.507 304ZM204.5 239.5C204.5 241.157 203.157 242.5 201.5 242.5L126.5 242.5C124.843 242.5 123.5 241.157 123.5 239.5C123.5 237.843 124.843 236.5 126.5 236.5L201.5 236.5C203.157 236.5 204.5 237.843 204.5 239.5ZM297.5 274C299.157 274 300.5 272.657 300.5 271C300.5 269.343 299.157 268 297.5 268L201.5 268C199.843 268 198.5 269.343 198.5 271C198.5 272.657 199.843 274 201.5 274L297.5 274ZM129.5 278.5C129.5 280.157 128.157 281.5 126.5 281.5H104C102.343 281.5 101 280.157 101 278.5C101 276.843 102.343 275.5 104 275.5H126.5C128.157 275.5 129.5 276.843 129.5 278.5ZM255.5 310C257.157 310 258.5 308.657 258.5 307C258.5 305.343 257.157 304 255.5 304H213.5C211.843 304 210.5 305.343 210.5 307C210.5 308.657 211.843 310 213.5 310H255.5ZM225.5 214C225.5 215.657 224.157 217 222.5 217H188C186.343 217 185 215.657 185 214C185 212.343 186.343 211 188 211H222.5C224.157 211 225.5 212.343 225.5 214ZM144.5 211C146.157 211 147.5 209.657 147.5 208C147.5 206.343 146.157 205 144.5 205H87.5C85.8431 205 84.5 206.343 84.5 208C84.5 209.657 85.8431 211 87.5 211H144.5Z"
-                      class="fill-cta"
+                      class="fill-cta group-[.dark-theme]:fill-title-dark"
                     />
                   </svg>
                 </div>
@@ -214,7 +214,9 @@
                 >Sign up</a
               >
 
-              <button class="btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark hidden">
+              <button
+                class="sign-out-btn btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark hidden"
+              >
                 Sign out
               </button>
             </div>
@@ -254,7 +256,11 @@
               >
                 <div>
                   <a href="account.html">My account</a>
-                  <a href="#">Sign out</a>
+                  <a
+                    href="#"
+                    class="sign-out-btn"
+                    >Sign out</a
+                  >
                 </div>
               </div>
             </div>
@@ -442,7 +448,7 @@
               >
               <a
                 href="#"
-                class="p-[1.4rem] text-light k dark:text-dark text-base font-bold block"
+                class="sign-out-btn p-[1.4rem] text-light k dark:text-dark text-base font-bold block"
                 >Sign out</a
               >
             </div>
@@ -527,7 +533,9 @@
               />
             </svg>
           </div>
-          <button class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full">Sign out</button>
+          <button class="sign-out-btn text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full">
+            Sign out
+          </button>
         </div>
       </div>
     </nav>

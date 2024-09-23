@@ -6,6 +6,7 @@ const hangoutsApiUrl: string = window.location.hostname === 'localhost'
 //
 
 export interface AccountLeaderHangoutBody {
+  hangoutTitle: string,
   hangoutPassword: string | null,
   memberLimit: number,
   availabilityStep: number,
@@ -34,6 +35,7 @@ export async function createAccountLeaderHangoutService(authToken: string, reque
 
 
 export interface GuestLeaderHangoutBody {
+  hangoutTitle: string,
   hangoutPassword: string | null,
   memberLimit: number,
   availabilityStep: number,

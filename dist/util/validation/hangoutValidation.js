@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutID = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
+exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutTitle = exports.isValidHangoutID = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
 exports.hangoutMemberLimit = 20;
 exports.ongoingHangoutsLimit = 12;
 function isValidHangoutID(hangoutID) {
@@ -28,6 +28,25 @@ function isValidHangoutID(hangoutID) {
     return regex.test(hangoutID);
 }
 exports.isValidHangoutID = isValidHangoutID;
+;
+function isValidHangoutTitle(title) {
+    if (typeof title !== 'string') {
+        return false;
+    }
+    ;
+    if (title.trim() !== title) {
+        return false;
+    }
+    ;
+    const doubleSpacesRemoved = title.split(' ').filter((char) => char !== '').join(' ');
+    if (title !== doubleSpacesRemoved) {
+        return false;
+    }
+    ;
+    const regex = /^[A-Za-z ]{3,25}$/;
+    return regex.test(title);
+}
+exports.isValidHangoutTitle = isValidHangoutTitle;
 ;
 function isValidHangoutMemberLimit(limit) {
     if (!Number.isInteger(limit)) {

@@ -1,6 +1,26 @@
 # Changelog
 
 ---
+## [0.2.14] (2024-09-23)
+
+### Features
+
+- Improved the text content on the homepage.
+- Added a mandatory `hangout_title` column to the `hangouts` table, and updated the necessary endpoints.
+- Added a mandatory hangout title field for the hangout creation form in `create-hangout.html`.
+- Added a password confirmation field when a guest signs up to create a hangout in `create-hangout.html`.
+- Slightly rearranged the flow of the hangout creation form in `create-hangout.html`.
+- Added sign out functionality.
+- Improved some of the functions in `validation.ts`.
+- Added `sign-in.html`, implemented its UI, and a portion of the functionality.
+
+
+### Bug Fixes
+
+- Fixed hangout step sliders not updating the form state with their values.
+
+
+---
 ## [0.2.13] (2024-09-21)
 
 ### Features

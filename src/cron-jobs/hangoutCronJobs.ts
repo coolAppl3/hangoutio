@@ -115,6 +115,7 @@ export async function archiveHangouts(): Promise<void> {
   try {
     interface HangoutDetails extends RowDataPacket {
       hangout_id: string,
+      hangout_title: string | null,
       created_on_timestamp: number,
       conclusion_timestamp: number,
       total_members: number,
@@ -123,6 +124,7 @@ export async function archiveHangouts(): Promise<void> {
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
         hangouts.hangout_id,
+        hangouts.hangout_title,
         hangouts.created_on_timestamp,
         hangouts.conclusion_timestamp,
         COUNT(hangout_members.hangout_member_id) as total_members
@@ -220,7 +222,7 @@ export async function archiveHangouts(): Promise<void> {
 
     let archivedHangoutValues: string = '';
     for (const hangout of hangoutRows) {
-      archivedHangoutValues += `('${hangout.hangout_id}', ${hangout.created_on_timestamp}, ${hangout.conclusion_timestamp}, ${hangout.total_members}, '${hangout.suggestion_title}', '${hangout.suggestion_description}'),`;
+      archivedHangoutValues += `('${hangout.hangout_id}', '${hangout.hangout_title}', ${hangout.created_on_timestamp}, ${hangout.conclusion_timestamp}, ${hangout.total_members}, '${hangout.suggestion_title}', '${hangout.suggestion_description}'),`;
     };
     archivedHangoutValues = archivedHangoutValues.slice(0, -1);
 
@@ -230,6 +232,7 @@ export async function archiveHangouts(): Promise<void> {
     await connection.execute(
       `INSERT INTO hangouts_archive(
         hangout_id,
+        title,
         created_on_timestamp,
         conclusion_timestamp,
         total_members,
