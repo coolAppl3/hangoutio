@@ -480,7 +480,7 @@
 
 // date picker
 #date-picker-modal {
-  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[25] hidden;
+  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[15] hidden;
 
   &.displayed {
     @apply flex justify-center items-center;
@@ -571,7 +571,7 @@
 
 // time picker
 #time-picker-modal {
-  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[25] hidden;
+  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[15] hidden;
 
   &.displayed {
     @apply flex justify-center items-center;
@@ -683,6 +683,72 @@
 
     100% {
       transform: rotate(360deg);
+    }
+  }
+}
+
+// confirm modal
+#confirm-modal {
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[15] flex justify-center items-center;
+
+  &.revealed {
+
+    #confirm-modal-container {
+      transform: translate3d(0, 0, 0) !important;
+      opacity: 1 !important;
+    }
+  }
+
+  &.has-description {
+
+    p.confirm-modal-title {
+      @apply mb-1;
+    }
+  }
+
+  &-container {
+    @apply w-[30rem] max-w-[30rem] py-3 px-2 rounded-sm bg-primary dark:bg-secondary-dark;
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: opacity 150ms, transform 150ms;
+
+    p {
+
+      &.confirm-modal-title {
+        @apply font-medium text-base text-title dark:text-title-dark mb-2;
+      }
+
+      &.confirm-modal-description {
+        @apply font-medium text-sm text-description dark:text-description-dark mb-2;
+      }
+    }
+
+    .btn-container {
+
+      button {
+        @apply mb-1 last:mb-0;
+
+        &#confirm-modal {
+
+          &-confirm-btn {
+            @apply btn w-full bg-cta dark:bg-cta-dark text-title;
+
+            &.danger {
+              @apply btn w-full bg-danger text-title-dark;
+            }
+
+          }
+
+
+          &-other-btn {
+            @apply btn w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
+          }
+
+          &-cancel-btn {
+            @apply btn w-full border-title dark:border-title-dark bg-primary dark:bg-secondary-dark text-title dark:text-title-dark;
+          }
+        }
+      }
     }
   }
 }

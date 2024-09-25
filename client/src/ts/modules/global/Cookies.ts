@@ -1,7 +1,6 @@
 export default class Cookies {
   public static get(cookieName: string): string | null {
-    const cookieMap: Map<string, string> = this.createCookieMap();
-    const cookie: string | undefined = cookieMap.get(cookieName);
+    const cookie: string | undefined = this.createCookieMap().get(cookieName);
 
     if (!cookie) {
       return null;
@@ -10,11 +9,7 @@ export default class Cookies {
     return cookie;
   };
 
-  public static set(cookieName: string, cookieValue: string, maxAgeSeconds?: number | undefined): void {
-    if (cookieName.trim() === '' || cookieValue.trim() === '') {
-      return;
-    };
-
+  public static set(cookieName: string, cookieValue: string, maxAgeSeconds?: number): void {
     if (!maxAgeSeconds) {
       document.cookie = `${cookieName}=${cookieValue}; path=/; Secure`;
       return;
@@ -24,10 +19,6 @@ export default class Cookies {
   };
 
   public static remove(cookieName: string): void {
-    if (cookieName.trim() === '') {
-      return;
-    };
-
     document.cookie = `${cookieName}=; max-age=0`;
   };
 
@@ -35,11 +26,12 @@ export default class Cookies {
     const cookies: string = document.cookie;
     const cookieMap: Map<string, string> = new Map();
 
-    if (!cookies) {
+    if (cookies === '') {
       return cookieMap;
     };
 
     const cookiesArray: string[] = cookies.split('; ');
+
     for (const cookie of cookiesArray) {
       const mapKey: string = cookie.split('=')[0];
       const mapValue: string = cookie.split('=')[1];

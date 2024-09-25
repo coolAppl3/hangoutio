@@ -1,6 +1,4 @@
-import popup from "../global/popup";
 import { isValidFormFirstStepDetails } from "./formFirstStep";
-import { formState } from "./formState";
 
 interface FormNavigationState {
   currentStep: number,

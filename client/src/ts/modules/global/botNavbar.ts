@@ -1,7 +1,6 @@
-import Cookies from "./Cookies";
+import { getAuthToken } from "./getAuthToken";
 import popup from "./popup";
 import { signOut } from "./signOut";
-import { isValidAuthToken } from "./validation";
 
 const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
 const accountListBtn: HTMLElement | null = document.querySelector('#account-list-btn');
@@ -30,17 +29,10 @@ function handleBotNavbarClicks(e: MouseEvent): void {
 };
 
 function displayRelevantLinks(): void {
-  const authToken: string | null = Cookies.get('authToken');
+  const authToken: string | null = getAuthToken();
 
   if (!authToken) {
     botNavbarElement?.classList.remove('guest-user', 'account-user');
-    return;
-  };
-
-  if (!isValidAuthToken(authToken)) {
-    Cookies.remove('authToken');
-    botNavbarElement?.classList.remove('guest-user', 'account-user');
-
     return;
   };
 

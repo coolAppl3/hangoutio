@@ -34,7 +34,7 @@ export function validateEmail(input: HTMLInputElement): boolean {
     return false;
   };
 
-  const regex: RegExp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
+  const regex: RegExp = /^(?=.{6,254}$)[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]{0,64}@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
   if (!regex.test(email)) {
     ErrorSpan.display(input, 'Invalid email address.');
     return false;
@@ -126,6 +126,11 @@ export function validatePassword(input: HTMLInputElement): boolean {
 
   if (password.includes(' ')) {
     ErrorSpan.display(input, 'Password must not contain whitespace.');
+    return false;
+  };
+
+  if (password.length > 40) {
+    ErrorSpan.display(input, 'Password can not be longer than 40 characters.');
     return false;
   };
 
@@ -230,4 +235,47 @@ export function validateDisplayName(input: HTMLInputElement): boolean {
 
   ErrorSpan.hide(input);
   return true;
+};
+
+function isValidTimestamp(timestamp: number): boolean {
+  const timeStampLength: number = 13;
+
+  if (!Number.isInteger(timestamp)) {
+    return false;
+  };
+
+  if (timestamp.toString().length !== timeStampLength) {
+    return false;
+  };
+
+  if (timestamp < 0) {
+    return false;
+  };
+
+  return true;
+};
+
+export function isValidHangoutID(hangoutID: string): boolean {
+  if (typeof hangoutID !== 'string') {
+    return false;
+  };
+
+  if (hangoutID.length !== 46) {
+    return false;
+  };
+
+  if (!hangoutID.startsWith('h')) {
+    return false;
+  };
+
+  if (hangoutID[32] !== '_') {
+    return false;
+  };
+
+  if (hangoutID.substring(33).length !== 13 || !isValidTimestamp(+hangoutID.substring(33))) {
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z0-9_]{46,}$/;
+  return regex.test(hangoutID);
 };

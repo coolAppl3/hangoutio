@@ -22,12 +22,12 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
   };
 
   if (!isValidUsername(requestData.username)) {
-    res.status(400).json({ success: false, message: 'Invalid username.' });
+    res.status(400).json({ success: false, message: 'Invalid username.', reason: 'username' });
     return;
   };
 
   if (!isValidPassword(requestData.password)) {
-    res.status(400).json({ success: false, message: 'Invalid password.' });
+    res.status(400).json({ success: false, message: 'Invalid password.', reason: 'password' });
     return;
   };
 

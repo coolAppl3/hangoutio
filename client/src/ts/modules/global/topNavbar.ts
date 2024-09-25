@@ -1,8 +1,7 @@
 import themeSwitcher from "./themeSwitcher"
-import Cookies from "./Cookies";
-import { isValidAuthToken } from "./validation";
 import { signOut } from "./signOut";
 import popup from "./popup";
+import { getAuthToken } from "./getAuthToken";
 
 const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
 const accountNavBtn: HTMLButtonElement | null = document.querySelector('#account-nav-container-btn');
@@ -58,17 +57,10 @@ function enableAccountNavBtn(e: MouseEvent): void {
 };
 
 function displayRelevantLinks(): void {
-  const authToken: string | null = Cookies.get('authToken');
+  const authToken: string | null = getAuthToken();
 
   if (!authToken) {
     topNavbarElement?.classList.remove('guest-user', 'account-user');
-    return;
-  };
-
-  if (!isValidAuthToken(authToken)) {
-    Cookies.remove('authToken');
-    topNavbarElement?.classList.remove('guest-user', 'account-user');
-
     return;
   };
 
