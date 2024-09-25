@@ -230,7 +230,7 @@
                 id="account-nav-container-btn"
                 class="overflow-hidden group/account-btn flex justify-center items-center border-[3px] border-title dark:border-title-dark rounded-[100%] p-[8px] transition-colors hover:border-cta dark:hover:border-cta-dark group/svg"
               >
-                <div class="svg w-3 h-3 overflow-hidden">
+                <div class="svg w-[2.4rem] h-[2.4rem] overflow-hidden">
                   <svg
                     width="600"
                     height="600"
@@ -683,7 +683,13 @@
               </div>
 
               <p class="font-medium text-sm text-description dark:text-description-dark mb-2">
-                Learn more about the benefits of having a free registered account
+                Learn more about the benefits of
+                <a
+                  href="sign-up.html"
+                  class="link"
+                  >signing up</a
+                >
+                for a free registered account
                 <a
                   href="#"
                   class="link"
@@ -691,6 +697,34 @@
                 >.
               </p>
             </div>
+          </div>
+
+          <!-- sign-in-preferences -->
+          <div class="sign-in-preferences flex justify-start items-center mb-2">
+            <button
+              id="keep-signed-in-btn"
+              class="checkbox-btn mr-1 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+            >
+              <div class="svg w-2 h-2">
+                <svg
+                  width="601"
+                  height="601"
+                  viewBox="0 0 601 601"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                    class="fill-dark dark:fill-cta-dark"
+                  />
+                  <path
+                    d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                    class="fill-dark dark:fill-cta-dark"
+                  />
+                </svg>
+              </div>
+            </button>
+            <p class="text-sm font-medium text-title dark:text-title-dark">Keep my signed in</p>
           </div>
 
           <button class="btn bg-cta dark:bg-cta-dark w-full">Sign in</button>
@@ -849,5 +883,10 @@
         </div>
       </div>
     </footer>
+
+    <!-- loading modal -->
+    <div id="loading-modal">
+      <div class="spinner"></div>
+    </div>
   </body>
 </html>

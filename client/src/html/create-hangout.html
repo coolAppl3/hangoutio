@@ -230,7 +230,7 @@
                 id="account-nav-container-btn"
                 class="overflow-hidden group/account-btn flex justify-center items-center border-[3px] border-title dark:border-title-dark rounded-[100%] p-[8px] transition-colors hover:border-cta dark:hover:border-cta-dark group/svg"
               >
-                <div class="svg w-3 h-3 overflow-hidden">
+                <div class="svg w-[2.4rem] h-[2.4rem] overflow-hidden">
                   <svg
                     width="600"
                     height="600"
@@ -975,7 +975,7 @@
                 <!-- sign-in-preferences -->
                 <div class="sign-in-preferences flex justify-start items-center mb-2">
                   <button
-                    id="keep-signed-in"
+                    id="keep-signed-in-btn"
                     class="checkbox-btn mr-1 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
                   >
                     <div class="svg w-2 h-2">
@@ -1223,188 +1223,7 @@
       </div>
     </footer>
 
-    <!-- modals -->
-    <div id="date-picker-modal">
-      <div id="date-picker">
-        <div id="date-picker-container">
-          <!-- nav -->
-          <div id="date-picker-navbar">
-            <button
-              type="button"
-              id="date-picker-back"
-            >
-              <span class="svg w-1 h-1">
-                <svg
-                  width="500"
-                  height="500"
-                  viewBox="0 0 500 500"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    class="stroke-description dark:stroke-description-dark"
-                    d="M350 50L150 250L350 450"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-
-            <p
-              id="date-picker-navbar-header"
-              class="mx-auto"
-            >
-              <span id="date-picker-month"></span>
-              <span id="date-picker-year"></span>
-            </p>
-
-            <button
-              type="button"
-              id="date-picker-forward"
-            >
-              <span class="svg w-1 h-1">
-                <svg
-                  width="500"
-                  height="500"
-                  viewBox="0 0 500 500"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    class="stroke-description dark:stroke-description-dark"
-                    d="M150 450L350 250L150 50"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-
-          <!-- days -->
-          <div id="date-picker-days">
-            <p>Mon</p>
-            <p>Tue</p>
-            <p>Wed</p>
-            <p>Thu</p>
-            <p>Fri</p>
-            <p>Sat</p>
-            <p>Sun</p>
-          </div>
-
-          <!-- dates -->
-          <div id="date-picker-dates"></div>
-
-          <!-- date text -->
-          <p class="text-sm font-bold text-description dark:text-description-dark mt-1">
-            Selected date:
-            <span
-              id="selected-date-text"
-              class="text-sm font-bold text-description dark:text-description-dark"
-              >None</span
-            >
-          </p>
-
-          <!-- btn container -->
-          <div id="date-picker-btn-container">
-            <button
-              type="button"
-              id="date-picker-close"
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              id="date-picker-confirm"
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="time-picker-modal">
-      <div id="time-picker">
-        <!-- header -->
-        <div id="time-picker-header">
-          <p>Selected date: <span id="time-picker-selected-date"></span>.</p>
-          <p>You can add up to 3 time slots per date.</p>
-        </div>
-
-        <!-- inputs -->
-        <div
-          id="time-picker-inputs"
-          class="mb-2"
-        >
-          <div class="form-group">
-            <label for="time-picker-from">From</label>
-            <input
-              type="text"
-              id="time-picker-from"
-              name="time-picker-from"
-              maxlength="5"
-              placeholder="Example: 19:30"
-              autocomplete="bday-year"
-            />
-            <span
-              class="error-span"
-              data-target="time-picker-from"
-            ></span>
-          </div>
-
-          <div class="form-group">
-            <label for="time-picker-to">To</label>
-            <input
-              type="text"
-              id="time-picker-to"
-              name="time-picker-to"
-              maxlength="5"
-              placeholder="Example: 21:45"
-              autocomplete="bday-year"
-            />
-            <span
-              class="error-span"
-              data-target="time-picker-to"
-            ></span>
-          </div>
-
-          <button
-            type="button"
-            id="time-picker-input-add"
-            class="btn bg-dark dark:bg-light text-light dark:text-dark w-full"
-          >
-            Add slot
-          </button>
-        </div>
-
-        <div id="time-picker-slots">
-          <p class="">Selected time slots:</p>
-
-          <div id="time-picker-slots-container"></div>
-        </div>
-
-        <!-- btn container -->
-        <div id="time-picker-btn-container">
-          <button
-            type="button"
-            id="time-picker-close"
-          >
-            Close
-          </button>
-          <button
-            type="button"
-            id="time-picker-confirm"
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
-
+    <!-- loading modal -->
     <div id="loading-modal">
       <div class="spinner"></div>
     </div>

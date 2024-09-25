@@ -1,6 +1,11 @@
 import Cookies from "./Cookies";
 
 export function signOut(): void {
-  Cookies.remove('authToken');
+  removeRelevantCookies();
   document.dispatchEvent(new CustomEvent('signedOut'));
+};
+
+function removeRelevantCookies(): void {
+  Cookies.remove('authToken');
+  Cookies.remove('guestHangoutID');
 };

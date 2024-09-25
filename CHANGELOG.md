@@ -1,6 +1,24 @@
 # Changelog
 
 ---
+## [0.2.15] (2024-09-25)
+
+### Features
+
+- Moved the contents of `signIn.ts` to `signInForm.ts`, which is now imported as a module.
+- Completed sign in functionality in `signInForm.ts`.
+- Added `getAuthToken.ts` to fetch authTokens and automatically sign the user out if they have an invalid authToken in cookies.
+- Added `confirmModal.ts`.
+- Improved the email validation regex and removed the room for potential abuse the previous regex had.
+- Slightly reduced the size of the account menu in the top navbar.
+
+
+### Code Refactoring
+
+- Removed some redundancies from the methods in `Cookies.ts`.
+
+
+---
 ## [0.2.14] (2024-09-23)
 
 ### Features
