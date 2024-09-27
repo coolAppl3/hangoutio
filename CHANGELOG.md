@@ -1,6 +1,27 @@
 # Changelog
 
 ---
+## [0.2.16] (2024-09-27)
+
+### Features
+
+- Sign out functionality fully implemented into both navbars.
+- Signing out through the navbars now creates a confirm modal to complete the action.
+- Removed `getAuthToken.ts` to avoid an unnecessary abstraction.
+- Clicking Enter while an input is focused in the final step of the hangout creation form in `create-hangout.html` will now submit the form.
+
+
+### Bug Fixes
+
+- Fixed unwanted form submission when clicking the password reveal button for the guest password confirm input in `create-hangout.html`.
+
+
+### Build Changes
+
+- Removed `axios` from the backend, which was leftover from previous patches and wasn't used.
+
+
+---
 ## [0.2.15] (2024-09-25)
 
 ### Features
@@ -10,7 +31,7 @@
 - Added `getAuthToken.ts` to fetch authTokens and automatically sign the user out if they have an invalid authToken in cookies.
 - Added `confirmModal.ts`.
 - Improved the email validation regex and removed the room for potential abuse the previous regex had.
-- Slightly reduced the size of the account menu in the top navbar.
+- Slightly reduced the size of the account menu icon in the top navbar.
 
 
 ### Code Refactoring

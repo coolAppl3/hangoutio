@@ -1,8 +1,7 @@
-import { isValidHangoutID, validateEmail, validatePassword, validateUsername } from '../global/validation';
+import { isValidAuthToken, validateEmail, validatePassword, validateUsername } from '../global/validation';
 import revealPassword from '../global/revealPassword';
 import ErrorSpan from '../global/ErrorSpan';
 import Cookies from '../global/Cookies';
-import { getAuthToken } from '../global/getAuthToken';
 import LoadingModal from '../global/LoadingModal';
 import popup from '../global/popup';
 import { AccountSignInBody, AccountSignInData, accountSignInService } from '../services/accountServices';
@@ -276,6 +275,8 @@ function updateSignInOption(e: MouseEvent): void {
     return;
   };
 
+  e.target.blur();
+
   if (e.target.id === accountOptionBtn?.id) {
     switchToAccountForm();
     return;
@@ -345,23 +346,19 @@ function setActiveValidation(): void {
 };
 
 function detectSignedInUser(): void {
-  const authToken: string | null = getAuthToken();
+  const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken) {
     return;
   };
 
+  if (!isValidAuthToken(authToken)) {
+    signOut();
+    return;
+  };
+
   if (authToken.startsWith('g')) {
-    const guestHangoutID: string | null = Cookies.get('guestHangoutID');
-
-    if (!guestHangoutID || !isValidHangoutID(guestHangoutID)) {
-      signOut();
-      window.location.reload();
-
-      return;
-    };
-
-    window.location.href = `hangout.html?id=${guestHangoutID}`;
+    window.location.href = 'hangout.html';
     return;
   };
 
