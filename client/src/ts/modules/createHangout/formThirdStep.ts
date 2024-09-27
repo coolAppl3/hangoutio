@@ -2,12 +2,11 @@ import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
-import { getAuthToken } from "../global/getAuthToken";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
+import { isValidAuthToken, isValidHangoutID, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
 import { AccountSignInBody, AccountSignInData, accountSignInService } from "../services/accountServices";
 import { AccountLeaderHangoutBody, AccountLeaderHangoutData, createAccountLeaderHangoutService, createGuestLeaderHangoutService, GuestLeaderHangoutBody, GuestLeaderHangoutData } from "../services/hangoutServices";
 import { formState } from "./formState";
@@ -26,6 +25,7 @@ const thirdStepState: ThirdStepState = {
 
 
 const hangoutForm: HTMLFormElement | null = document.querySelector('#hangout-form');
+const hangoutFormThirdStep: HTMLDivElement | null = document.querySelector('#hangout-form-step-3');
 const accountForm: HTMLDivElement | null = document.querySelector('#account-form');
 const guestForm: HTMLDivElement | null = document.querySelector('#guest-form');
 
@@ -37,7 +37,9 @@ const guestDisplayNameInput: HTMLInputElement | null = document.querySelector('#
 const guestUsernameInput: HTMLInputElement | null = document.querySelector('#guest-username-input');
 const guestPasswordInput: HTMLInputElement | null = document.querySelector('#guest-password-input');
 const guestConfirmPasswordInput: HTMLInputElement | null = document.querySelector('#guest-password-confirm-input');
+
 const guestPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#guest-password-input-reveal-btn');
+const guestPasswordConfirmRevalBtn: HTMLButtonElement | null = document.querySelector('#guest-password-confirm-input-reveal-btn');
 
 const keepSignedInBtn: HTMLButtonElement | null = document.querySelector('#keep-signed-in-btn');
 const accountPreferences: HTMLDivElement | null = document.querySelector('#account-preferences');
@@ -53,6 +55,7 @@ function loadEventListeners(): void {
   accountPreferences?.addEventListener('click', updateAccountPreferences);
   keepSignedInBtn?.addEventListener('click', updateSignInDurationPreferences);
   hangoutForm?.addEventListener('submit', submitHangout);
+  hangoutFormThirdStep?.addEventListener('keyup', acceptEnterSubmission);
 
   accountPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
     e.preventDefault();
@@ -62,6 +65,11 @@ function loadEventListeners(): void {
   guestPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
     e.preventDefault();
     revealPassword(guestPasswordRevealBtn);
+  });
+
+  guestPasswordConfirmRevalBtn?.addEventListener('click', (e: MouseEvent) => {
+    e.preventDefault();
+    revealPassword(guestPasswordConfirmRevalBtn);
   });
 };
 
@@ -73,11 +81,6 @@ function init(): void {
 async function submitHangout(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
-
-  const authToken: string | null = getAuthToken();
-  if (authToken && authToken.startsWith('g')) {
-    signOut();
-  };
 
   if (thirdStepState.isGuestUser) {
     await createGuestLeaderHangout();
@@ -102,6 +105,8 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
 
   if (!formState.hangoutTitle) {
     popup('Invalid hangout title.', 'error');
+    LoadingModal.hide();
+
     return;
   };
 
@@ -217,10 +222,12 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
     return;
   };
 
-  const authToken: string | null = getAuthToken();
+  const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken) {
+    signOut();
     popup('Not signed in.', 'error');
+
     return;
   };
 
@@ -441,6 +448,8 @@ function updateAccountPreferences(e: MouseEvent): void {
     return;
   };
 
+  e.target.blur();
+
   if (e.target.id === accountOptionBtn?.id) {
     switchToAccountForm();
     return;
@@ -550,6 +559,11 @@ function detectSignedInUser(): void {
     return;
   };
 
+  if (!isValidAuthToken(authToken)) {
+    signOut();
+    return;
+  };
+
   if (authToken.startsWith('a')) {
     thirdStepState.isSignedIn = true;
     displaySignedInStatus();
@@ -574,6 +588,15 @@ function detectSignedInUser(): void {
       return;
     };
 
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      LoadingModal.display();
+      signOut();
+      popup('Successfully signed out.', 'success');
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
     if (e.target.id === 'confirm-modal-cancel-btn') {
       const previousPage: string = document.referrer;
 
@@ -584,11 +607,6 @@ function detectSignedInUser(): void {
 
       window.location.href = previousPage;
       return;
-    };
-
-    if (e.target.id === 'confirm-modal-confirm-btn') {
-      signOut();
-      ConfirmModal.remove();
     };
   });
 
@@ -612,4 +630,10 @@ function removeSignedInStatus(e: MouseEvent): void {
   popup('Signed out successfully.', 'success');
 
   signOut();
+};
+
+async function acceptEnterSubmission(e: KeyboardEvent): Promise<void> {
+  if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+    await submitHangout(new SubmitEvent('submit'));
+  };
 };

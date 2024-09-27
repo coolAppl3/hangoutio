@@ -1,7 +1,10 @@
 import themeSwitcher from "./themeSwitcher"
 import { signOut } from "./signOut";
+import { ConfirmModal, ConfirmModalConfig } from "./ConfirmModal";
 import popup from "./popup";
-import { getAuthToken } from "./getAuthToken";
+import LoadingModal from "./LoadingModal";
+import Cookies from "./Cookies";
+import { isValidAuthToken } from "./validation";
 
 const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
 const accountNavBtn: HTMLButtonElement | null = document.querySelector('#account-nav-container-btn');
@@ -14,16 +17,49 @@ export default function topNavbar(): void {
 
 function loadEventListeners(): void {
   accountNavBtn?.addEventListener('click', enableAccountNavBtn);
-  document.addEventListener('signedOut', displayRelevantLinks);
   topNavbarElement?.addEventListener('click', handleTopNavbarClicks);
+  document.addEventListener('signedOut', displayRelevantLinks);
 };
 
 function handleTopNavbarClicks(e: MouseEvent): void {
-  if (e.target instanceof HTMLElement && e.target.classList.contains('sign-out-btn')) {
+  if (!(e.target instanceof HTMLElement)) {
+    return;
+  };
+
+  if (e.target.classList.contains('sign-out-btn')) {
     e.preventDefault();
 
-    signOut();
-    popup('Signed out successfully.', 'success');
+    const confirmModalConfig: ConfirmModalConfig = {
+      title: 'Are you sure you want to sign out of your account?',
+      description: null,
+      confirmBtnTitle: 'Confirm',
+      cancelBtnTitle: 'Cancel',
+      extraBtnTitle: null,
+      isDangerousAction: true,
+    };
+
+    const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
+    confirmModal.addEventListener('click', (e: MouseEvent) => {
+      e.preventDefault();
+
+      if (!(e.target instanceof HTMLElement)) {
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-confirm-btn') {
+        LoadingModal.display();
+        signOut();
+        popup('Signed out successfully.', 'success');
+        setTimeout(() => window.location.reload(), 1000);
+
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-cancel-btn') {
+        ConfirmModal.remove();
+        return;
+      };
+    });
 
     return;
   };
@@ -57,10 +93,17 @@ function enableAccountNavBtn(e: MouseEvent): void {
 };
 
 function displayRelevantLinks(): void {
-  const authToken: string | null = getAuthToken();
+  const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken) {
     topNavbarElement?.classList.remove('guest-user', 'account-user');
+    return;
+  };
+
+  if (!isValidAuthToken(authToken)) {
+    topNavbarElement?.classList.remove('guest-user', 'account-user');
+    Cookies.remove('authToken');
+
     return;
   };
 

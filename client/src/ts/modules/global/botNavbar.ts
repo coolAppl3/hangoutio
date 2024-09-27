@@ -1,6 +1,9 @@
-import { getAuthToken } from "./getAuthToken";
+import { ConfirmModal, ConfirmModalConfig } from "./ConfirmModal";
+import Cookies from "./Cookies";
+import LoadingModal from "./LoadingModal";
 import popup from "./popup";
 import { signOut } from "./signOut";
+import { isValidAuthToken } from "./validation";
 
 const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
 const accountListBtn: HTMLElement | null = document.querySelector('#account-list-btn');
@@ -13,26 +16,66 @@ export default function botNavbar(): void {
 
 function loadEventListeners(): void {
   accountListBtn?.addEventListener('click', expandAccountList);
-  document.addEventListener('signedOut', displayRelevantLinks);
   botNavbarElement?.addEventListener('click', handleBotNavbarClicks);
+  document.addEventListener('signedOut', displayRelevantLinks);
 };
 
 function handleBotNavbarClicks(e: MouseEvent): void {
-  if (e.target instanceof HTMLElement && e.target.classList.contains('sign-out-btn')) {
+  if (!(e.target instanceof HTMLEmbedElement)) {
+    return;
+  };
+
+  if (e.target.classList.contains('sign-out-btn')) {
     e.preventDefault();
 
-    signOut();
-    popup('Signed out successfully.', 'success');
+    const confirmModalConfig: ConfirmModalConfig = {
+      title: 'Are you sure you want to sign out of your account?',
+      description: null,
+      confirmBtnTitle: 'Confirm',
+      cancelBtnTitle: 'Cancel',
+      extraBtnTitle: null,
+      isDangerousAction: true,
+    };
+
+    const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
+    confirmModal.addEventListener('click', (e: MouseEvent) => {
+      e.preventDefault();
+
+      if (!(e.target instanceof HTMLElement)) {
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-confirm-btn') {
+        LoadingModal.display();
+        signOut();
+        popup('Signed out successfully.', 'success');
+        setTimeout(() => window.location.reload(), 1000);
+
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-cancel-btn') {
+        ConfirmModal.remove();
+        return;
+      };
+    });
 
     return;
   };
 };
 
 function displayRelevantLinks(): void {
-  const authToken: string | null = getAuthToken();
+  const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken) {
     botNavbarElement?.classList.remove('guest-user', 'account-user');
+    return;
+  };
+
+  if (!isValidAuthToken(authToken)) {
+    botNavbarElement?.classList.remove('guest-user', 'account-user');
+    Cookies.remove('authToken');
+
     return;
   };
 
