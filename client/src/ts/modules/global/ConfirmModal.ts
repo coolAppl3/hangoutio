@@ -40,7 +40,7 @@ export class ConfirmModal {
 
     confirmModalContainer.appendChild(this.createModalTitle(config.title));
     if (config.description) {
-      confirmModalContainer.appendChild(this.createModalTitle(config.description));
+      confirmModalContainer.appendChild(this.createModalDescription(config.description));
       confirmModal.className = 'has-description';
     };
 
@@ -80,6 +80,7 @@ export class ConfirmModal {
   private static createBtnElement(btnIdEnding: string, title: string, isDangerousAction?: boolean): HTMLButtonElement {
     const btnElement: HTMLButtonElement = document.createElement('button');
     btnElement.id = `confirm-modal-${btnIdEnding}`;
+    btnElement.setAttribute('type', 'button');
     btnElement.appendChild(document.createTextNode(title));
 
     isDangerousAction ? btnElement.className = 'danger' : undefined;

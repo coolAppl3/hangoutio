@@ -15,14 +15,14 @@ export const accountsRouter: Router = express.Router();
 accountsRouter.post('/signUp', async (req: Request, res: Response) => {
   interface RequestData {
     email: string,
-    password: string,
-    username: string,
     displayName: string,
+    username: string,
+    password: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['email', 'password', 'username', 'displayName'];
+  const expectedKeys: string[] = ['email', 'username', 'displayName', 'password'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -33,18 +33,18 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!userValidation.isValidNewPassword(requestData.password)) {
-    res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'password' });
+  if (!userValidation.isValidDisplayName(requestData.displayName)) {
+    res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'displayName' });
     return;
   };
 
   if (!userValidation.isValidUsername(requestData.username)) {
-    res.status(400).json({ success: false, message: 'Invalid account username.', reason: 'username' });
+    res.status(400).json({ success: false, message: 'Invalid username.', reason: 'username' });
     return;
   };
 
-  if (!userValidation.isValidDisplayName(requestData.displayName)) {
-    res.status(400).json({ success: false, message: 'Invalid account display name.', reason: 'displayName' });
+  if (!userValidation.isValidNewPassword(requestData.password)) {
+    res.status(400).json({ success: false, message: 'Invalid password.', reason: 'password' });
     return;
   };
 
@@ -55,7 +55,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
     await connection.beginTransaction();
 
-    const [emailRows] = await connection.execute<RowDataPacket[]>(
+    const [emailUsernameRows] = await connection.execute<RowDataPacket[]>(
       `(SELECT 1 AS taken_status FROM accounts WHERE email = ? LIMIT 1)
       UNION ALL
       (SELECT 1 AS taken_status FROM email_update WHERE new_email = ? LIMIT 1)
@@ -64,11 +64,11 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       [requestData.email, requestData.email, requestData.username]
     );
 
-    if (emailRows.length > 0) {
+    if (emailUsernameRows.length > 0) {
       await connection.rollback();
 
       const takenDataSet: Set<number> = new Set();
-      emailRows.forEach((row) => takenDataSet.add(row.taken_status));
+      emailUsernameRows.forEach((row) => takenDataSet.add(row.taken_status));
 
       if (takenDataSet.has(1) && takenDataSet.has(2)) {
         res.status(409).json({
@@ -96,6 +96,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     const authToken: string = tokenGenerator.generateAuthToken('account');
     const verificationCode: string = tokenGenerator.generateUniqueCode();
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
+    const createdOnTimestamp: number = Date.now()
 
     const [firstResultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO accounts(
@@ -110,7 +111,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         marked_for_deletion
       )
       VALUES(${generatePlaceHolders(9)});`,
-      [authToken, requestData.email, hashedPassword, requestData.username, requestData.displayName, Date.now(), false, 0, false]
+      [authToken, requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0, false]
     );
 
     const accountID: number = firstResultSetHeader.insertId;
@@ -138,16 +139,17 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         account_id,
         verification_code,
         verification_emails_sent,
-        failed_verification_attempts
+        failed_verification_attempts,
+        created_on_timestamp
       )
-      VALUES(${generatePlaceHolders(4)});`,
-      [accountID, verificationCode, 1, 0]
+      VALUES(${generatePlaceHolders(5)});`,
+      [accountID, verificationCode, 1, 0, createdOnTimestamp]
     );
 
     await connection.commit();
-    res.status(201).json({ success: true, resData: { accountID } });
+    res.status(201).json({ success: true, resData: { accountID, createdOnTimestamp } });
 
-    await sendVerificationEmail(requestData.email, accountID, verificationCode, requestData.displayName);
+    await sendVerificationEmail(requestData.email, accountID, verificationCode, requestData.displayName, createdOnTimestamp);
 
   } catch (err: unknown) {
     console.log(err);
@@ -213,6 +215,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       verification_id: number,
       verification_code: string,
       verification_emails_sent: number,
+      created_on_timestamp: number,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
@@ -222,7 +225,8 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
         accounts.is_verified,
         account_verification.verification_id,
         account_verification.verification_code,
-        account_verification.verification_emails_sent
+        account_verification.verification_emails_sent,
+        account_verification.created_on_timestamp
       FROM
         accounts
       LEFT JOIN
@@ -241,7 +245,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     const accountDetails: AccountDetails = accountRows[0];
 
     if (accountDetails.is_verified) {
-      res.status(400).json({ success: false, message: 'Account has already been verified.' });
+      res.status(400).json({ success: false, message: 'Account has already been verified.', reason: 'alreadyVerified' });
       return;
     };
 
@@ -251,7 +255,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     };
 
     if (accountDetails.verification_emails_sent >= 3) {
-      res.status(403).json({ success: false, message: 'Verification emails limit reached.' });
+      res.status(403).json({ success: false, message: 'Verification emails limit reached.', reason: 'limitReached' });
       return;
     };
 
@@ -271,7 +275,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     };
 
     res.json({ success: true, resData: {} });
-    await sendVerificationEmail(accountDetails.email, requestData.accountID, accountDetails.verification_code, accountDetails.display_name);
+    await sendVerificationEmail(accountDetails.email, requestData.accountID, accountDetails.verification_code, accountDetails.display_name, accountDetails.created_on_timestamp);
 
   } catch (err: unknown) {
     console.log(err);
@@ -294,7 +298,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
   };
 
   if (!Number.isInteger(requestData.accountID)) {
-    res.status(400).json({ success: false, message: 'Invalid account ID.' });
+    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
     return;
   };
 

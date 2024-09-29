@@ -753,6 +753,58 @@
   }
 }
 
+// info modal
+#info-modal {
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[16] flex justify-center items-center;
+
+  &.revealed {
+
+    #info-modal-container {
+      transform: translate3d(0, 0, 0) !important;
+      opacity: 1 !important;
+    }
+  }
+
+  &.has-description {
+
+    p.info-modal {
+
+      &-title {
+        @apply mb-1;
+      }
+
+      &-description {
+        @apply block;
+      }
+    }
+
+  }
+
+  &-container {
+    @apply w-[30rem] max-w-[30rem] py-3 px-2 rounded-sm bg-primary dark:bg-secondary-dark;
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: opacity 150ms, transform 150ms;
+
+
+    p.info-modal {
+
+      &-title {
+        @apply font-medium text-base text-title dark:text-title-dark mb-2;
+      }
+
+      &-description {
+        @apply font-medium text-sm text-description dark:text-description-dark mb-2 hidden;
+      }
+    }
+
+
+    button {
+      @apply btn w-full bg-cta dark:bg-cta-dark text-title;
+    }
+  }
+}
+
 
 // create-hangout.html --- --- --- --- --- --- --- --- ---
 #hangout-form {
@@ -783,7 +835,6 @@
       }
 
       button {
-        transition: text-decoration 2000ms;
 
         &.selected {
           &::after {
@@ -830,7 +881,6 @@
       }
 
       button {
-        transition: text-decoration 2000ms;
 
         &.selected {
           &::after {

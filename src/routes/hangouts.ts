@@ -366,7 +366,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     const sqlError = err as SqlError;
 
     if (sqlError.errno === 1062) {
-      res.status(409).json({ success: false, message: 'Internal server error.', reason: 'duplicateHangoutID' });
+      res.status(409).json({ success: false, message: 'Duplicate hangout ID.', reason: 'duplicateHangoutID' });
       return;
     };
 

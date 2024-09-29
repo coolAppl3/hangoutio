@@ -216,6 +216,7 @@
 
               <button
                 class="sign-out-btn btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark hidden"
+                type="button"
               >
                 Sign out
               </button>
@@ -229,6 +230,7 @@
               <button
                 id="account-nav-container-btn"
                 class="overflow-hidden group/account-btn flex justify-center items-center border-[3px] border-title dark:border-title-dark rounded-[100%] p-[8px] transition-colors hover:border-cta dark:hover:border-cta-dark group/svg"
+                type="button"
               >
                 <div class="svg w-[2.4rem] h-[2.4rem] overflow-hidden">
                   <svg
@@ -431,6 +433,7 @@
           <button
             id="account-list-btn"
             class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full peer outline-offset-1"
+            type="button"
           >
             Account
           </button>
@@ -533,7 +536,10 @@
               />
             </svg>
           </div>
-          <button class="sign-out-btn text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full">
+          <button
+            class="sign-out-btn text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
+            type="button"
+          >
             Sign out
           </button>
         </div>
@@ -612,6 +618,7 @@
                 <button
                   class="password-icon svg w-2 h-2 group"
                   id="hangout-password-input-reveal-btn"
+                  type="button"
                 >
                   <svg
                     width="500"
@@ -638,6 +645,7 @@
                   <button
                     id="hangout-password-toggle-btn"
                     class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+                    type="button"
                   >
                     <div class="svg w-2 h-2">
                       <svg
@@ -799,12 +807,14 @@
                     <button
                       id="account-option-btn"
                       class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark selected"
+                      type="button"
                     >
                       Account
                     </button>
                     <button
                       id="guest-option-btn"
                       class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
+                      type="button"
                     >
                       Guest
                     </button>
@@ -848,6 +858,7 @@
                     <button
                       class="password-icon svg w-2 h-2 group"
                       id="account-password-input-reveal-btn"
+                      type="button"
                     >
                       <svg
                         width="500"
@@ -912,11 +923,12 @@
                     <input
                       type="password"
                       id="guest-password-input"
-                      autocomplete="current-password"
+                      autocomplete="new-password"
                     />
                     <button
                       class="password-icon svg w-2 h-2 group"
                       id="guest-password-input-reveal-btn"
+                      type="button"
                     >
                       <svg
                         width="500"
@@ -944,11 +956,12 @@
                     <input
                       type="password"
                       id="guest-password-confirm-input"
-                      autocomplete="current-password"
+                      autocomplete="new-password"
                     />
                     <button
                       class="password-icon svg w-2 h-2 group"
                       id="guest-password-confirm-input-reveal-btn"
+                      type="button"
                     >
                       <svg
                         width="500"
@@ -977,6 +990,7 @@
                   <button
                     id="keep-signed-in-btn"
                     class="checkbox-btn mr-1 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+                    type="button"
                   >
                     <div class="svg w-2 h-2">
                       <svg
@@ -1010,6 +1024,7 @@
                   <button
                     id="already-signed-in-sign-out"
                     class="btn bg-secondary dark:bg-description-dark w-full"
+                    type="button"
                   >
                     Use a different account
                   </button>
@@ -1019,7 +1034,6 @@
               <!-- form submission -->
               <button
                 id="hangout-form-submit-btn"
-                type="submit"
                 class="btn bg-cta dark:bg-cta-dark w-full mb-2"
               >
                 Create hangout
@@ -1034,6 +1048,7 @@
             <button
               id="hangout-form-prev-btn"
               class="btn-secondary text-sm mr-auto justify-center items-center hidden group relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+              type="button"
             >
               <div class="svg w-2 h-2 mr-[4px]">
                 <svg
@@ -1063,6 +1078,7 @@
             <button
               id="hangout-form-next-btn"
               class="btn bg-cta dark:bg-cta-dark ml-auto"
+              type="button"
             >
               Next step
             </button>

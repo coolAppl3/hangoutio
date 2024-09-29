@@ -43,7 +43,7 @@ export function signInForm(): void {
 
 function init(): void {
   setActiveValidation();
-  detectSignedInUser();
+  redirectSignedInUser();
 };
 
 function loadEventListeners(): void {
@@ -51,15 +51,8 @@ function loadEventListeners(): void {
   signInOptions?.addEventListener('click', updateSignInOption);
   keepSignedInBtn?.addEventListener('click', updateSignedInDurationPreferences);
 
-  accountPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(accountPasswordRevealBtn);
-  });
-
-  guestPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(guestPasswordRevealBtn);
-  });
+  accountPasswordRevealBtn?.addEventListener('click', () => revealPassword(accountPasswordRevealBtn));
+  guestPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(guestPasswordRevealBtn));
 };
 
 async function submitForm(e: SubmitEvent): Promise<void> {
@@ -221,13 +214,17 @@ async function guestSignIn(): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.hide();
 
-    if (status === 400 && errReason === 'username') {
-      ErrorSpan.display(guestUsernameInput, errMessage);
-      return;
-    };
+    if (status === 400) {
+      if (errReason === 'username') {
+        ErrorSpan.display(guestUsernameInput, errMessage);
+        return;
+      };
 
-    if (status === 400 && errReason === 'password') {
-      ErrorSpan.display(guestPasswordInput, errMessage);
+      if (errReason === 'password') {
+        ErrorSpan.display(guestPasswordInput, errMessage);
+        return;
+      };
+
       return;
     };
 
@@ -269,13 +266,9 @@ function isValidGuestDetails(): boolean {
 };
 
 function updateSignInOption(e: MouseEvent): void {
-  e.preventDefault();
-
   if (!(e.target instanceof HTMLElement)) {
     return;
   };
-
-  e.target.blur();
 
   if (e.target.id === accountOptionBtn?.id) {
     switchToAccountForm();
@@ -345,7 +338,7 @@ function setActiveValidation(): void {
   guestPasswordInput?.addEventListener('input', () => { validatePassword(guestPasswordInput) });
 };
 
-function detectSignedInUser(): void {
+function redirectSignedInUser(): void {
   const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken) {
@@ -365,8 +358,7 @@ function detectSignedInUser(): void {
   window.location.href = 'account.html';
 };
 
-function updateSignedInDurationPreferences(e: MouseEvent): void {
-  e.preventDefault();
+function updateSignedInDurationPreferences(): void {
   signInFormState.keepSignedIn = !signInFormState.keepSignedIn;
 
   if (keepSignedInBtn?.classList.contains('checked')) {

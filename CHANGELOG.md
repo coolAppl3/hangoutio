@@ -1,6 +1,22 @@
 # Changelog
 
 ---
+## [0.2.17] (2024-09-30)
+
+### Features
+
+- Added a `created_on_timestamp` column to the `account_verification` table and updated the relevant functions.
+- Fully implemented sign up functionality through `sign-in.html` and `signUp.ts`.
+
+
+### Bug Fixes
+
+- Fixed `archiveHangouts()` in `hangoutCronJobs.ts` incorrectly attempting to insert the `hangout_title` as `title`.
+- Fixed `ConfirmModal.ts` not correctly creating a description.
+- Fixed buttons without `type="button"` causing form-submission issues.
+
+
+---
 ## [0.2.16] (2024-09-27)
 
 ### Features

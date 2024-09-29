@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEmailUpdateWarningTemplate = exports.getEmailUpdateTemplate = exports.getAccountDeletionTemplate = exports.getRecoveryEmailTemplate = exports.getVerificationEmailTemplate = void 0;
-function getVerificationEmailTemplate(accountID, verificationCode, displayName) {
+function getVerificationEmailTemplate(accountID, verificationCode, displayName, createdOnTimestamp) {
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -73,8 +73,8 @@ function getVerificationEmailTemplate(accountID, verificationCode, displayName) 
             Alternatively, you can click the following verification link:
             <a
               target="_blank"
-              href="https://hangoutio.com/verification.html?id=${accountID}&verificationCode=${verificationCode}"
-              >https://hangoutio.com/verification.html?id=${accountID}&verificationCode=${verificationCode}</a
+              href="https://hangoutio.com/verification.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
+              >https://hangoutio.com/verification.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
             >.
           </p>
           <p>Your account will be automatically deleted if it's not verified within 15 minutes of being created.</p>

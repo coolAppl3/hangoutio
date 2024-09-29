@@ -26,13 +26,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendEmailUpdateWarningEmail = exports.sendEmailUpdateEmail = exports.sendDeletionEmail = exports.sendRecoveryEmail = exports.sendVerificationEmail = void 0;
 const emailTemplates = __importStar(require("./emailTemplates"));
 const initTransporter_1 = require("./initTransporter");
-async function sendVerificationEmail(to, accountID, code, displayName) {
+async function sendVerificationEmail(to, accountID, code, displayName, createdOnTimestamp) {
     try {
         const info = await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to,
             subject: 'Hangoutio - Account Verification',
-            html: emailTemplates.getVerificationEmailTemplate(accountID, code, displayName),
+            html: emailTemplates.getVerificationEmailTemplate(accountID, code, displayName, createdOnTimestamp),
         });
         console.log(`Email sent: ${info.response}`);
     }

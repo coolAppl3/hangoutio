@@ -120,7 +120,6 @@ async function archiveHangouts() {
         ;
         const hangoutIds = hangoutRows.map((hangout) => hangout.hangout_id);
         const hangoutIdsString = `'${hangoutIds.join(`', '`)}'`;
-        console.log(hangoutIdsString);
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
         hangout_id,
@@ -181,7 +180,7 @@ async function archiveHangouts() {
         await connection.beginTransaction();
         await connection.execute(`INSERT INTO hangouts_archive(
         hangout_id,
-        title,
+        hangout_title,
         created_on_timestamp,
         conclusion_timestamp,
         total_members,

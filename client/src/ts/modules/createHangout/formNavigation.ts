@@ -5,7 +5,7 @@ interface FormNavigationState {
   totalSteps: number,
 };
 
-const formNavigationState: FormNavigationState = {
+export const formNavigationState: FormNavigationState = {
   currentStep: 1,
   totalSteps: 3,
 };
