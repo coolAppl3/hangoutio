@@ -1,13 +1,13 @@
 import * as emailTemplates from './emailTemplates';
 import { emailTransporter } from './initTransporter';
 
-export async function sendVerificationEmail(to: string, accountID: number, code: string, displayName: string): Promise<void> {
+export async function sendVerificationEmail(to: string, accountID: number, code: string, displayName: string, createdOnTimestamp: number): Promise<void> {
   try {
     const info: any = await emailTransporter.sendMail({
       from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
       to,
       subject: 'Hangoutio - Account Verification',
-      html: emailTemplates.getVerificationEmailTemplate(accountID, code, displayName),
+      html: emailTemplates.getVerificationEmailTemplate(accountID, code, displayName, createdOnTimestamp),
     });
 
     console.log(`Email sent: ${info.response}`);

@@ -6,9 +6,10 @@ import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { isValidAuthToken, isValidHangoutID, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
+import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
 import { AccountSignInBody, AccountSignInData, accountSignInService } from "../services/accountServices";
 import { AccountLeaderHangoutBody, AccountLeaderHangoutData, createAccountLeaderHangoutService, createGuestLeaderHangoutService, GuestLeaderHangoutBody, GuestLeaderHangoutData } from "../services/hangoutServices";
+import { formNavigationState } from "./formNavigation";
 import { formState } from "./formState";
 
 interface ThirdStepState {
@@ -25,7 +26,6 @@ const thirdStepState: ThirdStepState = {
 
 
 const hangoutForm: HTMLFormElement | null = document.querySelector('#hangout-form');
-const hangoutFormThirdStep: HTMLDivElement | null = document.querySelector('#hangout-form-step-3');
 const accountForm: HTMLDivElement | null = document.querySelector('#account-form');
 const guestForm: HTMLDivElement | null = document.querySelector('#guest-form');
 
@@ -55,22 +55,10 @@ function loadEventListeners(): void {
   accountPreferences?.addEventListener('click', updateAccountPreferences);
   keepSignedInBtn?.addEventListener('click', updateSignInDurationPreferences);
   hangoutForm?.addEventListener('submit', submitHangout);
-  hangoutFormThirdStep?.addEventListener('keyup', acceptEnterSubmission);
 
-  accountPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(accountPasswordRevealBtn);
-  });
-
-  guestPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(guestPasswordRevealBtn);
-  });
-
-  guestPasswordConfirmRevalBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(guestPasswordConfirmRevalBtn);
-  });
+  accountPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(accountPasswordRevealBtn));
+  guestPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(guestPasswordRevealBtn));
+  guestPasswordConfirmRevalBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(guestPasswordConfirmRevalBtn));
 };
 
 function init(): void {
@@ -81,6 +69,11 @@ function init(): void {
 async function submitHangout(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
+
+  if (formNavigationState.currentStep !== 3) {
+    LoadingModal.hide();
+    return;
+  };
 
   if (thirdStepState.isGuestUser) {
     await createGuestLeaderHangout();
@@ -180,7 +173,6 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
-    const endpoint: string | undefined = axiosError.response.config.url?.split('api/')[1];
 
     if (status === 409 && errReason === 'duplicateHangoutID') {
       await createAccountLeaderHangout(++attemptCount);
@@ -190,26 +182,28 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     popup(errMessage, 'error');
     LoadingModal.hide();
 
-    if (endpoint?.startsWith('accounts')) {
-      if (status === 400 && errReason === 'email') {
+    if (status === 400) {
+      if (errReason === 'email') {
         ErrorSpan.display(accountEmailInput, errMessage);
         return;
       };
 
-      if (status === 400 && errReason === 'password') {
+      if (errReason === 'password') {
         ErrorSpan.display(accountPasswordInput, errMessage);
         return;
       };
 
-      if ((status === 404 || status === 403)) {
-        ErrorSpan.display(accountEmailInput, errMessage);
-        return;
-      };
+      return;
+    };
 
-      if (status === 401) {
-        ErrorSpan.display(accountPasswordInput, errMessage);
-        return;
-      };
+    if ((status === 404 || status === 403)) {
+      ErrorSpan.display(accountEmailInput, errMessage);
+      return;
+    };
+
+    if (status === 401) {
+      ErrorSpan.display(accountPasswordInput, errMessage);
+      return;
     };
   };
 };
@@ -287,7 +281,7 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
 
     if (status === 401) {
       thirdStepState.isSignedIn = false;
-      Cookies.remove('authToken');
+      signOut();
 
       const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
       thirdStepFormContainer?.classList.remove('disabled');
@@ -386,18 +380,22 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     popup(errMessage, 'error');
     LoadingModal.hide();
 
-    if (status === 400 && errReason === 'username') {
-      ErrorSpan.display(guestUsernameInput, errMessage);
-      return;
-    };
+    if (status === 400) {
+      if (errReason === 'username') {
+        ErrorSpan.display(guestUsernameInput, errMessage);
+        return;
+      };
 
-    if (status === 400 && errReason === 'guestPassword') {
-      ErrorSpan.display(guestPasswordInput, errMessage);
-      return;
-    };
+      if (errReason === 'guestPassword') {
+        ErrorSpan.display(guestPasswordInput, errMessage);
+        return;
+      };
 
-    if (status === 400 && errReason === 'guestDisplayName') {
-      ErrorSpan.display(guestDisplayNameInput, errMessage);
+      if (errReason === 'guestDisplayName') {
+        ErrorSpan.display(guestDisplayNameInput, errMessage);
+        return;
+      };
+
       return;
     };
 
@@ -442,13 +440,9 @@ function isValidGuestDetails(): boolean {
 
 // navigation
 function updateAccountPreferences(e: MouseEvent): void {
-  e.preventDefault();
-
   if (!(e.target instanceof HTMLElement)) {
     return;
   };
-
-  e.target.blur();
 
   if (e.target.id === accountOptionBtn?.id) {
     switchToAccountForm();
@@ -523,8 +517,7 @@ function clearGuestForm(): void {
   };
 };
 
-function updateSignInDurationPreferences(e: MouseEvent): void {
-  e.preventDefault();
+function updateSignInDurationPreferences(): void {
   thirdStepState.keepSignedIn = !thirdStepState.keepSignedIn
 
   if (keepSignedInBtn?.classList.contains('checked')) {
@@ -582,8 +575,6 @@ function detectSignedInUser(): void {
 
   const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
@@ -598,14 +589,14 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      const previousPage: string = document.referrer;
+      const referrerHref: string = document.referrer;
 
-      if (previousPage === '' || previousPage === window.location.href) {
+      if (referrerHref === '' || referrerHref === window.location.href) {
         window.location.href = 'index.html';
         return;
       };
 
-      window.location.href = previousPage;
+      window.location.href = referrerHref;
       return;
     };
   });
@@ -620,20 +611,12 @@ function displaySignedInStatus(): void {
   signOutBtn?.addEventListener('click', removeSignedInStatus);
 };
 
-function removeSignedInStatus(e: MouseEvent): void {
-  e.preventDefault();
-
+function removeSignedInStatus(): void {
   const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
   thirdStepFormContainer?.classList.remove('disabled');
 
   thirdStepState.isSignedIn = false;
-  popup('Signed out successfully.', 'success');
+  popup('Signed out.', 'success');
 
   signOut();
-};
-
-async function acceptEnterSubmission(e: KeyboardEvent): Promise<void> {
-  if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-    await submitHangout(new SubmitEvent('submit'));
-  };
 };

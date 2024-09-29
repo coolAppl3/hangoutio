@@ -146,7 +146,6 @@ export async function archiveHangouts(): Promise<void> {
 
     const hangoutIds: string[] = hangoutRows.map((hangout: HangoutDetails) => hangout.hangout_id);
     const hangoutIdsString: string = `'${hangoutIds.join(`', '`)}'`;
-    console.log(hangoutIdsString)
 
     interface HangoutMember extends RowDataPacket {
       hangout_id: string,
@@ -232,7 +231,7 @@ export async function archiveHangouts(): Promise<void> {
     await connection.execute(
       `INSERT INTO hangouts_archive(
         hangout_id,
-        title,
+        hangout_title,
         created_on_timestamp,
         conclusion_timestamp,
         total_members,

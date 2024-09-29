@@ -5,6 +5,7 @@ const hangoutsApiUrl: string = window.location.hostname === 'localhost'
   : `https://${window.location.hostname}/api/hangouts`;
 //
 
+
 export interface AccountLeaderHangoutBody {
   hangoutTitle: string,
   hangoutPassword: string | null,
@@ -32,7 +33,7 @@ export async function createAccountLeaderHangoutService(authToken: string, reque
   });
 };
 
-
+// --- --- ---
 
 export interface GuestLeaderHangoutBody {
   hangoutTitle: string,

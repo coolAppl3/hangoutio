@@ -1,4 +1,4 @@
-export function getVerificationEmailTemplate(accountID: number, verificationCode: string, displayName: string): string {
+export function getVerificationEmailTemplate(accountID: number, verificationCode: string, displayName: string, createdOnTimestamp: number): string {
   const htmlTemplate: string = `
     <!DOCTYPE html>
     <html lang="en">
@@ -70,8 +70,8 @@ export function getVerificationEmailTemplate(accountID: number, verificationCode
             Alternatively, you can click the following verification link:
             <a
               target="_blank"
-              href="https://hangoutio.com/verification.html?id=${accountID}&verificationCode=${verificationCode}"
-              >https://hangoutio.com/verification.html?id=${accountID}&verificationCode=${verificationCode}</a
+              href="https://hangoutio.com/verification.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
+              >https://hangoutio.com/verification.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
             >.
           </p>
           <p>Your account will be automatically deleted if it's not verified within 15 minutes of being created.</p>

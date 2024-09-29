@@ -75,7 +75,7 @@ export function validateHangoutTitle(input: HTMLInputElement): boolean {
 
   const regex: RegExp = /^[A-Za-z ]{3,25}$/;
   if (!regex.test(title)) {
-    ErrorSpan.display(input, 'Only Latin letters and a single space between words are allowed.');
+    ErrorSpan.display(input, 'Only English letters and a single space between words are allowed.');
     return false;
   };
 
@@ -108,7 +108,7 @@ export function validateNewPassword(input: HTMLInputElement): boolean {
 
   const regex: RegExp = /^[A-Za-z0-9._]{8,40}$/;
   if (!regex.test(password)) {
-    ErrorSpan.display(input, 'Only Latin alphanumerical characters, dots, and underscores are allowed.');
+    ErrorSpan.display(input, 'Only English alphanumerical characters, dots, and underscores are allowed.');
     return false;
   };
 
@@ -178,7 +178,7 @@ export function validateNewUsername(input: HTMLInputElement): boolean {
 
   const regex: RegExp = /^[A-Za-z0-9_.]{5,25}$/;
   if (!regex.test(username)) {
-    ErrorSpan.display(input, 'Only Latin alphanumerical characters, dots, and underscores are allowed.');
+    ErrorSpan.display(input, 'Only English alphanumerical characters, dots, and underscores are allowed.');
     return false;
   };
 
@@ -229,7 +229,7 @@ export function validateDisplayName(input: HTMLInputElement): boolean {
 
   const regex: RegExp = /^[A-Za-z ]{1,25}$/;
   if (!regex.test(displayName)) {
-    ErrorSpan.display(input, 'Only Latin letters and a single space between words are allowed.');
+    ErrorSpan.display(input, 'Only English letters and a single space between words are allowed.');
     return false;
   };
 
@@ -237,22 +237,41 @@ export function validateDisplayName(input: HTMLInputElement): boolean {
   return true;
 };
 
-function isValidTimestamp(timestamp: number): boolean {
-  const timeStampLength: number = 13;
+export function validateCode(input: HTMLInputElement): boolean {
+  const code: string = input.value.toUpperCase();
 
-  if (!Number.isInteger(timestamp)) {
+  if (code.includes('O')) {
+    ErrorSpan.display(input, `Code can not contain the letter "O". Replace it with the number 0.`);
     return false;
   };
 
-  if (timestamp.toString().length !== timeStampLength) {
+  if (code.includes(' ')) {
+    ErrorSpan.display(input, 'Code must not contain whitespace.');
     return false;
   };
 
-  if (timestamp < 0) {
+  if (code.length !== 6) {
+    ErrorSpan.display(input, 'Code must be 6 characters long.');
     return false;
   };
 
+  const regex: RegExp = /^[A-NP-Z0-9]{6}$/;
+  if (!regex.test(code)) {
+    ErrorSpan.display(input, `Only uppercase English letters and numbers are allowed, apart from the letter "O".`);
+    return false;
+  };
+
+  ErrorSpan.hide(input);
   return true;
+};
+
+export function isValidCode(verificationCode: string): boolean {
+  if (typeof verificationCode !== 'string') {
+    return false;
+  };
+
+  const regex: RegExp = /^[A-NP-Z0-9]{6}$/;
+  return regex.test(verificationCode);
 };
 
 export function isValidHangoutID(hangoutID: string): boolean {
@@ -278,4 +297,22 @@ export function isValidHangoutID(hangoutID: string): boolean {
 
   const regex: RegExp = /^[A-Za-z0-9_]{46,}$/;
   return regex.test(hangoutID);
+};
+
+export function isValidTimestamp(timestamp: number): boolean {
+  const timeStampLength: number = 13;
+
+  if (!Number.isInteger(timestamp)) {
+    return false;
+  };
+
+  if (timestamp.toString().length !== timeStampLength) {
+    return false;
+  };
+
+  if (timestamp < 0) {
+    return false;
+  };
+
+  return true;
 };

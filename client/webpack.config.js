@@ -15,6 +15,7 @@ module.exports = {
     index: './src/ts/index.ts',
     createHangout: './src/ts/createHangout.ts',
     signIn: './src/ts/signIn.ts',
+    signUp: './src/ts/signUp.ts',
   },
 
   resolve: {
@@ -117,6 +118,17 @@ module.exports = {
 
       chunks: [
         "signIn"
+      ],
+    }),
+
+    // sign-in.html
+    new HtmlWebpackPlugin({
+      title: 'Sign Up - Hangoutio',
+      filename: 'sign-up.html',
+      template: 'src/html/sign-up.html',
+
+      chunks: [
+        "signUp"
       ],
     }),
   ],
