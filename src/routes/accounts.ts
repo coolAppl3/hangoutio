@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import * as userValidation from '../util/validation/userValidation';
 import * as tokenGenerator from '../util/tokenGenerator';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { sendDeletionEmail, sendEmailUpdateEmail, sendEmailUpdateWarningEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
+import { DeletionEmailConfig, RecoveryEmailConfig, sendDeletionEmail, sendEmailUpdateEmail, sendEmailUpdateWarningEmail, sendRecoveryEmail, sendVerificationEmail, UpdateEmailConfig, VerificationEmailConfig } from '../util/email/emailServices';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import * as userUtils from '../util/userUtils';
 import { isSqlError } from '../util/isSqlError';
@@ -149,7 +149,15 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     await connection.commit();
     res.status(201).json({ success: true, resData: { accountID, createdOnTimestamp } });
 
-    await sendVerificationEmail(requestData.email, accountID, verificationCode, requestData.displayName, createdOnTimestamp);
+    const verificationEmailConfig: VerificationEmailConfig = {
+      to: requestData.email,
+      accountID,
+      verificationCode,
+      displayName: requestData.displayName,
+      createdOnTimestamp
+    };
+
+    await sendVerificationEmail(verificationEmailConfig);
 
   } catch (err: unknown) {
     console.log(err);
@@ -275,7 +283,16 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     };
 
     res.json({ success: true, resData: {} });
-    await sendVerificationEmail(accountDetails.email, requestData.accountID, accountDetails.verification_code, accountDetails.display_name, accountDetails.created_on_timestamp);
+
+    const verificationEmailConfig: VerificationEmailConfig = {
+      to: accountDetails.email,
+      accountID: requestData.accountID,
+      verificationCode: accountDetails.verification_code,
+      displayName: accountDetails.display_name,
+      createdOnTimestamp: accountDetails.created_on_timestamp,
+    };
+
+    await sendVerificationEmail(verificationEmailConfig);
 
   } catch (err: unknown) {
     console.log(err);
@@ -639,8 +656,15 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       );
 
       res.json({ success: true, resData: {} });
-      await sendRecoveryEmail(requestData.email, accountDetails.account_id, recoveryToken, accountDetails.display_name);
 
+      const recoveryEmailConfig: RecoveryEmailConfig = {
+        to: requestData.email,
+        accountID: accountDetails.account_id,
+        recoveryToken,
+        displayName: accountDetails.display_name,
+      };
+
+      await sendRecoveryEmail(recoveryEmailConfig);
       return;
     };
 
@@ -678,7 +702,15 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
     };
 
     res.json({ success: true, resData: {} });
-    await sendRecoveryEmail(requestData.email, accountDetails.account_id, accountDetails.recovery_token, accountDetails.display_name);
+
+    const recoveryEmailConfig: RecoveryEmailConfig = {
+      to: requestData.email,
+      accountID: accountDetails.account_id,
+      recoveryToken: accountDetails.recovery_token,
+      displayName: accountDetails.display_name,
+    };
+
+    await sendRecoveryEmail(recoveryEmailConfig);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1036,7 +1068,14 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       VALUES(${logValues});`
     );
 
-    await sendDeletionEmail(accountDetails.email, accountID, cancellationToken, accountDetails.display_name);
+    const deletionEmailConfig: DeletionEmailConfig = {
+      to: accountDetails.email,
+      accountID,
+      cancellationToken,
+      displayName: accountDetails.display_name,
+    };
+
+    await sendDeletionEmail(deletionEmailConfig);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1468,7 +1507,13 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       await connection.commit();
       res.json({ success: true, resData: {} });
 
-      await sendEmailUpdateEmail(requestData.newEmail, newVerificationCode, accountDetails.display_name);
+      const updateEmailConfig: UpdateEmailConfig = {
+        to: requestData.newEmail,
+        verificationCode: newVerificationCode,
+        displayName: accountDetails.display_name,
+      };
+
+      await sendEmailUpdateEmail(updateEmailConfig);
       return;
     };
 
@@ -1512,7 +1557,14 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     };
 
     res.json({ success: true, resData: {} });
-    await sendEmailUpdateEmail(accountDetails.new_email, accountDetails.verification_code, accountDetails.display_name);
+
+    const updateEmailConfig: UpdateEmailConfig = {
+      to: requestData.newEmail,
+      verificationCode: accountDetails.verification_code,
+      displayName: accountDetails.display_name,
+    };
+
+    await sendEmailUpdateEmail(updateEmailConfig);
 
   } catch (err: unknown) {
     console.log(err);

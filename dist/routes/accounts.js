@@ -144,7 +144,14 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountID, verificationCode, 1, 0, createdOnTimestamp]);
         await connection.commit();
         res.status(201).json({ success: true, resData: { accountID, createdOnTimestamp } });
-        await (0, emailServices_1.sendVerificationEmail)(requestData.email, accountID, verificationCode, requestData.displayName, createdOnTimestamp);
+        const verificationEmailConfig = {
+            to: requestData.email,
+            accountID,
+            verificationCode,
+            displayName: requestData.displayName,
+            createdOnTimestamp
+        };
+        await (0, emailServices_1.sendVerificationEmail)(verificationEmailConfig);
     }
     catch (err) {
         console.log(err);
@@ -247,7 +254,14 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         }
         ;
         res.json({ success: true, resData: {} });
-        await (0, emailServices_1.sendVerificationEmail)(accountDetails.email, requestData.accountID, accountDetails.verification_code, accountDetails.display_name, accountDetails.created_on_timestamp);
+        const verificationEmailConfig = {
+            to: accountDetails.email,
+            accountID: requestData.accountID,
+            verificationCode: accountDetails.verification_code,
+            displayName: accountDetails.display_name,
+            createdOnTimestamp: accountDetails.created_on_timestamp,
+        };
+        await (0, emailServices_1.sendVerificationEmail)(verificationEmailConfig);
     }
     catch (err) {
         console.log(err);
@@ -521,7 +535,13 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         )
         VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [accountDetails.account_id, recoveryToken, Date.now(), 1, 0, null]);
             res.json({ success: true, resData: {} });
-            await (0, emailServices_1.sendRecoveryEmail)(requestData.email, accountDetails.account_id, recoveryToken, accountDetails.display_name);
+            const recoveryEmailConfig = {
+                to: requestData.email,
+                accountID: accountDetails.account_id,
+                recoveryToken,
+                displayName: accountDetails.display_name,
+            };
+            await (0, emailServices_1.sendRecoveryEmail)(recoveryEmailConfig);
             return;
         }
         ;
@@ -554,7 +574,13 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         }
         ;
         res.json({ success: true, resData: {} });
-        await (0, emailServices_1.sendRecoveryEmail)(requestData.email, accountDetails.account_id, accountDetails.recovery_token, accountDetails.display_name);
+        const recoveryEmailConfig = {
+            to: requestData.email,
+            accountID: accountDetails.account_id,
+            recoveryToken: accountDetails.recovery_token,
+            displayName: accountDetails.display_name,
+        };
+        await (0, emailServices_1.sendRecoveryEmail)(recoveryEmailConfig);
     }
     catch (err) {
         console.log(err);
@@ -823,7 +849,13 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         log_timestamp
       )
       VALUES(${logValues});`);
-        await (0, emailServices_1.sendDeletionEmail)(accountDetails.email, accountID, cancellationToken, accountDetails.display_name);
+        const deletionEmailConfig = {
+            to: accountDetails.email,
+            accountID,
+            cancellationToken,
+            displayName: accountDetails.display_name,
+        };
+        await (0, emailServices_1.sendDeletionEmail)(deletionEmailConfig);
     }
     catch (err) {
         console.log(err);
@@ -1158,7 +1190,12 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]);
             await connection.commit();
             res.json({ success: true, resData: {} });
-            await (0, emailServices_1.sendEmailUpdateEmail)(requestData.newEmail, newVerificationCode, accountDetails.display_name);
+            const updateEmailConfig = {
+                to: requestData.newEmail,
+                verificationCode: newVerificationCode,
+                displayName: accountDetails.display_name,
+            };
+            await (0, emailServices_1.sendEmailUpdateEmail)(updateEmailConfig);
             return;
         }
         ;
@@ -1197,7 +1234,12 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         }
         ;
         res.json({ success: true, resData: {} });
-        await (0, emailServices_1.sendEmailUpdateEmail)(accountDetails.new_email, accountDetails.verification_code, accountDetails.display_name);
+        const updateEmailConfig = {
+            to: requestData.newEmail,
+            verificationCode: accountDetails.verification_code,
+            displayName: accountDetails.display_name,
+        };
+        await (0, emailServices_1.sendEmailUpdateEmail)(updateEmailConfig);
     }
     catch (err) {
         console.log(err);
