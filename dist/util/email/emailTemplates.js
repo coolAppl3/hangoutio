@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEmailUpdateWarningTemplate = exports.getEmailUpdateTemplate = exports.getAccountDeletionTemplate = exports.getRecoveryEmailTemplate = exports.getVerificationEmailTemplate = void 0;
-function getVerificationEmailTemplate(accountID, verificationCode, displayName, createdOnTimestamp) {
+function getVerificationEmailTemplate(verificationEmailConfig) {
+    const { accountID, verificationCode, displayName, createdOnTimestamp } = verificationEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -73,8 +74,8 @@ function getVerificationEmailTemplate(accountID, verificationCode, displayName, 
             Alternatively, you can click the following verification link:
             <a
               target="_blank"
-              href="https://hangoutio.com/verification.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
-              >https://hangoutio.com/verification.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
+              href="https://hangoutio.com/sign-up.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
+              >https://hangoutio.com/sign-up.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
             >.
           </p>
           <p>Your account will be automatically deleted if it's not verified within 15 minutes of being created.</p>
@@ -89,7 +90,8 @@ function getVerificationEmailTemplate(accountID, verificationCode, displayName, 
 }
 exports.getVerificationEmailTemplate = getVerificationEmailTemplate;
 ;
-function getRecoveryEmailTemplate(accountID, recoveryToken, displayName) {
+function getRecoveryEmailTemplate(recoveryEmailConfig) {
+    const { accountID, recoveryToken, displayName } = recoveryEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -175,7 +177,8 @@ function getRecoveryEmailTemplate(accountID, recoveryToken, displayName) {
 }
 exports.getRecoveryEmailTemplate = getRecoveryEmailTemplate;
 ;
-function getAccountDeletionTemplate(accountID, cancellationToken, displayName) {
+function getAccountDeletionTemplate(deletionEmailConfig) {
+    const { accountID, cancellationToken, displayName } = deletionEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -266,7 +269,8 @@ function getAccountDeletionTemplate(accountID, cancellationToken, displayName) {
 }
 exports.getAccountDeletionTemplate = getAccountDeletionTemplate;
 ;
-function getEmailUpdateTemplate(verificationCode, displayName) {
+function getEmailUpdateTemplate(updateEmailConfig) {
+    const { verificationCode, displayName } = updateEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">

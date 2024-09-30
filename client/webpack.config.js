@@ -6,10 +6,10 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
 
-process.env.NODE_ENV = 'production';
+const buildEnvironment = 'production';
 
 module.exports = {
-  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  mode: buildEnvironment === 'production' ? 'production' : 'development',
 
   entry: {
     index: './src/ts/index.ts',
@@ -24,7 +24,7 @@ module.exports = {
 
   output: {
     path: path.resolve(__dirname, '../public'),
-    filename: process.env.NODE_ENV === 'production' ? 'js/[name]-[contenthash].js' : 'js/[name].js',
+    filename: buildEnvironment === 'production' ? 'js/[name]-[contenthash].js' : 'js/[name].js',
     clean: true,
     assetModuleFilename: (pathData) => {
       const { filename } = pathData;
@@ -58,7 +58,7 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
-          process.env.NODE_ENV === 'development' ? 'style-loader' : MiniCssExtractPlugin.loader,
+          buildEnvironment === 'development' ? 'style-loader' : MiniCssExtractPlugin.loader,
           'css-loader',
           'postcss-loader',
           'sass-loader',

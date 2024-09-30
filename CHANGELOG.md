@@ -1,6 +1,29 @@
 # Changelog
 
 ---
+## [0.2.18] (2024-10-01)
+
+### Features
+
+- Improved the email validation regex to allow more than 2 Top Level Domains.
+
+
+### Code Refactoring
+
+- Improved how parameters are passed into functions in `emailService.ts` and `emailTemplates.ts`.
+
+
+### Bug Fixes
+
+- Fixed account verification links pointing to an incorrect html page.
+
+
+### Build Changes
+
+- Removed `process.env.NODE_ENV` from `webpack.config.js` as it didn't make sense, and replaced with a `buildEnvironment` variable instead.
+
+
+---
 ## [0.2.17] (2024-09-30)
 
 ### Features

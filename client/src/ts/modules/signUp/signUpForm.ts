@@ -531,28 +531,33 @@ function detectSignedInUser(): void {
 
 function detectOngoingVerification(): void {
   const existingAccountID: string | null = Cookies.get('verificationAccountID');
-  const existingVerificationTimestamp: string | null = Cookies.get('verificationStartTimestamp');
+  const existingVerificationStartTimestamp: string | null = Cookies.get('verificationStartTimestamp');
 
   if (!existingAccountID) {
     clearVerificationCookies();
     return;
   };
 
-  if (!existingVerificationTimestamp) {
+  if (!existingVerificationStartTimestamp) {
     clearVerificationCookies();
     return;
   };
 
-  if (!Number.isInteger(+existingAccountID) || !Number.isInteger(+existingVerificationTimestamp)) {
+  if (+existingAccountID === 0 || !Number.isInteger(+existingAccountID)) {
+    clearVerificationCookies();
+    return;
+  };
+
+  if (!isValidTimestamp(+existingVerificationStartTimestamp)) {
     clearVerificationCookies();
     return;
   };
 
   const accountID: number = +existingAccountID;
-  const verificationTimestamp: number = +existingVerificationTimestamp;
+  const verificationStartTimestamp: number = +existingVerificationStartTimestamp;
 
   const verificationPeriod: number = 1000 * 60 * 15;
-  if (Date.now() - verificationTimestamp >= verificationPeriod) {
+  if (Date.now() - verificationStartTimestamp >= verificationPeriod) {
     clearVerificationCookies();
     return;
   };
@@ -574,7 +579,7 @@ function detectOngoingVerification(): void {
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
       signUpFormState.accountID = accountID;
-      signUpFormState.verificationStartTimestamp = verificationTimestamp;
+      signUpFormState.verificationStartTimestamp = verificationStartTimestamp;
 
       switchToVerificationStep();
       ConfirmModal.remove();
