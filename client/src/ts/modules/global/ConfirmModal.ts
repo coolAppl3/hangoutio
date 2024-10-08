@@ -14,6 +14,7 @@ export class ConfirmModal {
 
     const newConfirmModal: HTMLDivElement = this.createConfirmModal(config);
     document.body.appendChild(newConfirmModal);
+    newConfirmModal.focus();
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -34,14 +35,22 @@ export class ConfirmModal {
   private static createConfirmModal(config: ConfirmModalConfig): HTMLDivElement {
     const confirmModal: HTMLDivElement = document.createElement('div');
     confirmModal.id = 'confirm-modal';
+    confirmModal.setAttribute('tabindex', '0');
+    config.description ? confirmModal.className = 'has-description' : undefined;
 
     const confirmModalContainer: HTMLDivElement = document.createElement('div');
     confirmModalContainer.id = 'confirm-modal-container';
 
     confirmModalContainer.appendChild(this.createModalTitle(config.title));
+
     if (config.description) {
-      confirmModalContainer.appendChild(this.createModalDescription(config.description));
-      confirmModal.className = 'has-description';
+      const descriptionContainer: HTMLDivElement = this.createDescriptionContainer();
+
+      for (const descriptionLine of config.description.split(' \n ')) {
+        descriptionContainer.appendChild(this.createModalDescription(descriptionLine));
+      };
+
+      confirmModalContainer.appendChild(descriptionContainer);
     };
 
     confirmModalContainer.appendChild(this.createBtnContainer(config));
@@ -56,6 +65,13 @@ export class ConfirmModal {
     paragraphElement.appendChild(document.createTextNode(title));
 
     return paragraphElement;
+  };
+
+  private static createDescriptionContainer(): HTMLDivElement {
+    const descriptionContainer: HTMLDivElement = document.createElement('div');
+    descriptionContainer.className = 'description-container';
+
+    return descriptionContainer;
   };
 
   private static createModalDescription(description: string): HTMLParagraphElement {

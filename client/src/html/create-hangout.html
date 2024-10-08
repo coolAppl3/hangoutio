@@ -577,7 +577,7 @@
 
           <form
             id="hangout-form"
-            class="content-container-items"
+            class="content-container-items group/form"
           >
             <!-- step 1 -->
             <div
@@ -585,7 +585,7 @@
               class="content-item mb-2"
             >
               <div class="content-item-header mb-2">
-                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Title & Password</h3>
+                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Title and password</h3>
                 <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
                   Give your hangout a title, and protect it with a password if needed.
                 </p>
@@ -676,7 +676,7 @@
               class="content-item mb-2"
             >
               <div class="content-item-header mb-2">
-                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Time & Member Limit</h3>
+                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Time and member limit</h3>
                 <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
                   Determine how long each step will take, as well as how many people can join.
                 </p>
@@ -780,17 +780,9 @@
               class="content-item mb-2"
             >
               <div class="content-item-header mb-2">
-                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Account Preferences</h3>
+                <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Account preferences</h3>
                 <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
-                  Choose whether you'd like to create this hangout as a guest, or through your account.
-                </p>
-                <p class="font-medium text-sm text-descrip tion dark:text-description-dark mb-2">
-                  Learn more about the benefits of creating an account
-                  <a
-                    href="#"
-                    class="link"
-                    >here</a
-                  >.
+                  Choose whether you'd like to create this hangout through your account or as a guest.
                 </p>
               </div>
 
@@ -806,7 +798,7 @@
                   >
                     <button
                       id="account-option-btn"
-                      class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark selected"
+                      class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
                       type="button"
                     >
                       Account
@@ -822,9 +814,12 @@
                 </div>
 
                 <!-- account form -->
-                <div id="account-form">
+                <div
+                  id="account-form"
+                  class="group-[.is-guest-user]/form:hidden"
+                >
                   <p class="font-medium text-sm text-description dark:text-description-dark mb-1">Enter your account's credentials below.</p>
-                  <p class="font-medium text-xs text-description dark:text-description-dark mb-1">
+                  <p class="font-medium text-sm text-description dark:text-description-dark mb-2">
                     Don't have an account?
                     <a
                       href="#"
@@ -885,11 +880,18 @@
                 <!-- guest form -->
                 <div
                   id="guest-form"
-                  class="hidden"
+                  class="hidden group-[.is-guest-user]/form:block"
                 >
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-1">Create a hangout with a guest username and password.</p>
                   <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
-                    Guest accounts are linked to the hangout they were created for, and are deleted a week after its conclusion.
+                    Provide your details below to create a guest account for this hangout.
+                  </p>
+                  <p class="font-medium text-sm text-description dark:text-description-dark mb-2">
+                    You can learn more about the limitations of guest accounts
+                    <a
+                      href="#"
+                      class="link font-medium text-sm link"
+                      >here</a
+                    >.
                   </p>
 
                   <div class="form-group">
@@ -1238,10 +1240,5 @@
         </div>
       </div>
     </footer>
-
-    <!-- loading modal -->
-    <div id="loading-modal">
-      <div class="spinner"></div>
-    </div>
   </body>
 </html>

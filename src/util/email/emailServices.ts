@@ -29,6 +29,7 @@ export interface RecoveryEmailConfig {
   to: string,
   accountID: number,
   recoveryToken: string,
+  requestTimestamp: number,
   displayName: string,
 };
 

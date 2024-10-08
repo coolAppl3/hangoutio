@@ -79,3 +79,35 @@ export interface AccountVerificationData extends AxiosResponse {
 export async function verifyAccountService(requestBody: AccountVerificationBody): Promise<AccountVerificationData> {
   return axios.patch(`${accountsApiUrl}/verification/verify`, requestBody);
 };
+
+// --- --- ---
+
+export interface SendRecoveryEmailData {
+  success: true,
+  resData: {
+    requestTimestamp: number,
+  },
+};
+
+export async function sendRecoveryEmailService(requestBody: { email: string }): Promise<AxiosResponse<SendRecoveryEmailData>> {
+  return axios.post(`${accountsApiUrl}/recovery/sendEmail`, requestBody);
+};
+
+// --- --- ---
+
+export interface RecoveryUpdatePasswordBody {
+  accountID: number,
+  recoveryToken: string,
+  newPassword: string,
+};
+
+export interface RecoveryUpdatePasswordData {
+  success: true,
+  resData: {
+    newAuthToken: string,
+  },
+};
+
+export function recoveryUpdatePasswordService(requestBody: RecoveryUpdatePasswordBody): Promise<AxiosResponse<RecoveryUpdatePasswordData>> {
+  return axios.patch(`${accountsApiUrl}/recovery/updatePassword`, requestBody);
+};

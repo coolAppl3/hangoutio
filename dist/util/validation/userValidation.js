@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidCode = exports.isValidToken = exports.isValidAuthToken = exports.isValidDisplayName = exports.isValidUsername = exports.isValidPassword = exports.isValidNewPassword = exports.isValidEmail = void 0;
+exports.isValidCode = exports.isValidUniqueToken = exports.isValidAuthToken = exports.isValidDisplayName = exports.isValidUsername = exports.isValidPassword = exports.isValidNewPassword = exports.isValidEmail = void 0;
 function isValidEmail(email) {
     if (typeof email !== 'string') {
         return false;
@@ -85,7 +85,7 @@ function isValidAuthToken(authToken) {
 }
 exports.isValidAuthToken = isValidAuthToken;
 ;
-function isValidToken(token) {
+function isValidUniqueToken(token) {
     if (typeof token !== 'string') {
         return false;
     }
@@ -94,9 +94,10 @@ function isValidToken(token) {
         return false;
     }
     ;
-    return true;
+    const regex = /^[A-Za-z0-9]{32}$/;
+    return regex.test(token);
 }
-exports.isValidToken = isValidToken;
+exports.isValidUniqueToken = isValidUniqueToken;
 ;
 function isValidCode(verificationCode) {
     if (typeof verificationCode !== 'string') {

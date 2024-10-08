@@ -91,7 +91,7 @@ function getVerificationEmailTemplate(verificationEmailConfig) {
 exports.getVerificationEmailTemplate = getVerificationEmailTemplate;
 ;
 function getRecoveryEmailTemplate(recoveryEmailConfig) {
-    const { accountID, recoveryToken, displayName } = recoveryEmailConfig;
+    const { accountID, recoveryToken, requestTimestamp, displayName } = recoveryEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -162,10 +162,11 @@ function getRecoveryEmailTemplate(recoveryEmailConfig) {
             To start the recovery process, please click the following link:
             <a
               target="_blank"
-              href="https://hangoutio.com/recoverey.html?id=${accountID}&recoveryToken=${recoveryToken}"
-              >https://hangoutio.com/recoverey.html?id=${accountID}&recoveryToken=${recoveryToken}</a
+              href="https://hangoutio.com/account-recovery.html?id=${accountID}&timestamp=${requestTimestamp}&recoveryToken=${recoveryToken}"
+              >https://hangoutio.com/account-recovery.html?id=${accountID}&timestamp=${requestTimestamp}&recoveryToken=${recoveryToken}</a
             >.
           </p>
+          <p>Please note that the recovery link is only valid for an hour.</p>
           <p>If this request wasn't made by you, ensure that your inbox is secure, then feel free to ignore this email.</p>
           <p id="end-of-email">Warmest regards,</p>
           <p>Hangoutio</p>

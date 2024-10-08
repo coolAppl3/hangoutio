@@ -439,7 +439,7 @@
   }
 
   span.extra-info {
-    @apply block mb-[4px] text-xs font-medium text-description dark:text-description-dark;
+    @apply block my-[4px] text-xs font-medium text-description dark:text-description-dark;
   }
 
   input,
@@ -455,26 +455,44 @@
 
 // popup
 #popup {
-  @apply fixed top-8 left-0 right-0 mx-auto py-1 px-[1.4rem] w-fit max-w-[32rem] text-sm text-center font-bold rounded z-[35];
-  transform: translate3d(0, 3rem, 0);
-  opacity: 0;
-  transition: transform 150ms, opacity 150ms;
+  @apply fixed top-8 left-0 right-0 text-sm font-bold z-[35] flex justify-center items-center mx-2 px-2;
+
+
+  span {
+    @apply py-1 px-[1.4rem] w-fit max-w-[32rem] rounded;
+
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: transform 150ms, opacity 150ms;
+  }
 
   &.in-view {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
+
+    span {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
   }
 
   &.error {
-    @apply bg-danger-popup text-light;
+
+    span {
+      @apply bg-danger-popup text-light;
+    }
   }
 
   &.success {
-    @apply bg-success text-dark;
+
+    span {
+      @apply bg-success text-dark;
+    }
   }
 
   &.info {
-    @apply bg-secondary-dark text-title-dark dark:bg-primary dark:text-title;
+
+    span {
+      @apply bg-secondary-dark text-title-dark dark:bg-primary dark:text-title;
+    }
   }
 }
 
@@ -665,11 +683,7 @@
 
 // loading modal
 #loading-modal {
-  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[30] place-items-center hidden;
-
-  &.displayed {
-    @apply grid;
-  }
+  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[30] grid place-items-center;
 
   .spinner {
     @apply block h-5 w-5 rounded-[100%] border-[6px] border-solid border-primary dark:border-primary-dark border-l-cta dark:border-l-cta-dark;
@@ -689,7 +703,7 @@
 
 // confirm modal
 #confirm-modal {
-  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[15] flex justify-center items-center;
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[15] flex justify-center items-center outline-none;
 
   &.revealed {
 
@@ -707,19 +721,19 @@
   }
 
   &-container {
-    @apply w-[30rem] max-w-[30rem] py-3 px-2 rounded-sm bg-primary dark:bg-secondary-dark;
+    @apply w-[32rem] max-w-[32rem] py-3 px-2 mx-2 rounded-sm bg-primary dark:bg-secondary-dark;
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
 
-    p {
+    p.confirm-modal-title {
+      @apply font-medium text-base text-title dark:text-title-dark mb-2;
+    }
 
-      &.confirm-modal-title {
-        @apply font-medium text-base text-title dark:text-title-dark mb-2;
-      }
+    .description-container {
 
-      &.confirm-modal-description {
-        @apply font-medium text-sm text-description dark:text-description-dark mb-2;
+      p {
+        @apply font-medium text-sm text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
       }
     }
 
@@ -755,7 +769,7 @@
 
 // info modal
 #info-modal {
-  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[16] flex justify-center items-center;
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[16] flex justify-center items-center outline-none;
 
   &.revealed {
 
@@ -767,37 +781,27 @@
 
   &.has-description {
 
-    p.info-modal {
-
-      &-title {
-        @apply mb-1;
-      }
-
-      &-description {
-        @apply block;
-      }
+    p.info-modal-title {
+      @apply mb-1;
     }
-
   }
 
   &-container {
-    @apply w-[30rem] max-w-[30rem] py-3 px-2 rounded-sm bg-primary dark:bg-secondary-dark;
+    @apply w-[32rem] max-w-[32rem] py-3 px-2 mx-2 rounded-sm bg-primary dark:bg-secondary-dark;
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
 
-
-    p.info-modal {
-
-      &-title {
-        @apply font-medium text-base text-title dark:text-title-dark mb-2;
-      }
-
-      &-description {
-        @apply font-medium text-sm text-description dark:text-description-dark mb-2 hidden;
-      }
+    p.info-modal-title {
+      @apply font-medium text-base text-title dark:text-title-dark mb-2;
     }
 
+    .description-container {
+
+      p {
+        @apply font-medium text-sm text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
+      }
+    }
 
     button {
       @apply btn w-full bg-cta dark:bg-cta-dark text-title;
@@ -805,66 +809,57 @@
   }
 }
 
-
 // create-hangout.html --- --- --- --- --- --- --- --- ---
 #hangout-form {
   @apply grid grid-cols-[100%_100%_100%] gap-x-4 transition-transform duration-200;
 
-  // transform: translateX(calc(1 * (-100% - 4rem)));
+  #hangout-form-step-3 {
+
+    &-container {
+      #account-preferences {
+
+        &.guest {
+
+          &::after {
+            transform: translate3d(100%, 0, 0);
+          }
+
+          button {
+            @apply first:text-title first:after:block dark:first:text-title-dark last:text-title last:after:hidden;
+          }
+        }
+
+        button {
+          @apply first:text-title first:after:hidden last:text-title dark:last:text-title-dark;
+        }
+      }
+
+      #already-signed-in {
+        @apply hidden;
+      }
+
+      &.disabled {
+
+        div {
+          @apply hidden;
+        }
+
+        #already-signed-in {
+          @apply block;
+        }
+      }
+    }
+  }
 
   .content-item {
     display: none;
 
     &:first-child {
-      display: grid;
+      display: block;
     }
   }
 
 }
-
-#hangout-form-step-3 {
-
-  &-container {
-    #account-preferences {
-
-      &.guest {
-
-        &::after {
-          @apply translate-x-full;
-        }
-      }
-
-      button {
-
-        &.selected {
-          &::after {
-            display: none !important;
-          }
-        }
-      }
-
-      button.selected {
-        @apply dark:text-title;
-      }
-    }
-
-    #already-signed-in {
-      @apply hidden;
-    }
-
-    &.disabled {
-
-      div {
-        @apply hidden;
-      }
-
-      #already-signed-in {
-        @apply block;
-      }
-    }
-  }
-}
-
 
 // sign-in.html --- --- --- --- --- --- --- --- ---
 #sign-in-form {
@@ -876,21 +871,44 @@
       &.guest {
 
         &::after {
-          @apply translate-x-full;
+          transform: translate3d(100%, 0, 0);
+        }
+
+        button {
+          @apply first:text-title first:after:block dark:first:text-title-dark last:text-title last:after:hidden;
         }
       }
 
       button {
-
-        &.selected {
-          &::after {
-            display: none !important;
-          }
-        }
+        @apply first:text-title first:after:hidden last:text-title dark:last:text-title-dark;
       }
+    }
+  }
+}
 
-      button.selected {
-        @apply dark:text-title;
+// account-recovery.html --- --- --- --- --- --- --- --- ---
+#account-recovery {
+
+  &.emailForm {
+    form {
+      &:not(:first-child) {
+        @apply hidden;
+      }
+    }
+  }
+
+  &.confirmationForm {
+    form {
+      &:not(:nth-child(2)) {
+        @apply hidden;
+      }
+    }
+  }
+
+  &.updatePasswordForm {
+    form {
+      &:not(:nth-child(3)) {
+        @apply hidden;
       }
     }
   }

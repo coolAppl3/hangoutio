@@ -1,4 +1,4 @@
-import { formState } from "./formState";
+import { hangoutCreationState } from "./hangoutCreationState";
 import revealPassword from "../global/revealPassword";
 import ErrorSpan from "../global/ErrorSpan";
 import { validateHangoutTitle, validateNewPassword } from "../global/validation";
@@ -42,7 +42,7 @@ function toggleHangoutPassword(e: MouseEvent): void {
     clearPasswordInput();
     hangoutPasswordInput ? ErrorSpan.hide(hangoutPasswordInput) : undefined;
 
-    formState.isPasswordProtected = false;
+    hangoutCreationState.isPasswordProtected = false;
     return;
   };
 
@@ -50,7 +50,7 @@ function toggleHangoutPassword(e: MouseEvent): void {
   hangoutPasswordInput?.parentElement?.classList.remove('disabled');
   hangoutPasswordInput?.removeAttribute('disabled');
 
-  formState.isPasswordProtected = true;
+  hangoutCreationState.isPasswordProtected = true;
 };
 
 function clearPasswordInput(): void {
@@ -66,18 +66,18 @@ export function isValidFormFirstStepDetails(): boolean {
   const isValidHangoutTitle: boolean = validateHangoutTitle(hangoutTitleInput);
 
   if (isValidHangoutTitle) {
-    formState.hangoutTitle = hangoutTitleInput.value;
+    hangoutCreationState.hangoutTitle = hangoutTitleInput.value;
 
   } else {
     popup(`A valid hangout title is required.`, 'error');
     return false;
   };
 
-  if (formState.isPasswordProtected) {
+  if (hangoutCreationState.isPasswordProtected) {
     const isValidHangoutPassword: boolean = validateNewPassword(hangoutPasswordInput);
 
     if (isValidHangoutPassword) {
-      formState.hangoutPassword = hangoutPasswordInput.value;
+      hangoutCreationState.hangoutPassword = hangoutPasswordInput.value;
 
     } else {
       popup('A valid hangout password is required.', 'error');

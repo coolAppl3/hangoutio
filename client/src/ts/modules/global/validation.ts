@@ -266,19 +266,11 @@ export function validateCode(input: HTMLInputElement): boolean {
 };
 
 export function isValidCode(verificationCode: string): boolean {
-  if (typeof verificationCode !== 'string') {
-    return false;
-  };
-
   const regex: RegExp = /^[A-NP-Z0-9]{6}$/;
-  return regex.test(verificationCode);
+  return regex.test(verificationCode.toUpperCase());
 };
 
 export function isValidHangoutID(hangoutID: string): boolean {
-  if (typeof hangoutID !== 'string') {
-    return false;
-  };
-
   if (hangoutID.length !== 46) {
     return false;
   };
@@ -315,4 +307,26 @@ export function isValidTimestamp(timestamp: number): boolean {
   };
 
   return true;
+};
+
+export function isValidUniqueToken(token: string): boolean {
+  if (typeof token !== 'string') {
+    return false;
+  };
+
+  if (token.length !== 32) {
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z0-9]{32}$/;
+  return regex.test(token);
+};
+
+export function isValidQueryString(queryString: string): boolean {
+  if (queryString === '') {
+    return false;
+  };
+
+  const regex: RegExp = /^\?[A-Za-z0-9][A-Za-z0-9&=]{0,150}$/;
+  return regex.test(queryString);
 };
