@@ -47,11 +47,8 @@ function moveBackwards(): void {
   };
 
   const currentForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${formNavigationState.currentStep}`);
-  const previousForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${formNavigationState.currentStep - 1}`);
 
-  previousForm ? previousForm.style.display = 'block' : undefined;
   hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${formNavigationState.currentStep - 2} * (100% + 40px)))` : undefined;
-
   currentForm ? currentForm.style.display = 'none' : undefined;
 
   formNavigationState.currentStep--;

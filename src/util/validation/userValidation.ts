@@ -77,7 +77,7 @@ export function isValidAuthToken(authToken: string): boolean {
   return regex.test(authToken);
 };
 
-export function isValidToken(token: string): boolean {
+export function isValidUniqueToken(token: string): boolean {
   if (typeof token !== 'string') {
     return false;
   };
@@ -86,7 +86,8 @@ export function isValidToken(token: string): boolean {
     return false;
   };
 
-  return true;
+  const regex: RegExp = /^[A-Za-z0-9]{32}$/;
+  return regex.test(token);
 };
 
 export function isValidCode(verificationCode: string): boolean {

@@ -4,60 +4,91 @@ export interface InfoModalConfig {
   btnTitle: string,
 };
 
-export function displayInfoModal(infoModalConfig: InfoModalConfig): HTMLDivElement {
-  const existingInfoModal: HTMLDivElement | null = document.querySelector('#confirm-modal');
-  existingInfoModal ? existingInfoModal.remove() : undefined;
+export class InfoModal {
+  public static display(infoModalConfig: InfoModalConfig): HTMLDivElement {
+    const existingInfoModal: HTMLDivElement | null = document.querySelector('#info-modal');
+    existingInfoModal ? existingInfoModal.remove() : undefined;
 
-  const newInfoModal: HTMLDivElement = createInfoModal(infoModalConfig);
-  document.body.appendChild(newInfoModal);
+    const newInfoModal: HTMLDivElement = this.createInfoModal(infoModalConfig);
+    document.body.appendChild(newInfoModal);
+    newInfoModal.focus();
 
-  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      newInfoModal.classList.add('revealed');
+      requestAnimationFrame(() => {
+        newInfoModal.classList.add('revealed');
+      });
     });
-  });
 
-  return newInfoModal;
-};
+    return newInfoModal;
+  };
 
-function createInfoModal(infoModalConfig: InfoModalConfig): HTMLDivElement {
-  const infoModal: HTMLDivElement = document.createElement('div');
-  infoModal.id = 'info-modal';
-  infoModalConfig.description ? infoModal.className = 'has-description' : undefined;
+  public static remove(): void {
+    const infoModal: HTMLDivElement | null = document.querySelector('#info-modal');
 
-  const infoModalContainer: HTMLDivElement = document.createElement('div');
-  infoModalContainer.id = 'info-modal-container';
+    if (!infoModal) {
+      return;
+    };
 
-  infoModalContainer.appendChild(createModalTitle(infoModalConfig.title));
-  infoModalConfig.description ? infoModalContainer.appendChild(createModalDescription(infoModalConfig.description)) : undefined;
-  infoModalContainer.appendChild(createModalBtn(infoModalConfig.btnTitle));
+    infoModal.classList.remove('revealed');
+    setTimeout(() => infoModal.remove(), 150);
+  };
 
-  infoModal.appendChild(infoModalContainer);
+  private static createInfoModal(config: InfoModalConfig): HTMLDivElement {
+    const infoModal: HTMLDivElement = document.createElement('div');
+    infoModal.id = 'info-modal';
+    infoModal.setAttribute('tabindex', '0');
+    config.description ? infoModal.className = 'has-description' : undefined;
 
-  return infoModal;
-};
+    const infoModalContainer: HTMLDivElement = document.createElement('div');
+    infoModalContainer.id = 'info-modal-container';
 
-function createModalTitle(title: string): HTMLParagraphElement {
-  const modalTitle: HTMLParagraphElement = document.createElement('p');
-  modalTitle.className = 'info-modal-title';
-  modalTitle.appendChild(document.createTextNode(title));
+    infoModalContainer.appendChild(this.createModalTitle(config.title));
 
-  return modalTitle;
-};
+    if (config.description) {
+      const descriptionContainer: HTMLDivElement = this.createDescriptionContainer();
 
-function createModalDescription(description: string): HTMLParagraphElement {
-  const modalDescription: HTMLParagraphElement = document.createElement('p');
-  modalDescription.className = 'info-modal-description';
-  modalDescription.appendChild(document.createTextNode(description));
+      for (const descriptionLine of config.description.split(' \n ')) {
+        descriptionContainer.appendChild(this.createModalDescription(descriptionLine));
+      };
 
-  return modalDescription;
-};
+      infoModalContainer.appendChild(descriptionContainer);
+    };
 
-function createModalBtn(btnTitle: string): HTMLButtonElement {
-  const modalBtn: HTMLButtonElement = document.createElement('button');
-  modalBtn.id = 'info-modal-btn';
-  modalBtn.setAttribute('type', 'button');
-  modalBtn.appendChild(document.createTextNode(btnTitle));
+    infoModalContainer.appendChild(this.createModalBtn(config.btnTitle));
 
-  return modalBtn;
+    infoModal.appendChild(infoModalContainer);
+    return infoModal;
+  };
+
+  private static createModalTitle(title: string): HTMLParagraphElement {
+    const modalTitle: HTMLParagraphElement = document.createElement('p');
+    modalTitle.className = 'info-modal-title';
+    modalTitle.appendChild(document.createTextNode(title));
+
+    return modalTitle;
+  };
+
+  private static createDescriptionContainer(): HTMLDivElement {
+    const descriptionContainer: HTMLDivElement = document.createElement('div');
+    descriptionContainer.className = 'description-container';
+
+    return descriptionContainer;
+  };
+
+  private static createModalDescription(description: string): HTMLParagraphElement {
+    const modalDescription: HTMLParagraphElement = document.createElement('p');
+    modalDescription.className = 'info-modal-description';
+    modalDescription.appendChild(document.createTextNode(description));
+
+    return modalDescription;
+  };
+
+  private static createModalBtn(btnTitle: string): HTMLButtonElement {
+    const modalBtn: HTMLButtonElement = document.createElement('button');
+    modalBtn.id = 'info-modal-btn';
+    modalBtn.setAttribute('type', 'button');
+    modalBtn.appendChild(document.createTextNode(btnTitle));
+
+    return modalBtn;
+  };
 };

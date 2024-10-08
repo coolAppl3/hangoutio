@@ -1,6 +1,47 @@
 # Changelog
 
 ---
+## [0.2.19] (2024-10-08)
+
+### Features
+
+- Fully implemented `account-recovery.html` and the recovery process.
+  - Renamed POST `accounts/recovery/start` to `accounts/recovery/sendEmail`.
+  - Removed `latest_attempt_timestamp` from the `account_recovery` table, as the recovery logic has changed in the meantime from when it was added.
+- Updated the `AxiosErrorResponseData` global type to accept a potential `resData` object with string keys and unknown values.
+- Renamed `infoModal.ts` to `InfoModal.ts` and reworked it into a static class.
+- Slightly increased the width of both InfoModal and ConfirmModal.
+- `InfoModal.ts` and `ConfirmModal.ts` now split the description into separate HTML paragraph elements when ' \n ' (whitespace included) is present in the description string.
+- Both the InfoModal and ConfirmModal now prime their buttons to be next in the tabindex chain to improve user experience.
+  - This also helps with preventing form submission or other actions from taking place despite the modals blocking the window.
+- Reworked `LoadingModal.ts` to now create and append the LoadingModal element when called, instead of being a static part of every HTML page.
+  - Renamed `hide()` to `remove()` as a result.
+- Users attempting to sign into their account after it has been locked  will now have an infoModal alongside the error popup to make their next step clear.
+- Users attempting to sign into an unverified account will now have an InfoModal displayed alongside the error popup to make their next step clear.
+- Slightly improved the code efficiency handling the switch between two sub-forms in `create-hangout.html` and `sign-in.html`.
+- Added an  to make sure the user is informed when their account is locked due to too many failed sign in attempts.
+- Improved the text in the final stage of the hangout creation form in `create-hangout.html`.
+- Reworked title-cased sub-form titles in `create-hangout.html` to be sentence-cased in alignment with the rest of the app.
+- Renamed `isValidToken()` to `isValidUniqueToken()`.
+- Renamed `formState.ts` in `modules/createHangout` to `hangoutCreationFormState.ts`.
+
+
+### Code Refactoring
+
+- Renamed DELETE `accounts/friends/remove` router to DELETE `accounts/friends/manage/remove` to improve clarity and consistency.
+
+
+### Bug Fixes
+
+- Fixed the background in the account-guest toggle button in `sign-in.html` shrinking by a pixel when moving.
+- Fixed an edge case in `signUpForm.ts` where `detectSignedInUser()` would display a modal asking the user to sign out to proceed, while a verification attempt is made due to a verification link being detected.
+- Fixed `InfoModal.ts` (previously `infoModal.ts`) attempting to remove an existing ConfirmModal instead of an existing InfoModal, when `display()` (previously `displayInfoModal()`) is called.
+- Fixed sign up verification failing due to verification codes not being capitalized before a verification request is made.
+- Fixed `isValidUniqueToken()` (previously `isValidToken()`) not validating the token's length or characters.
+- Fixed `getVerificationData()` in `signUpForm.ts` not correctly handling substrings without a `=` in the query string parameters, and renamed it to `getVerificationLinkDetails()`.
+
+
+---
 ## [0.2.18] (2024-10-01)
 
 ### Features

@@ -2,12 +2,12 @@ import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
-import { displayInfoModal, InfoModalConfig } from "../global/infoModal";
+import { InfoModal, InfoModalConfig } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { isValidAuthToken, isValidCode, isValidTimestamp, validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
+import { isValidAuthToken, isValidCode, isValidQueryString, isValidTimestamp, validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
 import { AccountSignUpBody, AccountSignUpData, accountSignUpService, AccountVerificationBody, AccountVerificationData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 
 interface SignUpFormState {
@@ -42,19 +42,21 @@ const verificationForm: HTMLFormElement | null = document.querySelector('#verifi
 const verificationCodeInput: HTMLInputElement | null = document.querySelector('#verification-code-input');
 
 export function signUpForm(): void {
-  init();
   loadEventListeners();
+  init();
 };
 
 async function init(): Promise<void> {
-  detectSignedInUser();
   setActiveValidation();
 
   if (verificationLinkDetected()) {
+    signOut();
     await verifyAccount(new SubmitEvent('submit'));
+
     return;
   };
 
+  detectSignedInUser();
   detectOngoingVerification();
 };
 
@@ -81,21 +83,21 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
 
   if (attemptCount > 2) {
     popup('Internal server error.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
 
   if (!isValidSignUpDetails()) {
     popup('Invalid sign up details.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
 
   if (!emailInput || !displayNameInput || !usernameInput || !passwordInput) {
     popup('Something went wrong.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
@@ -120,14 +122,14 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     switchToVerificationStep();
 
     popup('Account created.', 'success');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
   } catch (err: unknown) {
     console.log(err);
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -136,7 +138,7 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -151,7 +153,7 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     };
 
     popup(errMessage, 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     if (status === 400) {
       if (errReason === 'email') {
@@ -194,8 +196,6 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
         ErrorSpan.display(usernameInput, errMessage);
         return;
       };
-
-      return;
     };
   };
 };
@@ -206,7 +206,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
   if (!verificationCodeInput) {
     popup('Something went wrong.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
@@ -214,21 +214,21 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
   const isValidVerificationCode: boolean = validateCode(verificationCodeInput);
   if (!isValidVerificationCode) {
     popup('Invalid verification code.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
 
   if (!signUpFormState.accountID) {
     popup('Something went wrong.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
 
   const accountVerificationBody: AccountVerificationBody = {
     accountID: signUpFormState.accountID,
-    verificationCode: verificationCodeInput.value,
+    verificationCode: verificationCodeInput.value.toUpperCase(),
   };
 
   try {
@@ -255,7 +255,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -264,7 +264,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -275,13 +275,13 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (status === 400 && errReason === 'accountID') {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
 
     popup(errMessage, 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     if (status === 400 && errReason === 'verificationCode') {
       ErrorSpan.display(verificationCodeInput, errMessage);
@@ -290,7 +290,26 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (status === 401) {
       ErrorSpan.display(verificationCodeInput, errMessage);
-      return;
+
+      if (errReason === 'accountDeleted') {
+        const infoModalConfig: InfoModalConfig = {
+          title: 'Too many failed verification attempts.',
+          description: 'Your account has been automatically deleted as a result. \n You can create it again by repeating the signup process.',
+          btnTitle: 'Okay',
+        };
+
+        const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
+        infoModal.addEventListener('click', (e: MouseEvent) => {
+          if (!(e.target instanceof HTMLElement)) {
+            return;
+          };
+
+          if (e.target.id === 'info-modal-btn') {
+            clearVerificationCookies();
+            window.location.reload();
+          };
+        });
+      };
     };
   };
 };
@@ -300,7 +319,7 @@ async function resendVerificationEmail(): Promise<void> {
 
   if (signUpFormState.verificationEmailsSent >= 3) {
     popup('Verification email limit reached.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
@@ -326,14 +345,14 @@ async function resendVerificationEmail(): Promise<void> {
     await resendVerificationEmailService({ accountID: signUpFormState.accountID });
 
     popup('Verification email resent.', 'success');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
   } catch (err: unknown) {
     console.log(err);
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -342,7 +361,7 @@ async function resendVerificationEmail(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -375,11 +394,10 @@ async function resendVerificationEmail(): Promise<void> {
     };
 
     popup(errMessage, 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     if (status === 403 && errReason === 'limitReached') {
       signUpFormState.verificationEmailsSent = 3;
-      return;
     };
   };
 };
@@ -467,13 +485,13 @@ function updateVerificationTimer(intervalID: number, requestExpiryTimer: HTMLSpa
 
   const timeTillExpiry: number = requestExpiryTimestamp - Date.now();
 
-  if (timeTillExpiry < 1000) {
+  if (timeTillExpiry < 0) {
     requestExpiryTimer.textContent = '00:00';
     return;
   };
 
   const minutesTillExpiry: number = Math.floor(timeTillExpiry / (1000 * 60));
-  const secondsTillExpiry: number = Math.floor((timeTillExpiry / 1000) % 60);
+  const secondsTillExpiry: number = Math.round((timeTillExpiry / 1000) % 60);
 
   const minutesTillExpiryString: string = minutesTillExpiry < 10 ? `0${minutesTillExpiry}` : `${minutesTillExpiry}`;
   const secondsTillExpiryString: string = secondsTillExpiry < 10 ? `0${secondsTillExpiry}` : `${secondsTillExpiry}`;
@@ -494,10 +512,10 @@ function detectSignedInUser(): void {
   };
 
   const confirmModalConfig: ConfirmModalConfig = {
-    title: `You're already signed in.`,
-    description: 'To create a new account, you must first sign out of this one.',
+    title: `You're signed in.`,
+    description: 'You must sign out before being able to create a new account.',
     confirmBtnTitle: 'Sign out',
-    cancelBtnTitle: 'Take me back',
+    cancelBtnTitle: 'Take me back to my account',
     extraBtnTitle: null,
     isDangerousAction: false,
   };
@@ -517,14 +535,7 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      const referrerHref: string = document.referrer;
-
-      if (referrerHref === '' || referrerHref === window.location.href) {
-        window.location.href = 'index.html';
-        return;
-      };
-
-      window.location.href = referrerHref;
+      window.location.href = 'account.html';
     };
   });
 };
@@ -533,12 +544,7 @@ function detectOngoingVerification(): void {
   const existingAccountID: string | null = Cookies.get('verificationAccountID');
   const existingVerificationStartTimestamp: string | null = Cookies.get('verificationStartTimestamp');
 
-  if (!existingAccountID) {
-    clearVerificationCookies();
-    return;
-  };
-
-  if (!existingVerificationStartTimestamp) {
+  if (!existingAccountID || !existingVerificationStartTimestamp) {
     clearVerificationCookies();
     return;
   };
@@ -563,8 +569,8 @@ function detectOngoingVerification(): void {
   };
 
   const confirmModalConfig: ConfirmModalConfig = {
-    title: 'Ongoing verification request detected.',
-    description: 'There seems to be an ongoing verification request. Would you like to proceed with verifying your account?',
+    title: 'Verification request detected.',
+    description: 'There seems to be an ongoing verification request. \n Would you like to proceed with verifying your account?',
     confirmBtnTitle: 'Proceed',
     cancelBtnTitle: 'Remove request',
     extraBtnTitle: null,
@@ -591,20 +597,22 @@ function detectOngoingVerification(): void {
       clearVerificationCookies();
       ConfirmModal.remove();
       popup('Verification request removed.', 'success');
-
-      return;
     };
   });
 };
 
 function verificationLinkDetected(): boolean {
   const queryString: string = window.location.search;
-  if (queryString === '' || queryString.includes(' ')) {
+
+  if (queryString === '') {
     return false;
   };
 
-  const verificationData: VerificationData | null = getVerificationData(queryString);
+  if (!isValidQueryString(queryString)) {
+    return false;
+  };
 
+  const verificationData: VerificationData | null = getVerificationLinkDetails(queryString);
   if (!verificationData) {
     LoadingModal.display();
     popup('Invalid verification link.', 'error');
@@ -613,20 +621,22 @@ function verificationLinkDetected(): boolean {
     return false;
   };
 
+  const { verificationAccountID, verificationStartTimestamp, verificationCode } = verificationData;
+
   const verificationPeriod: number = 1000 * 60 * 15;
-  if (Date.now() - +verificationData.verificationStartTimestamp > verificationPeriod) {
+  if (Date.now() - +verificationStartTimestamp > verificationPeriod) {
     displayVerificationExpiryInfoModal();
     return false;
   };
 
-  Cookies.set('verificationAccountID', verificationData.verificationAccountID);
-  Cookies.set('verificationStartTimestamp', verificationData.verificationStartTimestamp);
+  Cookies.set('verificationAccountID', verificationAccountID);
+  Cookies.set('verificationStartTimestamp', verificationStartTimestamp);
 
-  signUpFormState.accountID = +verificationData.verificationAccountID;
-  signUpFormState.verificationStartTimestamp = +verificationData.verificationStartTimestamp;
+  signUpFormState.accountID = +verificationAccountID;
+  signUpFormState.verificationStartTimestamp = +verificationStartTimestamp;
 
   switchToVerificationStep();
-  verificationCodeInput ? verificationCodeInput.value = verificationData.verificationCode : undefined;
+  verificationCodeInput ? verificationCodeInput.value = verificationCode : undefined;
 
   return true;
 };
@@ -637,12 +647,21 @@ interface VerificationData {
   verificationCode: string,
 };
 
-function getVerificationData(queryString: string): VerificationData | null {
+function getVerificationLinkDetails(queryString: string): VerificationData | null {
   const queryParams: string[] = queryString.substring(1).split('&');
   const queryMap: Map<string, string> = new Map();
 
+  if (queryParams.length !== 3) {
+    return null;
+  };
+
   for (const param of queryParams) {
     const keyValuePair: string[] = param.split('=');
+
+    if (keyValuePair.length !== 2) {
+      return null;
+    };
+
     if (keyValuePair[0] === '' || keyValuePair[1] === '') {
       return null;
     };
@@ -686,13 +705,14 @@ function displayVerificationExpiryInfoModal(): void {
     btnTitle: 'Okay',
   };
 
-  const infoModal: HTMLDivElement = displayInfoModal(infoModalConfig);
+  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
   infoModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
 
     if (e.target.id === 'info-modal-btn') {
+      clearVerificationCookies();
       reloadWithoutQueryString();
       return;
     };

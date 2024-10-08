@@ -1,10 +1,10 @@
 import themeSwitcher from "./themeSwitcher"
 import { signOut } from "./signOut";
-import { ConfirmModal, ConfirmModalConfig } from "./ConfirmModal";
 import popup from "./popup";
 import LoadingModal from "./LoadingModal";
 import Cookies from "./Cookies";
 import { isValidAuthToken } from "./validation";
+import { ConfirmModal, ConfirmModalConfig } from "./ConfirmModal";
 
 const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
 const accountNavBtn: HTMLButtonElement | null = document.querySelector('#account-nav-container-btn');

@@ -16,6 +16,7 @@ module.exports = {
     createHangout: './src/ts/createHangout.ts',
     signIn: './src/ts/signIn.ts',
     signUp: './src/ts/signUp.ts',
+    accountRecovery: './src/ts/accountRecovery.ts',
   },
 
   resolve: {
@@ -121,7 +122,7 @@ module.exports = {
       ],
     }),
 
-    // sign-in.html
+    // sign-up.html
     new HtmlWebpackPlugin({
       title: 'Sign Up - Hangoutio',
       filename: 'sign-up.html',
@@ -129,6 +130,17 @@ module.exports = {
 
       chunks: [
         "signUp"
+      ],
+    }),
+
+    // account-recovery.html
+    new HtmlWebpackPlugin({
+      title: 'Account Recovery - Hangoutio',
+      filename: 'account-recovery.html',
+      template: 'src/html/account-recovery.html',
+
+      chunks: [
+        "accountRecovery"
       ],
     }),
   ],

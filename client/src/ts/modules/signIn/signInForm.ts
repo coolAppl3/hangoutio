@@ -8,6 +8,7 @@ import { AccountSignInBody, AccountSignInData, accountSignInService } from '../s
 import axios, { AxiosError } from '../../../../node_modules/axios/index';
 import { GuestSignInBody, GuestSignInData, guestSignInService } from '../services/guestServices';
 import { signOut } from '../global/signOut';
+import { InfoModal, InfoModalConfig } from '../global/InfoModal';
 
 interface SignInFormState {
   isGuestUser: boolean,
@@ -22,16 +23,12 @@ const signInFormState: SignInFormState = {
 const signInFormElement: HTMLFormElement | null = document.querySelector('#sign-in-form');
 
 const signInOptions: HTMLDivElement | null = document.querySelector('#sign-in-options');
-const accountOptionBtn: HTMLButtonElement | null = document.querySelector('#account-option-btn');
-const guestOptionBtn: HTMLButtonElement | null = document.querySelector('#guest-option-btn');
 const keepSignedInBtn: HTMLButtonElement | null = document.querySelector('#keep-signed-in-btn');
 
-const accountForm: HTMLDivElement | null = document.querySelector('#account-form');
 const accountEmailInput: HTMLInputElement | null = document.querySelector('#account-email-input');
 const accountPasswordInput: HTMLInputElement | null = document.querySelector('#account-password-input');
 const accountPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#account-password-input-reveal-btn');
 
-const guestForm: HTMLDivElement | null = document.querySelector('#guest-form');
 const guestUsernameInput: HTMLInputElement | null = document.querySelector('#guest-username-input');
 const guestPasswordInput: HTMLInputElement | null = document.querySelector('#guest-password-input');
 const guestPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#guest-password-input-reveal-btn');
@@ -70,14 +67,14 @@ async function submitForm(e: SubmitEvent): Promise<void> {
 async function accountSignIn(): Promise<void> {
   if (!isValidAccountDetails()) {
     popup('Invalid account sign in details.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
 
   if (!accountEmailInput || !accountPasswordInput) {
     popup('Something went wrong.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
@@ -107,7 +104,7 @@ async function accountSignIn(): Promise<void> {
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -116,7 +113,7 @@ async function accountSignIn(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -126,26 +123,56 @@ async function accountSignIn(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
-    if (status === 400 && errReason === 'email') {
+    if (status === 400) {
+      if (errReason === 'email') {
+        ErrorSpan.display(accountEmailInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'password') {
+        ErrorSpan.display(accountPasswordInput, errMessage);
+        return;
+      };
+
+      return;
+    };
+
+    if ((status === 404)) {
       ErrorSpan.display(accountEmailInput, errMessage);
       return;
     };
 
-    if (status === 400 && errReason === 'password') {
-      ErrorSpan.display(accountPasswordInput, errMessage);
-      return;
-    };
-
-    if ((status === 404 || status === 403)) {
+    if (status === 403 && errReason === 'unverified') {
       ErrorSpan.display(accountEmailInput, errMessage);
+
+      const infoModalConfig: InfoModalConfig = {
+        title: 'Account is unverified.',
+        description: `You need to first verify your account before being able to sign in. \n Check your inbox for a verification email.`,
+        btnTitle: 'Okay',
+      };
+
+      const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
+      infoModal.addEventListener('click', (e: MouseEvent) => {
+        if (!(e.target instanceof HTMLElement)) {
+          return;
+        };
+
+        if (e.target.id === 'info-modal-btn') {
+          InfoModal.remove();
+        };
+      });
+
       return;
     };
 
     if (status === 401) {
       ErrorSpan.display(accountPasswordInput, errMessage);
-      return;
+
+      if (errReason === 'accountLocked') {
+        displayAccountLockedModal();
+      };
     };
   };
 };
@@ -153,14 +180,14 @@ async function accountSignIn(): Promise<void> {
 async function guestSignIn(): Promise<void> {
   if (!isValidGuestDetails()) {
     popup('Invalid guest sign in details.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
 
   if (!guestUsernameInput || !guestPasswordInput) {
     popup('Something went wrong.', 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     return;
   };
@@ -193,7 +220,7 @@ async function guestSignIn(): Promise<void> {
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -202,7 +229,7 @@ async function guestSignIn(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.hide();
+      LoadingModal.remove();
 
       return;
     };
@@ -212,7 +239,7 @@ async function guestSignIn(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.hide();
+    LoadingModal.remove();
 
     if (status === 400) {
       if (errReason === 'username') {
@@ -230,7 +257,6 @@ async function guestSignIn(): Promise<void> {
 
     if (status === 401) {
       ErrorSpan.display(guestPasswordInput, errMessage);
-      return;
     };
   };
 };
@@ -270,39 +296,39 @@ function updateSignInOption(e: MouseEvent): void {
     return;
   };
 
-  if (e.target.id === accountOptionBtn?.id) {
+  if (e.target.id === 'account-option-btn') {
     switchToAccountForm();
     return;
   };
 
-  if (e.target.id === guestOptionBtn?.id) {
+  if (e.target.id === 'guest-option-btn') {
     switchToGuestForm();
   };
 };
 
 function switchToAccountForm(): void {
+  if (!signInFormState.isGuestUser) {
+    return;
+  };
+
   signInFormState.isGuestUser = false;
 
-  accountForm ? accountForm.style.display = 'block' : undefined;
-  guestForm ? guestForm.style.display = 'none' : undefined;
-
-  guestOptionBtn?.classList.remove('selected');
-  accountOptionBtn?.classList.add('selected');
-
+  signInFormElement?.classList.remove('is-guest-user');
   signInOptions?.classList.remove('guest');
+
   clearGuestForm();
 };
 
 function switchToGuestForm(): void {
+  if (signInFormState.isGuestUser) {
+    return;
+  };
+
   signInFormState.isGuestUser = true;
 
-  guestForm ? guestForm.style.display = 'block' : undefined;
-  accountForm ? accountForm.style.display = 'none' : undefined;
-
-  accountOptionBtn?.classList.remove('selected');
-  guestOptionBtn?.classList.add('selected');
-
+  signInFormElement?.classList.add('is-guest-user');
   signInOptions?.classList.add('guest');
+
   clearAccountForm();
 };
 
@@ -367,4 +393,23 @@ function updateSignedInDurationPreferences(): void {
   };
 
   keepSignedInBtn?.classList.add('checked');
+};
+
+function displayAccountLockedModal(): void {
+  const infoModalConfig: InfoModalConfig = {
+    title: 'Your account has been locked due to multiple failed sign in attempts.',
+    description: `You can recover your account by clicking the "Forgot my password" link at the end of the form.`,
+    btnTitle: 'Okay',
+  };
+
+  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
+  infoModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'info-modal-btn') {
+      infoModal.remove();
+    };
+  });
 };

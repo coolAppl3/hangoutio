@@ -1,11 +1,31 @@
 export default class LoadingModal {
   public static display(): void {
-    const modal: HTMLDivElement | null = document.querySelector('#loading-modal');
-    modal?.classList.add('displayed');
+    const existingLoadingModal: HTMLDivElement | null = document.querySelector('#loading-modal');
+    if (existingLoadingModal) {
+      return;
+    };
+
+    const newLoadingModal: HTMLDivElement = this.createModal();
+    document.body.appendChild(newLoadingModal);
   };
 
-  public static hide(): void {
-    const modal: HTMLDivElement | null = document.querySelector('#loading-modal');
-    modal?.classList.remove('displayed');
+  public static remove(): void {
+    const loadingModal: HTMLDivElement | null = document.querySelector('#loading-modal');
+    loadingModal?.remove();
+  };
+
+  private static createModal(): HTMLDivElement {
+    const loadingModal: HTMLDivElement = document.createElement('div');
+    loadingModal.id = 'loading-modal';
+
+    loadingModal.appendChild(this.createModalSpinner());
+    return loadingModal;
+  };
+
+  private static createModalSpinner(): HTMLDivElement {
+    const modalSpinner: HTMLDivElement = document.createElement('div');
+    modalSpinner.className = 'spinner';
+
+    return modalSpinner;
   };
 };

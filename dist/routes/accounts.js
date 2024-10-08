@@ -31,7 +31,7 @@ const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const userValidation = __importStar(require("../util/validation/userValidation"));
-const tokenGenerator = __importStar(require("../util/tokenGenerator"));
+const tokenGenerator_1 = require("../util/tokenGenerator");
 const requestValidation_1 = require("../util/validation/requestValidation");
 const emailServices_1 = require("../util/email/emailServices");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
@@ -104,8 +104,8 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
             return;
         }
         ;
-        const authToken = tokenGenerator.generateAuthToken('account');
-        const verificationCode = tokenGenerator.generateUniqueCode();
+        const authToken = (0, tokenGenerator_1.generateAuthToken)('account');
+        const verificationCode = (0, tokenGenerator_1.generateUniqueCode)();
         const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
         const createdOnTimestamp = Date.now();
         const [firstResultSetHeader] = await connection.execute(`INSERT INTO accounts(
@@ -321,7 +321,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
             accounts
           WHERE
             account_id = ?;`, [requestData.accountID]);
-                res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.' });
+                res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.', reason: 'accountDeleted' });
                 return;
             }
             ;
@@ -428,14 +428,14 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: 'Account is not yet unverified.' });
+            res.status(403).json({ success: false, message: 'Account is unverified.', reason: 'unverified' });
             return;
         }
         ;
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${accountDetails.account_id}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountDetails.account_id}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
@@ -443,7 +443,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
             account_id = ?;`, [newAuthToken, accountDetails.account_id]);
-                res.status(401).json({ success: false, message: 'Incorrect account password. Account has been locked.' });
+                res.status(401).json({ success: false, message: 'Incorrect account password. Account has been locked.', reason: 'accountLocked' });
                 return;
             }
             ;
@@ -474,7 +474,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.post('/recovery/start', async (req, res) => {
+exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
     ;
     const requestData = req.body;
     const expectedKeys = ['email'];
@@ -484,7 +484,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
     }
     ;
     if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.' });
+        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
         return;
     }
     ;
@@ -497,9 +497,9 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         accounts.marked_for_deletion,
         account_recovery.recovery_id,
         account_recovery.recovery_token,
+        account_recovery.request_timestamp,
         account_recovery.recovery_emails_sent,
-        account_recovery.failed_recovery_attempts,
-        account_recovery.latest_attempt_timestamp
+        account_recovery.failed_recovery_attempts
       FROM
         accounts
       LEFT JOIN
@@ -519,26 +519,27 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         }
         ;
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: 'Account unverified.' });
+            res.status(403).json({ success: false, message: 'Account unverified.', reason: 'unverified' });
             return;
         }
         ;
         if (!accountDetails.recovery_id) {
-            const recoveryToken = tokenGenerator.generateUniqueToken();
+            const recoveryToken = (0, tokenGenerator_1.generateUniqueToken)();
+            const requestTimestamp = Date.now();
             await db_1.dbPool.execute(`INSERT INTO account_recovery(
           account_id,
           recovery_token,
           request_timestamp,
           recovery_emails_sent,
-          failed_recovery_attempts,
-          latest_attempt_timestamp
+          failed_recovery_attempts
         )
-        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [accountDetails.account_id, recoveryToken, Date.now(), 1, 0, null]);
-            res.json({ success: true, resData: {} });
+        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountDetails.account_id, recoveryToken, requestTimestamp, 1, 0]);
+            res.json({ success: true, resData: { requestTimestamp } });
             const recoveryEmailConfig = {
                 to: requestData.email,
                 accountID: accountDetails.account_id,
                 recoveryToken,
+                requestTimestamp,
                 displayName: accountDetails.display_name,
             };
             await (0, emailServices_1.sendRecoveryEmail)(recoveryEmailConfig);
@@ -546,17 +547,24 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         }
         ;
         if (accountDetails.recovery_emails_sent >= 3) {
-            res.status(403).json({ success: false, message: 'Recovery email limit reached.' });
+            res.status(403).json({
+                success: false,
+                message: 'Recovery email limit has been reached.',
+                reason: 'emailLimitReached',
+                resData: {
+                    requestTimestamp: accountDetails.request_timestamp,
+                },
+            });
             return;
         }
         ;
-        if (accountDetails.failed_recovery_attempts >= 3 && accountDetails.latest_attempt_timestamp) {
-            const { minutesRemaining } = userUtils.getTimeTillNextRequest(accountDetails.latest_attempt_timestamp, 'hour');
+        if (accountDetails.failed_recovery_attempts >= 3) {
             res.status(403).json({
                 success: false,
-                message: 'Too many failed attempts.',
+                message: 'Too many failed recovery attempts.',
+                reason: 'failureLimitReached',
                 resData: {
-                    minutesRemaining: minutesRemaining || 1,
+                    requestTimestamp: accountDetails.request_timestamp,
                 },
             });
             return;
@@ -573,11 +581,12 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({ success: true, resData: { requestTimestamp: accountDetails.request_timestamp } });
         const recoveryEmailConfig = {
             to: requestData.email,
             accountID: accountDetails.account_id,
             recoveryToken: accountDetails.recovery_token,
+            requestTimestamp: accountDetails.request_timestamp,
             displayName: accountDetails.display_name,
         };
         await (0, emailServices_1.sendRecoveryEmail)(recoveryEmailConfig);
@@ -598,17 +607,17 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
     }
     ;
     if (!Number.isInteger(requestData.accountID)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.' });
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
         return;
     }
     ;
-    if (!userValidation.isValidToken(requestData.recoveryToken)) {
-        res.status(400).json({ success: false, message: 'Invalid recovery token.' });
+    if (!userValidation.isValidUniqueToken(requestData.recoveryToken)) {
+        res.status(400).json({ success: false, message: 'Invalid recovery token.', reason: 'recoveryToken' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid new password.' });
+        res.status(400).json({ success: false, message: 'Invalid new password.', reason: 'password' });
         return;
     }
     ;
@@ -618,7 +627,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         recovery_id,
         recovery_token,
         failed_recovery_attempts,
-        latest_attempt_timestamp
+        request_timestamp
       FROM
         account_recovery
       WHERE
@@ -630,13 +639,13 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         }
         ;
         const recoveryDetails = recoveryRows[0];
-        if (recoveryDetails.failed_recovery_attempts >= 3 && recoveryDetails.latest_attempt_timestamp) {
-            const { minutesRemaining } = userUtils.getTimeTillNextRequest(recoveryDetails.latest_attempt_timestamp, 'hour');
+        if (recoveryDetails.failed_recovery_attempts >= 3) {
             res.status(403).json({
                 success: false,
-                message: 'Too many failed attempts.',
+                message: 'Too many failed recovery attempts.',
+                reason: 'failureLimitReached',
                 resData: {
-                    minutesRemaining: minutesRemaining || 1,
+                    requestTimestamp: recoveryDetails.request_timestamp,
                 },
             });
             return;
@@ -646,20 +655,26 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
             await db_1.dbPool.execute(`UPDATE
           account_recovery
         SET
-          failed_recovery_attempts = failed_recovery_attempts + 1,
-          latest_attempt_timestamp = ?
+          failed_recovery_attempts = failed_recovery_attempts + 1
         WHERE
-          recovery_id = ?;`, [Date.now(), recoveryDetails.recovery_id]);
+          recovery_id = ?;`, [recoveryDetails.recovery_id]);
             if (recoveryDetails.failed_recovery_attempts + 1 >= 3) {
-                res.status(401).json({ success: false, message: 'Incorrect recovery token. Recovery suspended.' });
+                res.status(401).json({
+                    success: false,
+                    message: 'Incorrect recovery token.',
+                    reason: 'recoverySuspended',
+                    requestData: {
+                        requestTimestamp: recoveryDetails.request_timestamp,
+                    },
+                });
                 return;
             }
             ;
-            res.status(401).json({ success: false, message: 'Incorrect recovery token.' });
+            res.status(401).json({ success: false, message: 'Incorrect recovery token.', reason: 'incorrectRecoveryToken' });
             return;
         }
         ;
-        const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${requestData.accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${requestData.accountID}`;
         const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         accounts
@@ -678,7 +693,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         account_recovery
       WHERE
         recovery_id = ?;`, [recoveryDetails.recovery_id]);
-        res.json({ success: true, resData: { authToken: newAuthToken } });
+        res.json({ success: true, resData: { newAuthToken } });
     }
     catch (err) {
         console.log(err);
@@ -745,7 +760,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
@@ -813,7 +828,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         }
         ;
         const markedAuthToken = `d_${authToken}`;
-        const cancellationToken = tokenGenerator.generateUniqueToken();
+        const cancellationToken = (0, tokenGenerator_1.generateUniqueToken)();
         const [resultSetHeader] = await connection.execute(`UPDATE
         accounts
       SET
@@ -887,7 +902,7 @@ exports.accountsRouter.patch('/deletion/cancel', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidToken(requestData.cancellationToken)) {
+    if (!userValidation.isValidUniqueToken(requestData.cancellationToken)) {
         res.status(400).json({ success: false, message: 'Invalid cancellation token.' });
         return;
     }
@@ -916,7 +931,7 @@ exports.accountsRouter.patch('/deletion/cancel', async (req, res) => {
         ;
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${requestData.accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${requestData.accountID}`;
         const [updateHeader] = await connection.execute(`UPDATE
         accounts
       SET
@@ -1020,7 +1035,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.currentPassword, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
@@ -1048,7 +1063,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
             return;
         }
         ;
-        const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
         const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         accounts
@@ -1138,7 +1153,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
@@ -1178,7 +1193,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
                 return;
             }
             ;
-            const newVerificationCode = tokenGenerator.generateUniqueCode();
+            const newVerificationCode = (0, tokenGenerator_1.generateUniqueCode)();
             await connection.execute(`INSERT INTO email_update(
           account_id,
           new_email,
@@ -1348,7 +1363,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             return;
         }
         ;
-        const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         accounts
       SET
@@ -1432,7 +1447,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${tokenGenerator.generateAuthToken('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
@@ -1795,7 +1810,7 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.delete('/friends/remove', async (req, res) => {
+exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
     ;
     const authHeader = req.headers['authorization'];
     if (!authHeader) {

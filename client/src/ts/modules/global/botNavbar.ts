@@ -1,4 +1,4 @@
-import { ConfirmModal, ConfirmModalConfig } from "./ConfirmModal";
+import { ConfirmModalConfig, ConfirmModal } from "./ConfirmModal";
 import Cookies from "./Cookies";
 import LoadingModal from "./LoadingModal";
 import popup from "./popup";
