@@ -6,9 +6,7 @@
 ### Features
 
 - Improved Axios return types.
-
-
-
+- Reworked the previous step button left arrow SVG in the `create-hangout.html` form to a chevron for an improved look.
 
 
 ---
