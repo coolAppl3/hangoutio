@@ -1,6 +1,17 @@
 # Changelog
 
 ---
+## [0.2.20] (2024-10-09)
+
+### Features
+
+- Improved Axios return types.
+
+
+
+
+
+---
 ## [0.2.19] (2024-10-08)
 
 ### Features

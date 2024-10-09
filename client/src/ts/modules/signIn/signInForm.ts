@@ -5,7 +5,7 @@ import Cookies from '../global/Cookies';
 import LoadingModal from '../global/LoadingModal';
 import popup from '../global/popup';
 import { AccountSignInBody, AccountSignInData, accountSignInService } from '../services/accountServices';
-import axios, { AxiosError } from '../../../../node_modules/axios/index';
+import axios, { AxiosError, AxiosResponse } from '../../../../node_modules/axios/index';
 import { GuestSignInBody, GuestSignInData, guestSignInService } from '../services/guestServices';
 import { signOut } from '../global/signOut';
 import { InfoModal, InfoModalConfig } from '../global/InfoModal';
@@ -85,7 +85,7 @@ async function accountSignIn(): Promise<void> {
   };
 
   try {
-    const accountSignInData: AccountSignInData = await accountSignInService(accountSignInBody);
+    const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
     const { authToken } = accountSignInData.data.resData;
 
     if (signInFormState.keepSignedIn) {
@@ -198,7 +198,7 @@ async function guestSignIn(): Promise<void> {
   };
 
   try {
-    const guestSignInData: GuestSignInData = await guestSignInService(guestSignInBody);
+    const guestSignInData: AxiosResponse<GuestSignInData> = await guestSignInService(guestSignInBody);
     const { authToken, hangoutID } = guestSignInData.data.resData;
 
     if (signInFormState.keepSignedIn) {
