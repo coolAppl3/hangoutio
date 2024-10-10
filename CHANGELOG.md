@@ -1,6 +1,12 @@
 # Changelog
 
----
+## [0.2.22] (2024-10-10)
+
+### Documentation Changes
+
+- Removed unnecessary lines from CHANGELOG.md.
+
+
 ## [0.2.21] (2024-10-10)
 
 ### Features
@@ -19,7 +25,6 @@
 - Removed leftover `temp.ts` under the `accountRecovery` modules.
 
 
----
 ## [0.2.20] (2024-10-10)
 
 ### Features
@@ -36,7 +41,6 @@
 - Fixed incorrect use of bind in `SliderInput.ts` causing `stopDrag()` to be called for every instance of `SliderInput` that has been interacted with.
 
 
----
 ## [0.2.19] (2024-10-08)
 
 ### Features
@@ -77,7 +81,6 @@
 - Fixed `getVerificationData()` in `signUpForm.ts` not correctly handling substrings without a `=` in the query string parameters, and renamed it to `getVerificationLinkDetails()`.
 
 
----
 ## [0.2.18] (2024-10-01)
 
 ### Features
@@ -100,7 +103,6 @@
 - Removed `process.env.NODE_ENV` from `webpack.config.js` as it didn't make sense, and replaced with a `buildEnvironment` variable instead.
 
 
----
 ## [0.2.17] (2024-09-30)
 
 ### Features
@@ -116,7 +118,6 @@
 - Fixed buttons without `type="button"` causing form-submission issues.
 
 
----
 ## [0.2.16] (2024-09-27)
 
 ### Features
@@ -137,7 +138,6 @@
 - Removed `axios` from the backend, which was leftover from previous patches and wasn't used.
 
 
----
 ## [0.2.15] (2024-09-25)
 
 ### Features
@@ -155,7 +155,6 @@
 - Removed some redundancies from the methods in `Cookies.ts`.
 
 
----
 ## [0.2.14] (2024-09-23)
 
 ### Features
@@ -175,7 +174,6 @@
 - Fixed hangout step sliders not updating the form state with their values.
 
 
----
 ## [0.2.13] (2024-09-21)
 
 ### Features
@@ -189,7 +187,6 @@
 - Fixed a few minor typing issues in `hangoutCronJobs.ts`.
 
 
----
 ## [0.2.12] (2024-09-20)
 
 ### Features
@@ -200,7 +197,6 @@
 - Reduced ongoing hangouts limit from 20 down to 12.
 
 
----
 ## [0.2.11] (2024-09-19)
 
 ### Features
@@ -210,7 +206,6 @@
 - Improved authToken validation for requests in `accounts.ts`.
 
 
----
 ## [0.2.10a] (2024-09-19)
 
 ### Bug Fixes
@@ -218,7 +213,6 @@
 - Fixed not all updates being pushed in the last patch.
 
 
----
 ## [0.2.10] (2024-09-19)
 
 ### Features
@@ -246,7 +240,6 @@
 - Changed the color of informative popups to now have a neutral background.
 
 
----
 ## [0.2.9] (2024-09-14)
 
 **Note:**: Development was paused for 9 days due to personal reasons.
@@ -270,7 +263,6 @@
 - Potential fix for transitions causing dark theme colors to flash for a moment before the light theme is applied.
 
 
----
 ## [0.2.8] (2024-09-04)
 
 ### Features
@@ -283,7 +275,6 @@
     - The function isn't extremely efficient, and is subject to changes in the future, but will do for now.
 - Moving on to the front end after this patch. Rate limiting will be implemented later. 
 
----
 ## [0.2.7] (2024-09-03)
 
 ### Features
@@ -322,7 +313,6 @@
 - Added a missing new endpoint in last patch's notes.
 
 
----
 ## [0.2.6] (2024-08-29)
 
 ### Features
@@ -345,7 +335,6 @@
 - Fixed `hangoutMembers.ts` having an incorrect number of mysql2 placeholders when creating a new hangout member.
 
 
----
 ## [0.2.5] (2024-08-24)
 
 ### Features
@@ -376,7 +365,6 @@
 - Fixed incorrect date in last patch.
 
 
----
 ## [0.2.4a] (2024-08-23)
 
 ### Bug Fixes
@@ -384,7 +372,6 @@
 - Fixed missing build files in `dist`.
 
 
----
 ## [0.2.4] (2024-08-23)
 
 ### Features
@@ -412,7 +399,6 @@
 - Fixed a missing placeholder in `availabilitySlots.ts`.
 
 
----
 ## [0.2.3] (2024-08-20)
 
 ### Features
@@ -445,7 +431,6 @@
 - Fixed the `availabilitySlots` router not accurately authenticating the requester using their hangoutMemberID.
 
 
----
 ## [0.2.2] (2024-08-18)
 
 ### Features
@@ -486,7 +471,6 @@
 - Fixed a few `LEFT JOIN` statements indirectly acting as an `INNER JOIN` due to how their `WHERE` constraint was constructed.
 
 
----
 ## [0.2.1] (2024-08-12)
 
 ### Features
@@ -515,7 +499,6 @@
 - Ditched the use of environmental variables for the hangout member limit.
 
 
----
 ## [0.2.0] (2024-08-09)
 
 ### Features
@@ -550,7 +533,6 @@
 - Fixed an incorrectly formed if-statement for checking if a valid hangout ID was provided in `/details/steps/progressForward`
 - Fixed a few missing transaction rollback statements.
 
----
 ## [0.1.11] (2024-07-30)
 
 ### Features
@@ -576,7 +558,6 @@
   - Next patch will deal with updating the hangout member rows the user was a part of.
 - Fixed the start of the email update process not checking if the email is in use first.
 
----
 ## [0.1.10] (2024-07-27)
 
 ### Features
@@ -593,7 +574,6 @@
   - POST `guests/signIn`: Used to sign in a guest into their respective hangout.
 
 
----
 ## [0.1.9] (2024-07-25)
 
 ### Features
@@ -614,7 +594,6 @@
 - Improved the structure and consistency of SQL queries throughout all routers. 
 
 
----
 ## [0.1.8] (2024-07-22)
 
 ### Features
@@ -646,7 +625,6 @@
 - Fixed the endpoint for creating guests checking for a valid password using `isValidEmailString()` instead of `isValidNewPasswordString()`.
 
 
----
 ## [0.1.7] (2024-07-15)
 
 ### Features
@@ -678,7 +656,6 @@
   - Removed `generators` directory.
 
 
----
 ## [0.1.6] (2024-07-11)
 
 ### Features
@@ -709,7 +686,6 @@
 - Slightly improved the phrasing in last patch's notes.
 
 
----
 ## [0.1.5] (2024-07-09)
 
 ### Code Refactoring
@@ -738,7 +714,6 @@
 - Moved all modules responsible for generating codes or tokens to a `generators` directory under `util`.
 
 
----
 ## [0.1.4] (2024-07-07)
 
 ### Features
@@ -765,7 +740,6 @@
 - Reworked the `Accounts` table to now only rely on the number of `failed_signing_attempts` to determine if the account is locked, effectively skipping an unnecessary step.
 
 
----
 ## [0.1.3] (2024-07-06)
 
 ### Features
@@ -801,7 +775,6 @@
   - The file is empty for now, but might be used down the line.
 
 
----
 ## [0.1.2] (2024-07-01)
 
 ### Features
@@ -817,7 +790,6 @@
 - Added `logUnexpectedError.ts` which will be used if procedures end up being implemented for monitoring purposes.
 
 
----
 ## [0.1.1] (2024-06-27)
 
 ### Features
@@ -857,7 +829,6 @@
 - Removed redundancies from the changelog, and rephrased some of the patch notes.
 
 
----
 ## [0.1.0] (2024-06-21)
 
 ### Build Changes
@@ -904,7 +875,6 @@
   - Added a note above the name input to express to the user that the input is case-sensitive.
 
 
----
 ## [0.0.10] (2024-06-05)
 
 ### Features
@@ -935,7 +905,6 @@
 - Removed `__datePicker.html` and `__timePicker.html` templates, as they've been implemented in `create-hangout.html` and can be retrieved again that way
 
 
----
 ## [0.0.9] (2024-06-03)
 
 ### Features
@@ -971,7 +940,6 @@
 
 - Changed the target in `tsconfig.js` to ES2015 (ES6) instead of ES5.
 
----
 ## [0.0.8] (2024-05-26)
 
 ### Features
@@ -996,7 +964,6 @@
 - Added an extra point about the `datePicker.ts` module which was not noted in the last patch.
 
 
----
 ## [0.0.7] (2024-05-23)
 
 ### Features
@@ -1018,7 +985,6 @@
 - Removed `_variables.scss` and moved the font definitions to `main.scss` considering their simplicity.
 
 
----
 ## [0.0.6] (2024-05-14)
 
 ### Features
@@ -1057,7 +1023,6 @@
 - Removed unnecessary line breaks in the changelog.
 
 
----
 ## [0.0.5] (2024-05-11)
 
 ### Features
@@ -1087,7 +1052,6 @@
 - Rephrased a sentence in the homepage.
 
 
----
 ## [0.0.4] (2024-05-07)
 
 ### Features
@@ -1096,7 +1060,6 @@
   - Links and further functionality to be added later.
 
 
----
 ## [0.0.3] (2024-05-03)
 
 ### Features
@@ -1107,7 +1070,6 @@
 - Hero section implemented.
 
 
----
 ## [0.0.2] (2024-05-01)
 
 ### Features
