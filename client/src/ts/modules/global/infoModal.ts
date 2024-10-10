@@ -4,8 +4,12 @@ export interface InfoModalConfig {
   btnTitle: string,
 };
 
+interface InfoModalOptions {
+  simple: boolean,
+};
+
 export class InfoModal {
-  public static display(infoModalConfig: InfoModalConfig): HTMLDivElement {
+  public static display(infoModalConfig: InfoModalConfig, options?: InfoModalOptions): HTMLDivElement {
     const existingInfoModal: HTMLDivElement | null = document.querySelector('#info-modal');
     existingInfoModal ? existingInfoModal.remove() : undefined;
 
@@ -19,6 +23,10 @@ export class InfoModal {
       });
     });
 
+    if (options?.simple) {
+      this.addSimpleClosingEventListener(newInfoModal);
+    };
+
     return newInfoModal;
   };
 
@@ -31,6 +39,18 @@ export class InfoModal {
 
     infoModal.classList.remove('revealed');
     setTimeout(() => infoModal.remove(), 150);
+  };
+
+  private static addSimpleClosingEventListener(infoModal: HTMLDivElement): void {
+    infoModal.addEventListener('click', (e: MouseEvent) => {
+      if (!(e.target instanceof HTMLElement)) {
+        return;
+      };
+
+      if (e.target.id === 'info-modal-btn') {
+        InfoModal.remove();
+      };
+    });
   };
 
   private static createInfoModal(config: InfoModalConfig): HTMLDivElement {
