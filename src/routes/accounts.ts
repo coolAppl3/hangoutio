@@ -509,7 +509,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     };
 
     if (accountDetails.failed_sign_in_attempts >= 5) {
-      res.status(403).json({ success: false, message: 'Account is locked.' });
+      res.status(403).json({ success: false, message: 'Account is locked.', reason: 'accountLocked' });
       return;
     };
 

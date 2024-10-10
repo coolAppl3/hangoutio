@@ -144,16 +144,25 @@ async function accountSignIn(): Promise<void> {
       return;
     };
 
-    if (status === 403 && errReason === 'unverified') {
+    if (status === 403) {
       ErrorSpan.display(accountEmailInput, errMessage);
 
-      const infoModalConfig: InfoModalConfig = {
-        title: 'Account is unverified.',
-        description: `You need to first verify your account before being able to sign in. \n Check your inbox for a verification email.`,
-        btnTitle: 'Okay',
+      if (errReason === 'accountLocked') {
+        displayAccountLockedModal();
+        return;
       };
 
-      InfoModal.display(infoModalConfig, { simple: true });
+      if (errReason === 'unverified') {
+        const infoModalConfig: InfoModalConfig = {
+          title: errMessage,
+          description: `You need to first verify your account before being able to sign in. \n Check your inbox for a verification email.`,
+          btnTitle: 'Okay',
+        };
+
+        InfoModal.display(infoModalConfig, { simple: true });
+        return;
+      };
+
       return;
     };
 
