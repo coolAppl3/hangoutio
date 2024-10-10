@@ -423,7 +423,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         if (accountDetails.failed_sign_in_attempts >= 5) {
-            res.status(403).json({ success: false, message: 'Account is locked.' });
+            res.status(403).json({ success: false, message: 'Account is locked.', reason: 'accountLocked' });
             return;
         }
         ;
@@ -1347,18 +1347,25 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         }
         ;
         if (requestData.verificationCode !== accountDetails.verification_code) {
+            if (accountDetails.failed_sign_in_attempts + 1 >= 3) {
+                await db_1.dbPool.execute(`UPDATE
+            email_update
+          SET
+            failed_update_attempts = failed_update_attempts + 1,
+            request_timestamp = ?
+          WHERE
+            update_id = ?;`, [Date.now(), accountDetails.update_id]);
+                res.status(401).json({ success: false, message: 'Incorrect verification code. Request suspended.' });
+                await (0, emailServices_1.sendEmailUpdateWarningEmail)(accountDetails.email, accountDetails.display_name);
+                return;
+            }
+            ;
             await db_1.dbPool.execute(`UPDATE
           email_update
         SET
           failed_update_attempts = failed_update_attempts + 1
         WHERE
           update_id = ?;`, [accountDetails.update_id]);
-            if (accountDetails.failed_sign_in_attempts + 1 >= 3) {
-                res.status(401).json({ success: false, message: 'Incorrect verification code. Request suspended.' });
-                await (0, emailServices_1.sendEmailUpdateWarningEmail)(accountDetails.email, accountDetails.display_name);
-                return;
-            }
-            ;
             res.status(401).json({ success: false, message: 'Incorrect verification code.' });
             return;
         }

@@ -424,8 +424,8 @@ function getEmailUpdateWarningTemplate(displayName) {
       <body>
         <div class="email-body">
           <p>Hey ${displayName},</p>
-          <p>We noticed 3 failed attempts made for your Hangoutio account's registered email address.</p>
-          <p>If this requests weren't made by you, please sign in and update your password to ensure your account is safe.</p>
+          <p>We've detected 3 failed attempts to update the email address linked to your Hangoutio account.</p>
+          <p>If these requests weren't made by you, please sign in and update your password to ensure your account is safe.</p>
           <p>Further email update attempts have been suspended for the next 24 hours to protect your account.</p>
           <p id="end-of-email">Warmest regards,</p>
           <p>Hangoutio</p>
