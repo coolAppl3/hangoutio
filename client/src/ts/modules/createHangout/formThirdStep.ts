@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "../../../../node_modules/axios/index";
+import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
 import { ConfirmModalConfig, ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
@@ -119,7 +119,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
   };
 
   try {
-    const accountSignInData: AccountSignInData = await accountSignInService(accountSignInBody);
+    const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
     const { authToken } = accountSignInData.data.resData;
 
     if (thirdStepState.keepSignedIn) {
@@ -141,7 +141,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
       votingStep: hangoutCreationState.votingStep * dayMilliseconds,
     };
 
-    const accountLeaderHangoutData: AccountLeaderHangoutData = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
+    const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
     const { hangoutID } = accountLeaderHangoutData.data.resData;
 
     popup('Hangout created.', 'success', 1000);
@@ -237,7 +237,7 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
   };
 
   try {
-    const accountLeaderHangoutData: AccountLeaderHangoutData = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
+    const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
     const { hangoutID } = accountLeaderHangoutData.data.resData;
 
     popup('Hangout created.', 'success', 1000);
@@ -326,7 +326,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
   };
 
   try {
-    const guestLeaderHangoutData: GuestLeaderHangoutData = await createGuestLeaderHangoutService(guestLeaderHangoutBody);
+    const guestLeaderHangoutData: AxiosResponse<GuestLeaderHangoutData> = await createGuestLeaderHangoutService(guestLeaderHangoutBody);
     const { authToken, hangoutID } = guestLeaderHangoutData.data.resData;
 
     if (thirdStepState.keepSignedIn) {

@@ -15,17 +15,15 @@ export interface AccountLeaderHangoutBody {
   votingStep: number,
 };
 
-export interface AccountLeaderHangoutData extends AxiosResponse {
-  data: {
-    success: true,
-    resData: {
-      hangoutID: string,
-      hangoutMemberID: number,
-    },
+export interface AccountLeaderHangoutData {
+  success: true,
+  resData: {
+    hangoutID: string,
+    hangoutMemberID: number,
   },
 };
 
-export async function createAccountLeaderHangoutService(authToken: string, requestBody: AccountLeaderHangoutBody): Promise<AccountLeaderHangoutData> {
+export async function createAccountLeaderHangoutService(authToken: string, requestBody: AccountLeaderHangoutBody): Promise<AxiosResponse<AccountLeaderHangoutData>> {
   return axios.post(`${hangoutsApiUrl}/create/accountLeader`, requestBody, {
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -47,16 +45,14 @@ export interface GuestLeaderHangoutBody {
   displayName: string,
 };
 
-export interface GuestLeaderHangoutData extends AxiosResponse {
-  data: {
-    success: true,
-    resData: {
-      hangoutID: string,
-      authToken: string,
-    },
+export interface GuestLeaderHangoutData {
+  success: true,
+  resData: {
+    hangoutID: string,
+    authToken: string,
   },
 };
 
-export async function createGuestLeaderHangoutService(requestBody: GuestLeaderHangoutBody): Promise<GuestLeaderHangoutData> {
+export async function createGuestLeaderHangoutService(requestBody: GuestLeaderHangoutBody): Promise<AxiosResponse<GuestLeaderHangoutData>> {
   return axios.post(`${hangoutsApiUrl}/create/guestLeader`, requestBody);
 };

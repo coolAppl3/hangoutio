@@ -11,16 +11,14 @@ export interface AccountSignInBody {
   password: string,
 };
 
-export interface AccountSignInData extends AxiosResponse {
-  data: {
-    success: true,
-    resData: {
-      authToken: string,
-    },
+export interface AccountSignInData {
+  success: true,
+  resData: {
+    authToken: string,
   },
 };
 
-export async function accountSignInService(requestBody: AccountSignInBody): Promise<AccountSignInData> {
+export async function accountSignInService(requestBody: AccountSignInBody): Promise<AxiosResponse<AccountSignInData>> {
   return axios.post(`${accountsApiUrl}/signIn`, requestBody);
 };
 
@@ -33,30 +31,26 @@ export interface AccountSignUpBody {
   password: string,
 };
 
-export interface AccountSignUpData extends AxiosResponse {
-  data: {
-    success: true,
-    resData: {
-      accountID: number,
-      createdOnTimestamp: number,
-    },
+export interface AccountSignUpData {
+  success: true,
+  resData: {
+    accountID: number,
+    createdOnTimestamp: number,
   },
 };
 
-export async function accountSignUpService(requestBody: AccountSignUpBody): Promise<AccountSignUpData> {
+export async function accountSignUpService(requestBody: AccountSignUpBody): Promise<AxiosResponse<AccountSignUpData>> {
   return axios.post(`${accountsApiUrl}/signUp`, requestBody);
 };
 
 // --- --- ---
 
-interface ResendVerificationEmailData extends AxiosResponse {
-  data: {
-    success: true,
-    resData: {},
-  },
+interface ResendVerificationEmailData {
+  success: true,
+  resData: {},
 };
 
-export async function resendVerificationEmailService(requestBody: { accountID: number }): Promise<ResendVerificationEmailData> {
+export async function resendVerificationEmailService(requestBody: { accountID: number }): Promise<AxiosResponse<ResendVerificationEmailData>> {
   return axios.post(`${accountsApiUrl}/verification/resendEmail`, requestBody);
 };
 
@@ -67,16 +61,14 @@ export interface AccountVerificationBody {
   verificationCode: string,
 };
 
-export interface AccountVerificationData extends AxiosResponse {
-  data: {
-    success: true,
-    resData: {
-      authToken: string,
-    },
+export interface AccountVerificationData {
+  success: true,
+  resData: {
+    authToken: string,
   },
 };
 
-export async function verifyAccountService(requestBody: AccountVerificationBody): Promise<AccountVerificationData> {
+export async function verifyAccountService(requestBody: AccountVerificationBody): Promise<AxiosResponse<AccountVerificationData>> {
   return axios.patch(`${accountsApiUrl}/verification/verify`, requestBody);
 };
 

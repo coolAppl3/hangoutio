@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "../../../../node_modules/axios/index";
+import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
 import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
@@ -110,7 +110,7 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
   };
 
   try {
-    const accountSignUpData: AccountSignUpData = await accountSignUpService(accountSignUpBody);
+    const accountSignUpData: AxiosResponse<AccountSignUpData> = await accountSignUpService(accountSignUpBody);
     const { accountID, createdOnTimestamp } = accountSignUpData.data.resData;
 
     signUpFormState.accountID = accountID;
@@ -232,7 +232,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
   };
 
   try {
-    const accountVerificationData: AccountVerificationData = await verifyAccountService(accountVerificationBody);
+    const accountVerificationData: AxiosResponse<AccountVerificationData> = await verifyAccountService(accountVerificationBody);
     const { authToken } = accountVerificationData.data.resData;
 
     signUpFormState.verificationEmailsSent++;

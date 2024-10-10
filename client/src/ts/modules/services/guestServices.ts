@@ -10,16 +10,14 @@ export interface GuestSignInBody {
   password: string,
 };
 
-export interface GuestSignInData extends AxiosResponse {
-  data: {
-    success: true,
-    resData: {
-      authToken: string,
-      hangoutID: string,
-    },
+export interface GuestSignInData {
+  success: true,
+  resData: {
+    authToken: string,
+    hangoutID: string,
   },
 };
 
-export async function guestSignInService(requestBody: GuestSignInBody): Promise<GuestSignInData> {
+export async function guestSignInService(requestBody: GuestSignInBody): Promise<AxiosResponse<GuestSignInData>> {
   return axios.post(`${guestApiUrl}/signIn`, requestBody);
 };
