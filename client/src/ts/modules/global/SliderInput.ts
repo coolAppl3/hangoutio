@@ -63,7 +63,7 @@ export default class SliderInput {
     };
 
     if (this.isTouchDevice) {
-      this.slider?.addEventListener('touchstart', this.startDrag.bind(this));
+      this.slider?.addEventListener('touchstart', this.startDrag.bind(this), { passive: false });
       return;
     };
 
@@ -76,8 +76,8 @@ export default class SliderInput {
     document.body.style.userSelect = 'none';
 
     if (this.isTouchDevice) {
-      document.body.addEventListener('touchmove', this.boundDragSlider);
-      document.body.addEventListener('touchend', this.boundStopDrag);
+      document.body.addEventListener('touchmove', this.boundDragSlider, { passive: false });
+      document.body.addEventListener('touchend', this.boundStopDrag, { passive: false });
 
       this.disableTouchScroll();
 
