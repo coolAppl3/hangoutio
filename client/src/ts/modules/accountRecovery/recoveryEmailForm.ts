@@ -140,16 +140,7 @@ function displayEmailLimitReachedInfoModal(errMessage: string, requestTimestamp:
     btnTitle: 'Okay',
   };
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-  infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'info-modal-btn') {
-      InfoModal.remove();
-    };
-  });
+  InfoModal.display(infoModalConfig, { simple: true });
 };
 
 function setActiveValidation(): void {
@@ -302,7 +293,8 @@ function displayInvalidRecoveryLinkModal(): void {
     };
 
     if (e.target.id === 'info-modal-btn') {
-      window.location.href = 'account-recovery.html';
+      const hrefWithoutQueryString: string = window.location.href.split('?')[0];
+      window.location.replace(hrefWithoutQueryString);
     };
   });
 };

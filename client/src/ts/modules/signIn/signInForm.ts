@@ -97,7 +97,7 @@ async function accountSignIn(): Promise<void> {
     };
 
     popup('Signed in successfully.', 'success');
-    setTimeout(() => window.location.href = `account.html`, 1000);
+    setTimeout(() => window.location.replace('account.html'), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -144,25 +144,24 @@ async function accountSignIn(): Promise<void> {
       return;
     };
 
-    if (status === 403 && errReason === 'unverified') {
+    if (status === 403) {
       ErrorSpan.display(accountEmailInput, errMessage);
 
-      const infoModalConfig: InfoModalConfig = {
-        title: 'Account is unverified.',
-        description: `You need to first verify your account before being able to sign in. \n Check your inbox for a verification email.`,
-        btnTitle: 'Okay',
+      if (errReason === 'accountLocked') {
+        displayAccountLockedModal();
+        return;
       };
 
-      const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-      infoModal.addEventListener('click', (e: MouseEvent) => {
-        if (!(e.target instanceof HTMLElement)) {
-          return;
+      if (errReason === 'unverified') {
+        const infoModalConfig: InfoModalConfig = {
+          title: errMessage,
+          description: `You need to first verify your account before being able to sign in. \n Check your inbox for a verification email.`,
+          btnTitle: 'Okay',
         };
 
-        if (e.target.id === 'info-modal-btn') {
-          InfoModal.remove();
-        };
-      });
+        InfoModal.display(infoModalConfig, { simple: true });
+        return;
+      };
 
       return;
     };
@@ -213,7 +212,7 @@ async function guestSignIn(): Promise<void> {
     };
 
     popup('Signed in successfully.', 'success');
-    setTimeout(() => window.location.href = `hangout.html?id=${hangoutID}`, 1000);
+    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutID}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -377,11 +376,11 @@ function redirectSignedInUser(): void {
   };
 
   if (authToken.startsWith('g')) {
-    window.location.href = 'hangout.html';
+    window.location.replace('hangout.html');
     return;
   };
 
-  window.location.href = 'account.html';
+  window.location.replace('account.html');
 };
 
 function updateSignedInDurationPreferences(): void {
@@ -402,14 +401,5 @@ function displayAccountLockedModal(): void {
     btnTitle: 'Okay',
   };
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-  infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'info-modal-btn') {
-      infoModal.remove();
-    };
-  });
+  InfoModal.display(infoModalConfig, { simple: true });
 };

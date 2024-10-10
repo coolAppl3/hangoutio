@@ -248,7 +248,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     clearVerificationCookies();
 
     popup('Account successfully verified.', 'success');
-    setTimeout(() => window.location.href = 'account.html', 1000);
+    setTimeout(() => window.location.replace('account.html'), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -726,5 +726,5 @@ function clearVerificationCookies(): void {
 
 function reloadWithoutQueryString(): void {
   const hrefWithoutQueryString: string = window.location.href.split('?')[0];
-  window.location.href = hrefWithoutQueryString;
+  window.location.replace(hrefWithoutQueryString);
 };

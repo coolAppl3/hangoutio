@@ -1,6 +1,25 @@
 # Changelog
 
 ---
+## [0.2.21] (2024-10-10)
+
+### Features
+
+- Updated PATCH `accounts/details/updateEmail/confirm` to reset the request_timestamp value when suspending further requests.
+  - This will ensure that further requests are denied for 24 hours from when the request was suspended, not initially created.
+- Improved the phrasing in `getEmailUpdateWarningTemplate`.
+- Added an optional `options` parameter to `InfoModal.display()`.
+  - Simplified InfoModal implementation where applicable.
+- Added a popup for users trying to sign into a locked account.
+- Improved redirection logic in a few modules.
+
+
+### Chore Changes
+
+- Removed leftover `temp.ts` under the `accountRecovery` modules.
+
+
+---
 ## [0.2.20] (2024-10-10)
 
 ### Features

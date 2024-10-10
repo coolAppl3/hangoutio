@@ -340,7 +340,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     };
 
     popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.href = `hangout.html?id=${hangoutID}`, 1000);
+    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutID}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);

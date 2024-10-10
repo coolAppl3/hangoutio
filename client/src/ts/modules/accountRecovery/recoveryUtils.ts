@@ -38,7 +38,7 @@ export function updateDisplayedForm(): void {
 
 export function reloadWithoutQueryString(): void {
   const hrefWithoutQueryString: string = window.location.href.split('?')[0];
-  window.location.href = hrefWithoutQueryString;
+  window.location.replace(hrefWithoutQueryString);
 };
 
 export function getMinutesTillRecoveryExpiry(recoveryStartTimestamp: number): number {
@@ -85,14 +85,5 @@ export function displayFailureLimitReachedInfoModal(errMessage: string, requestT
     btnTitle: 'Okay',
   };
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-  infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'info-modal-btn') {
-      InfoModal.remove();
-    };
-  });
+  InfoModal.display(infoModalConfig, { simple: true });
 };
