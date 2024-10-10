@@ -63,7 +63,7 @@ export default class SliderInput {
     };
 
     if (this.isTouchDevice) {
-      this.slider?.addEventListener('touchstart', this.startDrag.bind(this), { passive: true });
+      this.slider?.addEventListener('touchstart', this.startDrag.bind(this));
       return;
     };
 
@@ -76,8 +76,10 @@ export default class SliderInput {
     document.body.style.userSelect = 'none';
 
     if (this.isTouchDevice) {
-      document.body.addEventListener('touchmove', this.boundDragSlider, { passive: true });
-      document.body.addEventListener('touchend', this.boundStopDrag, { passive: true });
+      document.body.addEventListener('touchmove', this.boundDragSlider);
+      document.body.addEventListener('touchend', this.boundStopDrag);
+
+      this.disableTouchScroll();
 
       return;
     };
@@ -121,6 +123,8 @@ export default class SliderInput {
     if (this.isTouchDevice) {
       document.body.removeEventListener('touchmove', this.boundDragSlider);
       document.body.removeEventListener('touchend', this.boundStopDrag);
+
+      this.reenableTouchScroll();
 
       return;
     };
@@ -196,5 +200,17 @@ export default class SliderInput {
     this.sliderThumb instanceof HTMLDivElement ? this.sliderThumb.style.width = `${newWidth}%` : undefined;
     this.actualInput?.setAttribute('value', `${this.sliderValue}`);
     this.updateSliderTextValue();
+  };
+
+  private disableTouchScroll(): void {
+    if (document.body.classList.contains('scroll-disabled')) {
+      return;
+    };
+
+    document.body.classList.add('scroll-disabled');
+  };
+
+  private reenableTouchScroll(): void {
+    document.body.classList.remove('scroll-disabled');
   };
 };

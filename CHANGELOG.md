@@ -8,12 +8,12 @@
 - Improved Axios return types.
 - Reworked the previous step button left arrow SVG in the `create-hangout.html` form to a chevron for an improved look.
 - Improved the margin between sub-forms and form navigation in `create-hangout.html`.
+- Updated `SliderInput.ts` to disable scrolling on touch devices while `dragSlider()` is being called to make it more useable.
 
 
 ### Bug Fixes
 
 - Fixed incorrect use of bind in `SliderInput.ts` causing `stopDrag()` to be called for every instance of `SliderInput` that has been interacted with.
-
 
 
 

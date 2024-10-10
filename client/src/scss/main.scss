@@ -324,6 +324,10 @@
   .h-line {
     @apply w-full h-[2px] bg-light-gray dark:bg-light-black rounded-[5rem];
   }
+
+  .scroll-disabled {
+    overflow: hidden !important;
+  }
 }
 
 // custom components --- --- --- --- --- --- --- --- ---
@@ -912,8 +916,4 @@
       }
     }
   }
-}
-
-body.scroll-disabled {
-  overflow: hidden !important;
 }
