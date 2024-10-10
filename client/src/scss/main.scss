@@ -913,3 +913,7 @@
     }
   }
 }
+
+body.scroll-disabled {
+  overflow: hidden !important;
+}
