@@ -140,16 +140,7 @@ function displayEmailLimitReachedInfoModal(errMessage: string, requestTimestamp:
     btnTitle: 'Okay',
   };
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-  infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'info-modal-btn') {
-      InfoModal.remove();
-    };
-  });
+  InfoModal.display(infoModalConfig, { simple: true });
 };
 
 function setActiveValidation(): void {

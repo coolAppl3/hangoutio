@@ -153,17 +153,7 @@ async function accountSignIn(): Promise<void> {
         btnTitle: 'Okay',
       };
 
-      const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-      infoModal.addEventListener('click', (e: MouseEvent) => {
-        if (!(e.target instanceof HTMLElement)) {
-          return;
-        };
-
-        if (e.target.id === 'info-modal-btn') {
-          InfoModal.remove();
-        };
-      });
-
+      InfoModal.display(infoModalConfig, { simple: true });
       return;
     };
 
@@ -402,14 +392,5 @@ function displayAccountLockedModal(): void {
     btnTitle: 'Okay',
   };
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-  infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'info-modal-btn') {
-      infoModal.remove();
-    };
-  });
+  InfoModal.display(infoModalConfig, { simple: true });
 };
