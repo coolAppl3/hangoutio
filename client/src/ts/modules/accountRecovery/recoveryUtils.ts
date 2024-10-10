@@ -38,7 +38,7 @@ export function updateDisplayedForm(): void {
 
 export function reloadWithoutQueryString(): void {
   const hrefWithoutQueryString: string = window.location.href.split('?')[0];
-  window.location.href = hrefWithoutQueryString;
+  window.location.replace(hrefWithoutQueryString);
 };
 
 export function getMinutesTillRecoveryExpiry(recoveryStartTimestamp: number): number {

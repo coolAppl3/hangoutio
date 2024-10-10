@@ -97,7 +97,7 @@ async function accountSignIn(): Promise<void> {
     };
 
     popup('Signed in successfully.', 'success');
-    setTimeout(() => window.location.href = `account.html`, 1000);
+    setTimeout(() => window.location.replace('account.html'), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -212,7 +212,7 @@ async function guestSignIn(): Promise<void> {
     };
 
     popup('Signed in successfully.', 'success');
-    setTimeout(() => window.location.href = `hangout.html?id=${hangoutID}`, 1000);
+    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutID}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -376,11 +376,11 @@ function redirectSignedInUser(): void {
   };
 
   if (authToken.startsWith('g')) {
-    window.location.href = 'hangout.html';
+    window.location.replace('hangout.html');
     return;
   };
 
-  window.location.href = 'account.html';
+  window.location.replace('account.html');
 };
 
 function updateSignedInDurationPreferences(): void {
