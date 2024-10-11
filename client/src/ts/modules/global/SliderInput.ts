@@ -75,6 +75,8 @@ export default class SliderInput {
     this.isDragging = true;
     document.body.style.userSelect = 'none';
 
+    this.sliderThumb?.classList.add('active');
+
     if (this.isTouchDevice) {
       document.body.addEventListener('touchmove', this.boundDragSlider, { passive: false });
       document.body.addEventListener('touchend', this.boundStopDrag, { passive: false });
@@ -115,6 +117,8 @@ export default class SliderInput {
   private stopDrag(): void {
     this.isDragging = false;
     document.body.style.userSelect = 'auto';
+
+    this.sliderThumb?.classList.remove('active');
 
     if (this.isTouchDevice) {
       document.body.removeEventListener('touchmove', this.boundDragSlider);
