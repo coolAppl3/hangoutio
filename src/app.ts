@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import path from 'path';
 import cors from 'cors';
-import express, { Application } from 'express';
+import express, { Application, Request, Response } from 'express';
 
 // routers
 import { accountsRouter } from './routes/accounts';
@@ -45,6 +45,11 @@ app.use('/api/hangoutMembers', hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlotsRouter);
 app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
+
+// catch-all middleware
+app.use((req: Request, res: Response) => {
+  res.status(403).json({ success: false, message: 'Access denied.' });
+});
 
 // cron-jobs
 initCronJobs();

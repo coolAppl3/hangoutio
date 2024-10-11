@@ -382,7 +382,11 @@
         @apply bg-light-gray dark:bg-light-black h-1 w-full rounded-[10rem] cursor-pointer;
 
         &-thumb {
-          @apply h-full w-1 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:-top-[5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%];
+          @apply h-full w-1 min-w-3 max-w-[100%] rounded-[10rem] bg-cta dark:bg-cta-dark cursor-pointer relative after:absolute after:top-[-5px] after:right-0 after:h-2 after:w-2 after:bg-description dark:after:bg-description-dark after:rounded-[50%] transition-transform;
+
+          &.active {
+            @apply after:scale-[120%] after:top-[-5px]
+          }
         }
       }
     }
