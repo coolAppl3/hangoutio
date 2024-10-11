@@ -36,6 +36,9 @@ app.use('/api/hangoutMembers', hangoutMembers_1.hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlots_1.availabilitySlotsRouter);
 app.use('/api/suggestions', suggestions_1.suggestionsRouter);
 app.use('/api/votes', votes_1.votesRouter);
+app.use((req, res) => {
+    res.status(403).json({ success: false, message: 'Access denied.' });
+});
 (0, cronInit_1.initCronJobs)();
 app.listen(port, () => {
     console.log(`Server running on port ${port}.`);

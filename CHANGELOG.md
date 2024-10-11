@@ -1,10 +1,25 @@
 # Changelog
 
-## [0.2.22] (2024-10-10)
+## [0.2.22] (2024-10-11)
+
+### Features
+
+- Added a simple catch-all middleware for unexpected API endpoints.
+- Improved form shadow throughout the app.
+- Added a slight expansion to SliderInput thumbs when being dragged.
+
 
 ### Documentation Changes
 
 - Removed unnecessary lines from CHANGELOG.md.
+
+
+### Bug Fixes
+
+- Fixed `SliderInput.ts` causing issues when a device has both a mouse and a touchscreen.
+  - Also removed unnecessary functions.
+- Fixed the last button in botNav having a right border.
+- Fixed hero section in `index.html` overflowing and breaking the layout on widths larger than `830px` but with a small height.
 
 
 ## [0.2.21] (2024-10-10)
