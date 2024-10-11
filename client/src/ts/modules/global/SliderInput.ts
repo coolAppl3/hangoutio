@@ -64,7 +64,6 @@ export default class SliderInput {
 
     if (this.isTouchDevice) {
       this.slider?.addEventListener('touchstart', this.startDrag.bind(this), { passive: false });
-      return;
     };
 
     this.slider?.addEventListener('mousedown', this.startDrag.bind(this));
