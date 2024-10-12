@@ -57,7 +57,51 @@ export function getMinutesTillRecoveryExpiry(recoveryStartTimestamp: number): nu
   return Math.ceil(timeTillRequestExpiry / (1000 * 60));
 };
 
-export function getTimeTillRecoveryExpiry(recoveryStartTimestamp: number): string {
+export function displayFailureLimitReachedInfoModal(errMessage: string, requestTimestamp: number): void {
+  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(requestTimestamp);
+  const infoModalConfig: InfoModalConfig = {
+    title: errMessage,
+    description: `You can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
+    btnTitle: 'Okay',
+  };
+
+  InfoModal.display(infoModalConfig, { simple: true });
+};
+
+export function initRecoveryTimers(): void {
+  const requestExpiryTimers: NodeListOf<HTMLSpanElement> = document.querySelectorAll('.request-expiry-timer');
+
+  for (const timer of requestExpiryTimers) {
+    timer.classList.add('displayed');
+  };
+
+  const intervalID: number = setInterval(() => updateExpiryTimers(requestExpiryTimers, intervalID), 1000);
+  updateExpiryTimers(requestExpiryTimers, intervalID);
+};
+
+export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanElement>, intervalID: number): void {
+  if (!recoveryState.recoveryStartTimestamp) {
+    for (const timer of requestExpiryTimers) {
+      timer.classList.add('displayed');
+    };
+
+    clearInterval(intervalID);
+    return;
+  };
+
+  const timerValue: string = getTimeTillRecoveryExpiry(recoveryState.recoveryStartTimestamp);
+
+  for (const timer of requestExpiryTimers) {
+    timer.textContent = timerValue;
+  };
+
+  if (timerValue === '00:00') {
+    clearInterval(intervalID);
+    displayRecoveryExpiryInfoModal();
+  };
+};
+
+function getTimeTillRecoveryExpiry(recoveryStartTimestamp: number): string {
   const recoveryPeriod: number = 1000 * 60 * 60;
   const expiryTimestamp: number = recoveryStartTimestamp + recoveryPeriod;
   const timeTillRequestExpiry: number = expiryTimestamp - Date.now();
@@ -75,15 +119,4 @@ export function getTimeTillRecoveryExpiry(recoveryStartTimestamp: number): strin
   const timeTillExpiry: string = `${minutesTillExpiryString}:${secondsTillExpiryString}`;
 
   return timeTillExpiry;
-};
-
-export function displayFailureLimitReachedInfoModal(errMessage: string, requestTimestamp: number): void {
-  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(requestTimestamp);
-  const infoModalConfig: InfoModalConfig = {
-    title: errMessage,
-    description: `You can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
-    btnTitle: 'Okay',
-  };
-
-  InfoModal.display(infoModalConfig, { simple: true });
 };

@@ -45,9 +45,11 @@ export async function accountSignUpService(requestBody: AccountSignUpBody): Prom
 
 // --- --- ---
 
-interface ResendVerificationEmailData {
+export interface ResendVerificationEmailData {
   success: true,
-  resData: {},
+  resData: {
+    verificationEmailsSent: number,
+  },
 };
 
 export async function resendVerificationEmailService(requestBody: { accountID: number }): Promise<AxiosResponse<ResendVerificationEmailData>> {

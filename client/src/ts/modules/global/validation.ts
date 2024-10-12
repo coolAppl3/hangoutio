@@ -265,7 +265,7 @@ export function validateCode(input: HTMLInputElement): boolean {
   return true;
 };
 
-export function isValidCode(verificationCode: string): boolean {
+export function isValidUniqueCode(verificationCode: string): boolean {
   const regex: RegExp = /^[A-NP-Z0-9]{6}$/;
   return regex.test(verificationCode.toUpperCase());
 };

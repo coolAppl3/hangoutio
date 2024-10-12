@@ -9,7 +9,7 @@ import { SendRecoveryEmailData, sendRecoveryEmailService } from "../services/acc
 import { signOut } from "../global/signOut";
 import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
-import { displayFailureLimitReachedInfoModal, displayRecoveryExpiryInfoModal, getMinutesTillRecoveryExpiry, updateDisplayedForm } from "./recoveryUtils";
+import { displayFailureLimitReachedInfoModal, displayRecoveryExpiryInfoModal, getMinutesTillRecoveryExpiry, initRecoveryTimers, updateDisplayedForm } from "./recoveryUtils";
 
 const recoveryEmailFormElement: HTMLFormElement | null = document.querySelector('#recovery-email-form');
 const recoveryEmailInput: HTMLInputElement | null = document.querySelector('#recovery-email-input');
@@ -178,6 +178,7 @@ function recoveryLinkDetected(): boolean {
   recoveryState.recoveryToken = recoveryToken;
 
   recoveryState.currentStage = RecoveryStage.updatePasswordForm;
+  initRecoveryTimers();
 
   return true;
 };
@@ -211,7 +212,7 @@ function getRecoveryLinkDetails(queryString: string): RecoveryLinkDetails | null
   };
 
   const recoveryAccountID: string | undefined = queryMap.get('id');
-  const recoveryStartTimestamp: string | undefined = queryMap.get('timestamp');
+  const recoveryStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
   const recoveryToken: string | undefined = queryMap.get('recoveryToken');
 
   if (!recoveryAccountID || !recoveryStartTimestamp || !recoveryToken) {
@@ -255,7 +256,7 @@ function detectSignedInUser(): void {
     title: `You're signed in.`,
     description: 'You must sign out before being able to start the account recovery process.',
     confirmBtnTitle: 'Sign out',
-    cancelBtnTitle: 'Take me to my account',
+    cancelBtnTitle: 'Go to my account',
     extraBtnTitle: null,
     isDangerousAction: false,
   };

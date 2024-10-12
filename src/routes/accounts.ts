@@ -48,6 +48,11 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     return;
   };
 
+  if (requestData.username === requestData.password) {
+    res.status(400).json({ success: false, message: `Password identical to username.`, reason: 'passwordEqualsUsername' });
+    return;
+  };
+
   let connection;
 
   try {
@@ -282,7 +287,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
-    res.json({ success: true, resData: {} });
+    res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
 
     const verificationEmailConfig: VerificationEmailConfig = {
       to: accountDetails.email,

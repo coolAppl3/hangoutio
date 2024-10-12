@@ -3,7 +3,7 @@ import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { SendRecoveryEmailData, sendRecoveryEmailService } from "../services/accountServices";
 import { RecoveryStage, recoveryState } from "./recoveryState";
-import { displayRecoveryExpiryInfoModal, getTimeTillRecoveryExpiry } from "./recoveryUtils";
+import { initRecoveryTimers } from "./recoveryUtils";
 
 const recoveryConfirmationFormElement: HTMLFormElement | null = document.querySelector('#recovery-confirmation-form');
 
@@ -12,8 +12,8 @@ export function recoveryConfirmationForm(): void {
 };
 
 function loadEventListeners(): void {
-  document.addEventListener('recoveryStarted', initRecoveryTimer);
   recoveryConfirmationFormElement?.addEventListener('submit', resendRecoveryEmail);
+  document.addEventListener('recoveryStarted', initRecoveryTimers);
 };
 
 async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
@@ -80,37 +80,4 @@ async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
       return;
     };
   };
-};
-
-function initRecoveryTimer(): void {
-  const requestExpiryTimer: HTMLSpanElement | null = document.querySelector('#confirmationForm-request-expiry-timer');
-  if (!requestExpiryTimer) {
-    return;
-  };
-
-  requestExpiryTimer?.classList.add('displayed');
-
-  const intervalID: number = setInterval(() => updateExpiryTimer(requestExpiryTimer, intervalID), 1000);
-  updateExpiryTimer(requestExpiryTimer, intervalID);
-};
-
-function updateExpiryTimer(requestExpiryTimer: HTMLSpanElement, intervalID: number): void {
-  if (!recoveryState.recoveryStartTimestamp) {
-    clearInterval(intervalID);
-    requestExpiryTimer.classList.remove('displayed');
-
-    return;
-  };
-
-  const timerValue: string = getTimeTillRecoveryExpiry(recoveryState.recoveryStartTimestamp);
-
-  if (timerValue === '00:00') {
-    requestExpiryTimer.textContent = timerValue;
-    clearInterval(intervalID);
-    displayRecoveryExpiryInfoModal();
-
-    return;
-  };
-
-  requestExpiryTimer.textContent = timerValue;
 };
