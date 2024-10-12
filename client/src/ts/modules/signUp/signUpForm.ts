@@ -239,7 +239,7 @@ function detectSignedInUser(): void {
     title: `You're signed in.`,
     description: 'You must sign out before being able to create a new account.',
     confirmBtnTitle: 'Sign out',
-    cancelBtnTitle: 'Take me back to my account',
+    cancelBtnTitle: 'Go to my account',
     extraBtnTitle: null,
     isDangerousAction: false,
   };

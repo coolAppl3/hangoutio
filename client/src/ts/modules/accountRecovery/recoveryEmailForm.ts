@@ -256,7 +256,7 @@ function detectSignedInUser(): void {
     title: `You're signed in.`,
     description: 'You must sign out before being able to start the account recovery process.',
     confirmBtnTitle: 'Sign out',
-    cancelBtnTitle: 'Take me to my account',
+    cancelBtnTitle: 'Go to my account',
     extraBtnTitle: null,
     isDangerousAction: false,
   };
