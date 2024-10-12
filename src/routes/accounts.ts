@@ -282,7 +282,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
-    res.json({ success: true, resData: {} });
+    res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
 
     const verificationEmailConfig: VerificationEmailConfig = {
       to: accountDetails.email,
