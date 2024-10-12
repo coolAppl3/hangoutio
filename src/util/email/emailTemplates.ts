@@ -74,8 +74,8 @@ export function getVerificationEmailTemplate(verificationEmailConfig: Verificati
             Alternatively, you can click the following verification link:
             <a
               target="_blank"
-              href="https://hangoutio.com/sign-up.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
-              >https://hangoutio.com/sign-up.html?id=${accountID}&timestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
+              href="https://hangoutio.com/sign-up.html?id=${accountID}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
+              >https://hangoutio.com/sign-up.html?id=${accountID}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
             >.
           </p>
           <p>Your account will be automatically deleted if it's not verified within 15 minutes of being created.</p>
@@ -163,8 +163,8 @@ export function getRecoveryEmailTemplate(recoveryEmailConfig: RecoveryEmailConfi
             To start the recovery process, please click the following link:
             <a
               target="_blank"
-              href="https://hangoutio.com/account-recovery.html?id=${accountID}&timestamp=${requestTimestamp}&recoveryToken=${recoveryToken}"
-              >https://hangoutio.com/account-recovery.html?id=${accountID}&timestamp=${requestTimestamp}&recoveryToken=${recoveryToken}</a
+              href="https://hangoutio.com/account-recovery.html?id=${accountID}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}"
+              >https://hangoutio.com/account-recovery.html?id=${accountID}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}</a
             >.
           </p>
           <p>Please note that the recovery link is only valid for an hour.</p>

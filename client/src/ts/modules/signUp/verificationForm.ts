@@ -7,7 +7,7 @@ import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { isValidUniqueCode, isValidQueryString, isValidTimestamp, validateCode } from "../global/validation";
 import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
-import { clearAllSignUpInputs, clearVerificationCookies, displayVerificationExpiryInfoModal, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
+import { clearVerificationCookies, displayVerificationExpiryInfoModal, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
 import { signOut } from "../global/signOut";
 
@@ -328,7 +328,7 @@ function getVerificationLinkDetails(queryString: string): VerificationData | nul
   };
 
   const verificationAccountID: string | undefined = queryMap.get('id');
-  const verificationStartTimestamp: string | undefined = queryMap.get('timestamp');
+  const verificationStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
   const verificationCode: string | undefined = queryMap.get('verificationCode');
 
   if (!verificationAccountID || !verificationStartTimestamp || !verificationCode) {

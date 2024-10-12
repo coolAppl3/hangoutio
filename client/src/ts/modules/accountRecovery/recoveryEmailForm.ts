@@ -212,7 +212,7 @@ function getRecoveryLinkDetails(queryString: string): RecoveryLinkDetails | null
   };
 
   const recoveryAccountID: string | undefined = queryMap.get('id');
-  const recoveryStartTimestamp: string | undefined = queryMap.get('timestamp');
+  const recoveryStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
   const recoveryToken: string | undefined = queryMap.get('recoveryToken');
 
   if (!recoveryAccountID || !recoveryStartTimestamp || !recoveryToken) {
