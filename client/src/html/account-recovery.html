@@ -605,10 +605,7 @@
 
             <p class="font-medium text-sm text-description dark:text-description-dark mb-2 hidden has-[.displayed]:block">
               Request expires in:
-              <span
-                id="confirmationForm-request-expiry-timer"
-                class="text-title dark:text-title-dark font-bold"
-              ></span>
+              <span class="request-expiry-timer text-title dark:text-title-dark font-bold"></span>
             </p>
 
             <p class="font-medium text-sm text-title dark:text-title-dark mb-2">Still didn't get one? Click the button below to resend it.</p>
@@ -633,8 +630,13 @@
 
             <p class="font-medium text-title dark:text-title-dark mb-1">Valid recovery link found.</p>
 
-            <p class="font-medium text-sm text-description dark:text-description-dark">
+            <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
               Update your account's password below to complete the recovery process.
+            </p>
+
+            <p class="font-medium text-sm text-description dark:text-description-dark hidden has-[.displayed]:block">
+              Request expires in:
+              <span class="request-expiry-timer text-title dark:text-title-dark font-bold"></span>
             </p>
           </div>
 
