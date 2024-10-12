@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.23] (2024-10-12)
+
+### Features
+
+- Split `signUpForm.ts` into multiple, easily-managed modules and improved code quality.
+- Improved signup validation to not allow passwords to be identical to usernames.
+
+
+### Code Refactoring
+
+- Improved the phrasing of the `InfoModal` button responsible for taking the user back to their account if they're signed in for both the recovery and sign up forms. 
+
+
+### Bug Fixes
+
+- Fixed request timer not showing up properly in the last recovery stage in the account recovery form.
+- Fixed &timestamp in some email links leading to &time being perceiving the &time part as an x symbol.
+
+
 ## [0.2.22] (2024-10-11)
 
 ### Features
