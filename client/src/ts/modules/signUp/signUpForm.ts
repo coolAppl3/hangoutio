@@ -59,15 +59,15 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     return;
   };
 
-  if (!isValidSignUpDetails()) {
-    popup('Invalid sign up details.', 'error');
+  if (!emailInput || !displayNameInput || !usernameInput || !passwordInput) {
+    popup('Something went wrong.', 'error');
     LoadingModal.remove();
 
     return;
   };
 
-  if (!emailInput || !displayNameInput || !usernameInput || !passwordInput) {
-    popup('Something went wrong.', 'error');
+  if (!isValidSignUpDetails()) {
+    popup('Invalid sign up details.', 'error');
     LoadingModal.remove();
 
     return;
@@ -186,6 +186,11 @@ function isValidSignUpDetails(): boolean {
   ];
 
   if (validationArray.includes(false)) {
+    return false;
+  };
+
+  if (passwordInput.value === usernameInput.value) {
+    ErrorSpan.display(passwordInput, `Your password can't be identical to your username.`);
     return false;
   };
 

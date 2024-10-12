@@ -99,15 +99,15 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     return;
   };
 
-  if (!isValidAccountDetails()) {
-    popup('Invalid account sign in details.', 'error');
+  if (!accountEmailInput || !accountPasswordInput) {
+    popup('Something went wrong.', 'error');
     LoadingModal.remove();
 
     return;
   };
 
-  if (!accountEmailInput || !accountPasswordInput) {
-    popup('Something went wrong.', 'error');
+  if (!isValidAccountDetails()) {
+    popup('Invalid account sign in details.', 'error');
     LoadingModal.remove();
 
     return;
@@ -297,13 +297,6 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     return;
   };
 
-  if (!isValidGuestDetails()) {
-    popup('Invalid guest sign up details.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
   if (!guestDisplayNameInput || !guestUsernameInput || !guestPasswordInput) {
     popup('Something went wrong.', 'error');
     LoadingModal.remove();
@@ -311,6 +304,14 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     return;
   };
 
+  if (!isValidGuestDetails()) {
+    popup('Invalid guest sign up details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  // 
   const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const guestLeaderHangoutBody: GuestLeaderHangoutBody = {
@@ -418,12 +419,19 @@ function isValidGuestDetails(): boolean {
     return false;
   };
 
-  const isValidGuestDisplayName: boolean = validateDisplayName(guestDisplayNameInput);
-  const isValidGuestUsername: boolean = validateNewUsername(guestUsernameInput);
-  const isValidGuestPassword: boolean = validateNewPassword(guestPasswordInput);
-  const isValidGuestConfirmPassword: boolean = validateConfirmPassword(guestConfirmPasswordInput, guestPasswordInput);
+  const validationArray: boolean[] = [
+    validateDisplayName(guestDisplayNameInput),
+    validateNewUsername(guestUsernameInput),
+    validateNewPassword(guestPasswordInput),
+    validateConfirmPassword(guestConfirmPasswordInput, guestPasswordInput),
+  ];
 
-  if (!isValidGuestDisplayName || !isValidGuestUsername || !isValidGuestPassword || !isValidGuestConfirmPassword) {
+  if (validationArray.includes(false)) {
+    return false;
+  };
+
+  if (guestPasswordInput.value === guestUsernameInput.value) {
+    ErrorSpan.display(guestUsernameInput, `Your password can't be identical to your username.`);
     return false;
   };
 
