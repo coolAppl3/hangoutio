@@ -17,6 +17,9 @@ module.exports = {
     signIn: './src/ts/signIn.ts',
     signUp: './src/ts/signUp.ts',
     accountRecovery: './src/ts/accountRecovery.ts',
+
+    // error pages
+    errorPage: './src/ts/modules/errorPages/errorPage.ts',
   },
 
   resolve: {
@@ -49,7 +52,7 @@ module.exports = {
     port: 3000,
     open: true,
     hot: true,
-    watchFiles: ['./src/html/*.html'],
+    watchFiles: ['./src/html/**/*.html'],
     compress: true,
     historyApiFallback: true,
   },
@@ -141,6 +144,41 @@ module.exports = {
 
       chunks: [
         "accountRecovery"
+      ],
+    }),
+
+    // error pages ---
+
+    // 404.html
+    new HtmlWebpackPlugin({
+      title: 'Not Found - Hangoutio',
+      filename: '404.html',
+      template: 'src/html/errorPages/404.html',
+
+      chunks: [
+        "errorPage"
+      ],
+    }),
+
+    // 403.html
+    new HtmlWebpackPlugin({
+      title: 'Forbidden - Hangoutio',
+      filename: '403.html',
+      template: 'src/html/errorPages/403.html',
+
+      chunks: [
+        "errorPage"
+      ],
+    }),
+
+    // 401.html
+    new HtmlWebpackPlugin({
+      title: 'Unauthorized- Hangoutio',
+      filename: '401.html',
+      template: 'src/html/errorPages/401.html',
+
+      chunks: [
+        "errorPage"
       ],
     }),
   ],

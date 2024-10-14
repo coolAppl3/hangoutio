@@ -271,6 +271,10 @@
   .svg {
     @apply flex justify-center items-center border-none overflow-hidden;
 
+    &.d-shadow {
+      filter: drop-shadow(1px 3px 2px rgba(0, 0, 0, 0.50));
+    }
+
     svg {
       @apply overflow-hidden h-fit;
     }
