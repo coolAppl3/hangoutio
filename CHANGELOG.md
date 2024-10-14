@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.24] (2024-10-14)
+
+### Features
+
+- Added standard 404, 403, and 401 error pages.
+- Added `fallBackMiddleware.ts` and implemented basic 404 functionality for now.
+
+
 ## [0.2.23] (2024-10-12)
 
 ### Features
