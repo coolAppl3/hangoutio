@@ -28,7 +28,6 @@ if (process.env.NODE_ENV === 'development') {
     }));
 }
 ;
-app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use('/api/accounts', accounts_1.accountsRouter);
 app.use('/api/hangouts', hangouts_1.hangoutsRouter);
 app.use('/api/guests', guests_1.guestsRouter);
@@ -36,6 +35,7 @@ app.use('/api/hangoutMembers', hangoutMembers_1.hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlots_1.availabilitySlotsRouter);
 app.use('/api/suggestions', suggestions_1.suggestionsRouter);
 app.use('/api/votes', votes_1.votesRouter);
+app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use((req, res) => {
     res.status(403).json({ success: false, message: 'Access denied.' });
 });

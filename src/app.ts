@@ -34,9 +34,6 @@ if (process.env.NODE_ENV === 'development') {
   );
 };
 
-// static files
-app.use(express.static(path.join(__dirname, '../public')));
-
 // routes
 app.use('/api/accounts', accountsRouter);
 app.use('/api/hangouts', hangoutsRouter);
@@ -45,6 +42,9 @@ app.use('/api/hangoutMembers', hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlotsRouter);
 app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
+
+// static files
+app.use(express.static(path.join(__dirname, '../public')));
 
 // catch-all middleware
 app.use((req: Request, res: Response) => {
