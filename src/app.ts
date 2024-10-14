@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import path from 'path';
 import cors from 'cors';
-import express, { Application, Request, Response } from 'express';
+import express, { Application } from 'express';
 
 // routers
 import { accountsRouter } from './routes/accounts';
@@ -12,6 +12,9 @@ import { hangoutMembersRouter } from './routes/hangoutMembers';
 import { availabilitySlotsRouter } from './routes/availabilitySlots';
 import { suggestionsRouter } from './routes/suggestions';
 import { votesRouter } from './routes/votes';
+
+// middleware
+import { fallbackMiddleware } from './middleware/fallbackMiddleware';
 
 // other
 import { initCronJobs } from './cron-jobs/cronInit';
@@ -46,10 +49,8 @@ app.use('/api/votes', votesRouter);
 // static files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// catch-all middleware
-app.use((req: Request, res: Response) => {
-  res.status(403).json({ success: false, message: 'Access denied.' });
-});
+// fallback middleware
+app.use(fallbackMiddleware);
 
 // cron-jobs
 initCronJobs();
