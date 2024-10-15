@@ -1428,7 +1428,6 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         return;
     }
     ;
-    let connection;
     try {
         ;
         const [accountRows] = await db_1.dbPool.execute(`SELECT

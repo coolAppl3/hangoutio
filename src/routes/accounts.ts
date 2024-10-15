@@ -1794,8 +1794,6 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     return;
   };
 
-  let connection;
-
   try {
     interface AccountDetails extends RowDataPacket {
       auth_token: string,

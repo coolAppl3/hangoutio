@@ -52,9 +52,9 @@ function loadEventListeners(): void {
   accountPreferences?.addEventListener('click', updateAccountPreferences);
   keepSignedInBtn?.addEventListener('click', updateSignInDurationPreferences);
 
-  accountPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(accountPasswordRevealBtn));
-  guestPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(guestPasswordRevealBtn));
-  guestPasswordConfirmRevalBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(guestPasswordConfirmRevalBtn));
+  accountPasswordRevealBtn?.addEventListener('click', () => revealPassword(accountPasswordRevealBtn));
+  guestPasswordRevealBtn?.addEventListener('click', () => revealPassword(guestPasswordRevealBtn));
+  guestPasswordConfirmRevalBtn?.addEventListener('click', () => revealPassword(guestPasswordConfirmRevalBtn));
 };
 
 function init(): void {
