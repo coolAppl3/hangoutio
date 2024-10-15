@@ -33,11 +33,24 @@ module.exports = {
     assetModuleFilename: (pathData) => {
       const { filename } = pathData;
 
-      if (filename.endsWith('.woff') || filename.endsWith('.woff2') || filename.endsWith('.eot') || filename.endsWith('.ttf') || filename.endsWith('.otf') || filename.endsWith('.otf')) {
+      if (
+        filename.endsWith('.woff') ||
+        filename.endsWith('.woff2') ||
+        filename.endsWith('.eot') ||
+        filename.endsWith('.ttf') ||
+        filename.endsWith('.otf') ||
+        filename.endsWith('.otf')
+      ) {
         return 'assets/fonts/[name][ext]';
       };
 
-      if (filename.endsWith('.png') || filename.endsWith('.jpg') || filename.endsWith('.jpeg') || filename.endsWith('.gif') || filename.endsWith('.svg')) {
+      if (
+        filename.endsWith('.png') ||
+        filename.endsWith('.jpg') ||
+        filename.endsWith('.jpeg') ||
+        filename.endsWith('.gif') ||
+        filename.endsWith('.svg')
+      ) {
         return 'assets/images/[name][ext]';
       };
 

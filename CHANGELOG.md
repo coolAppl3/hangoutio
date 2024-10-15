@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.25] (2024-10-15)
+
+### Features
+
+- Improved error code SVGs in `errorPages`.
+- Improved the bottom navbar.
+- Improved footers.
+- Added aria labels to utility buttons without any text to improve accessability.
+
+
 ## [0.2.24] (2024-10-14)
 
 ### Features
