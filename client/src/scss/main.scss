@@ -198,52 +198,41 @@
     }
   }
 
+
   .bot-nav {
+
+    .account-user,
+    .guest-user {
+      @apply hidden;
+    }
 
     &.guest-user {
 
-      #bot-nav {
+      .bot-nav-container-item {
+        @apply hidden first:flex;
 
-        &-default,
-        &-account {
-          @apply hidden;
-        }
-
-        &-guest {
-          @apply grid;
+        &.guest-user {
+          @apply flex;
         }
       }
     }
 
     &.account-user {
 
-      #bot-nav {
+      .bot-nav-container-item {
+        @apply hidden first:flex;
 
-        &-default,
-        &-guest {
-          @apply hidden;
-        }
-
-        &-account {
-          @apply grid;
+        &.account-user {
+          @apply flex;
         }
       }
     }
 
-    &-container {
+    &-container-item {
+      @apply col-span-4;
 
-      &-item {
-
-        &.selected {
-          @apply bg-light-gray dark:bg-light-black;
-        }
-      }
-
-      #account-list-btn {
-
-        &.expanded {
-          @apply text-cta dark:text-cta-dark;
-        }
+      &.selected {
+        @apply bg-light-gray dark:bg-light-black;
       }
     }
   }
