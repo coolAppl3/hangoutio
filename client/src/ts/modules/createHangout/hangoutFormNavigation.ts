@@ -1,11 +1,11 @@
-import { isValidFormFirstStepDetails } from "./formFirstStep";
+import { isValidFormFirstStepDetails } from "./hangoutFormFirstStep";
 
-interface FormNavigationState {
+interface HangoutFormNavigationState {
   currentStep: number,
   totalSteps: number,
 };
 
-export const formNavigationState: FormNavigationState = {
+export const hangoutFormNavigationState: HangoutFormNavigationState = {
   currentStep: 1,
   totalSteps: 3,
 };
@@ -18,7 +18,7 @@ const nextStepBtn: HTMLButtonElement | null = document.querySelector('#hangout-f
 const progressBarThumb: HTMLElement | null = document.querySelector('#progress-bar-thumb');
 const progressNumber: HTMLSpanElement | null = document.querySelector('#progress-number');
 
-export function formNavigation(): void {
+export function hangoutFormNavigation(): void {
   loadEventListeners();
 };
 
@@ -42,16 +42,16 @@ function navigateHangoutForm(e: MouseEvent): void {
 };
 
 function moveBackwards(): void {
-  if (formNavigationState.currentStep === 1) {
+  if (hangoutFormNavigationState.currentStep === 1) {
     return;
   };
 
-  const currentForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${formNavigationState.currentStep}`);
+  const currentForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep}`);
 
-  hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${formNavigationState.currentStep - 2} * (100% + 40px)))` : undefined;
+  hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep - 2} * (100% + 40px)))` : undefined;
   currentForm ? currentForm.style.display = 'none' : undefined;
 
-  formNavigationState.currentStep--;
+  hangoutFormNavigationState.currentStep--;
 
   displayNavButtons();
   updateProgressBar();
@@ -59,22 +59,22 @@ function moveBackwards(): void {
 };
 
 function moveForwards(): void {
-  if (formNavigationState.currentStep + 1 > formNavigationState.totalSteps) {
+  if (hangoutFormNavigationState.currentStep + 1 > hangoutFormNavigationState.totalSteps) {
     return;
   };
 
-  if (formNavigationState.currentStep === 1) {
+  if (hangoutFormNavigationState.currentStep === 1) {
     if (!isValidFormFirstStepDetails()) {
       return;
     };
   };
 
-  const nextForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${formNavigationState.currentStep + 1}`);
+  const nextForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep + 1}`);
 
   nextForm ? nextForm.style.display = 'block' : undefined;
-  hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${formNavigationState.currentStep} * (100% + 40px)))` : undefined;
+  hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep} * (100% + 40px)))` : undefined;
 
-  formNavigationState.currentStep++;
+  hangoutFormNavigationState.currentStep++;
 
   displayNavButtons();
   updateProgressBar();
@@ -92,22 +92,22 @@ function displayNavButtons(): void {
   nextStepBtn.style.display = 'none';
   nextStepBtn.setAttribute('disabled', '');
 
-  if (formNavigationState.currentStep > 1) {
+  if (hangoutFormNavigationState.currentStep > 1) {
     previousStepBtn.style.display = 'flex';
     previousStepBtn.removeAttribute('disabled');
   };
 
-  if (formNavigationState.currentStep < formNavigationState.totalSteps) {
+  if (hangoutFormNavigationState.currentStep < hangoutFormNavigationState.totalSteps) {
     nextStepBtn.style.display = 'block';
     nextStepBtn.removeAttribute('disabled');
   };
 };
 
 function updateProgressBar(): void {
-  const newWidth: string = ((formNavigationState.currentStep / 3) * 100).toFixed(2);
+  const newWidth: string = ((hangoutFormNavigationState.currentStep / 3) * 100).toFixed(2);
   progressBarThumb ? progressBarThumb.style.width = `${newWidth}%` : undefined;
 
-  progressNumber ? progressNumber.innerText = `${formNavigationState.currentStep}` : undefined;
+  progressNumber ? progressNumber.innerText = `${hangoutFormNavigationState.currentStep}` : undefined;
 };
 
 function triggerDOMRectUpdateEvent(): void {

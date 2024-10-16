@@ -9,16 +9,16 @@ import { signOut } from "../global/signOut";
 import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
 import { AccountSignInBody, AccountSignInData, accountSignInService } from "../services/accountServices";
 import { AccountLeaderHangoutBody, AccountLeaderHangoutData, createAccountLeaderHangoutService, createGuestLeaderHangoutService, GuestLeaderHangoutBody, GuestLeaderHangoutData } from "../services/hangoutServices";
-import { formNavigationState } from "./formNavigation";
-import { hangoutCreationState } from "./hangoutCreationState";
+import { hangoutFormNavigationState } from "./hangoutFormNavigation";
+import { hangoutFormState } from "./hangoutFormState";
 
-interface ThirdStepState {
+interface HangoutThirdStepState {
   isSignedIn: boolean,
   isGuestUser: boolean,
   keepSignedIn: boolean,
 };
 
-const thirdStepState: ThirdStepState = {
+const hangoutThirdStepState: HangoutThirdStepState = {
   isSignedIn: false,
   isGuestUser: false,
   keepSignedIn: false,
@@ -42,7 +42,7 @@ const guestPasswordConfirmRevalBtn: HTMLButtonElement | null = document.querySel
 const keepSignedInBtn: HTMLButtonElement | null = document.querySelector('#keep-signed-in-btn');
 const accountPreferences: HTMLDivElement | null = document.querySelector('#account-preferences');
 
-export function formThirdStep(): void {
+export function hangoutFormThirdStep(): void {
   init();
   loadEventListeners();
 };
@@ -66,17 +66,17 @@ async function submitHangout(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
 
-  if (formNavigationState.currentStep !== 3) {
+  if (hangoutFormNavigationState.currentStep !== 3) {
     LoadingModal.remove();
     return;
   };
 
-  if (thirdStepState.isGuestUser) {
+  if (hangoutThirdStepState.isGuestUser) {
     await createGuestLeaderHangout();
     return;
   };
 
-  if (thirdStepState.isSignedIn) {
+  if (hangoutThirdStepState.isSignedIn) {
     await createSignedInAccountLeaderHangout();
     return;
   };
@@ -92,7 +92,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     return;
   };
 
-  if (!hangoutCreationState.hangoutTitle) {
+  if (!hangoutFormState.hangoutTitle) {
     popup('Invalid hangout title.', 'error');
     LoadingModal.remove();
 
@@ -122,7 +122,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
     const { authToken } = accountSignInData.data.resData;
 
-    if (thirdStepState.keepSignedIn) {
+    if (hangoutThirdStepState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
       Cookies.set('authToken', authToken, 14 * daySeconds);
 
@@ -133,12 +133,12 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
     const accountLeaderHangoutBody: AccountLeaderHangoutBody = {
-      hangoutTitle: hangoutCreationState.hangoutTitle,
-      hangoutPassword: hangoutCreationState.hangoutPassword,
-      memberLimit: hangoutCreationState.memberLimit,
-      availabilityStep: hangoutCreationState.availabilityStep * dayMilliseconds,
-      suggestionsStep: hangoutCreationState.suggestionsStep * dayMilliseconds,
-      votingStep: hangoutCreationState.votingStep * dayMilliseconds,
+      hangoutTitle: hangoutFormState.hangoutTitle,
+      hangoutPassword: hangoutFormState.hangoutPassword,
+      memberLimit: hangoutFormState.memberLimit,
+      availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
+      suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
+      votingStep: hangoutFormState.votingStep * dayMilliseconds,
     };
 
     const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
@@ -220,7 +220,7 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
     return;
   };
 
-  if (!hangoutCreationState.hangoutTitle) {
+  if (!hangoutFormState.hangoutTitle) {
     popup('Hangout title is required.', 'error');
     return;
   };
@@ -228,12 +228,12 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
   const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const accountLeaderHangoutBody: AccountLeaderHangoutBody = {
-    hangoutTitle: hangoutCreationState.hangoutTitle,
-    hangoutPassword: hangoutCreationState.hangoutPassword,
-    memberLimit: hangoutCreationState.memberLimit,
-    availabilityStep: hangoutCreationState.availabilityStep * dayMilliseconds,
-    suggestionsStep: hangoutCreationState.suggestionsStep * dayMilliseconds,
-    votingStep: hangoutCreationState.votingStep * dayMilliseconds,
+    hangoutTitle: hangoutFormState.hangoutTitle,
+    hangoutPassword: hangoutFormState.hangoutPassword,
+    memberLimit: hangoutFormState.memberLimit,
+    availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
+    suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
+    votingStep: hangoutFormState.votingStep * dayMilliseconds,
   };
 
   try {
@@ -275,7 +275,7 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
     LoadingModal.remove();
 
     if (status === 401) {
-      thirdStepState.isSignedIn = false;
+      hangoutThirdStepState.isSignedIn = false;
       signOut();
 
       const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
@@ -292,7 +292,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     return;
   };
 
-  if (!hangoutCreationState.hangoutTitle) {
+  if (!hangoutFormState.hangoutTitle) {
     popup('Hangout title is required.', 'error');
     return;
   };
@@ -315,12 +315,12 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
   const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const guestLeaderHangoutBody: GuestLeaderHangoutBody = {
-    hangoutTitle: hangoutCreationState.hangoutTitle,
-    hangoutPassword: hangoutCreationState.hangoutPassword,
-    memberLimit: hangoutCreationState.memberLimit,
-    availabilityStep: hangoutCreationState.availabilityStep * dayMilliseconds,
-    suggestionsStep: hangoutCreationState.suggestionsStep * dayMilliseconds,
-    votingStep: hangoutCreationState.votingStep * dayMilliseconds,
+    hangoutTitle: hangoutFormState.hangoutTitle,
+    hangoutPassword: hangoutFormState.hangoutPassword,
+    memberLimit: hangoutFormState.memberLimit,
+    availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
+    suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
+    votingStep: hangoutFormState.votingStep * dayMilliseconds,
     displayName: guestDisplayNameInput.value,
     username: guestUsernameInput.value,
     password: guestPasswordInput.value,
@@ -330,7 +330,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     const guestLeaderHangoutData: AxiosResponse<GuestLeaderHangoutData> = await createGuestLeaderHangoutService(guestLeaderHangoutBody);
     const { authToken, hangoutID } = guestLeaderHangoutData.data.resData;
 
-    if (thirdStepState.keepSignedIn) {
+    if (hangoutThirdStepState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
       Cookies.set('authToken', authToken, daySeconds);
       Cookies.set('guestHangoutID', hangoutID, daySeconds);
@@ -455,11 +455,11 @@ function updateAccountPreferences(e: MouseEvent): void {
 };
 
 function switchToAccountForm(): void {
-  if (!thirdStepState.isGuestUser) {
+  if (!hangoutThirdStepState.isGuestUser) {
     return;
   };
 
-  thirdStepState.isGuestUser = false;
+  hangoutThirdStepState.isGuestUser = false;
 
   hangoutForm?.classList.remove('is-guest-user');
   accountPreferences?.classList.remove('guest');
@@ -468,11 +468,11 @@ function switchToAccountForm(): void {
 };
 
 function switchToGuestForm(): void {
-  if (thirdStepState.isGuestUser) {
+  if (hangoutThirdStepState.isGuestUser) {
     return;
   };
 
-  thirdStepState.isGuestUser = true;
+  hangoutThirdStepState.isGuestUser = true;
 
   hangoutForm?.classList.add('is-guest-user');
   accountPreferences?.classList.add('guest');
@@ -510,7 +510,7 @@ function clearGuestForm(): void {
 };
 
 function updateSignInDurationPreferences(): void {
-  thirdStepState.keepSignedIn = !thirdStepState.keepSignedIn
+  hangoutThirdStepState.keepSignedIn = !hangoutThirdStepState.keepSignedIn
 
   if (keepSignedInBtn?.classList.contains('checked')) {
     keepSignedInBtn?.classList.remove('checked');
@@ -550,7 +550,7 @@ function detectSignedInUser(): void {
   };
 
   if (authToken.startsWith('a')) {
-    thirdStepState.isSignedIn = true;
+    hangoutThirdStepState.isSignedIn = true;
     displaySignedInStatus();
 
     return;
@@ -608,7 +608,7 @@ function removeSignedInStatus(): void {
   const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
   thirdStepFormContainer?.classList.remove('disabled');
 
-  thirdStepState.isSignedIn = false;
+  hangoutThirdStepState.isSignedIn = false;
   popup('Signed out.', 'success');
 
   signOut();

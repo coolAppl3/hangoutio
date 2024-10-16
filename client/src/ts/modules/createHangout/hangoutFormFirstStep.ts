@@ -1,4 +1,4 @@
-import { hangoutCreationState } from "./hangoutCreationState";
+import { hangoutFormState } from "./hangoutFormState";
 import revealPassword from "../global/revealPassword";
 import ErrorSpan from "../global/ErrorSpan";
 import { validateHangoutTitle, validateNewPassword } from "../global/validation";
@@ -11,7 +11,7 @@ const hangoutPasswordInput: HTMLInputElement | null = document.querySelector('#h
 const hangoutPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#hangout-password-input-reveal-btn');
 
 
-export function formFirstStep(): void {
+export function hangoutFormFirstStep(): void {
   loadEventListeners();
 };
 
@@ -42,7 +42,7 @@ function toggleHangoutPassword(e: MouseEvent): void {
     clearPasswordInput();
     hangoutPasswordInput ? ErrorSpan.hide(hangoutPasswordInput) : undefined;
 
-    hangoutCreationState.isPasswordProtected = false;
+    hangoutFormState.isPasswordProtected = false;
     return;
   };
 
@@ -50,7 +50,7 @@ function toggleHangoutPassword(e: MouseEvent): void {
   hangoutPasswordInput?.parentElement?.classList.remove('disabled');
   hangoutPasswordInput?.removeAttribute('disabled');
 
-  hangoutCreationState.isPasswordProtected = true;
+  hangoutFormState.isPasswordProtected = true;
 };
 
 function clearPasswordInput(): void {
@@ -66,18 +66,18 @@ export function isValidFormFirstStepDetails(): boolean {
   const isValidHangoutTitle: boolean = validateHangoutTitle(hangoutTitleInput);
 
   if (isValidHangoutTitle) {
-    hangoutCreationState.hangoutTitle = hangoutTitleInput.value;
+    hangoutFormState.hangoutTitle = hangoutTitleInput.value;
 
   } else {
     popup(`A valid hangout title is required.`, 'error');
     return false;
   };
 
-  if (hangoutCreationState.isPasswordProtected) {
+  if (hangoutFormState.isPasswordProtected) {
     const isValidHangoutPassword: boolean = validateNewPassword(hangoutPasswordInput);
 
     if (isValidHangoutPassword) {
-      hangoutCreationState.hangoutPassword = hangoutPasswordInput.value;
+      hangoutFormState.hangoutPassword = hangoutPasswordInput.value;
 
     } else {
       popup('A valid hangout password is required.', 'error');

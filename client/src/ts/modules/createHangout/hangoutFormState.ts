@@ -1,4 +1,4 @@
-interface HangoutCreationState {
+interface HangoutFormState {
   hangoutTitle: string | null,
   memberLimit: number,
   isPasswordProtected: boolean,
@@ -8,7 +8,7 @@ interface HangoutCreationState {
   votingStep: number,
 };
 
-export const hangoutCreationState: HangoutCreationState = {
+export const hangoutFormState: HangoutFormState = {
   hangoutTitle: null,
   memberLimit: 10,
   isPasswordProtected: false,
