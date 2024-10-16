@@ -431,7 +431,7 @@ function isValidGuestDetails(): boolean {
   };
 
   if (guestPasswordInput.value === guestUsernameInput.value) {
-    ErrorSpan.display(guestUsernameInput, `Your password can't be identical to your username.`);
+    ErrorSpan.display(guestPasswordInput, `Your password can't be identical to your username.`);
     return false;
   };
 
