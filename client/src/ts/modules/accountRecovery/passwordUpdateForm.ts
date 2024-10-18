@@ -1,7 +1,7 @@
 import { RecoveryStage, recoveryState } from "./recoveryState";
 import LoadingModal from "../global/LoadingModal";
 import { validateConfirmPassword, validateNewPassword } from "../global/validation";
-import { displayFailureLimitReachedInfoModal, getMinutesTillRecoveryExpiry, initRecoveryTimers, reloadWithoutQueryString, } from "./recoveryUtils";
+import { displayFailureLimitReachedInfoModal, getMinutesTillRecoveryExpiry, reloadWithoutQueryString, } from "./recoveryUtils";
 import revealPassword from "../global/revealPassword";
 import popup from "../global/popup";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";

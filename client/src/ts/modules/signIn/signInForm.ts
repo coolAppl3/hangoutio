@@ -49,7 +49,7 @@ function loadEventListeners(): void {
   keepSignedInBtn?.addEventListener('click', updateSignedInDurationPreferences);
 
   accountPasswordRevealBtn?.addEventListener('click', () => revealPassword(accountPasswordRevealBtn));
-  guestPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(guestPasswordRevealBtn));
+  guestPasswordRevealBtn?.addEventListener('click', () => revealPassword(guestPasswordRevealBtn));
 };
 
 async function submitForm(e: SubmitEvent): Promise<void> {

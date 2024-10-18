@@ -43,6 +43,7 @@ module.exports = {
         'success': '#28a745',
         'edit': '#0062CC',
       },
+
       borderColor: {
         // light mode
         'primary': '#D5D5D7',
@@ -76,15 +77,18 @@ module.exports = {
 
         'success': '#28a745',
       },
+
       borderWidth: {
         '1': '1px',
         '3': '3px',
       },
+
       boxShadow: {
         'simple': '10px 10px 12px rgba(0, 0, 0, 0.15)',
         'centered': '0 0 5px 1px rgba(0, 0, 0, 0.15)',
         'tiny': '0 0 1px 1px rgba(0, 0, 0, 0.15)'
       },
+
       boxShadowColor: {
         'soft-cta': 'rgba(41, 208, 197, 0.50)',
         'soft-cta-dark': 'rgba(231, 191, 35, 0.50)',
@@ -92,14 +96,39 @@ module.exports = {
         'soft-gray': 'rgba(0, 0, 0, 0.15)',
         'soft-white': 'rgba(255, 255, 255, 0.2)',
       },
+
       zIndex: {
         '1': '1',
         '3': '3',
         '5': '5',
         '15': '15',
       },
+
+      gridTemplateRows: {
+        13: 'repeat(13, minmax(0, 1fr))',
+        14: 'repeat(14, minmax(0, 1fr))',
+        16: 'repeat(16, minmax(0, 1fr))',
+        24: 'repeat(24, minmax(0, 1fr))',
+      },
+
       gridTemplateColumns: {
-        '16': 'repeat(16, minmax(0, 1fr))',
+        13: 'repeat(13, minmax(0, 1fr))',
+        14: 'repeat(14, minmax(0, 1fr))',
+        16: 'repeat(16, minmax(0, 1fr))',
+        24: 'repeat(24, minmax(0, 1fr))',
+      },
+
+      gridColumn: {
+        'span-13': 'span 13 / span 13',
+        'span-14': 'span 14 / span 14',
+        'span-16': 'span 16 / span 16',
+        'span-24': 'span 24 / span 24',
+      },
+
+      gridRow: {
+        'span-14': 'span 14 / span 14',
+        'span-16': 'span 16 / span 16',
+        'span-24': 'span 24 / span 24',
       },
     },
 

@@ -17,6 +17,7 @@ module.exports = {
     signIn: './src/ts/signIn.ts',
     signUp: './src/ts/signUp.ts',
     accountRecovery: './src/ts/accountRecovery.ts',
+    hangout: './src/ts/hangout.ts',
 
     // error pages
     errorPage: './src/ts/modules/errorPages/errorPage.ts',
@@ -160,7 +161,18 @@ module.exports = {
       ],
     }),
 
-    // error pages ---
+    // hangout.html
+    new HtmlWebpackPlugin({
+      title: 'Hangout - Hangoutio',
+      filename: 'hangout.html',
+      template: 'src/html/hangout.html',
+
+      chunks: [
+        "hangout"
+      ],
+    }),
+
+    // error pages --- --- ---
 
     // 404.html
     new HtmlWebpackPlugin({
