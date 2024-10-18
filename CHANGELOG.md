@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.26] (2024-10-18)
+
+### Code Refactoring
+
+- Improved TS configuration throughout the app to improve type safety, and updated a few files to align with these changes.
+- Renamed createHangout modules and their function for improved readability.
+- Added a drop shadow to the hero's SVG in `index.html`.
+- Added `hangout.html` and implemented a portion of the dashboard.
+
+
+### Bug Fixes
+
+- Fixed error message when the guest's username and password are identical appearing below the username input instead of the password input.
+
+
+
 ## [0.2.25] (2024-10-15)
 
 ### Features
