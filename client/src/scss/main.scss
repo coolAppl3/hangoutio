@@ -913,3 +913,128 @@
     }
   }
 }
+
+// hangout.html --- --- --- --- --- --- --- --- ---
+.hangout-min-h {
+  min-height: calc(100vh - 17rem);
+  min-height: calc(100svh - 17rem);
+}
+
+#hangout-nav {
+
+  &[data-selected="dashboard"] {
+
+    [data-btn-name="dashboard"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    }
+  }
+
+  &[data-selected="chat"] {
+
+    [data-btn-name="chat"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    }
+  }
+
+  &[data-selected="availability"] {
+
+    [data-btn-name="availability"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    }
+  }
+
+  &[data-selected="suggestions"] {
+
+    [data-btn-name="suggestions"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    }
+  }
+
+  &[data-selected="votes"] {
+
+    [data-btn-name="votes"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    }
+  }
+
+  &[data-selected="conclusion"] {
+
+    [data-btn-name="conclusion"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    }
+  }
+}
+
+#hangout-dashboard {
+
+  &-grid {
+
+    #hangout-dashboard {
+
+      &-members {
+        @apply hangout-min-h;
+
+        .member-card {
+          @apply grid grid-rows-[28px_0fr] transition-[grid];
+
+
+          &.expanded {
+            @apply grid-rows-[28px_1fr] mb-2;
+
+            .member-card-header {
+
+              .display-name {
+                @apply text-title dark:text-title-dark;
+              }
+
+              .expand-user-btn {
+
+                .svg {
+                  @apply rotate-[540deg];
+
+                  path {
+                    @apply stroke-title dark:stroke-title-dark;
+                  }
+                }
+              }
+            }
+
+            .member-card-content {
+              @apply block hover:brightness-100 bg-opacity-50;
+            }
+          }
+
+          // --- --- ---
+
+          &-header {
+            @apply mb-1 relative flex justify-between items-center;
+
+            .display-name {
+              @apply text-sm font-bold text-description dark:text-description-dark text-ellipsis whitespace-nowrap overflow-hidden;
+            }
+
+            .expand-user-btn {
+              @apply after:absolute after:block after:top-0 after:left-0 after:w-full after:h-full after:bg-transparent after:z-3;
+
+              .svg {
+                @apply w-[1.4rem] h-[1.4rem] transition-transform;
+
+                path {
+                  @apply stroke-description dark:stroke-description-dark;
+                }
+              }
+            }
+          }
+
+          &-content {
+            @apply text-sm font-medium text-description dark:text-description-dark overflow-hidden;
+          }
+        }
+      }
+
+      &-content {
+        @apply hangout-min-h;
+      }
+    }
+  }
+}

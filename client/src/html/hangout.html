@@ -475,6 +475,218 @@
       </div>
     </nav>
 
+    <!-- hangout-nav -->
+    <section class="hangout-nav-section">
+      <div class="container">
+        <div
+          id="hangout-nav"
+          class="mt-2 bg-secondary dark:bg-secondary-dark w-full flex justify-end items-center shadow-simple rounded-sm overflow-hidden"
+          data-selected="dashboard"
+        >
+          <button
+            data-btn-name="dashboard"
+            type="button"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+          >
+            Dashboard
+          </button>
+          <button
+            data-btn-name="chat"
+            type="button"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+          >
+            Chat
+          </button>
+          <button
+            data-btn-name="availability"
+            type="button"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+          >
+            Availability
+          </button>
+          <button
+            data-btn-name="suggestions"
+            type="button"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+          >
+            Suggestions
+          </button>
+          <button
+            data-btn-name="votes"
+            type="button"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+          >
+            Votes
+          </button>
+          <button
+            data-btn-name="conclusion"
+            type="button"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+          >
+            Conclusion
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- hangout dashboard-->
+    <section class="hangout-dashboard-section">
+      <div class="container py-2">
+        <div
+          id="hangout-dashboard"
+          class="w-full"
+        >
+          <!-- dashboard grid -->
+          <div
+            id="hangout-dashboard-grid"
+            class="w-full flex justify-center items-start"
+          >
+            <!-- members -->
+            <div
+              id="hangout-dashboard-members"
+              class="hangout-dashboard-item p-2 mr-2 max-w-[24%] bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple"
+            >
+              <div id="dashboard-members-header">
+                <h3 class="text-lg font-medium text-title dark:text-title-dark mb-1">Hangout members</h3>
+                <p class="text-sm font-medium text-description dark:text-description-dark">
+                  <span class="text-description dark:text-description-dark">3</span> out of
+                  <span class="text-description dark:text-description-dark">25</span> spots taken
+                </p>
+                <div class="h-line my-2"></div>
+              </div>
+
+              <div id="dashboard-members-cards-container">
+                <div class="member-card">
+                  <!-- card-header -->
+                  <div
+                    class="member-card-header"
+                    onclick="this.parentElement.classList.toggle('expanded')"
+                  >
+                    <p class="display-name">John Doe</p>
+                    <button
+                      type="button"
+                      aria-label="Expand user"
+                      class="expand-user-btn"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M50 150L250 350L450 150"
+                            stroke-width="90"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                  </div>
+                  <!-- card-content -->
+                  <div class="member-card-content">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem libero eveniet praesentium rerum sed perspiciatis voluptatum molestias
+                    atque earum nam!
+                  </div>
+                </div>
+
+                <div class="member-card">
+                  <!-- card-header -->
+                  <div
+                    class="member-card-header"
+                    onclick="this.parentElement.classList.toggle('expanded')"
+                  >
+                    <p class="display-name">John Doe</p>
+                    <button
+                      type="button"
+                      aria-label="Expand user"
+                      class="expand-user-btn"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M50 150L250 350L450 150"
+                            stroke-width="90"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                  </div>
+                  <!-- card-content -->
+                  <div class="member-card-content">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem libero eveniet praesentium rerum sed perspiciatis voluptatum molestias
+                    atque earum nam!
+                  </div>
+                </div>
+
+                <div class="member-card">
+                  <!-- card-header -->
+                  <div
+                    class="member-card-header"
+                    onclick="this.parentElement.classList.toggle('expanded')"
+                  >
+                    <p class="display-name">John Doe</p>
+                    <button
+                      type="button"
+                      aria-label="Expand user"
+                      class="expand-user-btn"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M50 150L250 350L450 150"
+                            stroke-width="90"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                  </div>
+                  <!-- card-content -->
+                  <div class="member-card-content">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem libero eveniet praesentium rerum sed perspiciatis voluptatum molestias
+                    atque earum nam!
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="hangout-dashboard-content"
+              class="w-full grid grid-rows-12 gap-y-2"
+            >
+              <div
+                id="hangout-dashboard-content-main"
+                class="hangout-dashboard-item p-2 row-span-8 bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple"
+              ></div>
+              <div
+                id="hangout-dashboard-content-events"
+                class="hangout-dashboard-item p-2 row-span-4 bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- footer -->
     <footer class="footer py-6 md:pb-[16rem] bg-dark border-t-2 border-light-black">
       <div class="container">
