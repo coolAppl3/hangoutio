@@ -270,7 +270,7 @@
   }
 
   .link {
-    @apply text-blue-700 dark:text-blue-500 underline transition-[filter] hover:brightness-200 dark:hover:brightness-150;
+    @apply text-blue-700 dark:text-blue-500 underline transition-[filter] hover:brightness-200 dark:hover:brightness-150 cursor-pointer;
   }
 
   .triangle {
@@ -915,10 +915,7 @@
 }
 
 // hangout.html --- --- --- --- --- --- --- --- ---
-.hangout-min-h {
-  min-height: calc(100vh - 17rem);
-  min-height: calc(100svh - 17rem);
-}
+
 
 #hangout-nav {
 
@@ -965,75 +962,88 @@
   }
 }
 
-#hangout-dashboard {
+#dashboard-section .dashboard .dashboard-grid {
 
-  &-grid {
+  &-content {
 
-    #hangout-dashboard {
+    &-extra {
 
-      &-members {
-        @apply hangout-min-h;
+      &-chat {
+        #dashboard-chat {
 
-        .member-card {
-          @apply grid grid-rows-[28px_0fr] transition-[grid];
+          &-container-inner {
 
+            .message {
+              @apply mb-2 w-fit max-w-[70%] md:max-w-[85%];
 
-          &.expanded {
-            @apply grid-rows-[28px_1fr] mb-2;
+              &-header {
+                @apply flex justify-start items-center mx-[4px] mb-[4px];
 
-            .member-card-header {
+                span {
 
-              .display-name {
-                @apply text-title dark:text-title-dark;
-              }
+                  &.sent-by {
+                    @apply text-xs font-medium text-title dark:text-title-dark leading-[1.4rem] mr-auto max-w-[50%] overflow-hidden text-ellipsis text-nowrap;
+                  }
 
-              .expand-user-btn {
-
-                .svg {
-                  @apply rotate-[540deg];
-
-                  path {
-                    @apply stroke-title dark:stroke-title-dark;
+                  &.timestamp {
+                    @apply text-xs font-medium text-description dark:text-description-dark leading-[1.4rem];
                   }
                 }
               }
-            }
 
-            .member-card-content {
-              @apply block hover:brightness-100 bg-opacity-50;
-            }
-          }
-
-          // --- --- ---
-
-          &-header {
-            @apply mb-1 relative flex justify-between items-center;
-
-            .display-name {
-              @apply text-sm font-bold text-description dark:text-description-dark text-ellipsis whitespace-nowrap overflow-hidden;
-            }
-
-            .expand-user-btn {
-              @apply after:absolute after:block after:top-0 after:left-0 after:w-full after:h-full after:bg-transparent after:z-3;
-
-              .svg {
-                @apply w-[1.4rem] h-[1.4rem] transition-transform;
-
-                path {
-                  @apply stroke-description dark:stroke-description-dark;
-                }
+              &-content {
+                @apply text-sm font-medium text-description dark:text-description-dark py-1 px-2 rounded-md bg-section dark:bg-section-dark;
               }
             }
-          }
-
-          &-content {
-            @apply text-sm font-medium text-description dark:text-description-dark overflow-hidden;
           }
         }
       }
 
-      &-content {
-        @apply hangout-min-h;
+      &-events {
+
+        #dashboard-events {
+
+          p.event-item {
+            @apply mb-1 flex flex-col justify-between items-start p-2 rounded-sm bg-primary dark:bg-primary-dark;
+
+            span {
+
+              &.timestamp {
+                @apply text-xs md:text-sm font-bold text-title dark:text-title-dark mb-1;
+              }
+
+              &.description {
+                @apply text-sm md:text-base font-medium text-description dark:text-description-dark;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &-members {
+
+    #dashboard-members-container {
+
+      .member-item {
+        @apply p-1 mb-1 flex justify-between items-center max-w-full overflow-hidden bg-primary dark:bg-primary-dark rounded-sm;
+
+        p.display-name {
+          @apply text-sm font-bold text-description dark:text-description-dark max-w-[84%] text-ellipsis whitespace-nowrap overflow-hidden;
+        }
+
+        button.view-hangout-member-btn {
+          @apply svg w-[1.8rem] h-[1.8rem] transition-transform after:absolute;
+
+          svg path {
+            @apply fill-description dark:fill-description-dark;
+          }
+
+          &:hover svg path {
+            @apply fill-cta dark:fill-cta-dark;
+          }
+        }
       }
     }
   }
