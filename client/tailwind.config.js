@@ -133,6 +133,7 @@ module.exports = {
     },
 
     screens: {
+      'xl': { 'max': '1100px' },
       'lg': { 'max': '970px' },
       'md': { 'max': '830px' },
       'sm': { 'max': '650px' },
