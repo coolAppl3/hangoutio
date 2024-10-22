@@ -177,7 +177,7 @@ module.exports = {
     // 404.html
     new HtmlWebpackPlugin({
       title: 'Not Found - Hangoutio',
-      filename: '404.html',
+      filename: 'errorPages/404.html',
       template: 'src/html/errorPages/404.html',
 
       chunks: [
@@ -188,7 +188,7 @@ module.exports = {
     // 403.html
     new HtmlWebpackPlugin({
       title: 'Forbidden - Hangoutio',
-      filename: '403.html',
+      filename: 'errorPages/403.html',
       template: 'src/html/errorPages/403.html',
 
       chunks: [
@@ -199,7 +199,7 @@ module.exports = {
     // 401.html
     new HtmlWebpackPlugin({
       title: 'Unauthorized- Hangoutio',
-      filename: '401.html',
+      filename: 'errorPages/401.html',
       template: 'src/html/errorPages/401.html',
 
       chunks: [
