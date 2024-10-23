@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.27] (2024-10-23)
+
+### Features
+
+- Fully implemented the UI for the dashboard and navbar for `hangout.html`.
+
+
 ## [0.2.26] (2024-10-18)
 
 ### Code Refactoring

@@ -85,6 +85,7 @@ module.exports = {
 
       boxShadow: {
         'simple': '10px 10px 12px rgba(0, 0, 0, 0.15)',
+        'simple-t': '0px -5px 12px rgba(0, 0, 0, 0.25)',
         'centered': '0 0 5px 1px rgba(0, 0, 0, 0.15)',
         'tiny': '0 0 1px 1px rgba(0, 0, 0, 0.15)'
       },
@@ -133,6 +134,7 @@ module.exports = {
     },
 
     screens: {
+      'xl': { 'max': '1100px' },
       'lg': { 'max': '970px' },
       'md': { 'max': '830px' },
       'sm': { 'max': '650px' },
