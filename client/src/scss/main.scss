@@ -915,49 +915,47 @@
 }
 
 // hangout.html --- --- --- --- --- --- --- --- ---
-
-
-#hangout-nav {
-
+#hangout-nav,
+#hangout-phone-nav {
   &[data-selected="dashboard"] {
 
-    [data-btn-name="dashboard"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    [data-goTo="dashboard"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 
   &[data-selected="chat"] {
 
-    [data-btn-name="chat"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    [data-goTo="chat"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 
   &[data-selected="availability"] {
 
-    [data-btn-name="availability"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    [data-goTo="availability"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 
   &[data-selected="suggestions"] {
 
-    [data-btn-name="suggestions"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    [data-goTo="suggestions"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 
   &[data-selected="votes"] {
 
-    [data-btn-name="votes"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    [data-goTo="votes"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 
   &[data-selected="conclusion"] {
 
-    [data-btn-name="conclusion"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100;
+    [data-goTo="conclusion"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 }

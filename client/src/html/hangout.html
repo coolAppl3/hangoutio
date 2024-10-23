@@ -476,55 +476,270 @@
     </nav>
 
     <!-- hangout-nav -->
-    <section>
+    <section class="md:hidden">
       <div class="container">
         <div
           id="hangout-nav"
-          class="mt-3 bg-secondary dark:bg-secondary-dark w-full flex justify-end items-center shadow-simple rounded-sm overflow-hidden"
+          class="relative z-3 mt-3 bg-secondary dark:bg-secondary-dark w-full flex justify-end items-center shadow-simple rounded-sm"
           data-selected="dashboard"
         >
           <button
-            data-btn-name="dashboard"
+            data-goTo="dashboard"
             type="button"
-            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75 rounded-tl-sm rounded-bl-sm"
           >
             Dashboard
           </button>
+
           <button
-            data-btn-name="chat"
-            type="button"
-            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
-          >
-            Chat
-          </button>
-          <button
-            data-btn-name="availability"
+            data-goTo="availability"
             type="button"
             class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
           >
             Availability
           </button>
+
           <button
-            data-btn-name="suggestions"
+            data-goTo="suggestions"
             type="button"
             class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
           >
             Suggestions
           </button>
+
           <button
-            data-btn-name="votes"
+            data-goTo="votes"
             type="button"
             class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
           >
             Votes
           </button>
+
           <button
-            data-btn-name="conclusion"
+            data-goTo="conclusion"
             type="button"
-            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75 flex justify-center items-center"
           >
             Conclusion
           </button>
+
+          <div class="group w-full relative cursor-pointer">
+            <button
+              type="button"
+              id="hangout-nav-dropdown-btn"
+              class="peer flex justify-center items-center py-[1.4rem] rounded-tr-sm rounded-br-sm bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75 group-hover:rounded-br-[0]"
+            >
+              <span class="text-sm font-bold text-center text-title dark:text-title-dark mr-1">More</span>
+              <div class="svg w-[1.6rem] h-[1.6rem] transition-transform group-hover:rotate-180">
+                <svg
+                  width="500"
+                  height="500"
+                  viewBox="0 0 500 500"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M50 150L250 350L450 150"
+                    stroke-width="90"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="stroke-title dark:stroke-title-dark"
+                  />
+                </svg>
+              </div>
+            </button>
+
+            <div
+              id="hangout-nav-dropdown-menu"
+              class="hidden group-hover:block peer-focus-visible:block absolute top-full left-0 w-full h-fit shadow-simple rounded-br-sm rounded-bl-sm overflow-hidden"
+            >
+              <button
+                data-goTo="chat"
+                type="button"
+                class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
+              >
+                Chat
+              </button>
+
+              <button
+                data-goTo="members"
+                type="button"
+                class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
+              >
+                Members
+              </button>
+
+              <button
+                data-goTo="settings"
+                type="button"
+                class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
+              >
+                Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- hangout-phone-nav -->
+    <section class="hidden md:block">
+      <div class="container">
+        <div
+          id="hangout-phone-nav"
+          class="p-2 mt-3 bg-secondary dark:bg-secondary-dark w-full shadow-simple rounded-sm"
+          data-selected="dashboard"
+        >
+          <!-- header -->
+          <div class="flex justify-between items-center">
+            <p class="text-md font-bold text-center text-title dark:text-title-dark">Dashboard</p>
+
+            <button
+              type="button"
+              id="hangout-phone-nav-btn"
+              class="svg w-3 h-3"
+            >
+              <svg
+                width="500"
+                height="500"
+                viewBox="0 0 500 500"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M25 118C25 98.1178 41.1177 82 61 82H439C458.882 82 475 98.1178 475 118C475 137.882 458.882 154 439 154H61C41.1177 154 25 137.882 25 118Z"
+                  class="fill-title dark:fill-title-dark"
+                />
+                <path
+                  d="M25 382C25 362.118 41.1177 346 61 346H439C458.882 346 475 362.118 475 382C475 401.882 458.882 418 439 418H61C41.1177 418 25 401.882 25 382Z"
+                  class="fill-title dark:fill-title-dark"
+                />
+                <path
+                  d="M61 214C41.1177 214 25 230.118 25 250C25 269.882 41.1177 286 61 286H439C458.882 286 475 269.882 475 250C475 230.118 458.882 214 439 214H61Z"
+                  class="fill-title dark:fill-title-dark"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- overlay -->
+          <div
+            id="hangout-phone-nav-overlay"
+            class="fixed bottom-0 left-0 z-[21] w-full h-[100vh] bg-overlay dark:bg-overlay-dark flex-col justify-end hidden"
+          >
+            <!-- menu -->
+            <div
+              id="hangout-phone-nav-menu"
+              class="bg-primary dark:bg-primary-dark p-2 text-base font-bold rounded-tr-lg rounded-tl-lg max-h-[70%] shadow-simple-t"
+            >
+              <!-- header -->
+              <div class="grid grid-cols-2 gap-x-2">
+                <button
+                  data-goTo="chat"
+                  type="button"
+                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark/90 dark:bg-description/50 rounded-sm flex justify-center items-center"
+                >
+                  <span class="text-title dark:text-title-dark mr-[4px]">Chat</span>
+                  <div class="svg w-2 h-2">
+                    <svg
+                      width="601"
+                      height="600"
+                      viewBox="0 0 601 600"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M577.276 280C577.276 390.457 465.347 480 327.276 480C189.205 480 77.2762 390.457 77.2762 280C77.2762 169.543 189.205 80 327.276 80C465.347 80 577.276 169.543 577.276 280Z"
+                        class="fill-description dark:fill-title-dark"
+                      />
+                      <path
+                        d="M29.2489 520.217C25.7619 521.129 23.355 515.181 26.3735 513.211C98.5674 466.093 134.491 387.332 155.4 277.672C155.914 274.976 159.487 274.277 160.935 276.609L270.549 453.028C271.615 454.743 270.715 457.001 268.761 457.513L29.2489 520.217Z"
+                        class="fill-description dark:fill-title-dark"
+                      />
+                    </svg>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark/90 dark:bg-description/50 rounded-sm flex justify-center items-center"
+                >
+                  <div class="svg w-2 h-2">
+                    <svg
+                      width="501"
+                      height="500"
+                      viewBox="0 0 501 500"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M79.6218 355.487C60.0955 375.014 60.0955 406.672 79.6218 426.198C99.148 445.724 130.806 445.724 150.332 426.198L250.555 325.976L351.487 426.909C371.014 446.435 402.672 446.435 422.198 426.909C441.724 407.382 441.724 375.724 422.198 356.198L321.265 255.265L433.175 143.355C452.701 123.829 452.701 92.1709 433.175 72.6447C413.649 53.1184 381.991 53.1185 362.464 72.6447L250.555 184.555L139.355 73.3553C119.829 53.8291 88.1709 53.8291 68.6447 73.3553C49.1184 92.8815 49.1185 124.54 68.6447 144.066L179.844 255.265L79.6218 355.487Z"
+                        class="fill-description dark:fill-title-dark"
+                      />
+                    </svg>
+                  </div>
+                </button>
+              </div>
+
+              <!-- buttons -->
+              <div class="max-h-full overflow-scroll pb-8">
+                <button
+                  data-goTo="dashboard"
+                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-solid border-b-1 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
+                >
+                  Dashboard
+                </button>
+
+                <button
+                  data-goTo="availability"
+                  type="button"
+                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-solid border-b-1 border-light-gray dark:border-light-black w-full"
+                >
+                  Availability
+                </button>
+
+                <button
+                  data-goTo="suggestions"
+                  type="button"
+                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-solid border-b-1 border-light-gray dark:border-light-black w-full"
+                >
+                  Suggestions
+                </button>
+
+                <button
+                  data-goTo="votes"
+                  type="button"
+                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-solid border-b-1 border-light-gray dark:border-light-black w-full"
+                >
+                  Votes
+                </button>
+
+                <button
+                  data-goTo="conclusion"
+                  type="button"
+                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-solid border-b-1 border-light-gray dark:border-light-black w-full"
+                >
+                  Conclusion
+                </button>
+
+                <button
+                  data-goTo="members"
+                  type="button"
+                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-solid border-b-1 border-light-gray dark:border-light-black w-full"
+                >
+                  Members
+                </button>
+
+                <button
+                  data-goTo="settings"
+                  type="button"
+                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 w-full rounded-bl-sm rounded-br-sm"
+                >
+                  Settings
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
