@@ -960,6 +960,7 @@
   }
 }
 
+// hangout dashboard --- ---
 #dashboard-section .dashboard .dashboard-grid {
 
   &-content {
@@ -1040,6 +1041,99 @@
 
           &:hover svg path {
             @apply fill-cta dark:fill-cta-dark;
+          }
+        }
+      }
+    }
+  }
+}
+
+// hangout availability --- ---
+#availability-section {
+
+  .availability {
+
+    &-calendar {
+
+      &-days {
+
+        span {
+          @apply block w-full h-full py-2 text-center text-sm font-medium text-description dark:text-description-dark;
+        }
+      }
+
+      #availability-calendar-dates {
+
+        .date-item {
+          @apply block w-full h-full py-3 sm:py-2 text-center text-sm font-bold text-description dark:text-description-dark bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 cursor-pointer overflow-hidden relative;
+
+          &.empty {
+            @apply hover:brightness-100 cursor-default;
+          }
+
+          &.self-a {
+            @apply before:absolute before:top-[-1rem] before:right-[-1rem] before:w-2 before:h-2 before:rotate-45 before:bg-cta dark:before:bg-cta-dark;
+          }
+
+          &.low-a {
+            @apply after:absolute after:bottom-1 after:right-1 after:w-1 after:h-1 after:rounded-[50%] after:bg-success/30;
+          }
+
+          &.medium-a {
+            @apply after:absolute after:bottom-1 after:right-1 after:w-1 after:h-1 after:rounded-[50%] after:bg-success/60;
+          }
+
+          &.high-a {
+            @apply after:absolute after:bottom-1 after:right-1 after:w-1 after:h-1 after:rounded-[50%] after:bg-success;
+          }
+        }
+      }
+
+    }
+
+    &-slots {
+
+      #availability-slots-container {
+        @apply grid grid-cols-2 gap-2 md:grid-cols-1;
+
+        .slot {
+          @apply grid grid-cols-2 gap-2 xs:grid-cols-1 bg-primary dark:bg-primary-dark p-2 rounded-sm;
+
+          .slot-info {
+
+            span {
+              @apply block text-sm md:last:text-base font-medium text-description dark:text-description-dark last:text-title dark:last:text-title-dark first:mb-[4px];
+            }
+          }
+
+          &-btn-container {
+            @apply flex justify-start items-center;
+
+            button {
+              @apply xs:w-full xs:last:px-2 px-2 last:px-3 py-1 first:mr-1 bg-secondary dark:bg-secondary-dark grid place-items-center rounded-sm transition-[filter] hover:brightness-75;
+
+              &.delete-btn {
+
+                svg {
+                  @apply svg w-2 h-2;
+
+                  path {
+                    @apply fill-danger dark:fill-danger-dark;
+                  }
+                }
+              }
+
+              &.edit-btn {
+
+                svg {
+                  @apply svg w-2 h-2;
+
+                  path {
+                    @apply fill-edit;
+                  }
+                }
+              }
+            }
           }
         }
       }

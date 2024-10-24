@@ -140,6 +140,7 @@ module.exports = {
       'sm': { 'max': '650px' },
       'xs': { 'max': '450px' },
       '2xs': { 'max': '390px' },
+      '3xs': { 'max': '340px' },
     },
 
     fontFamily: {
