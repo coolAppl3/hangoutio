@@ -1140,3 +1140,40 @@
     }
   }
 }
+
+// hangout suggestions --- ---
+#suggestions-section {
+
+  .suggestions {
+
+    &-filter {
+
+      &-dropdown {
+        @apply hidden;
+
+        #suggestions-filter-container {
+          @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-x-2;
+
+          .member {
+            @apply flex justify-start items-center mb-1;
+
+            &-name {
+              @apply text-sm font-medium text-description dark:text-description-dark ml-1 text-nowrap overflow-hidden text-ellipsis;
+            }
+          }
+        }
+      }
+
+      &.expanded {
+
+        .form-group .input-container button svg path {
+          @apply fill-cta dark:fill-cta-dark brightness-75 first:brightness-100;
+        }
+
+        .suggestions-filter-dropdown {
+          @apply block;
+        }
+      }
+    }
+  }
+}
