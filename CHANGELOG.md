@@ -1,10 +1,18 @@
 # Changelog
 
+## [0.2.28] (2024-10-26)
+
+### Features
+
+- Fully implemented the availability section UI for `hangout.html`.
+- Fully implemented the suggestions section UI for `hangout.html`.
+
+
 ## [0.2.27] (2024-10-23)
 
 ### Features
 
-- Fully implemented the UI for the dashboard and navbar for `hangout.html`.
+- Fully implemented the UI the dashboard and navbar UI for `hangout.html`.
 
 
 ## [0.2.26] (2024-10-18)
@@ -20,7 +28,6 @@
 ### Bug Fixes
 
 - Fixed error message when the guest's username and password are identical appearing below the username input instead of the password input.
-
 
 
 ## [0.2.25] (2024-10-15)

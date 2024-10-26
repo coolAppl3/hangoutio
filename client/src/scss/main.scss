@@ -960,6 +960,7 @@
   }
 }
 
+// hangout dashboard --- ---
 #dashboard-section .dashboard .dashboard-grid {
 
   &-content {
@@ -1040,6 +1041,243 @@
 
           &:hover svg path {
             @apply fill-cta dark:fill-cta-dark;
+          }
+        }
+      }
+    }
+  }
+}
+
+// hangout availability --- ---
+#availability-section {
+
+  .availability {
+
+    &-calendar {
+
+      &-days {
+
+        span {
+          @apply block w-full h-full py-2 text-center text-sm font-medium text-description dark:text-description-dark;
+        }
+      }
+
+      #availability-calendar-dates {
+
+        .date-item {
+          @apply block w-full h-full py-3 sm:py-2 text-center text-sm font-bold text-title dark:text-title-dark bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 cursor-pointer overflow-hidden relative;
+
+          &.empty {
+            @apply hover:brightness-100 cursor-default;
+          }
+
+          &.self-a {
+            @apply before:absolute before:top-[-1rem] before:right-[-1rem] before:w-2 before:h-2 before:rotate-45 before:bg-cta dark:before:bg-cta-dark;
+          }
+
+          &.low-a {
+            @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-1 after:h-1 after:rounded-[50%] after:bg-success/30;
+          }
+
+          &.medium-a {
+            @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-[1.2rem] after:h-[1.2rem] after:rounded-[50%] after:bg-success/60;
+          }
+
+          &.high-a {
+            @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-[1.4rem] after:h-[1.4rem] after:rounded-[50%] after:bg-success;
+          }
+        }
+      }
+
+    }
+
+    &-slots {
+
+      #availability-slots-container {
+        @apply grid grid-cols-2 gap-2 md:grid-cols-1;
+
+        .slot {
+          @apply grid grid-cols-2 gap-2 xs:grid-cols-1 bg-primary dark:bg-primary-dark p-2 rounded-sm;
+
+          .slot-info {
+
+            span {
+              @apply block text-sm md:last:text-base font-medium text-description dark:text-description-dark last:text-title dark:last:text-title-dark first:mb-[4px];
+            }
+          }
+
+          &-btn-container {
+            @apply flex justify-start items-center;
+
+            button {
+              @apply xs:w-full xs:last:px-2 px-2 last:px-3 py-1 first:mr-1 bg-secondary dark:bg-secondary-dark grid place-items-center rounded-sm transition-[filter] hover:brightness-75;
+
+              &.delete-btn {
+
+                svg {
+                  @apply svg w-2 h-2;
+
+                  path {
+                    @apply fill-danger dark:fill-danger-dark;
+                  }
+                }
+              }
+
+              &.edit-btn {
+
+                svg {
+                  @apply svg w-2 h-2;
+
+                  path {
+                    @apply fill-edit;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// hangout suggestions --- ---
+#suggestions-section {
+
+  .suggestions {
+
+    &-filter {
+      @apply grid grid-rows-[auto_0fr] transition-[grid];
+
+      &.expanded {
+        @apply grid-rows-[auto_1fr] mb-2;
+
+        .form-group .input-container button svg path {
+          @apply fill-cta dark:fill-cta-dark brightness-75 first:brightness-100;
+        }
+
+        .suggestions-filter-dropdown {
+          @apply block;
+        }
+      }
+
+      &-dropdown {
+        @apply overflow-hidden;
+
+        #suggestions-filter-container {
+          @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-x-2;
+
+          .member {
+            @apply flex justify-start items-center mb-1;
+
+            &-name {
+              @apply text-sm font-medium text-description dark:text-description-dark ml-1 text-nowrap overflow-hidden text-ellipsis;
+            }
+          }
+        }
+      }
+
+    }
+
+    #suggestions-container {
+      @apply grid grid-cols-2 md:grid-cols-1 gap-2 mb-2;
+
+      .suggestion {
+        @apply grid grid-rows-[auto_0fr] transition-[grid] bg-primary dark:bg-primary-dark p-2 pb-0 rounded-sm;
+
+        &.expanded {
+          @apply grid-rows-[auto_1fr] pb-2;
+        }
+
+        &-header {
+          @apply mb-2;
+
+          p.suggestion-title {
+            @apply text-base font-bold text-title dark:text-title-dark mb-[4px];
+          }
+
+          p.suggestion-time {
+            @apply text-sm font-medium text-description dark:text-description-dark mb-1;
+
+            span {
+              @apply text-description dark:text-description-dark;
+            }
+          }
+
+          p.suggestion-member {
+            @apply text-sm font-medium text-description dark:text-description-dark mb-1;
+
+            span {
+              @apply text-title dark:text-title-dark;
+            }
+          }
+
+          .btn-container {
+            @apply flex justify-start items-center sm:block;
+
+            button {
+              @apply btn sm:w-full;
+
+              &.add-vote-btn {
+                @apply bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1;
+              }
+
+              &.view-suggestion-btn {
+                @apply bg-description dark:bg-description-dark text-title-dark dark:text-title;
+              }
+            }
+          }
+        }
+
+        &-description {
+          @apply overflow-hidden text-sm font-medium text-description dark:text-description-dark;
+        }
+
+      }
+    }
+
+    &-pagination {
+
+      &-footer {
+        @apply text-sm font-medium text-description dark:text-description-dark w-fit mx-auto;
+      }
+
+      &-container {
+        @apply flex justify-center items-center gap-2 mb-1;
+
+        button.svg {
+          @apply xs:w-[1.6rem] xs:h-[1.6rem];
+
+          &:hover {
+
+            svg path {
+              @apply stroke-cta dark:stroke-cta-dark;
+            }
+          }
+
+          &.disabled {
+            @apply brightness-50 cursor-default;
+
+            &:hover {
+
+              svg path {
+                @apply stroke-description dark:stroke-description-dark;
+              }
+            }
+          }
+        }
+
+        #suggestions-pagination-pages {
+          @apply flex justify-center items-center gap-1;
+
+          button.page-number {
+            @apply text-sm font-bold text-description dark:text-description-dark bg-description-dark/90 dark:bg-primary-dark/70 transition-[filter] hover:brightness-75 w-3 h-3 flex justify-center items-center text-center rounded-[50%] cursor-pointer;
+
+            &.selected {
+              @apply text-title dark:text-title bg-cta dark:bg-cta-dark;
+            }
+
+
           }
         }
       }
