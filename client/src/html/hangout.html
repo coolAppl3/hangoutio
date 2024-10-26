@@ -928,7 +928,7 @@
 
                     <button
                       type="button"
-                      class="btn bg-cta dark:bg-cta-dark text-title md:w-full"
+                      class="btn bg-cta dark:bg-cta-dark text-title sm:w-full"
                       data-goTo="availability"
                     >
                       Go to availability
@@ -1545,17 +1545,24 @@
                   You can add, adjust, or remove your own availability slots, as well as view when other members are available.
                 </p>
 
-                <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark">
+                <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
                   Keep scrolling if you'd like to only see your availability slots.
                 </p>
+
+                <button
+                  type="button"
+                  id="add-availability-btn"
+                  class="btn bg-cta dark:bg-cta-dark sm:w-full"
+                >
+                  Add availability slot
+                </button>
               </div>
 
-              <div class="w-full p-2 bg-primary dark:bg-primary-dark rounded-sm text-sm font-medium">
-                <p class="text-description dark:text-description-dark pl-2 mb-[6px] relative">
-                  <span
-                    class="absolute left-0 top-1/2 translate-y-[-50%] w-0 h-0 border-solid border-t-0 border-r-[1rem] border-b-[1rem] border-l-0 border-transparent border-r-cta dark:border-r-cta-dark"
-                  ></span
-                  >A date on which you're available.
+              <div class="w-full p-2 bg-primary dark:bg-primary-dark rounded-sm text-sm font-medium flex flex-col justify-center items-start">
+                <p
+                  class="text-description dark:text-description-dark pl-2 mb-[6px] relative after:absolute after:left-0 after:top-1/2 after:translate-y-[-50%] after:w-0 after:h-0 after:border-solid after:border-t-0 after:border-r-[1rem] after:border-b-[1rem] after:border-l-0 after:border-transparent after:border-r-cta dark:after:border-r-cta-dark"
+                >
+                  A date on which you're available.
                 </p>
                 <p
                   class="text-description dark:text-description-dark pl-2 mb-[6px] relative after:absolute after:left-0 after:top-1/2 after:translate-y-[-50%] after:w-1 after:h-1 after:rounded-[50%] after:bg-success/30"
@@ -1565,7 +1572,7 @@
                 <p
                   class="text-description dark:text-description-dark pl-2 mb-[6px] relative after:absolute after:left-0 after:top-1/2 after:translate-y-[-50%] after:w-1 after:h-1 after:rounded-[50%] after:bg-success/60"
                 >
-                  Between 30% and 60% of members are available
+                  Between 30% and 60% of members are available.
                 </p>
                 <p
                   class="text-description dark:text-description-dark pl-2 mb-[6px] relative after:absolute after:left-0 after:top-1/2 after:translate-y-[-50%] after:w-1 after:h-1 after:rounded-[50%] after:bg-success"
@@ -1578,9 +1585,12 @@
 
           <!-- slots -->
           <div class="availability-slots bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple">
-            <h3 class="w-full text-lg text-center font-medium text-title dark:text-title-dark mb-3">My availability slots</h3>
+            <h3 class="w-full text-lg text-center font-medium text-title dark:text-title-dark mb-2">My availability slots</h3>
 
-            <div id="availability-slots-container">
+            <div
+              id="availability-slots-container"
+              class="mb-2"
+            >
               <div class="slot">
                 <div class="slot-info slot-start">
                   <span>Start</span>
@@ -1821,6 +1831,16 @@
                 </div>
               </div>
             </div>
+
+            <div class="btn-container">
+              <button
+                type="button"
+                id="clear-availability-slots-btn"
+                class="btn bg-description dark:bg-description-dark text-light dark:text-dark sm:w-full"
+              >
+                Clear all slots
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1833,8 +1853,8 @@
     >
       <div class="container pb-3 pt-2">
         <div class="suggestions bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple">
-          <div class="suggestions-filter expanded">
-            <div class="form-group w-full">
+          <div class="suggestions-filter group">
+            <div class="form-group">
               <label for="suggestions-filter-input">Search suggestions</label>
               <div class="input-container flex justify-start items-center relative">
                 <input
@@ -1842,7 +1862,7 @@
                   id="suggestions-filter-input"
                   class="!pr-[6rem] overflow-hidden"
                   autocomplete="name"
-                  placeholder="Enter suggestion title"
+                  placeholder="Suggestion or member"
                 />
                 <button
                   type="button"
@@ -1850,6 +1870,7 @@
                   class="absolute right-1 top-1/2 translate-y-[-50%] px-1 py-[4px] rounded-sm transition-[filter] bg-description-dark/90 dark:bg-primary-dark/70 hover:brightness-75"
                   title="Display filters"
                   aria-label="Display suggestions filters"
+                  onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
                 >
                   <svg
                     width="501"
@@ -2380,7 +2401,7 @@
 
                 <button
                   type="button"
-                  class="btn bg-description-dark dark:bg-primary/50 mr-1 sm:mr-0 sm:mb-1 sm:w-full"
+                  class="btn bg-description dark:bg-description-dark text-light dark:text-dark mr-1 sm:mr-0 sm:mb-1 sm:w-full"
                   id="suggestions-filter-reset-btn"
                 >
                   Reset
@@ -2395,6 +2416,319 @@
                 </button>
               </div>
             </div>
+          </div>
+
+          <div id="suggestions-container">
+            <div
+              class="suggestion"
+              data-suggestion-id="123"
+            >
+              <div class="suggestion-header">
+                <p class="suggestion-title">Table tennis</p>
+                <p class="suggestion-time">
+                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                  <span class="suggestion-end">18:00</span>
+                </p>
+                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+
+                <div class="btn-container">
+                  <button
+                    type="button"
+                    class="add-vote-btn disabled"
+                    title="Unlocks in voting stage"
+                  >
+                    Add vote
+                  </button>
+
+                  <button
+                    type="button"
+                    class="view-suggestion-btn"
+                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
+                  >
+                    View details
+                  </button>
+                </div>
+              </div>
+              <p class="suggestion-description">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
+                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
+              </p>
+            </div>
+
+            <div
+              class="suggestion"
+              data-suggestion-id="123"
+            >
+              <div class="suggestion-header">
+                <p class="suggestion-title">Table tennis</p>
+                <p class="suggestion-time">
+                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                  <span class="suggestion-end">18:00</span>
+                </p>
+                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+
+                <div class="btn-container">
+                  <button
+                    type="button"
+                    class="add-vote-btn disabled"
+                    title="Unlocks in voting stage"
+                  >
+                    Add vote
+                  </button>
+
+                  <button
+                    type="button"
+                    class="view-suggestion-btn"
+                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
+                  >
+                    View details
+                  </button>
+                </div>
+              </div>
+              <p class="suggestion-description">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
+                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
+              </p>
+            </div>
+
+            <div
+              class="suggestion"
+              data-suggestion-id="123"
+            >
+              <div class="suggestion-header">
+                <p class="suggestion-title">Table tennis</p>
+                <p class="suggestion-time">
+                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                  <span class="suggestion-end">18:00</span>
+                </p>
+                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+
+                <div class="btn-container">
+                  <button
+                    type="button"
+                    class="add-vote-btn disabled"
+                    title="Unlocks in voting stage"
+                  >
+                    Add vote
+                  </button>
+
+                  <button
+                    type="button"
+                    class="view-suggestion-btn"
+                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
+                  >
+                    View details
+                  </button>
+                </div>
+              </div>
+              <p class="suggestion-description">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
+                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
+              </p>
+            </div>
+
+            <div
+              class="suggestion"
+              data-suggestion-id="123"
+            >
+              <div class="suggestion-header">
+                <p class="suggestion-title">Table tennis</p>
+                <p class="suggestion-time">
+                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                  <span class="suggestion-end">18:00</span>
+                </p>
+                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+
+                <div class="btn-container">
+                  <button
+                    type="button"
+                    class="add-vote-btn disabled"
+                    title="Unlocks in voting stage"
+                  >
+                    Add vote
+                  </button>
+
+                  <button
+                    type="button"
+                    class="view-suggestion-btn"
+                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
+                  >
+                    View details
+                  </button>
+                </div>
+              </div>
+              <p class="suggestion-description">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
+                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
+              </p>
+            </div>
+
+            <div
+              class="suggestion"
+              data-suggestion-id="123"
+            >
+              <div class="suggestion-header">
+                <p class="suggestion-title">Table tennis</p>
+                <p class="suggestion-time">
+                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                  <span class="suggestion-end">18:00</span>
+                </p>
+                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+
+                <div class="btn-container">
+                  <button
+                    type="button"
+                    class="add-vote-btn disabled"
+                    title="Unlocks in voting stage"
+                  >
+                    Add vote
+                  </button>
+
+                  <button
+                    type="button"
+                    class="view-suggestion-btn"
+                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
+                  >
+                    View details
+                  </button>
+                </div>
+              </div>
+              <p class="suggestion-description">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
+                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
+              </p>
+            </div>
+          </div>
+
+          <div class="suggestions-pagination">
+            <div class="suggestions-pagination-container">
+              <button
+                class="svg w-2 h-2"
+                type="button"
+                id="suggestions-page-first"
+              >
+                <svg
+                  width="600"
+                  height="600"
+                  viewBox="0 0 600 600"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M530 100L330 300L530 500M270 100L70 300L270 500"
+                    class="stroke-description dark:stroke-description-dark"
+                    stroke-width="90"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <button
+                class="svg w-2 h-2"
+                type="button"
+                id="suggestions-page-backwards"
+              >
+                <svg
+                  width="600"
+                  height="600"
+                  viewBox="0 0 600 600"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M400 100L200 300L400 500"
+                    class="stroke-description dark:stroke-description-dark"
+                    stroke-width="90"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <div id="suggestions-pagination-pages">
+                <button
+                  type="button"
+                  class="page-number selected"
+                  data-page-number="1"
+                >
+                  1
+                </button>
+                <button
+                  type="button"
+                  class="page-number"
+                  data-page-number="2"
+                >
+                  2
+                </button>
+                <button
+                  type="button"
+                  class="page-number"
+                  data-page-number="3"
+                >
+                  3
+                </button>
+              </div>
+
+              <button
+                class="svg w-2 h-2"
+                type="button"
+                id="suggestions-page-forwards"
+              >
+                <svg
+                  width="600"
+                  height="600"
+                  viewBox="0 0 600 600"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M200 500L400 300L200 100"
+                    class="stroke-description dark:stroke-description-dark"
+                    stroke-width="90"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <button
+                class="svg w-2 h-2 disabled"
+                type="button"
+                id="suggestions-page-last"
+              >
+                <svg
+                  width="600"
+                  height="600"
+                  viewBox="0 0 600 600"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M70 500L270 300L70 100M330 500L530 300L330 100"
+                    class="stroke-description dark:stroke-description-dark"
+                    stroke-width="90"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <p class="suggestions-pagination-footer">
+              Showing <span id="suggestions-pagination-first">1</span> - <span id="suggestions-pagination-last">6</span> out of
+              <span id="suggestions-pagination-total">6</span>
+            </p>
           </div>
         </div>
       </div>
