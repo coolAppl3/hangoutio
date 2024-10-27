@@ -508,19 +508,19 @@
           </button>
 
           <button
-            data-goTo="votes"
-            type="button"
-            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
-          >
-            Votes
-          </button>
-
-          <button
             data-goTo="conclusion"
             type="button"
             class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75 flex justify-center items-center"
           >
             Conclusion
+          </button>
+
+          <button
+            data-goTo="chat"
+            type="button"
+            class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-secondary dark:bg-secondary-dark w-full transition-[filter] hover:brightness-75"
+          >
+            Chat
           </button>
 
           <div class="group w-full relative cursor-pointer">
@@ -553,14 +553,6 @@
               id="hangout-nav-dropdown-menu"
               class="hidden group-hover:block peer-focus-visible:block absolute top-full left-0 w-full h-fit shadow-simple rounded-br-sm rounded-bl-sm overflow-hidden"
             >
-              <button
-                data-goTo="chat"
-                type="button"
-                class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
-              >
-                Chat
-              </button>
-
               <button
                 data-goTo="members"
                 type="button"
@@ -682,7 +674,7 @@
               </div>
 
               <!-- buttons -->
-              <div class="max-h-full overflow-scroll pb-8">
+              <div class="max-h-full overflow-scroll">
                 <button
                   data-goTo="dashboard"
                   class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
@@ -704,14 +696,6 @@
                   class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Suggestions
-                </button>
-
-                <button
-                  data-goTo="votes"
-                  type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
-                >
-                  Votes
                 </button>
 
                 <button
@@ -2703,7 +2687,7 @@
               </button>
 
               <button
-                class="svg w-2 h-2 disabled"
+                class="svg w-2 h-2"
                 type="button"
                 id="suggestions-page-last"
               >
