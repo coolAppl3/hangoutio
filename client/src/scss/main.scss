@@ -1152,12 +1152,56 @@
       &.expanded {
         @apply grid-rows-[auto_1fr] mb-2;
 
-        .form-group .input-container button svg path {
-          @apply fill-cta dark:fill-cta-dark brightness-75 first:brightness-100;
+      }
+
+      &-header {
+        @apply mb-2 flex justify-between items-start relative z-3;
+
+        #suggestions-filter-btn {
+          @apply mr-2 border-0;
         }
 
-        .suggestions-filter-dropdown {
-          @apply block;
+        #suggestions-sort {
+          @apply flex justify-start items-center;
+
+          p {
+            @apply text-sm font-medium text-description dark:text-description-dark mr-1;
+          }
+
+          .btn-container {
+            @apply relative;
+
+            &.expanded {
+
+              #suggestions-sort-btn {
+                @apply rounded-bl-[0px] rounded-br-[0px];
+              }
+
+              .btn-container-inner {
+                @apply block;
+              }
+            }
+
+            button#suggestions-sort-btn {
+              @apply flex justify-center items-center px-1 h-4 bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75 rounded-sm;
+
+              span {
+                @apply text-sm font-medium text-description dark:text-description-dark mr-1;
+              }
+            }
+
+            &-inner {
+              @apply w-full absolute hidden;
+
+              button {
+                @apply block w-full text-start p-1 text-sm font-medium bg-description-dark dark:bg-description text-description dark:text-description-dark transition-[filter] hover:brightness-75 cursor-pointer;
+
+                &:last-child {
+                  @apply rounded-bl-sm rounded-br-sm;
+                }
+              }
+            }
+          }
         }
       }
 
@@ -1165,10 +1209,10 @@
         @apply overflow-hidden;
 
         #suggestions-filter-container {
-          @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-x-2;
+          @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-x-2 gap-y-1;
 
           .member {
-            @apply flex justify-start items-center mb-1;
+            @apply flex justify-start items-center;
 
             &-name {
               @apply text-sm font-medium text-description dark:text-description-dark ml-1 text-nowrap overflow-hidden text-ellipsis;
@@ -1180,7 +1224,11 @@
     }
 
     #suggestions-container {
-      @apply grid grid-cols-2 md:grid-cols-1 gap-2 mb-2;
+      @apply grid grid-cols-2 md:grid-cols-1 items-start gap-2 mb-2;
+
+      &.in-voting-stage .suggestion .btn-container button.add-vote-btn {
+        @apply block;
+      }
 
       .suggestion {
         @apply grid grid-rows-[auto_0fr] transition-[grid] bg-primary dark:bg-primary-dark p-2 pb-0 rounded-sm;
@@ -1219,7 +1267,7 @@
               @apply btn sm:w-full;
 
               &.add-vote-btn {
-                @apply bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1;
+                @apply bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1 hidden;
               }
 
               &.view-suggestion-btn {

@@ -1837,56 +1837,115 @@
     >
       <div class="container pb-3 pt-2">
         <div class="suggestions bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple">
-          <div class="suggestions-filter group">
-            <div class="form-group">
-              <label for="suggestions-filter-input">Search suggestions</label>
-              <div class="input-container flex justify-start items-center relative">
-                <input
-                  type="text"
-                  id="suggestions-filter-input"
-                  class="!pr-[6rem] overflow-hidden"
-                  autocomplete="name"
-                  placeholder="Suggestion or member"
-                />
-                <button
-                  type="button"
-                  id="filter-suggestions-btn"
-                  class="absolute right-1 top-1/2 translate-y-[-50%] px-1 py-[4px] rounded-sm transition-[filter] bg-description-dark/90 dark:bg-primary-dark/70 hover:brightness-75"
-                  title="Display filters"
-                  aria-label="Display suggestions filters"
-                  onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
+          <div class="suggestions-search form-group">
+            <label for="suggestions-filter-input">Search suggestions</label>
+            <input
+              type="text"
+              id="suggestions-filter-input"
+              autocomplete="name"
+              placeholder="Suggestion or member"
+            />
+            <span
+              class="error-span"
+              data-target="suggestions-filter-input"
+            ></span>
+          </div>
+
+          <div class="suggestions-filter">
+            <div class="suggestions-filter-header">
+              <button
+                type="button"
+                id="suggestions-filter-btn"
+                class="btn bg-description dark:bg-description-dark"
+                title="Display filters"
+                aria-label="Display suggestions filters"
+                onclick="this.parentElement.parentElement.classList.toggle('expanded')"
+              >
+                <svg
+                  width="501"
+                  height="500"
+                  viewBox="0 0 501 500"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="svg w-2 h-2"
                 >
-                  <svg
-                    width="501"
-                    height="500"
-                    viewBox="0 0 501 500"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="svg w-2 h-2"
+                  <path
+                    d="M363.242 66H47.0343C30.9476 66 21.4435 84.0268 30.5324 97.2998L169.601 300.392C171.88 303.719 173.099 307.658 173.099 311.691V378.296C173.099 383.847 175.406 389.149 179.468 392.932L218.34 429.135C222.041 432.583 226.912 434.5 231.971 434.5H238.099C249.145 434.5 258.099 425.546 258.099 414.5V310.917C258.099 307.369 259.043 303.886 260.833 300.824L380.509 96.0931C388.302 82.7601 378.686 66 363.242 66Z"
+                    class="fill-title-dark dark:fill-title"
+                  />
+                  <path
+                    d="M375.099 133C375.099 121.954 384.054 113 395.099 113H455.099C466.145 113 475.099 121.954 475.099 133C475.099 144.046 466.145 153 455.099 153H395.099C384.054 153 375.099 144.046 375.099 133Z"
+                    class="fill-description-dark dark:fill-description"
+                  />
+                  <path
+                    d="M335.099 203C335.099 191.954 344.054 183 355.099 183H455.099C466.145 183 475.099 191.954 475.099 203C475.099 214.046 466.145 223 455.099 223H355.099C344.054 223 335.099 214.046 335.099 203Z"
+                    class="fill-description-dark dark:fill-description"
+                  />
+                  <path
+                    d="M305.099 273C305.099 261.954 314.054 253 325.099 253H455.099C466.145 253 475.099 261.954 475.099 273C475.099 284.046 466.145 293 455.099 293H325.099C314.054 293 305.099 284.046 305.099 273Z"
+                    class="fill-description-dark dark:fill-description"
+                  />
+                </svg>
+              </button>
+
+              <div id="suggestions-sort">
+                <p>Sort by</p>
+
+                <div class="btn-container group">
+                  <button
+                    type="button"
+                    id="suggestions-sort-btn"
+                    onclick="this.parentElement.classList.toggle('expanded')"
                   >
-                    <path
-                      d="M363.242 66H47.0343C30.9476 66 21.4435 84.0268 30.5324 97.2998L169.601 300.392C171.88 303.719 173.099 307.658 173.099 311.691V378.296C173.099 383.847 175.406 389.149 179.468 392.932L218.34 429.135C222.041 432.583 226.912 434.5 231.971 434.5H238.099C249.145 434.5 258.099 425.546 258.099 414.5V310.917C258.099 307.369 259.043 303.886 260.833 300.824L380.509 96.0931C388.302 82.7601 378.686 66 363.242 66Z"
-                      class="fill-title dark:fill-title-dark"
-                    />
-                    <path
-                      d="M375.099 133C375.099 121.954 384.054 113 395.099 113H455.099C466.145 113 475.099 121.954 475.099 133C475.099 144.046 466.145 153 455.099 153H395.099C384.054 153 375.099 144.046 375.099 133Z"
-                      class="fill-description dark:fill-description-dark"
-                    />
-                    <path
-                      d="M335.099 203C335.099 191.954 344.054 183 355.099 183H455.099C466.145 183 475.099 191.954 475.099 203C475.099 214.046 466.145 223 455.099 223H355.099C344.054 223 335.099 214.046 335.099 203Z"
-                      class="fill-description dark:fill-description-dark"
-                    />
-                    <path
-                      d="M305.099 273C305.099 261.954 314.054 253 325.099 253H455.099C466.145 253 475.099 261.954 475.099 273C475.099 284.046 466.145 293 455.099 293H325.099C314.054 293 305.099 284.046 305.099 273Z"
-                      class="fill-description dark:fill-description-dark"
-                    />
-                  </svg>
-                </button>
+                    <span>Popularity</span>
+
+                    <div class="svg w-[1.6rem] h-[1.6rem] transition-transform group-[.expanded]:rotate-180">
+                      <svg
+                        width="500"
+                        height="500"
+                        viewBox="0 0 500 500"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M50 150L250 350L450 150"
+                          stroke-width="90"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="stroke-title dark:stroke-title-dark"
+                        ></path>
+                      </svg>
+                    </div>
+                  </button>
+
+                  <div class="btn-container-inner">
+                    <button
+                      type="button"
+                      class="popularity"
+                    >
+                      Popularity
+                    </button>
+                    <button
+                      type="button"
+                      class="newest"
+                    >
+                      Newest
+                    </button>
+                    <button
+                      type="button"
+                      class="oldest"
+                    >
+                      Oldest
+                    </button>
+                    <button
+                      type="button"
+                      class="name"
+                    >
+                      Name
+                    </button>
+                  </div>
+                </div>
               </div>
-              <span
-                class="error-span"
-                data-target="suggestions-filter-input"
-              ></span>
             </div>
 
             <div class="suggestions-filter-dropdown">
@@ -2418,7 +2477,7 @@
                 <div class="btn-container">
                   <button
                     type="button"
-                    class="add-vote-btn disabled"
+                    class="add-vote-btn"
                     title="Unlocks in voting stage"
                   >
                     Add vote
@@ -2456,7 +2515,7 @@
                 <div class="btn-container">
                   <button
                     type="button"
-                    class="add-vote-btn disabled"
+                    class="add-vote-btn"
                     title="Unlocks in voting stage"
                   >
                     Add vote
@@ -2494,7 +2553,7 @@
                 <div class="btn-container">
                   <button
                     type="button"
-                    class="add-vote-btn disabled"
+                    class="add-vote-btn"
                     title="Unlocks in voting stage"
                   >
                     Add vote
@@ -2532,7 +2591,7 @@
                 <div class="btn-container">
                   <button
                     type="button"
-                    class="add-vote-btn disabled"
+                    class="add-vote-btn"
                     title="Unlocks in voting stage"
                   >
                     Add vote
@@ -2570,7 +2629,7 @@
                 <div class="btn-container">
                   <button
                     type="button"
-                    class="add-vote-btn disabled"
+                    class="add-vote-btn"
                     title="Unlocks in voting stage"
                   >
                     Add vote
