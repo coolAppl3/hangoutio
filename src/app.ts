@@ -39,8 +39,6 @@ if (process.env.NODE_ENV === 'development') {
   );
 };
 
-
-
 // routes
 app.use('/api/accounts', accountsRouter);
 app.use('/api/hangouts', hangoutsRouter);
