@@ -8,6 +8,7 @@ dotenv_1.default.config();
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
+const initDb_1 = require("./db/initDb");
 const accounts_1 = require("./routes/accounts");
 const hangouts_1 = require("./routes/hangouts");
 const guests_1 = require("./routes/guests");
@@ -38,7 +39,20 @@ app.use('/api/suggestions', suggestions_1.suggestionsRouter);
 app.use('/api/votes', votes_1.votesRouter);
 app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use(fallbackMiddleware_1.fallbackMiddleware);
-(0, cronInit_1.initCronJobs)();
-app.listen(port, () => {
-    console.log(`Server running on port ${port}.`);
-});
+async function initServer() {
+    try {
+        await (0, initDb_1.initDb)();
+        console.log('Database initialized.');
+        app.listen(port, () => {
+            console.log(`Server running on port ${port}.`);
+        });
+        (0, cronInit_1.initCronJobs)();
+    }
+    catch (err) {
+        console.log(err);
+        process.exit(1);
+    }
+    ;
+}
+;
+initServer();

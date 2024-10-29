@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.29] (2024-10-29)
+
+### Features
+
+- Added `initDb.ts` to create any missing tables when the server is initialized.
+  - This will also help keep track of any database schema changes.
+- Removed buttons meant to navigate the user to the votes section in `hangout.html`, which is no longer needed.
+- Implemented sorting UI for the suggestions section in `hangout.html`.
+- Added UI elements to allow for liking a suggestion in `hangout.html`.
+
+
 ## [0.2.28] (2024-10-26)
 
 ### Features

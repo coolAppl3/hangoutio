@@ -4,6 +4,8 @@ import path from 'path';
 import cors from 'cors';
 import express, { Application } from 'express';
 
+import { initDb } from './db/initDb';
+
 // routers
 import { accountsRouter } from './routes/accounts';
 import { hangoutsRouter } from './routes/hangouts';
@@ -52,10 +54,21 @@ app.use(express.static(path.join(__dirname, '../public')));
 // fallback middleware
 app.use(fallbackMiddleware);
 
-// cron-jobs
-initCronJobs();
+async function initServer(): Promise<void> {
+  try {
+    await initDb();
+    console.log('Database initialized.')
 
-// init
-app.listen(port, () => {
-  console.log(`Server running on port ${port}.`)
-});
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}.`)
+    });
+
+    initCronJobs();
+
+  } catch (err: unknown) {
+    console.log(err);
+    process.exit(1);
+  };
+};
+
+initServer();
