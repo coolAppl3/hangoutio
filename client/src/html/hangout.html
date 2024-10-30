@@ -475,7 +475,7 @@
       </div>
     </nav>
 
-    <!-- hangout-nav -->
+    <!-- hangout-top-nav -->
     <section class="md:hidden">
       <div class="container">
         <div
@@ -562,6 +562,14 @@
               </button>
 
               <button
+                data-goTo="events"
+                type="button"
+                class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
+              >
+                Events
+              </button>
+
+              <button
                 data-goTo="settings"
                 type="button"
                 class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
@@ -574,7 +582,7 @@
       </div>
     </section>
 
-    <!-- hangout-phone-nav -->
+    <!-- hangout-bot-nav -->
     <section class="hidden md:block">
       <div class="container">
         <div
@@ -614,22 +622,18 @@
             </button>
           </div>
 
-          <!-- overlay -->
-          <div
-            id="hangout-phone-nav-overlay"
-            class="fixed bottom-0 left-0 z-[21] w-full h-[100vh] bg-overlay dark:bg-overlay-dark flex-col justify-end hidden"
-          >
-            <!-- menu -->
+          <!-- menu -->
+          <div class="hangout-phone-nav-overlay fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[21]">
             <div
               id="hangout-phone-nav-menu"
-              class="bg-primary dark:bg-primary-dark p-2 text-base font-bold rounded-tr-lg rounded-tl-lg max-h-[70%] shadow-simple-t"
+              class="fixed bottom-0 left-0 w-full z-[22] bg-primary dark:bg-primary-dark p-2 text-base font-bold rounded-tr-lg rounded-tl-lg"
             >
               <!-- header -->
               <div class="grid grid-cols-2 gap-x-2">
                 <button
                   data-goTo="chat"
                   type="button"
-                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark/90 dark:bg-description/50 rounded-sm flex justify-center items-center"
+                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
                 >
                   <span class="text-title dark:text-title-dark mr-[4px]">Chat</span>
                   <div class="svg w-2 h-2">
@@ -654,7 +658,7 @@
 
                 <button
                   type="button"
-                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark/90 dark:bg-description/50 rounded-sm flex justify-center items-center"
+                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
                 >
                   <div class="svg w-2 h-2">
                     <svg
@@ -674,10 +678,12 @@
               </div>
 
               <!-- buttons -->
-              <div class="max-h-full overflow-scroll">
+              <div
+                class="max-h-[45vh] overflow-scroll relative z-[22] after:block after:sticky after:bottom-0 after:left-0 after:w-full after:mx-auto after:h-4 after:bg-gradient-to-t after:from-primary dark:after:from-primary-dark after:to-transparent"
+              >
                 <button
                   data-goTo="dashboard"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
                 >
                   Dashboard
                 </button>
@@ -685,7 +691,7 @@
                 <button
                   data-goTo="availability"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Availability
                 </button>
@@ -693,7 +699,7 @@
                 <button
                   data-goTo="suggestions"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Suggestions
                 </button>
@@ -701,7 +707,7 @@
                 <button
                   data-goTo="conclusion"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Conclusion
                 </button>
@@ -709,15 +715,23 @@
                 <button
                   data-goTo="members"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Members
                 </button>
 
                 <button
+                  data-goTo="events"
+                  type="button"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                >
+                  Events
+                </button>
+
+                <button
                   data-goTo="settings"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 w-full rounded-bl-sm rounded-br-sm"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 w-full rounded-bl-sm rounded-br-sm"
                 >
                   Settings
                 </button>
@@ -1258,16 +1272,16 @@
                 id="availability-calendar-backwards-btn"
                 class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75"
               >
-                <div class="svg w-2 h-2 rotate-90">
+                <div class="svg w-2 h-2">
                   <svg
-                    width="500"
-                    height="500"
-                    viewBox="0 0 500 500"
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M50 150L250 350L450 150"
+                      d="M400 100L200 300L400 500"
                       stroke-width="90"
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -1295,16 +1309,16 @@
                 id="availability-calendar-forwards-btn"
                 class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75"
               >
-                <div class="svg w-2 h-2 rotate-[-90deg]">
+                <div class="svg w-2 h-2">
                   <svg
-                    width="500"
-                    height="500"
-                    viewBox="0 0 500 500"
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M50 150L250 350L450 150"
+                      d="M200 500L400 300L200 100"
                       stroke-width="90"
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -1530,7 +1544,7 @@
                 </p>
 
                 <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-                  Keep scrolling if you'd like to only see your availability slots.
+                  Keep scrolling if you'd like to see only your availability slots.
                 </p>
 
                 <button
