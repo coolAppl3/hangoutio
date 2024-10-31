@@ -475,7 +475,7 @@
       </div>
     </nav>
 
-    <!-- hangout-top-nav -->
+    <!-- hangout-nav -->
     <section class="md:hidden">
       <div class="container">
         <div
@@ -582,45 +582,40 @@
       </div>
     </section>
 
-    <!-- hangout-bot-nav -->
+    <!-- hangout-phone-nav -->
     <section class="hidden md:block">
       <div class="container">
         <div
           id="hangout-phone-nav"
-          class="p-2 mt-3 bg-secondary dark:bg-secondary-dark w-full shadow-simple rounded-sm"
           data-selected="dashboard"
         >
-          <!-- header -->
-          <div class="flex justify-between items-center">
-            <p class="text-md font-bold text-center text-title dark:text-title-dark">Dashboard</p>
-
-            <button
-              type="button"
-              id="hangout-phone-nav-btn"
+          <button
+            type="button"
+            id="hangout-phone-nav-btn"
+            class="fixed bottom-8 right-2 p-1 bg-description dark:bg-description-dark rounded-[50%] z-[10] shadow-simple-sm"
+          >
+            <svg
+              width="500"
+              height="500"
+              viewBox="0 0 500 500"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
               class="svg w-3 h-3"
             >
-              <svg
-                width="500"
-                height="500"
-                viewBox="0 0 500 500"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M25 118C25 98.1178 41.1177 82 61 82H439C458.882 82 475 98.1178 475 118C475 137.882 458.882 154 439 154H61C41.1177 154 25 137.882 25 118Z"
-                  class="fill-title dark:fill-title-dark"
-                />
-                <path
-                  d="M25 382C25 362.118 41.1177 346 61 346H439C458.882 346 475 362.118 475 382C475 401.882 458.882 418 439 418H61C41.1177 418 25 401.882 25 382Z"
-                  class="fill-title dark:fill-title-dark"
-                />
-                <path
-                  d="M61 214C41.1177 214 25 230.118 25 250C25 269.882 41.1177 286 61 286H439C458.882 286 475 269.882 475 250C475 230.118 458.882 214 439 214H61Z"
-                  class="fill-title dark:fill-title-dark"
-                />
-              </svg>
-            </button>
-          </div>
+              <path
+                d="M25 106C25 86.1178 41.1178 70 61 70H349C368.882 70 385 86.1178 385 106C385 125.882 368.882 142 349 142H61C41.1178 142 25 125.882 25 106Z"
+                class="fill-title-dark dark:fill-title"
+              />
+              <path
+                d="M25 394C25 374.118 41.1177 358 61 358H214C233.882 358 250 374.118 250 394C250 413.882 233.882 430 214 430H61C41.1178 430 25 413.882 25 394Z"
+                class="fill-title-dark dark:fill-title"
+              />
+              <path
+                d="M61 214C41.1177 214 25 230.118 25 250C25 269.882 41.1177 286 61 286H439C458.882 286 475 269.882 475 250C475 230.118 458.882 214 439 214H61Z"
+                class="fill-title-dark dark:fill-title"
+              />
+            </svg>
+          </button>
 
           <!-- menu -->
           <div class="hangout-phone-nav-overlay fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[21] hidden">
