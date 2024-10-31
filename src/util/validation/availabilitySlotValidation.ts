@@ -17,7 +17,7 @@ export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boo
 
 export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
   const hourMilliseconds: number = 1000 * 60 * 60;
-  const yearMilliseconds: number = hourMilliseconds * 24 * 365;
+  const halfYearMilliseconds: number = hourMilliseconds * 24 * 183;
 
   if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
     return false;
@@ -27,7 +27,7 @@ export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number,
     return false;
   };
 
-  if (slotStart - hangoutConclusionTimestamp > yearMilliseconds) {
+  if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
     return false;
   };
 
