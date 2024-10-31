@@ -721,7 +721,7 @@
   }
 
   &-container {
-    @apply w-[32rem] max-w-[32rem] py-3 px-2 mx-2 rounded-sm bg-primary dark:bg-secondary-dark;
+    @apply w-[32rem] max-w-[32rem] py-3 px-2 mx-2 rounded-sm bg-secondary dark:bg-secondary-dark shadow-simple;
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
@@ -759,7 +759,7 @@
           }
 
           &-cancel-btn {
-            @apply btn w-full border-title dark:border-title-dark bg-primary dark:bg-secondary-dark text-title dark:text-title-dark;
+            @apply btn w-full border-title dark:border-title-dark bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark;
           }
         }
       }
@@ -787,7 +787,7 @@
   }
 
   &-container {
-    @apply w-[32rem] max-w-[32rem] py-3 px-2 mx-2 rounded-sm bg-primary dark:bg-secondary-dark;
+    @apply w-[32rem] max-w-[32rem] py-3 px-2 mx-2 rounded-sm bg-secondary dark:bg-secondary-dark shadow-simple;
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
