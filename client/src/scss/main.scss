@@ -137,7 +137,7 @@
   }
 
   .checkbox-btn {
-    @apply w-2 h-2 bg-light-gray dark:bg-light-black rounded transition-[filter] hover:brightness-75 relative before:absolute after:absolute cursor-pointer flex justify-center items-center;
+    @apply w-2 h-2 bg-light-gray dark:bg-light-black rounded transition-[filter] hover:brightness-75 cursor-pointer flex justify-center items-center relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 before:absolute;
 
     .svg {
       @apply scale-0 rotate-[360deg] transition-transform;
