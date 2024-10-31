@@ -7,19 +7,18 @@ exports.fallbackMiddleware = void 0;
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 function fallbackMiddleware(req, res) {
-    const requestPath = req.path;
     const acceptsHtml = req.headers.accept?.includes('text/html') === true;
-    if (requestPath.endsWith('.html') && acceptsHtml) {
+    if (acceptsHtml) {
         sendBrowserResponse(res, 404);
         return;
     }
     ;
-    res.json({ success: false, message: 'Resource not found.' });
+    res.status(404).json({ success: false, message: 'Resource not found.' });
 }
 exports.fallbackMiddleware = fallbackMiddleware;
 ;
 function sendBrowserResponse(res, errCode) {
-    const htmlFilePath = path_1.default.join(__dirname, '../../public', `${errCode}.html`);
+    const htmlFilePath = path_1.default.join(__dirname, '../../public/errorPages', `${errCode}.html`);
     if (!fs_1.default.existsSync(htmlFilePath)) {
         res.status(errCode).json({ success: false, message: 'Page not found.' });
         return;
