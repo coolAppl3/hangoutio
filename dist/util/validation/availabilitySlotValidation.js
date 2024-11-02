@@ -19,7 +19,7 @@ exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
 ;
 function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
     const hourMilliseconds = 1000 * 60 * 60;
-    const yearMilliseconds = hourMilliseconds * 24 * 365;
+    const halfYearMilliseconds = hourMilliseconds * 24 * 183;
     if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
         return false;
     }
@@ -28,7 +28,7 @@ function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
         return false;
     }
     ;
-    if (slotStart - hangoutConclusionTimestamp > yearMilliseconds) {
+    if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
         return false;
     }
     ;
