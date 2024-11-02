@@ -513,10 +513,10 @@
             >
               <div class="content-item-header mb-2">
                 <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Title and password</h3>
-                <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
+                <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">
                   Give your hangout a title, and protect it with a password if needed.
                 </p>
-                <p class="font-medium text-sm text-description dark:text-description-dark">
+                <p class="font-medium text-sm md:text-base text-description dark:text-description-dark">
                   Hangouts can't be accessed without their unique ID, but a password can be set up for additional security.
                 </p>
               </div>
@@ -572,7 +572,7 @@
                   <span class="text-sm font-medium text-description dark:text-description-dark">Protect with a password:</span>
                   <button
                     id="hangout-password-toggle-btn"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Protect with a password"
                   >
@@ -606,10 +606,10 @@
             >
               <div class="content-item-header mb-2">
                 <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Time and member limit</h3>
-                <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
+                <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">
                   Determine how long each step will take, as well as how many people can join.
                 </p>
-                <p class="font-medium text-sm text-description dark:text-description-dark">
+                <p class="font-medium text-sm md:text-base text-description dark:text-description-dark">
                   Don't overthink it, these settings can be changed later, and hangout steps can be skipped if necessary.
                 </p>
               </div>
@@ -710,7 +710,7 @@
             >
               <div class="content-item-header mb-2">
                 <h3 class="font-medium text-lg text-title dark:text-title-dark mb-1">Account preferences</h3>
-                <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
+                <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">
                   Choose whether you'd like to create this hangout through your account or as a guest.
                 </p>
               </div>
@@ -727,14 +727,14 @@
                   >
                     <button
                       id="account-option-btn"
-                      class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
+                      class="text-sm md:text-base font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
                       type="button"
                     >
                       Account
                     </button>
                     <button
                       id="guest-option-btn"
-                      class="text-sm font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
+                      class="text-sm md:text-base font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
                       type="button"
                     >
                       Guest
@@ -747,8 +747,8 @@
                   id="account-form"
                   class="group-[.is-guest-user]/form:hidden"
                 >
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-1">Enter your account's credentials below.</p>
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-2">
+                  <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">Enter your account's credentials below.</p>
+                  <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-2">
                     Don't have an account?
                     <a
                       href="#"
@@ -812,14 +812,14 @@
                   id="guest-form"
                   class="hidden group-[.is-guest-user]/form:block"
                 >
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-1">
+                  <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">
                     Provide your details below to create a guest account for this hangout.
                   </p>
-                  <p class="font-medium text-sm text-description dark:text-description-dark mb-2">
+                  <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-2">
                     You can learn more about the limitations of guest accounts
                     <a
                       href="#"
-                      class="link font-medium text-sm link"
+                      class="link"
                       >here</a
                     >.
                   </p>
@@ -923,7 +923,7 @@
                 <div class="sign-in-preferences flex justify-start items-center mb-2">
                   <button
                     id="keep-signed-in-btn"
-                    class="checkbox-btn mr-1 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3"
+                    class="checkbox-btn mr-1"
                     type="button"
                     aria-label="Keep me signed in"
                   >
@@ -1018,11 +1018,11 @@
     </section>
 
     <!-- footer -->
-    <footer class="footer py-6 md:pb-[16rem] bg-dark border-t-2 border-light-black">
+    <footer class="footer py-6 md:pb-[12rem] bg-dark border-t-2 border-light-black">
       <div class="container">
-        <div class="footer-container grid gap-2 grid-cols-9 lg:grid-cols-3 lg:gap-y-3 sm:grid-cols-1">
+        <div class="footer-container grid gap-2 grid-cols-9 lg:grid-cols-3 lg:gap-y-3 sm:grid-cols-2">
           <!-- logo -->
-          <div class="footer-container-item flex flex-col justify-start items-start col-span-3 lg:col-span-3 lg:items-center lg:mt-2 lg:order-4 sm:col-span-1">
+          <div class="footer-container-item flex flex-col justify-start items-start col-span-3 lg:col-span-3 lg:items-center lg:mt-2 lg:order-4 sm:col-span-2">
             <div class="logo flex justify-center items-center w-fit relative mb-1">
               <div class="svg w-6 h-6 mr-[4px] overflow-hidden">
                 <svg
@@ -1086,81 +1086,81 @@
           </div>
 
           <!-- links -->
-          <ul class="footer-container-item col-span-2 lg:col-span-1">
+          <ul class="footer-container-item col-span-2 lg:col-span-1 text-sm md:text-base">
             <li class="text-title-dark text-lg font-medium mb-1 h-6 flex justify-start items-center">Links</li>
 
             <li class="mb-1">
               <a
                 href="index.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Home</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="create-hangout.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Hangout</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="sign-up.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Sign up</a
               >
             </li>
             <li>
               <a
                 href="sign-in.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Sign in</a
               >
             </li>
           </ul>
 
           <!-- useful -->
-          <ul class="footer-container-item col-span-2 lg:col-span-1">
+          <ul class="footer-container-item col-span-2 lg:col-span-1 text-sm md:text-base">
             <li class="text-title-dark text-lg font-medium mb-1 h-6 flex justify-start items-center">Useful</li>
 
             <li class="mb-1">
               <a
                 href="recovery.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Account recovery</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="guide.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Guide</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="faq.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >FAQ</a
               >
             </li>
           </ul>
 
           <!-- legal -->
-          <ul class="footer-container-item col-span-2 lg:col-span-1">
+          <ul class="footer-container-item col-span-2 lg:col-span-1 text-sm md:text-base">
             <li class="text-title-dark text-lg font-medium mb-1 h-6 flex justify-start items-center">Legal</li>
 
             <li class="mb-1">
               <a
                 href="terms-of-service.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Terms of Service</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="cookie-policy.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Cookie Policy</a
               >
             </li>

@@ -476,7 +476,7 @@
     </nav>
 
     <!-- hangout-nav -->
-    <section class="md:hidden">
+    <nav class="md:hidden">
       <div class="container">
         <div
           id="hangout-nav"
@@ -562,6 +562,14 @@
               </button>
 
               <button
+                data-goTo="events"
+                type="button"
+                class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
+              >
+                Events
+              </button>
+
+              <button
                 data-goTo="settings"
                 type="button"
                 class="text-sm font-bold text-center text-title dark:text-title-dark py-[1.4rem] bg-description-dark dark:bg-description w-full transition-[filter] hover:brightness-75"
@@ -572,64 +580,55 @@
           </div>
         </div>
       </div>
-    </section>
+    </nav>
 
     <!-- hangout-phone-nav -->
-    <section class="hidden md:block">
+    <nav class="hidden md:block">
       <div class="container">
         <div
           id="hangout-phone-nav"
-          class="p-2 mt-3 bg-secondary dark:bg-secondary-dark w-full shadow-simple rounded-sm"
           data-selected="dashboard"
         >
-          <!-- header -->
-          <div class="flex justify-between items-center">
-            <p class="text-md font-bold text-center text-title dark:text-title-dark">Dashboard</p>
-
-            <button
-              type="button"
-              id="hangout-phone-nav-btn"
+          <button
+            type="button"
+            id="hangout-phone-nav-btn"
+            class="fixed bottom-8 right-2 p-1 bg-description dark:bg-description-dark rounded-[50%] z-[10] shadow-simple-sm"
+          >
+            <svg
+              width="500"
+              height="500"
+              viewBox="0 0 500 500"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
               class="svg w-3 h-3"
             >
-              <svg
-                width="500"
-                height="500"
-                viewBox="0 0 500 500"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M25 118C25 98.1178 41.1177 82 61 82H439C458.882 82 475 98.1178 475 118C475 137.882 458.882 154 439 154H61C41.1177 154 25 137.882 25 118Z"
-                  class="fill-title dark:fill-title-dark"
-                />
-                <path
-                  d="M25 382C25 362.118 41.1177 346 61 346H439C458.882 346 475 362.118 475 382C475 401.882 458.882 418 439 418H61C41.1177 418 25 401.882 25 382Z"
-                  class="fill-title dark:fill-title-dark"
-                />
-                <path
-                  d="M61 214C41.1177 214 25 230.118 25 250C25 269.882 41.1177 286 61 286H439C458.882 286 475 269.882 475 250C475 230.118 458.882 214 439 214H61Z"
-                  class="fill-title dark:fill-title-dark"
-                />
-              </svg>
-            </button>
-          </div>
+              <path
+                d="M25 106C25 86.1178 41.1178 70 61 70H349C368.882 70 385 86.1178 385 106C385 125.882 368.882 142 349 142H61C41.1178 142 25 125.882 25 106Z"
+                class="fill-title-dark dark:fill-title"
+              />
+              <path
+                d="M25 394C25 374.118 41.1177 358 61 358H214C233.882 358 250 374.118 250 394C250 413.882 233.882 430 214 430H61C41.1178 430 25 413.882 25 394Z"
+                class="fill-title-dark dark:fill-title"
+              />
+              <path
+                d="M61 214C41.1177 214 25 230.118 25 250C25 269.882 41.1177 286 61 286H439C458.882 286 475 269.882 475 250C475 230.118 458.882 214 439 214H61Z"
+                class="fill-title-dark dark:fill-title"
+              />
+            </svg>
+          </button>
 
-          <!-- overlay -->
-          <div
-            id="hangout-phone-nav-overlay"
-            class="fixed bottom-0 left-0 z-[21] w-full h-[100vh] bg-overlay dark:bg-overlay-dark flex-col justify-end hidden"
-          >
-            <!-- menu -->
+          <!-- menu -->
+          <div class="hangout-phone-nav-overlay fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[21] hidden">
             <div
               id="hangout-phone-nav-menu"
-              class="bg-primary dark:bg-primary-dark p-2 text-base font-bold rounded-tr-lg rounded-tl-lg max-h-[70%] shadow-simple-t"
+              class="fixed bottom-0 left-0 w-full z-[22] bg-primary dark:bg-primary-dark p-2 text-base font-bold rounded-tr-lg rounded-tl-lg"
             >
               <!-- header -->
               <div class="grid grid-cols-2 gap-x-2">
                 <button
                   data-goTo="chat"
                   type="button"
-                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark/90 dark:bg-description/50 rounded-sm flex justify-center items-center"
+                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
                 >
                   <span class="text-title dark:text-title-dark mr-[4px]">Chat</span>
                   <div class="svg w-2 h-2">
@@ -654,7 +653,7 @@
 
                 <button
                   type="button"
-                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark/90 dark:bg-description/50 rounded-sm flex justify-center items-center"
+                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
                 >
                   <div class="svg w-2 h-2">
                     <svg
@@ -674,10 +673,12 @@
               </div>
 
               <!-- buttons -->
-              <div class="max-h-full overflow-scroll">
+              <div
+                class="max-h-[45vh] overflow-scroll relative z-[22] after:block after:sticky after:bottom-0 after:left-0 after:w-full after:mx-auto after:h-4 after:bg-gradient-to-t after:from-primary dark:after:from-primary-dark after:to-transparent"
+              >
                 <button
                   data-goTo="dashboard"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
                 >
                   Dashboard
                 </button>
@@ -685,7 +686,7 @@
                 <button
                   data-goTo="availability"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Availability
                 </button>
@@ -693,7 +694,7 @@
                 <button
                   data-goTo="suggestions"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Suggestions
                 </button>
@@ -701,7 +702,7 @@
                 <button
                   data-goTo="conclusion"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Conclusion
                 </button>
@@ -709,15 +710,23 @@
                 <button
                   data-goTo="members"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
                 >
                   Members
                 </button>
 
                 <button
+                  data-goTo="events"
+                  type="button"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                >
+                  Events
+                </button>
+
+                <button
                   data-goTo="settings"
                   type="button"
-                  class="bg-description-dark/90 dark:bg-description/50 text-start text-title dark:text-title-dark p-2 w-full rounded-bl-sm rounded-br-sm"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 w-full rounded-bl-sm rounded-br-sm"
                 >
                   Settings
                 </button>
@@ -726,14 +735,14 @@
           </div>
         </div>
       </div>
-    </section>
+    </nav>
 
     <!-- hangout dashboard -->
     <section
       id="dashboard-section"
       class="hidden"
     >
-      <div class="container pb-3 pt-2">
+      <div class="container pb-3 pt-2 md:mt-3">
         <div class="dashboard w-full">
           <div class="dashboard-grid w-full flex justify-center">
             <!-- content -->
@@ -1245,10 +1254,10 @@
       id="availability-section"
       class="hidden"
     >
-      <div class="container pb-3 pt-2">
+      <div class="container mb-3 mt-2 md:mt-3">
         <div class="availability">
           <!-- calendar -->
-          <div class="availability-calendar bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple mb-2">
+          <div class="availability-calendar bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple mb-3">
             <div
               id="availability-calendar-header"
               class="flex justify-between items-center overflow-hidden"
@@ -1256,18 +1265,18 @@
               <button
                 type="button"
                 id="availability-calendar-backwards-btn"
-                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-description-dark/90 dark:bg-primary-dark/70 transition-[filter] hover:brightness-75"
+                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75"
               >
-                <div class="svg w-2 h-2 rotate-90">
+                <div class="svg w-2 h-2">
                   <svg
-                    width="500"
-                    height="500"
-                    viewBox="0 0 500 500"
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M50 150L250 350L450 150"
+                      d="M400 100L200 300L400 500"
                       stroke-width="90"
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -1293,18 +1302,18 @@
               <button
                 type="button"
                 id="availability-calendar-forwards-btn"
-                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-description-dark/90 dark:bg-primary-dark/70 transition-[filter] hover:brightness-75"
+                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75"
               >
-                <div class="svg w-2 h-2 rotate-[-90deg]">
+                <div class="svg w-2 h-2">
                   <svg
-                    width="500"
-                    height="500"
-                    viewBox="0 0 500 500"
+                    width="600"
+                    height="600"
+                    viewBox="0 0 600 600"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M50 150L250 350L450 150"
+                      d="M200 500L400 300L200 100"
                       stroke-width="90"
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -1530,7 +1539,7 @@
                 </p>
 
                 <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-                  Keep scrolling if you'd like to only see your availability slots.
+                  Keep scrolling if you'd like to see only your availability slots.
                 </p>
 
                 <button
@@ -1568,7 +1577,7 @@
           </div>
 
           <!-- slots -->
-          <div class="availability-slots bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple">
+          <div class="availability-slots">
             <h3 class="w-full text-lg text-center font-medium text-title dark:text-title-dark mb-2">My availability slots</h3>
 
             <div
@@ -1835,8 +1844,8 @@
       id="suggestions-section"
       class=""
     >
-      <div class="container pb-3 pt-2">
-        <div class="suggestions bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple">
+      <div class="container mb-3 mt-2 md:mt-3">
+        <div class="suggestions">
           <div class="suggestions-search form-group">
             <label for="suggestions-filter-input">Search suggestions</label>
             <input
@@ -1844,6 +1853,7 @@
               id="suggestions-filter-input"
               autocomplete="name"
               placeholder="Suggestion or member"
+              class="placeholder-description/50 dark:placeholder-description-dark/50"
             />
             <span
               class="error-span"
@@ -1958,7 +1968,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -1986,7 +1996,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2014,7 +2024,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2042,7 +2052,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2070,7 +2080,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2098,7 +2108,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2126,7 +2136,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2154,7 +2164,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2182,7 +2192,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2210,7 +2220,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2238,7 +2248,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2266,7 +2276,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2294,7 +2304,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2322,7 +2332,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2350,7 +2360,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2378,7 +2388,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2406,7 +2416,7 @@
                 <div class="member">
                   <button
                     data-member-id="123"
-                    class="checkbox-btn relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-3 checked"
+                    class="checkbox-btn"
                     type="button"
                     aria-label="Toggle user-select checkbox"
                   >
@@ -2452,7 +2462,7 @@
 
                 <button
                   type="button"
-                  class="btn bg-secondary dark:bg-secondary-dark border-1 border-light-gray dark:border-light-black text-title dark:text-title-dark sm:w-full"
+                  class="btn bg-primary dark:bg-primary-dark border-1 border-light-gray dark:border-light-black text-title dark:text-title-dark sm:w-full"
                   id="suggestions-filter-cancel-btn"
                 >
                   Cancel
@@ -2467,7 +2477,7 @@
               data-suggestion-id="123"
             >
               <div class="suggestion-header">
-                <p class="suggestion-title">John Doe</p>
+                <p class="suggestion-title">Table Tennis</p>
                 <p class="suggestion-time">
                   On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
                   <span class="suggestion-end">18:00</span>
@@ -2527,7 +2537,7 @@
               data-suggestion-id="123"
             >
               <div class="suggestion-header">
-                <p class="suggestion-title">John Doe</p>
+                <p class="suggestion-title">Table Tennis</p>
                 <p class="suggestion-time">
                   On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
                   <span class="suggestion-end">18:00</span>
@@ -2587,7 +2597,7 @@
               data-suggestion-id="123"
             >
               <div class="suggestion-header">
-                <p class="suggestion-title">John Doe</p>
+                <p class="suggestion-title">Table Tennis</p>
                 <p class="suggestion-time">
                   On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
                   <span class="suggestion-end">18:00</span>
@@ -2647,7 +2657,7 @@
               data-suggestion-id="123"
             >
               <div class="suggestion-header">
-                <p class="suggestion-title">John Doe</p>
+                <p class="suggestion-title">Table Tennis</p>
                 <p class="suggestion-time">
                   On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
                   <span class="suggestion-end">18:00</span>
@@ -2707,7 +2717,7 @@
               data-suggestion-id="123"
             >
               <div class="suggestion-header">
-                <p class="suggestion-title">John Doe</p>
+                <p class="suggestion-title">Table Tennis</p>
                 <p class="suggestion-time">
                   On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
                   <span class="suggestion-end">18:00</span>
@@ -2888,11 +2898,11 @@
     </section>
 
     <!-- footer -->
-    <footer class="footer py-6 md:pb-[16rem] bg-dark border-t-2 border-light-black">
+    <footer class="footer py-6 md:pb-[12rem] bg-dark border-t-2 border-light-black">
       <div class="container">
-        <div class="footer-container grid gap-2 grid-cols-9 lg:grid-cols-3 lg:gap-y-3 sm:grid-cols-1">
+        <div class="footer-container grid gap-2 grid-cols-9 lg:grid-cols-3 lg:gap-y-3 sm:grid-cols-2">
           <!-- logo -->
-          <div class="footer-container-item flex flex-col justify-start items-start col-span-3 lg:col-span-3 lg:items-center lg:mt-2 lg:order-4 sm:col-span-1">
+          <div class="footer-container-item flex flex-col justify-start items-start col-span-3 lg:col-span-3 lg:items-center lg:mt-2 lg:order-4 sm:col-span-2">
             <div class="logo flex justify-center items-center w-fit relative mb-1">
               <div class="svg w-6 h-6 mr-[4px] overflow-hidden">
                 <svg
@@ -2956,81 +2966,81 @@
           </div>
 
           <!-- links -->
-          <ul class="footer-container-item col-span-2 lg:col-span-1">
+          <ul class="footer-container-item col-span-2 lg:col-span-1 text-sm md:text-base">
             <li class="text-title-dark text-lg font-medium mb-1 h-6 flex justify-start items-center">Links</li>
 
             <li class="mb-1">
               <a
                 href="index.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Home</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="create-hangout.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Hangout</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="sign-up.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Sign up</a
               >
             </li>
             <li>
               <a
                 href="sign-in.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Sign in</a
               >
             </li>
           </ul>
 
           <!-- useful -->
-          <ul class="footer-container-item col-span-2 lg:col-span-1">
+          <ul class="footer-container-item col-span-2 lg:col-span-1 text-sm md:text-base">
             <li class="text-title-dark text-lg font-medium mb-1 h-6 flex justify-start items-center">Useful</li>
 
             <li class="mb-1">
               <a
                 href="recovery.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Account recovery</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="guide.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Guide</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="faq.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >FAQ</a
               >
             </li>
           </ul>
 
           <!-- legal -->
-          <ul class="footer-container-item col-span-2 lg:col-span-1">
+          <ul class="footer-container-item col-span-2 lg:col-span-1 text-sm md:text-base">
             <li class="text-title-dark text-lg font-medium mb-1 h-6 flex justify-start items-center">Legal</li>
 
             <li class="mb-1">
               <a
                 href="terms-of-service.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Terms of Service</a
               >
             </li>
             <li class="mb-1">
               <a
                 href="cookie-policy.html"
-                class="text-sm text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
+                class="text-description-dark font-bold hover:text-cta dark:hover:text-cta-dark"
                 >Cookie Policy</a
               >
             </li>
