@@ -440,16 +440,16 @@
   }
 
   span.extra-info {
-    @apply block my-[4px] text-xs font-medium text-description dark:text-description-dark;
+    @apply block my-[4px] text-xs md:text-sm font-medium text-description dark:text-description-dark;
   }
 
   input,
   textarea {
-    @apply block w-full bg-transparent text-sm font-medium leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none focus:border-cta dark:focus:border-cta-dark md:text-base md:font-normal;
+    @apply block w-full bg-transparent text-sm font-medium md:text-base md:font-normal leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none focus:border-cta dark:focus:border-cta-dark;
   }
 
   .error-span {
-    @apply hidden mt-[6px] text-xs font-medium leading-[1.1] text-danger dark:text-danger-dark;
+    @apply hidden mt-[6px] text-xs md:text-sm font-medium leading-[1.1] text-danger dark:text-danger-dark;
   }
 
 }
@@ -1241,11 +1241,11 @@
           @apply mb-2 relative;
 
           p.suggestion-title {
-            @apply text-base font-bold text-title dark:text-title-dark mb-[4px];
+            @apply text-md font-bold text-title dark:text-title-dark mb-[4px];
           }
 
           p.suggestion-time {
-            @apply text-sm font-medium text-description dark:text-description-dark mb-1;
+            @apply text-sm md:text-base font-medium text-description dark:text-description-dark mb-1;
 
             span {
               @apply text-description dark:text-description-dark;
@@ -1253,7 +1253,7 @@
           }
 
           p.suggestion-member {
-            @apply text-sm font-medium text-description dark:text-description-dark mb-1;
+            @apply text-sm md:text-base font-medium text-description dark:text-description-dark mb-1;
 
             span {
               @apply text-title dark:text-title-dark;
@@ -1288,7 +1288,7 @@
               }
 
               span.suggestion-likes-count {
-                @apply text-sm font-medium text-description dark:text-description-dark;
+                @apply text-sm font-medium text-description dark:text-description-dark mr-[2px];
               }
 
               button.like-suggestion-btn {
@@ -1303,7 +1303,7 @@
         }
 
         &-description {
-          @apply overflow-hidden text-sm font-medium text-description dark:text-description-dark;
+          @apply overflow-hidden text-sm md:text-base font-medium text-description dark:text-description-dark;
         }
 
       }
