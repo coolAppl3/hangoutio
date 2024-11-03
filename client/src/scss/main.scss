@@ -973,22 +973,22 @@
           &-container-inner {
 
             .message {
-              @apply p-1 mb-2 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-section dark:bg-section-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
+              @apply p-2 mb-2 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-primary dark:bg-primary-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
 
               &-by {
-                @apply text-xs font-bold leading-[1] text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
+                @apply text-xs md:text-sm font-bold leading-[1] text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
               }
 
               &-content {
-                @apply text-sm text-description dark:text-description-dark py-1;
+                @apply text-sm md:text-base text-description dark:text-description-dark py-1;
 
                 span.line-break {
-                  @apply block h-[1rem] w-full bg-transparent;
+                  @apply block h-1 w-full bg-transparent;
                 }
               }
 
               &-timestamp {
-                @apply text-xs leading-[1] text-description dark:text-description-dark self-end ml-1;
+                @apply text-xs md:text-sm leading-[1] text-description dark:text-description-dark self-end ml-1;
               }
 
 
