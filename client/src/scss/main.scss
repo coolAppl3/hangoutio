@@ -980,10 +980,10 @@
               }
 
               &-content {
-                @apply text-sm md:text-base text-description dark:text-description-dark py-1;
+                @apply text-sm md:text-base py-1;
 
-                span.line-break {
-                  @apply block h-1 w-full bg-transparent;
+                p {
+                  @apply text-description dark:text-description-dark mb-1 last:mb-0;
                 }
               }
 
