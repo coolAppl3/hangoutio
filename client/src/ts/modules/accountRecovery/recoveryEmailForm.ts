@@ -252,11 +252,13 @@ function detectSignedInUser(): void {
     return;
   };
 
+  const isGuestUser: boolean = authToken.startsWith('g');
+
   const confirmModalConfig: ConfirmModalConfig = {
     title: `You're signed in.`,
-    description: 'You must sign out before being able to start the account recovery process.',
+    description: 'You must sign out before starting the account recovery process.',
     confirmBtnTitle: 'Sign out',
-    cancelBtnTitle: 'Go to my account',
+    cancelBtnTitle: isGuestUser ? 'Go to homepage' : 'Go to my account',
     extraBtnTitle: null,
     isDangerousAction: false,
   };
@@ -275,7 +277,7 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'account.html';
+      window.location.href = isGuestUser ? 'index.html' : 'account.html';
     };
   });
 };
