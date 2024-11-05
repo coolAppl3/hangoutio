@@ -15,6 +15,7 @@ export async function initDb(): Promise<void> {
   await createAvailabilitySlotsTable();
   await createSuggestionsTable();
   await createVotesTable();
+  await createChatTable();
   await createHangoutsArchiveTable();
   await createHangoutMembersArchiveTable();
 };
@@ -281,6 +282,27 @@ async function createVotesTable(): Promise<void> {
     console.log(err);
   };
 };
+
+async function createChatTable(): Promise<void> {
+  try {
+    await dbPool.execute(
+      `CREATE TABLE IF NOT EXISTS chat (
+        message_id INT PRIMARY KEY AUTO_INCREMENT,
+        hangout_member_id INT NOT NULL,
+        hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
+        message_content VARCHAR(600) NOT NULL,
+        message_timestamp BIGINT NOT NULL,
+        FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
+        FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE
+      );`
+    );
+
+  } catch (err: unknown) {
+    console.log(err);
+  };
+};
+
+// archive
 
 async function createHangoutsArchiveTable(): Promise<void> {
   try {
