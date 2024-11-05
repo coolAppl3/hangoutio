@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.31] (2024-11-05)
+
+### Features
+
+- Greatly improved the look of chat bubbles on the dashboard in `hangout.html.`
+- Slightly improved the logic for enabling hangout password protection in `hangoutFormFirstStep.ts`.
+- Improved redirect modals throughout the app.
+- Improved new line logic for message elements in `hangout.html`.
+- Implemented basic section navigation in `hangout.html`.
+
+
 ## [0.2.30] (2024-11-02)
 
 ### Features
