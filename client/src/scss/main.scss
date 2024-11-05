@@ -456,7 +456,7 @@
 
 // popup
 #popup {
-  @apply fixed top-8 left-0 right-0 text-sm font-bold z-[35] flex justify-center items-center mx-2 px-2;
+  @apply fixed top-8 left-0 right-0 text-sm md:text-base font-bold z-[35] flex justify-center items-center mx-2 px-2;
 
   span {
     @apply py-1 px-[1.4rem] w-fit max-w-[32rem] rounded shadow-simple-sm;
@@ -733,7 +733,7 @@
     .description-container {
 
       p {
-        @apply font-medium text-sm text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
+        @apply font-medium text-sm md:text-base text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
       }
     }
 
@@ -799,7 +799,7 @@
     .description-container {
 
       p {
-        @apply font-medium text-sm text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
+        @apply font-medium text-sm md:text-base text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
       }
     }
 
@@ -915,18 +915,11 @@
 }
 
 // hangout.html --- --- --- --- --- --- --- --- ---
-#hangout-nav,
+#hangout-desktop-nav,
 #hangout-phone-nav {
   &[data-selected="dashboard"] {
 
     [data-goTo="dashboard"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
-    }
-  }
-
-  &[data-selected="chat"] {
-
-    [data-goTo="chat"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
@@ -945,16 +938,45 @@
     }
   }
 
-  &[data-selected="votes"] {
+  &[data-selected="conclusion"] {
 
-    [data-goTo="votes"] {
+    [data-goTo="conclusion"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 
-  &[data-selected="conclusion"] {
+  &[data-selected="chat"] {
 
-    [data-goTo="conclusion"] {
+    [data-goTo="chat"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
+
+      span {
+        @apply text-title;
+      }
+
+      svg path {
+        @apply fill-title dark:fill-title;
+      }
+    }
+  }
+
+  &[data-selected="members"] {
+
+    [data-goTo="members"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
+    }
+  }
+
+  &[data-selected="events"] {
+
+    [data-goTo="events"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
+    }
+  }
+
+  &[data-selected="settings"] {
+
+    [data-goTo="settings"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
@@ -973,26 +995,25 @@
           &-container-inner {
 
             .message {
-              @apply mb-2 w-fit max-w-[70%] md:max-w-[85%];
+              @apply p-2 mb-2 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-primary dark:bg-primary-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
 
-              &-header {
-                @apply flex justify-start items-center mx-[4px] mb-[4px];
-
-                span {
-
-                  &.sent-by {
-                    @apply text-xs font-medium text-title dark:text-title-dark leading-[1.4rem] mr-auto max-w-[50%] overflow-hidden text-ellipsis text-nowrap;
-                  }
-
-                  &.timestamp {
-                    @apply text-xs font-medium text-description dark:text-description-dark leading-[1.4rem];
-                  }
-                }
+              &-by {
+                @apply text-xs md:text-sm font-bold leading-[1] text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
               }
 
               &-content {
-                @apply text-sm font-medium text-description dark:text-description-dark py-1 px-2 rounded-md bg-section dark:bg-section-dark;
+                @apply text-sm md:text-base py-1;
+
+                p {
+                  @apply text-description dark:text-description-dark mb-1 last:mb-0;
+                }
               }
+
+              &-timestamp {
+                @apply text-xs md:text-sm leading-[1] text-description dark:text-description-dark self-end ml-1;
+              }
+
+
             }
           }
         }

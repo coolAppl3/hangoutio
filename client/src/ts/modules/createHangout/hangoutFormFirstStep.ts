@@ -33,28 +33,24 @@ function toggleHangoutPassword(e: MouseEvent): void {
     return;
   };
 
-  if (hangoutPasswordToggleBtn?.classList.contains('checked')) {
-    hangoutPasswordToggleBtn?.classList.remove('checked');
+  hangoutFormState.isPasswordProtected = !hangoutFormState.isPasswordProtected;
 
-    hangoutPasswordInput?.parentElement?.classList.add('disabled');
-    hangoutPasswordInput?.setAttribute('disabled', '');
+  if (hangoutFormState.isPasswordProtected) {
+    hangoutPasswordToggleBtn?.classList.add('checked');
+    hangoutPasswordInput?.parentElement?.classList.remove('disabled');
+    hangoutPasswordInput?.removeAttribute('disabled');
 
-    clearPasswordInput();
-    hangoutPasswordInput ? ErrorSpan.hide(hangoutPasswordInput) : undefined;
-
-    hangoutFormState.isPasswordProtected = false;
     return;
   };
 
-  hangoutPasswordToggleBtn?.classList.add('checked');
-  hangoutPasswordInput?.parentElement?.classList.remove('disabled');
-  hangoutPasswordInput?.removeAttribute('disabled');
+  if (!hangoutFormState.isPasswordProtected) {
+    hangoutPasswordToggleBtn?.classList.remove('checked');
+    hangoutPasswordInput?.parentElement?.classList.add('disabled');
+    hangoutPasswordInput?.setAttribute('disabled', '');
 
-  hangoutFormState.isPasswordProtected = true;
-};
-
-function clearPasswordInput(): void {
-  hangoutPasswordInput ? hangoutPasswordInput.value = '' : undefined;
+    hangoutPasswordInput ? hangoutPasswordInput.value = '' : undefined;
+    hangoutPasswordInput ? ErrorSpan.hide(hangoutPasswordInput) : undefined;
+  };
 };
 
 export function isValidFormFirstStepDetails(): boolean {
