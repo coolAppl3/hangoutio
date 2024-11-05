@@ -23,7 +23,9 @@ export function isValidSuggestionDescription(description: string): boolean {
     return false;
   };
 
-  description = description.trim();
+  if (description !== description.trim()) {
+    return false;
+  };
 
   const descriptionRegex: RegExp = /^[ -~\u20AC\r\n]{10,500}$/; // printable ASCII, euro symbol, and line breaks. 
   return descriptionRegex.test(description);
