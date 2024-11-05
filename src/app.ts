@@ -7,6 +7,7 @@ import express, { Application } from 'express';
 import { initDb } from './db/initDb';
 
 // routers
+import { chatRouter } from './routes/chat';
 import { accountsRouter } from './routes/accounts';
 import { hangoutsRouter } from './routes/hangouts';
 import { guestsRouter } from './routes/guests';
@@ -40,6 +41,7 @@ if (process.env.NODE_ENV === 'development') {
 };
 
 // routes
+app.use('/api/chat', chatRouter);
 app.use('/api/accounts', accountsRouter);
 app.use('/api/hangouts', hangoutsRouter);
 app.use('/api/guests', guestsRouter);
