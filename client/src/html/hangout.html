@@ -475,11 +475,11 @@
       </div>
     </nav>
 
-    <!-- hangout-nav -->
+    <!-- hangout-desktop-nav -->
     <nav class="md:hidden">
       <div class="container">
         <div
-          id="hangout-nav"
+          id="hangout-desktop-nav"
           class="relative z-3 mt-3 bg-secondary dark:bg-secondary-dark w-full flex justify-end items-center shadow-simple rounded-sm"
           data-selected="dashboard"
         >
@@ -618,17 +618,20 @@
           </button>
 
           <!-- menu -->
-          <div class="hangout-phone-nav-overlay fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[21] hidden">
+          <div
+            id="hangout-phone-nav-overlay"
+            class="fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[21] hidden group/overlay"
+          >
             <div
               id="hangout-phone-nav-menu"
-              class="fixed bottom-0 left-0 w-full z-[22] bg-primary dark:bg-primary-dark p-2 text-base font-bold rounded-tr-lg rounded-tl-lg"
+              class="fixed bottom-0 left-0 w-full z-[22] bg-primary dark:bg-primary-dark p-2 text-base font-bold rounded-tr-lg rounded-tl-lg transform-gpu transition-transform translate-y-[100%] group-[.expanded]/overlay:translate-y-0 duration-300"
             >
               <!-- header -->
               <div class="grid grid-cols-2 gap-x-2">
                 <button
                   data-goTo="chat"
                   type="button"
-                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
+                  class="header-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
                 >
                   <span class="text-title dark:text-title-dark mr-[4px]">Chat</span>
                   <div class="svg w-2 h-2">
@@ -1607,6 +1610,8 @@
                   <button
                     type="button"
                     class="delete-btn"
+                    title="Delete slot"
+                    aria-label="Delete availability slot"
                   >
                     <svg
                       width="540"
@@ -1625,6 +1630,8 @@
                   <button
                     type="button"
                     class="edit-btn"
+                    title="Edit slot"
+                    aria-label="Edit availability slot"
                   >
                     <svg
                       width="640"
@@ -1648,13 +1655,13 @@
               </div>
 
               <div class="slot">
-                <div class="slot-info slot-from">
-                  <span>From</span>
+                <div class="slot-info slot-start">
+                  <span>Start</span>
                   <span>October 24th, 12:00</span>
                 </div>
 
-                <div class="slot-info slot-to">
-                  <span>To</span>
+                <div class="slot-info slot-end">
+                  <span>End</span>
                   <span>October 24th, 17:00</span>
                 </div>
 
@@ -1667,6 +1674,8 @@
                   <button
                     type="button"
                     class="delete-btn"
+                    title="Delete slot"
+                    aria-label="Delete availability slot"
                   >
                     <svg
                       width="540"
@@ -1685,6 +1694,8 @@
                   <button
                     type="button"
                     class="edit-btn"
+                    title="Edit slot"
+                    aria-label="Edit availability slot"
                   >
                     <svg
                       width="640"
@@ -1708,13 +1719,13 @@
               </div>
 
               <div class="slot">
-                <div class="slot-info slot-from">
-                  <span>From</span>
+                <div class="slot-info slot-start">
+                  <span>Start</span>
                   <span>October 24th, 12:00</span>
                 </div>
 
-                <div class="slot-info slot-to">
-                  <span>To</span>
+                <div class="slot-info slot-end">
+                  <span>End</span>
                   <span>October 24th, 17:00</span>
                 </div>
 
@@ -1727,6 +1738,8 @@
                   <button
                     type="button"
                     class="delete-btn"
+                    title="Delete slot"
+                    aria-label="Delete availability slot"
                   >
                     <svg
                       width="540"
@@ -1745,6 +1758,8 @@
                   <button
                     type="button"
                     class="edit-btn"
+                    title="Edit slot"
+                    aria-label="Edit availability slot"
                   >
                     <svg
                       width="640"
@@ -1768,14 +1783,14 @@
               </div>
 
               <div class="slot">
-                <div class="slot-info slot-from">
-                  <span>From</span>
+                <div class="slot-info slot-start">
+                  <span>Start</span>
                   <span>October 24th, 12:00</span>
                 </div>
 
-                <div class="slot-info slot-to">
-                  <span>To</span>
-                  <span>September 24th, 22:22</span>
+                <div class="slot-info slot-end">
+                  <span>End</span>
+                  <span>October 24th, 17:00</span>
                 </div>
 
                 <div class="slot-info slot-total">
@@ -1787,6 +1802,8 @@
                   <button
                     type="button"
                     class="delete-btn"
+                    title="Delete slot"
+                    aria-label="Delete availability slot"
                   >
                     <svg
                       width="540"
@@ -1805,6 +1822,8 @@
                   <button
                     type="button"
                     class="edit-btn"
+                    title="Edit slot"
+                    aria-label="Edit availability slot"
                   >
                     <svg
                       width="640"

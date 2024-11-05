@@ -915,18 +915,11 @@
 }
 
 // hangout.html --- --- --- --- --- --- --- --- ---
-#hangout-nav,
+#hangout-desktop-nav,
 #hangout-phone-nav {
   &[data-selected="dashboard"] {
 
     [data-goTo="dashboard"] {
-      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
-    }
-  }
-
-  &[data-selected="chat"] {
-
-    [data-goTo="chat"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
@@ -945,16 +938,45 @@
     }
   }
 
-  &[data-selected="votes"] {
+  &[data-selected="conclusion"] {
 
-    [data-goTo="votes"] {
+    [data-goTo="conclusion"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
 
-  &[data-selected="conclusion"] {
+  &[data-selected="chat"] {
 
-    [data-goTo="conclusion"] {
+    [data-goTo="chat"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
+
+      span {
+        @apply text-title;
+      }
+
+      svg path {
+        @apply fill-title dark:fill-title;
+      }
+    }
+  }
+
+  &[data-selected="members"] {
+
+    [data-goTo="members"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
+    }
+  }
+
+  &[data-selected="events"] {
+
+    [data-goTo="events"] {
+      @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
+    }
+  }
+
+  &[data-selected="settings"] {
+
+    [data-goTo="settings"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
   }
