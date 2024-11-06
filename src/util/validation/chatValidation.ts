@@ -7,6 +7,6 @@ export function isValidMessageContent(message: string): boolean {
     return false;
   };
 
-  const messageRegex: RegExp = /^[ -~\u20AC\r\n]{10,500}$/; // printable ASCII, euro symbol, and line breaks. 
+  const messageRegex: RegExp = /^[ -~\u20AC\r\n]{1,500}$/; // printable ASCII, euro symbol, and line breaks. 
   return messageRegex.test(message);
 };
