@@ -10,9 +10,8 @@ import { generatePlaceHolders } from '../util/generatePlaceHolders';
 
 export const chatRouter: Router = express.Router();
 
-chatRouter.post('/', async (req: Request, res: Response) => {
+chatRouter.post('/add', async (req: Request, res: Response) => {
   interface RequestData {
-    hangoutID: string,
     hangoutMemberID: number,
     messageContent: string,
   };
@@ -32,14 +31,9 @@ chatRouter.post('/', async (req: Request, res: Response) => {
   const userID: number = getUserID(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutID', 'hangoutMemberID', 'messageContent'];
+  const expectedKeys: string[] = ['hangoutMemberID', 'messageContent'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
-    return;
-  };
-
-  if (!isValidHangoutID(requestData.hangoutID)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout ID', reason: 'hangoutID' });
     return;
   };
 
@@ -79,16 +73,21 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(
+    interface HangoutMember extends RowDataPacket {
+      hangout_id: string,
+      display_name: string,
+    };
+
+    const [hangoutRows] = await dbPool.execute<HangoutMember[]>(
       `SELECT
-        1
+        hangout_id,
+        display_name
       FROM
         hangout_members
       WHERE
         hangout_member_id = ? AND
-        ${userType}_id = ? AND
-        hangout_id = ?;`,
-      [requestData.hangoutMemberID, userID, requestData.hangoutID]
+        ${userType}_id;`,
+      [requestData.hangoutMemberID, userID]
     );
 
     if (hangoutRows.length === 0) {
@@ -96,9 +95,10 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
+    const hangoutMember: HangoutMember = hangoutRows[0];
     const messageTimestamp: number = Date.now();
 
-    await dbPool.execute<ResultSetHeader>(
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `INSERT INTO chat(
         hangout_member_id,
         hangout_id,
@@ -106,10 +106,28 @@ chatRouter.post('/', async (req: Request, res: Response) => {
         message_timestamp
       )
       VALUES(${generatePlaceHolders(4)});`,
-      [requestData.hangoutMemberID, requestData.hangoutID, requestData.messageContent, messageTimestamp]
+      [requestData.hangoutMemberID, hangoutMember.hangoutID, requestData.messageContent, messageTimestamp]
     );
 
-    res.status(201).json({ success: true, resData: {} });
+    interface ChatMessage {
+      messageID: number,
+      hangoutMemberID: number,
+      hangoutID: string,
+      messageContent: string,
+      messageTimestamp: number,
+    };
+
+    const chatMessage: ChatMessage = {
+      messageID: resultSetHeader.insertId,
+      hangoutMemberID: requestData.hangoutMemberID,
+      hangoutID: hangoutMember.hangout_id,
+      messageContent: requestData.messageContent,
+      messageTimestamp,
+    };
+
+    res.status(201).json({ success: true, resData: { chatMessage } });
+
+    // TODO: websocket logic
 
   } catch (err: unknown) {
     console.log(err);
