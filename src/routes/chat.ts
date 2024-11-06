@@ -86,7 +86,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
         hangout_members
       WHERE
         hangout_member_id = ? AND
-        ${userType}_id;`,
+        ${userType}_id = ?;`,
       [requestData.hangoutMemberID, userID]
     );
 
@@ -106,7 +106,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
         message_timestamp
       )
       VALUES(${generatePlaceHolders(4)});`,
-      [requestData.hangoutMemberID, hangoutMember.hangoutID, requestData.messageContent, messageTimestamp]
+      [requestData.hangoutMemberID, hangoutMember.hangout_id, requestData.messageContent, messageTimestamp]
     );
 
     interface ChatMessage {
