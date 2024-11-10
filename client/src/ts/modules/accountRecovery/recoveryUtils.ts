@@ -75,17 +75,17 @@ export function initRecoveryTimers(): void {
     timer.classList.add('displayed');
   };
 
-  const intervalID: number = setInterval(() => updateExpiryTimers(requestExpiryTimers, intervalID), 1000);
-  updateExpiryTimers(requestExpiryTimers, intervalID);
+  const intervalId: number = setInterval(() => updateExpiryTimers(requestExpiryTimers, intervalId), 1000);
+  updateExpiryTimers(requestExpiryTimers, intervalId);
 };
 
-export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanElement>, intervalID: number): void {
+export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanElement>, intervalId: number): void {
   if (!recoveryState.recoveryStartTimestamp) {
     for (const timer of requestExpiryTimers) {
       timer.classList.add('displayed');
     };
 
-    clearInterval(intervalID);
+    clearInterval(intervalId);
     return;
   };
 
@@ -96,7 +96,7 @@ export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanEleme
   };
 
   if (timerValue === '00:00') {
-    clearInterval(intervalID);
+    clearInterval(intervalId);
     displayRecoveryExpiryInfoModal();
   };
 };

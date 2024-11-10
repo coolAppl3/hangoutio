@@ -1,9 +1,9 @@
 import { IncomingMessage } from "http";
 import { isValidAuthToken } from "../../util/validation/userValidation";
-import { isValidHangoutID } from "../../util/validation/hangoutValidation";
+import { isValidHangoutId } from "../../util/validation/hangoutValidation";
 import { dbPool } from "../../db/db";
 import { RowDataPacket } from "mysql2";
-import { getUserID, getUserType } from "../../util/userUtils";
+import { getUserId, getUserType } from "../../util/userUtils";
 
 export async function authenticateHandshake(req: IncomingMessage): Promise<{ hangoutId: string, hangoutMemberId: number } | null> {
   const authToken: string | undefined = req.headersDistinct['sec-websocket-protocol']?.[0];
@@ -29,7 +29,7 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
     return null;
   };
 
-  if (!Number.isInteger(+hangoutMemberId) || !isValidHangoutID(hangoutId)) {
+  if (!Number.isInteger(+hangoutMemberId) || !isValidHangoutId(hangoutId)) {
     return null;
   };
 
@@ -42,7 +42,7 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
 
 async function isValidUserData(authToken: string, hangoutMemberId: number, hangoutId: string): Promise<Boolean> {
   try {
-    const userID: number = getUserID(authToken);
+    const userId: number = getUserId(authToken);
     const userType: 'account' | 'guest' = getUserType(authToken);
 
     interface UserDetails extends RowDataPacket {
@@ -56,7 +56,7 @@ async function isValidUserData(authToken: string, hangoutMemberId: number, hango
         ${userType}s
       WHERE
         ${userType}_id = ?;`,
-      [userID]
+      [userId]
     );
 
     if (userRows.length === 0) {
@@ -76,7 +76,7 @@ async function isValidUserData(authToken: string, hangoutMemberId: number, hango
         hangout_member_id = ? AND
         ${userType}_id = ? AND
         hangout_id = ?;`,
-      [hangoutMemberId, userID, hangoutId]
+      [hangoutMemberId, userId, hangoutId]
     );
 
     if (hangoutRows.length === 0) {

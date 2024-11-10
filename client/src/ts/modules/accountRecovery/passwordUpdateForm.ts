@@ -43,7 +43,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     return;
   };
 
-  if (!recoveryState.recoveryAccountID || !recoveryState.recoveryStartTimestamp || !recoveryState.recoveryToken) {
+  if (!recoveryState.recoveryAccountId || !recoveryState.recoveryStartTimestamp || !recoveryState.recoveryToken) {
     popup('Something went wrong.', 'error');
     setTimeout(() => reloadWithoutQueryString(), 1000);
 
@@ -66,7 +66,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
   };
 
   const recoveryUpdatePasswordBody: RecoveryUpdatePasswordBody = {
-    accountID: recoveryState.recoveryAccountID,
+    accountId: recoveryState.recoveryAccountId,
     recoveryToken: recoveryState.recoveryToken,
     newPassword: newPasswordInput.value,
   };
@@ -113,7 +113,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
         return;
       };
 
-      if (errReason === 'accountID' || errReason === 'recoveryToken') {
+      if (errReason === 'accountId' || errReason === 'recoveryToken') {
         displayIncorrectRecoveryLinkDataInfoModal(errMessage);
         return;
       };

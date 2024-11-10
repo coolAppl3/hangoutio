@@ -1,8 +1,8 @@
 import express, { Router, Request, Response } from 'express';
 import { isValidAuthToken } from '../util/validation/userValidation';
-import { getUserID, getUserType } from '../util/userUtils';
+import { getUserId, getUserType } from '../util/userUtils';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
-import { isValidHangoutID } from '../util/validation/hangoutValidation';
+import { isValidHangoutId } from '../util/validation/hangoutValidation';
 import { isValidMessageContent } from '../util/validation/chatValidation';
 import { dbPool } from '../db/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
@@ -12,7 +12,7 @@ export const chatRouter: Router = express.Router();
 
 chatRouter.post('/add', async (req: Request, res: Response) => {
   interface RequestData {
-    hangoutMemberID: number,
+    hangoutMemberId: number,
     messageContent: string,
   };
 
@@ -28,17 +28,17 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
     return;
   };
 
-  const userID: number = getUserID(authToken);
+  const userId: number = getUserId(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutMemberID', 'messageContent'];
+  const expectedKeys: string[] = ['hangoutMemberId', 'messageContent'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberID)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member ID', reason: 'hangoutMemberID' });
+  if (!Number.isInteger(requestData.hangoutMemberId)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout member Id', reason: 'hangoutMemberId' });
     return;
   };
 
@@ -60,7 +60,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
         ${userType}s
       WHERE
         ${userType}_id = ?;`,
-      [userID]
+      [userId]
     );
 
     if (userRows.length === 0) {
@@ -87,7 +87,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
       WHERE
         hangout_member_id = ? AND
         ${userType}_id = ?;`,
-      [requestData.hangoutMemberID, userID]
+      [requestData.hangoutMemberId, userId]
     );
 
     if (hangoutRows.length === 0) {
@@ -106,21 +106,21 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
         message_timestamp
       )
       VALUES(${generatePlaceHolders(4)});`,
-      [requestData.hangoutMemberID, hangoutMember.hangout_id, requestData.messageContent, messageTimestamp]
+      [requestData.hangoutMemberId, hangoutMember.hangout_id, requestData.messageContent, messageTimestamp]
     );
 
     interface ChatMessage {
-      messageID: number,
-      hangoutMemberID: number,
-      hangoutID: string,
+      messageId: number,
+      hangoutMemberId: number,
+      hangoutId: string,
       messageContent: string,
       messageTimestamp: number,
     };
 
     const chatMessage: ChatMessage = {
-      messageID: resultSetHeader.insertId,
-      hangoutMemberID: requestData.hangoutMemberID,
-      hangoutID: hangoutMember.hangout_id,
+      messageId: resultSetHeader.insertId,
+      hangoutMemberId: requestData.hangoutMemberId,
+      hangoutId: hangoutMember.hangout_id,
       messageContent: requestData.messageContent,
       messageTimestamp,
     };
@@ -137,8 +137,8 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
 
 chatRouter.post('/retrieve', async (req: Request, res: Response) => {
   interface RequestData {
-    hangoutID: string,
-    hangoutMemberID: number,
+    hangoutId: string,
+    hangoutMemberId: number,
     messageOffset: number,
   };
 
@@ -154,22 +154,22 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
     return;
   };
 
-  const userID: number = getUserID(authToken);
+  const userId: number = getUserId(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutID', 'hangoutMemberID', 'messageOffset'];
+  const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId', 'messageOffset'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!isValidHangoutID(requestData.hangoutID)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutID' });
+  if (!isValidHangoutId(requestData.hangoutId)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout Id.', reason: 'hangoutId' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberID)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member ID', reason: 'hangoutMemberID' });
+  if (!Number.isInteger(requestData.hangoutMemberId)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout member Id', reason: 'hangoutMemberId' });
     return;
   };
 
@@ -191,7 +191,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
         ${userType}s
       WHERE
         ${userType}_id = ?;`,
-      [userID]
+      [userId]
     );
 
     if (userRows.length === 0) {
@@ -213,7 +213,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
         hangout_member_id = ? AND
         ${userType}_id = ? AND
         hangout_id = ?;`,
-      [requestData.hangoutMemberID, userID, requestData.hangoutID]
+      [requestData.hangoutMemberId, userId, requestData.hangoutId]
     );
 
     if (hangoutRows.length === 0) {
@@ -245,7 +245,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
       ORDER BY
         chat.message_timestamp DESC
       LIMIT 20 OFFSET ?;`,
-      [requestData.hangoutID, requestData.messageOffset]
+      [requestData.hangoutId, requestData.messageOffset]
     );
 
     res.json({ success: true, chatMessages: chatRows })

@@ -1,5 +1,5 @@
 export default class SliderInput {
-  private readonly inputID: string;
+  private readonly inputId: string;
   private readonly keyword: string;
   private readonly sliderMinValue: number;
   private readonly sliderMaxValue: number;
@@ -19,8 +19,8 @@ export default class SliderInput {
   private boundDragSlider: (e: MouseEvent | TouchEvent) => void;
   private boundStopDrag: () => void;
 
-  public constructor(inputID: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, startingValue: number = sliderMinValue) {
-    this.inputID = inputID;
+  public constructor(inputId: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, startingValue: number = sliderMinValue) {
+    this.inputId = inputId;
     this.keyword = keyword;
 
     if (sliderMinValue >= 0 && sliderMaxValue > sliderMinValue) {
@@ -31,10 +31,10 @@ export default class SliderInput {
       this.sliderMaxValue = 1;
     };
 
-    this.actualInput = document.querySelector(`#${inputID}`);
-    this.slider = document.querySelector(`[data-slider-target="${inputID}"]`);
+    this.actualInput = document.querySelector(`#${inputId}`);
+    this.slider = document.querySelector(`[data-slider-target="${inputId}"]`);
     this.sliderThumb = this.slider?.firstElementChild?.firstElementChild;
-    this.sliderTextSpan = document.querySelector(`[data-slider-text="${inputID}"]`);
+    this.sliderTextSpan = document.querySelector(`[data-slider-text="${inputId}"]`);
 
     this.sliderDomRect = this.slider?.getBoundingClientRect();
 
@@ -127,7 +127,7 @@ export default class SliderInput {
     document.body.removeEventListener('mousemove', this.boundDragSlider);
     document.body.removeEventListener('mouseup', this.boundStopDrag);
 
-    document.dispatchEvent(new CustomEvent(`${this.inputID}_valueChange`));
+    document.dispatchEvent(new CustomEvent(`${this.inputId}_valueChange`));
   };
 
   public updateSliderDomRect(): void {

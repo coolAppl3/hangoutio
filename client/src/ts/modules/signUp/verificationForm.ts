@@ -60,7 +60,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     return;
   };
 
-  if (!signUpState.accountID) {
+  if (!signUpState.accountId) {
     popup('Something went wrong.', 'error');
     LoadingModal.remove();
 
@@ -68,7 +68,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
   };
 
   const accountVerificationBody: AccountVerificationBody = {
-    accountID: signUpState.accountID,
+    accountId: signUpState.accountId,
     verificationCode: verificationCodeInput.value.toUpperCase(),
   };
 
@@ -114,7 +114,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 400 && errReason === 'accountID') {
+    if (status === 400 && errReason === 'accountId') {
       popup('Something went wrong.', 'error');
       LoadingModal.remove();
 
@@ -165,7 +165,7 @@ async function resendVerificationEmail(): Promise<void> {
     return;
   };
 
-  if (!signUpState.accountID || !signUpState.verificationStartTimestamp) {
+  if (!signUpState.accountId || !signUpState.verificationStartTimestamp) {
     popup('Something went wrong.', 'error');
     clearVerificationCookies();
     setTimeout(() => window.location.reload(), 1000);
@@ -183,7 +183,7 @@ async function resendVerificationEmail(): Promise<void> {
   };
 
   try {
-    const resendVerificationEmailData: AxiosResponse<ResendVerificationEmailData> = await resendVerificationEmailService({ accountID: signUpState.accountID });
+    const resendVerificationEmailData: AxiosResponse<ResendVerificationEmailData> = await resendVerificationEmailService({ accountId: signUpState.accountId });
     const { verificationEmailsSent } = resendVerificationEmailData.data.resData;
 
     signUpState.verificationEmailsSent = verificationEmailsSent;
@@ -215,7 +215,7 @@ async function resendVerificationEmail(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     if (status === 400) {
-      if (errReason === 'accountID') {
+      if (errReason === 'accountId') {
         popup(errMessage, 'error');
         setTimeout(() => window.location.reload(), 1000);
 
@@ -279,7 +279,7 @@ function verificationLinkDetected(): boolean {
     return false;
   };
 
-  const { verificationAccountID, verificationStartTimestamp, verificationCode } = verificationData;
+  const { verificationAccountId, verificationStartTimestamp, verificationCode } = verificationData;
 
   const verificationPeriod: number = 1000 * 60 * 15;
   if (Date.now() - +verificationStartTimestamp > verificationPeriod) {
@@ -287,10 +287,10 @@ function verificationLinkDetected(): boolean {
     return false;
   };
 
-  Cookies.set('verificationAccountID', verificationAccountID);
+  Cookies.set('verificationAccountId', verificationAccountId);
   Cookies.set('verificationStartTimestamp', verificationStartTimestamp);
 
-  signUpState.accountID = +verificationAccountID;
+  signUpState.accountId = +verificationAccountId;
   signUpState.verificationStartTimestamp = +verificationStartTimestamp;
 
   switchToVerificationStage();
@@ -300,7 +300,7 @@ function verificationLinkDetected(): boolean {
 };
 
 interface VerificationData {
-  verificationAccountID: string,
+  verificationAccountId: string,
   verificationStartTimestamp: string,
   verificationCode: string,
 };
@@ -327,15 +327,15 @@ function getVerificationLinkDetails(queryString: string): VerificationData | nul
     queryMap.set(keyValuePair[0], keyValuePair[1]);
   };
 
-  const verificationAccountID: string | undefined = queryMap.get('id');
+  const verificationAccountId: string | undefined = queryMap.get('id');
   const verificationStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
   const verificationCode: string | undefined = queryMap.get('verificationCode');
 
-  if (!verificationAccountID || !verificationStartTimestamp || !verificationCode) {
+  if (!verificationAccountId || !verificationStartTimestamp || !verificationCode) {
     return null;
   };
 
-  if (!Number.isInteger(+verificationAccountID)) {
+  if (!Number.isInteger(+verificationAccountId)) {
     return null;
   };
 
@@ -348,7 +348,7 @@ function getVerificationLinkDetails(queryString: string): VerificationData | nul
   };
 
   const verificationData: VerificationData = {
-    verificationAccountID,
+    verificationAccountId,
     verificationStartTimestamp,
     verificationCode,
   };
@@ -361,15 +361,15 @@ function detectOngoingVerification(): void {
     return;
   };
 
-  const existingAccountID: string | null = Cookies.get('verificationAccountID');
+  const existingAccountId: string | null = Cookies.get('verificationAccountId');
   const existingVerificationStartTimestamp: string | null = Cookies.get('verificationStartTimestamp');
 
-  if (!existingAccountID || !existingVerificationStartTimestamp) {
+  if (!existingAccountId || !existingVerificationStartTimestamp) {
     clearVerificationCookies();
     return;
   };
 
-  if (+existingAccountID === 0 || !Number.isInteger(+existingAccountID)) {
+  if (+existingAccountId === 0 || !Number.isInteger(+existingAccountId)) {
     clearVerificationCookies();
     return;
   };
@@ -379,7 +379,7 @@ function detectOngoingVerification(): void {
     return;
   };
 
-  const accountID: number = +existingAccountID;
+  const accountId: number = +existingAccountId;
   const verificationStartTimestamp: number = +existingVerificationStartTimestamp;
 
   const verificationPeriod: number = 1000 * 60 * 15;
@@ -404,7 +404,7 @@ function detectOngoingVerification(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      signUpState.accountID = accountID;
+      signUpState.accountId = accountId;
       signUpState.verificationStartTimestamp = verificationStartTimestamp;
 
       switchToVerificationStage();

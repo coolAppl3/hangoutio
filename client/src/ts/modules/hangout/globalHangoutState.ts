@@ -1,13 +1,17 @@
 interface GlobalHangoutState {
-  hangoutID: string | null,
-  hangoutMemberID: number | null,
+  hangoutId: string,
+  hangoutMemberId: number,
 
-  inHangoutFeed: boolean,
+  hangoutTitle: string,
+  hangoutPassword: string,
+  memberLimit: number,
+
+  currentStep: string,
+  nextStep: string,
+  nextStepTimestamp: number,
+  conclusionTimestamp: number,
+
+  webSocketConnected: boolean
 };
 
-export const globalHangoutState: GlobalHangoutState = {
-  hangoutID: 'dummyHangoutID',
-  hangoutMemberID: 37,
-
-  inHangoutFeed: false,
-};
+export const globalHangoutState: GlobalHangoutState | null = null;

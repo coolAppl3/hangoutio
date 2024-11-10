@@ -7,5 +7,5 @@ export function signOut(): void {
 
 function removeRelevantCookies(): void {
   Cookies.remove('authToken');
-  Cookies.remove('guestHangoutID');
+  Cookies.remove('guestHangoutId');
 };

@@ -1,4 +1,4 @@
-export function getUserID(authToken: string): number {
+export function getUserId(authToken: string): number {
   return +authToken.substring(33);
 };
 

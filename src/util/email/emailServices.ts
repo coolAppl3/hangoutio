@@ -3,7 +3,7 @@ import { emailTransporter } from './initTransporter';
 
 export interface VerificationEmailConfig {
   to: string,
-  accountID: number,
+  accountId: number,
   verificationCode: string,
   displayName: string,
   createdOnTimestamp: number,
@@ -27,7 +27,7 @@ export async function sendVerificationEmail(verificationEmailConfig: Verificatio
 
 export interface RecoveryEmailConfig {
   to: string,
-  accountID: number,
+  accountId: number,
   recoveryToken: string,
   requestTimestamp: number,
   displayName: string,
@@ -51,7 +51,7 @@ export async function sendRecoveryEmail(recoveryEmailConfig: RecoveryEmailConfig
 
 export interface DeletionEmailConfig {
   to: string,
-  accountID: number,
+  accountId: number,
   cancellationToken: string,
   displayName: string,
 };

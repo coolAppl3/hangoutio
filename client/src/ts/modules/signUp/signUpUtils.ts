@@ -24,7 +24,7 @@ export function displayVerificationExpiryInfoModal(): void {
 };
 
 export function clearVerificationCookies(): void {
-  Cookies.remove('verificationAccountID');
+  Cookies.remove('verificationAccountId');
   Cookies.remove('verificationStartTimestamp');
 };
 
@@ -42,13 +42,13 @@ export function initVerificationTimer(): void {
 
   requestExpiryTimer?.classList.add('displayed');
 
-  const intervalID: number = setInterval(() => updateVerificationTimer(requestExpiryTimer, intervalID), 1000);
-  updateVerificationTimer(requestExpiryTimer, intervalID);
+  const intervalId: number = setInterval(() => updateVerificationTimer(requestExpiryTimer, intervalId), 1000);
+  updateVerificationTimer(requestExpiryTimer, intervalId);
 };
 
-function updateVerificationTimer(requestExpiryTimer: HTMLSpanElement, intervalID: number): void {
+function updateVerificationTimer(requestExpiryTimer: HTMLSpanElement, intervalId: number): void {
   if (!signUpState.verificationStartTimestamp) {
-    clearInterval(intervalID);
+    clearInterval(intervalId);
     requestExpiryTimer.classList.remove('displayed');
 
     return;
@@ -58,7 +58,7 @@ function updateVerificationTimer(requestExpiryTimer: HTMLSpanElement, intervalID
 
   if (timerValue === '00:00') {
     requestExpiryTimer.textContent = timerValue;
-    clearInterval(intervalID);
+    clearInterval(intervalId);
     displayVerificationExpiryInfoModal();
 
     return;

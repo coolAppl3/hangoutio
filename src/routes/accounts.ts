@@ -119,8 +119,8 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       [authToken, requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0, false]
     );
 
-    const accountID: number = firstResultSetHeader.insertId;
-    const idMarkedAuthToken: string = `${authToken}_${accountID}`;
+    const accountId: number = firstResultSetHeader.insertId;
+    const idMarkedAuthToken: string = `${authToken}_${accountId}`;
 
     const [secondResultSetHeader] = await connection.execute<ResultSetHeader>(
       `UPDATE
@@ -129,7 +129,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         auth_token = ?
       WHERE
         account_id = ?;`,
-      [idMarkedAuthToken, accountID]
+      [idMarkedAuthToken, accountId]
     );
 
     if (secondResultSetHeader.affectedRows === 0) {
@@ -148,15 +148,15 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         created_on_timestamp
       )
       VALUES(${generatePlaceHolders(5)});`,
-      [accountID, verificationCode, 1, 0, createdOnTimestamp]
+      [accountId, verificationCode, 1, 0, createdOnTimestamp]
     );
 
     await connection.commit();
-    res.status(201).json({ success: true, resData: { accountID, createdOnTimestamp } });
+    res.status(201).json({ success: true, resData: { accountId, createdOnTimestamp } });
 
     const verificationEmailConfig: VerificationEmailConfig = {
       to: requestData.email,
-      accountID,
+      accountId,
       verificationCode,
       displayName: requestData.displayName,
       createdOnTimestamp
@@ -204,19 +204,19 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
 
 accountsRouter.post('/verification/resendEmail', async (req: Request, res: Response) => {
   interface RequestData {
-    accountID: number,
+    accountId: number,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['accountID'];
+  const expectedKeys: string[] = ['accountId'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.accountID)) {
-    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
+  if (!Number.isInteger(requestData.accountId)) {
+    res.status(400).json({ success: false, message: 'Invalid account Id.', reason: 'accountId' });
     return;
   };
 
@@ -247,7 +247,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       WHERE
         accounts.account_id = ?
       LIMIT 1;`,
-      [requestData.accountID]
+      [requestData.accountId]
     );
 
     if (accountRows.length === 0) {
@@ -291,7 +291,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
 
     const verificationEmailConfig: VerificationEmailConfig = {
       to: accountDetails.email,
-      accountID: requestData.accountID,
+      accountId: requestData.accountId,
       verificationCode: accountDetails.verification_code,
       displayName: accountDetails.display_name,
       createdOnTimestamp: accountDetails.created_on_timestamp,
@@ -307,20 +307,20 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
 
 accountsRouter.patch('/verification/verify', async (req: Request, res: Response) => {
   interface RequestData {
-    accountID: number,
+    accountId: number,
     verificationCode: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['accountID', 'verificationCode'];
+  const expectedKeys: string[] = ['accountId', 'verificationCode'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.accountID)) {
-    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
+  if (!Number.isInteger(requestData.accountId)) {
+    res.status(400).json({ success: false, message: 'Invalid account Id.', reason: 'accountId' });
     return;
   };
 
@@ -354,7 +354,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
       WHERE
         accounts.account_id = ?
       LIMIT 1;`,
-      [requestData.accountID]
+      [requestData.accountId]
     );
 
     if (accountRows.length === 0) {
@@ -376,7 +376,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
             accounts
           WHERE
             account_id = ?;`,
-          [requestData.accountID]
+          [requestData.accountId]
         );
 
         res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.', reason: 'accountDeleted' });
@@ -407,7 +407,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
         is_verified = ?
       WHERE
         account_id = ?;`,
-      [true, requestData.accountID]
+      [true, requestData.accountId]
     );
 
     if (updateHeader.affectedRows === 0) {
@@ -665,7 +665,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
 
       const recoveryEmailConfig: RecoveryEmailConfig = {
         to: requestData.email,
-        accountID: accountDetails.account_id,
+        accountId: accountDetails.account_id,
         recoveryToken,
         requestTimestamp,
         displayName: accountDetails.display_name,
@@ -720,7 +720,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
 
     const recoveryEmailConfig: RecoveryEmailConfig = {
       to: requestData.email,
-      accountID: accountDetails.account_id,
+      accountId: accountDetails.account_id,
       recoveryToken: accountDetails.recovery_token,
       requestTimestamp: accountDetails.request_timestamp,
       displayName: accountDetails.display_name,
@@ -736,21 +736,21 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
 
 accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Response) => {
   interface RequestData {
-    accountID: number,
+    accountId: number,
     recoveryToken: string,
     newPassword: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['accountID', 'recoveryToken', 'newPassword'];
+  const expectedKeys: string[] = ['accountId', 'recoveryToken', 'newPassword'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.accountID)) {
-    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
+  if (!Number.isInteger(requestData.accountId)) {
+    res.status(400).json({ success: false, message: 'Invalid account Id.', reason: 'accountId' });
     return;
   };
 
@@ -783,7 +783,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       WHERE
         account_id = ?
       LIMIT 1;`,
-      [requestData.accountID]
+      [requestData.accountId]
     );
 
     if (recoveryRows.length === 0) {
@@ -834,7 +834,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       return;
     };
 
-    const newAuthToken: string = `${generateAuthToken('account')}_${requestData.accountID}`;
+    const newAuthToken: string = `${generateAuthToken('account')}_${requestData.accountId}`;
     const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
 
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
@@ -846,7 +846,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         failed_sign_in_attempts = ?
       WHERE
         account_id = ?;`,
-      [newAuthToken, newHashedPassword, 0, requestData.accountID]
+      [newAuthToken, newHashedPassword, 0, requestData.accountId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -887,7 +887,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password'];
@@ -923,7 +923,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         accounts
       WHERE
         account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -946,7 +946,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-        const newAuthToken: string = `${generateAuthToken('account')}_${accountID}`;
+        const newAuthToken: string = `${generateAuthToken('account')}_${accountId}`;
         await dbPool.execute(
           `UPDATE
             accounts
@@ -955,7 +955,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
             account_id = ?;`,
-          [newAuthToken, accountID]
+          [newAuthToken, accountId]
         );
 
         res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
@@ -969,7 +969,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountID]
+        [accountId]
       );
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
@@ -997,23 +997,23 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangout_members.account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (hangoutRows.length > 0) {
       const hangoutsInVotingStep: HangoutDetails[] = hangoutRows.filter((hangout: HangoutDetails) => hangout.current_step === 3);
 
       if (hangoutsInVotingStep.length > 0) {
-        const hangoutMemberIDs: number[] = hangoutsInVotingStep.map((hangout: HangoutDetails) => hangout.hangout_member_id);
+        const hangoutMemberIds: number[] = hangoutsInVotingStep.map((hangout: HangoutDetails) => hangout.hangout_member_id);
         const [resultSetHeader] = await connection.execute<ResultSetHeader>(
           `DELETE FROM
             votes
           WHERE
-            hangout_member_id IN (${hangoutMemberIDs.join(', ')})
-          LIMIT ${hangoutMemberIDs.length};`
+            hangout_member_id IN (${hangoutMemberIds.join(', ')})
+          LIMIT ${hangoutMemberIds.length};`
         );
 
-        if (resultSetHeader.affectedRows !== hangoutMemberIDs.length) {
+        if (resultSetHeader.affectedRows !== hangoutMemberIds.length) {
           await connection.rollback();
           res.status(500).json({ success: false, message: 'Internal server error.' });
 
@@ -1021,16 +1021,16 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         };
       };
 
-      const hangoutMemberIDs: number[] = hangoutRows.map((hangout: HangoutDetails) => hangout.hangout_member_id);
+      const hangoutMemberIds: number[] = hangoutRows.map((hangout: HangoutDetails) => hangout.hangout_member_id);
       const [resultSetHeader] = await connection.execute<ResultSetHeader>(
         `DELETE FROM
           hangout_members
         WHERE
-          hangout_member_id IN (${hangoutMemberIDs.join(', ')})
-        LIMIT ${hangoutMemberIDs.length};`
+          hangout_member_id IN (${hangoutMemberIds.join(', ')})
+        LIMIT ${hangoutMemberIds.length};`
       );
 
-      if (resultSetHeader.affectedRows !== hangoutMemberIDs.length) {
+      if (resultSetHeader.affectedRows !== hangoutMemberIds.length) {
         await connection.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
 
@@ -1049,7 +1049,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         marked_for_deletion = ?
       WHERE
         account_id = ?;`,
-      [markedAuthToken, true, accountID]
+      [markedAuthToken, true, accountId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -1066,7 +1066,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         request_timestamp
       )
       VALUES(${generatePlaceHolders(3)});`,
-      [accountID, cancellationToken, Date.now()]
+      [accountId, cancellationToken, Date.now()]
     );
 
     await connection.commit();
@@ -1093,7 +1093,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     const deletionEmailConfig: DeletionEmailConfig = {
       to: accountDetails.email,
-      accountID,
+      accountId,
       cancellationToken,
       displayName: accountDetails.display_name,
     };
@@ -1118,20 +1118,20 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
 accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => {
   interface RequestData {
-    accountID: number,
+    accountId: number,
     cancellationToken: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['cancellationToken', 'accountID'];
+  const expectedKeys: string[] = ['cancellationToken', 'accountId'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.accountID)) {
-    res.status(400).json({ succesS: false, message: 'Invalid account ID.' });
+  if (!Number.isInteger(requestData.accountId)) {
+    res.status(400).json({ succesS: false, message: 'Invalid account Id.' });
     return;
   };
 
@@ -1157,7 +1157,7 @@ accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => 
       WHERE
         account_id = ?
       LIMIT 1;`,
-      [requestData.accountID]
+      [requestData.accountId]
     );
 
     if (deletionRows.length === 0) {
@@ -1175,7 +1175,7 @@ accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => 
     connection = await dbPool.getConnection();
     await connection.beginTransaction();
 
-    const newAuthToken: string = `${generateAuthToken('account')}_${requestData.accountID}`;
+    const newAuthToken: string = `${generateAuthToken('account')}_${requestData.accountId}`;
     const [updateHeader] = await connection.execute<ResultSetHeader>(
       `UPDATE
         accounts
@@ -1184,7 +1184,7 @@ accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => 
         marked_for_deletion = ?
       WHERE
         account_id = ?;`,
-      [newAuthToken, false, requestData.accountID]
+      [newAuthToken, false, requestData.accountId]
     );
 
     if (updateHeader.affectedRows === 0) {
@@ -1246,7 +1246,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['currentPassword', 'newPassword'];
@@ -1281,7 +1281,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
         accounts
       WHERE
         account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -1304,7 +1304,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.currentPassword, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-        const newAuthToken: string = `${generateAuthToken('account')}_${accountID}`;
+        const newAuthToken: string = `${generateAuthToken('account')}_${accountId}`;
         await dbPool.execute(
           `UPDATE
             accounts
@@ -1313,7 +1313,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
             account_id = ?;`,
-          [newAuthToken, accountID]
+          [newAuthToken, accountId]
         );
 
         res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
@@ -1327,7 +1327,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountID]
+        [accountId]
       );
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
@@ -1340,7 +1340,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
       return;
     };
 
-    const newAuthToken: string = `${generateAuthToken('account')}_${accountID}`;
+    const newAuthToken: string = `${generateAuthToken('account')}_${accountId}`;
     const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
 
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
@@ -1351,7 +1351,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
         hashed_password = ?
       WHERE
         account_id = ?;`,
-      [newAuthToken, newHashedPassword, accountID]
+      [newAuthToken, newHashedPassword, accountId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -1385,7 +1385,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password', 'newEmail'];
@@ -1441,7 +1441,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       WHERE
         accounts.account_id = ?
       LIMIT 1;`,
-      [accountID]
+      [accountId]
     );
 
     const accountDetails: AccountDetails = accountRows[0];
@@ -1459,7 +1459,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-        const newAuthToken: string = `${generateAuthToken('account')}_${accountID}`;
+        const newAuthToken: string = `${generateAuthToken('account')}_${accountId}`;
         await dbPool.execute(
           `UPDATE
             accounts
@@ -1468,7 +1468,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
             account_id = ?;`,
-          [newAuthToken, accountID]
+          [newAuthToken, accountId]
         );
 
         res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
@@ -1482,7 +1482,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountID]
+        [accountId]
       );
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
@@ -1524,7 +1524,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
           failed_update_attempts
         )
         VALUES(${generatePlaceHolders(6)});`,
-        [accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]
+        [accountId, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]
       );
 
       await connection.commit();
@@ -1622,7 +1622,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['verificationCode'];
@@ -1665,7 +1665,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       WHERE
         accounts.account_id = ?
       LIMIT 1;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -1732,7 +1732,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       return;
     };
 
-    const newAuthToken: string = `${generateAuthToken('account')}_${accountID}`;
+    const newAuthToken: string = `${generateAuthToken('account')}_${accountId}`;
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
         accounts
@@ -1741,7 +1741,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
         email = ?
       WHERE
         account_id = ?;`,
-      [newAuthToken, accountDetails.new_email, accountID]
+      [newAuthToken, accountDetails.new_email, accountId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -1775,7 +1775,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['password', 'newDisplayName'];
@@ -1812,7 +1812,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
         accounts
       WHERE
         account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -1835,7 +1835,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-        const newAuthToken: string = `${generateAuthToken('account')}_${accountID}`;
+        const newAuthToken: string = `${generateAuthToken('account')}_${accountId}`;
         await dbPool.execute(
           `UPDATE
             accounts
@@ -1844,7 +1844,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
             account_id = ?;`,
-          [newAuthToken, accountID]
+          [newAuthToken, accountId]
         );
 
         res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
@@ -1858,7 +1858,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
           account_id = ?;`,
-        [accountID]
+        [accountId]
       );
 
       res.status(401).json({ success: false, message: 'Incorrect password.' });
@@ -1877,7 +1877,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
         display_name = ?
       WHERE
         account_id = ?;`,
-      [requestData.newDisplayName, accountID]
+      [requestData.newDisplayName, accountId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -1920,7 +1920,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['requesteeUsername'];
@@ -1948,7 +1948,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
         accounts
       WHERE
         account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -1987,7 +1987,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       return;
     };
 
-    const requesteeID: number = requesteeRows[0].account_id;
+    const requesteeId: number = requesteeRows[0].account_id;
     const [friendshipRows] = await dbPool.execute<RowDataPacket[]>(
       `SELECT
         1
@@ -1997,7 +1997,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
         account_id = ? AND
         friend_id = ?
       LIMIT 1;`,
-      [accountID, requesteeID]
+      [accountId, requesteeId]
     );
 
     if (friendshipRows.length > 0) {
@@ -2022,7 +2022,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
         (requester_id = ? AND requestee_id = ?) OR
         (requester_id = ? AND requestee_id = ?)
       LIMIT 2;`,
-      [accountID, requesteeID, requesteeID, accountID]
+      [accountId, requesteeId, requesteeId, accountId]
     );
 
     if (friendRequestRows.length === 0) {
@@ -2033,7 +2033,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
           request_timestamp
         )
         VALUES(${generatePlaceHolders(3)});`,
-        [accountID, requesteeID, Date.now()]
+        [accountId, requesteeId, Date.now()]
       );
 
       res.json({ success: true, resData: {} });
@@ -2044,11 +2044,11 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     let toRequestee: boolean = false;
 
     for (const request of friendRequestRows) {
-      if (request.requester_id === accountID) {
+      if (request.requester_id === accountId) {
         toRequestee = true;
       };
 
-      if (request.requester_id === requesteeID) {
+      if (request.requester_id === requesteeId) {
         toRequester = true;
       };
     };
@@ -2058,7 +2058,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       return;
     };
 
-    const friendRequest: FriendRequestDetails | undefined = friendRequestRows.find((request: FriendRequestDetails) => request.requester_id === requesteeID);
+    const friendRequest: FriendRequestDetails | undefined = friendRequestRows.find((request: FriendRequestDetails) => request.requester_id === requesteeId);
     if (!friendRequest) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
       return;
@@ -2068,7 +2068,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       success: false,
       message: 'Pending friend request.',
       resData: {
-        friendRequestID: friendRequest.request_id,
+        friendRequestId: friendRequest.request_id,
       },
     });
 
@@ -2080,7 +2080,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
 
 accountsRouter.post('/friends/requests/accept', async (req: Request, res: Response) => {
   interface RequestData {
-    friendRequestID: number,
+    friendRequestId: number,
   };
 
   const authHeader: string | undefined = req.headers['authorization'];
@@ -2095,17 +2095,17 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['friendRequestID'];
+  const expectedKeys: string[] = ['friendRequestId'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.friendRequestID)) {
-    res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
+  if (!Number.isInteger(requestData.friendRequestId)) {
+    res.status(400).json({ success: false, message: 'Invalid friend request Id.' });
     return;
   };
 
@@ -2123,7 +2123,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
         accounts
       WHERE
         account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -2148,7 +2148,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
         friend_requests
       WHERE
         request_id = ?;`,
-      [requestData.friendRequestID]
+      [requestData.friendRequestId]
     );
 
     if (friendRequestRows.length === 0) {
@@ -2156,7 +2156,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
       return;
     };
 
-    const requesterID: number = friendRequestRows[0].requester_id;
+    const requesterId: number = friendRequestRows[0].requester_id;
     const friendshipTimestamp: number = Date.now();
 
     connection = await dbPool.getConnection();
@@ -2171,7 +2171,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
       VALUES
         (${generatePlaceHolders(3)}),
         (${generatePlaceHolders(3)});`,
-      [accountID, requesterID, friendshipTimestamp, requesterID, accountID, friendshipTimestamp]
+      [accountId, requesterId, friendshipTimestamp, requesterId, accountId, friendshipTimestamp]
     );
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
@@ -2179,7 +2179,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
         friend_requests
       WHERE
         request_id = ?;`,
-      [requestData.friendRequestID]
+      [requestData.friendRequestId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -2222,7 +2222,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
 
 accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Response) => {
   interface RequestData {
-    friendRequestID: number,
+    friendRequestId: number,
   };
 
   const authHeader: string | undefined = req.headers['authorization'];
@@ -2237,17 +2237,17 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['friendRequestID'];
+  const expectedKeys: string[] = ['friendRequestId'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.friendRequestID)) {
-    res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
+  if (!Number.isInteger(requestData.friendRequestId)) {
+    res.status(400).json({ success: false, message: 'Invalid friend request Id.' });
   };
 
   try {
@@ -2262,7 +2262,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
         accounts
       WHERE
         account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -2281,7 +2281,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
         friend_requests
       WHERE
         request_id = ?;`,
-      [requestData.friendRequestID]
+      [requestData.friendRequestId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -2299,7 +2299,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
 
 accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Response) => {
   interface RequestData {
-    friendshipID: number,
+    friendshipId: number,
   };
 
   const authHeader: string | undefined = req.headers['authorization'];
@@ -2314,17 +2314,17 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
     return;
   };
 
-  const accountID: number = userUtils.getUserID(authToken);
+  const accountId: number = userUtils.getUserId(authToken);
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['friendshipID'];
+  const expectedKeys: string[] = ['friendshipId'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.friendshipID)) {
-    res.status(400).json({ success: false, message: 'Invalid friendship ID.' });
+  if (!Number.isInteger(requestData.friendshipId)) {
+    res.status(400).json({ success: false, message: 'Invalid friendship Id.' });
     return;
   };
 
@@ -2340,7 +2340,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
         accounts
       WHERE
         account_id = ?;`,
-      [accountID]
+      [accountId]
     );
 
     if (accountRows.length === 0) {
@@ -2365,7 +2365,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
         friendships
       WHERE
         friendship_id = ?;`,
-      [requestData.friendshipID]
+      [requestData.friendshipId]
     );
 
     if (friendshipRows.length === 0) {
@@ -2373,7 +2373,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
       return;
     };
 
-    const friendID: number = friendshipRows[0].friend_id;
+    const friendId: number = friendshipRows[0].friend_id;
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
         friendships
@@ -2381,7 +2381,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
         (account_id = ? AND friend_id = ?) OR
         (account_id = ? AND friend_id = ?)
       LIMIT 2;`,
-      [accountID, friendID, friendID, accountID]
+      [accountId, friendId, friendId, accountId]
     );
 
     if (resultSetHeader.affectedRows === 0) {

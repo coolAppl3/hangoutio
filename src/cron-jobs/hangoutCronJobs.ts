@@ -306,21 +306,21 @@ interface Suggestion extends RowDataPacket {
 
 function getWinningSuggestion(filteredSuggestions: Suggestion[]): Suggestion | null {
   let highestVotesCount: number = 0
-  let winningSuggestionID: number = -1;
+  let winningSuggestionId: number = -1;
 
   for (const suggestion of filteredSuggestions) {
     if (suggestion.votes_count > highestVotesCount) {
       highestVotesCount = suggestion.votes_count;
-      winningSuggestionID = suggestion.suggestion_id;
+      winningSuggestionId = suggestion.suggestion_id;
     };
   };
 
-  const tieDetected: boolean = filteredSuggestions.find((suggestion: Suggestion) => suggestion.votes_count === highestVotesCount && suggestion.suggestion_id !== winningSuggestionID) !== undefined;
+  const tieDetected: boolean = filteredSuggestions.find((suggestion: Suggestion) => suggestion.votes_count === highestVotesCount && suggestion.suggestion_id !== winningSuggestionId) !== undefined;
   if (tieDetected) {
     return null;
   };
 
-  const winningSuggestion: Suggestion | null = filteredSuggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === winningSuggestionID) || null;
+  const winningSuggestion: Suggestion | null = filteredSuggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === winningSuggestionId) || null;
 
   return winningSuggestion;
 };

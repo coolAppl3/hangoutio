@@ -165,7 +165,7 @@ function recoveryLinkDetected(): boolean {
     return false;
   };
 
-  const { recoveryAccountID, recoveryStartTimestamp, recoveryToken } = recoveryLinkDetails;
+  const { recoveryAccountId, recoveryStartTimestamp, recoveryToken } = recoveryLinkDetails;
 
   const recoveryPeriod: number = 1000 * 60 * 60;
   if (Date.now() - recoveryStartTimestamp >= recoveryPeriod) {
@@ -173,7 +173,7 @@ function recoveryLinkDetected(): boolean {
     return false;
   };
 
-  recoveryState.recoveryAccountID = recoveryAccountID;
+  recoveryState.recoveryAccountId = recoveryAccountId;
   recoveryState.recoveryStartTimestamp = recoveryStartTimestamp;
   recoveryState.recoveryToken = recoveryToken;
 
@@ -184,7 +184,7 @@ function recoveryLinkDetected(): boolean {
 };
 
 interface RecoveryLinkDetails {
-  recoveryAccountID: number,
+  recoveryAccountId: number,
   recoveryStartTimestamp: number,
   recoveryToken: string,
 };
@@ -211,15 +211,15 @@ function getRecoveryLinkDetails(queryString: string): RecoveryLinkDetails | null
     queryMap.set(keyValuePair[0], keyValuePair[1]);
   };
 
-  const recoveryAccountID: string | undefined = queryMap.get('id');
+  const recoveryAccountId: string | undefined = queryMap.get('id');
   const recoveryStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
   const recoveryToken: string | undefined = queryMap.get('recoveryToken');
 
-  if (!recoveryAccountID || !recoveryStartTimestamp || !recoveryToken) {
+  if (!recoveryAccountId || !recoveryStartTimestamp || !recoveryToken) {
     return null;
   };
 
-  if (!Number.isInteger(+recoveryAccountID)) {
+  if (!Number.isInteger(+recoveryAccountId)) {
     return null;
   };
 
@@ -232,7 +232,7 @@ function getRecoveryLinkDetails(queryString: string): RecoveryLinkDetails | null
   };
 
   const recoveryLinkDetails: RecoveryLinkDetails = {
-    recoveryAccountID: +recoveryAccountID,
+    recoveryAccountId: +recoveryAccountId,
     recoveryStartTimestamp: +recoveryStartTimestamp,
     recoveryToken: recoveryToken,
   };
