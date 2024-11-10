@@ -42,12 +42,12 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
@@ -229,17 +229,17 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.suggestionId)) {
-    res.status(400).json({ success: false, message: 'Invalid suggestion Id.' });
+    res.status(400).json({ success: false, message: 'Invalid suggestion ID.' });
     return;
   };
 
@@ -422,17 +422,17 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.suggestionId)) {
-    res.status(400).json({ success: false, message: 'Invalid suggestion Id.' });
+    res.status(400).json({ success: false, message: 'Invalid suggestion ID.' });
     return;
   };
 
@@ -560,12 +560,12 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ succesS: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ succesS: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
@@ -694,17 +694,17 @@ suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) =
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.suggestionId)) {
-    res.status(400).json({ success: false, message: 'Invalid suggestion Id.' });
+    res.status(400).json({ success: false, message: 'Invalid suggestion ID.' });
     return;
   };
 

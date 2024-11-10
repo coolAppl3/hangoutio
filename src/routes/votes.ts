@@ -40,17 +40,17 @@ votesRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.suggestionId)) {
-    res.status(400).json({ success: false, message: 'Invalid suggestion Id.' });
+    res.status(400).json({ success: false, message: 'Invalid suggestion ID.' });
     return;
   };
 
@@ -276,17 +276,17 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.voteId)) {
-    res.status(400).json({ success: false, message: 'Invalid vote Id.' });
+    res.status(400).json({ success: false, message: 'Invalid vote ID.' });
     return;
   };
 
@@ -415,12 +415,12 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 

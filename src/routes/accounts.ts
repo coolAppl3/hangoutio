@@ -216,7 +216,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ success: false, message: 'Invalid account Id.', reason: 'accountId' });
+    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
     return;
   };
 
@@ -320,7 +320,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ success: false, message: 'Invalid account Id.', reason: 'accountId' });
+    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
     return;
   };
 
@@ -750,7 +750,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ success: false, message: 'Invalid account Id.', reason: 'accountId' });
+    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
     return;
   };
 
@@ -1131,7 +1131,7 @@ accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => 
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ succesS: false, message: 'Invalid account Id.' });
+    res.status(400).json({ succesS: false, message: 'Invalid account ID.' });
     return;
   };
 
@@ -2105,7 +2105,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
   };
 
   if (!Number.isInteger(requestData.friendRequestId)) {
-    res.status(400).json({ success: false, message: 'Invalid friend request Id.' });
+    res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
     return;
   };
 
@@ -2247,7 +2247,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
   };
 
   if (!Number.isInteger(requestData.friendRequestId)) {
-    res.status(400).json({ success: false, message: 'Invalid friend request Id.' });
+    res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
   };
 
   try {
@@ -2324,7 +2324,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
   };
 
   if (!Number.isInteger(requestData.friendshipId)) {
-    res.status(400).json({ success: false, message: 'Invalid friendship Id.' });
+    res.status(400).json({ success: false, message: 'Invalid friendship ID.' });
     return;
   };
 

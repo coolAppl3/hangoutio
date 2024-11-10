@@ -164,12 +164,12 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout Id.', reason: 'hangoutId' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member Id', reason: 'hangoutMemberId' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
     return;
   };
 
