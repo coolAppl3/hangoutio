@@ -26,7 +26,10 @@ function isValidSuggestionDescription(description) {
         return false;
     }
     ;
-    description = description.trim();
+    if (description !== description.trim()) {
+        return false;
+    }
+    ;
     const descriptionRegex = /^[ -~\u20AC\r\n]{10,500}$/;
     return descriptionRegex.test(description);
 }

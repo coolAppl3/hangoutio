@@ -17,8 +17,10 @@ async function initDb() {
     await createAvailabilitySlotsTable();
     await createSuggestionsTable();
     await createVotesTable();
+    await createChatTable();
     await createHangoutsArchiveTable();
     await createHangoutMembersArchiveTable();
+    console.log('Database initialized.');
 }
 exports.initDb = initDb;
 ;
@@ -264,6 +266,24 @@ async function createVotesTable() {
         FOREIGN KEY (suggestion_id) REFERENCES suggestions(suggestion_id) ON DELETE CASCADE,
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE,
         UNIQUE (hangout_member_id, suggestion_id)
+      );`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+;
+async function createChatTable() {
+    try {
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS chat (
+        message_id INT PRIMARY KEY AUTO_INCREMENT,
+        hangout_member_id INT,
+        hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
+        message_content VARCHAR(600) NOT NULL,
+        message_timestamp BIGINT NOT NULL,
+        FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE SET NULL,
+        FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE
       );`);
     }
     catch (err) {

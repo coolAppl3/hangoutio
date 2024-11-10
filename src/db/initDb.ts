@@ -18,6 +18,8 @@ export async function initDb(): Promise<void> {
   await createChatTable();
   await createHangoutsArchiveTable();
   await createHangoutMembersArchiveTable();
+
+  console.log('Database initialized.')
 };
 
 async function createAccountsTable(): Promise<void> {
