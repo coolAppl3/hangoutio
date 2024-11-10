@@ -9,7 +9,7 @@ export async function initDb(): Promise<void> {
   await createFriendshipsTable();
   await createFriendshipsTable();
   await createHangoutsTable();
-  await createHangoutLogsTable();
+  await createHangoutEventsTable();
   await createGuestsTable();
   await createHangoutMembersTable();
   await createAvailabilitySlotsTable();
@@ -164,13 +164,13 @@ async function createHangoutsTable(): Promise<void> {
   };
 };
 
-async function createHangoutLogsTable(): Promise<void> {
+async function createHangoutEventsTable(): Promise<void> {
   try {
     await dbPool.execute(
-      `CREATE TABLE IF NOT EXISTS hangout_logs (
+      `CREATE TABLE IF NOT EXISTS hangout_events (
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
-        log_description VARCHAR(500) NOT NULL,
-        log_timestamp BIGINT NOT NULL,
+        event_description VARCHAR(500) NOT NULL,
+        event_timestamp BIGINT NOT NULL,
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE
       );`
     );
