@@ -1,10 +1,13 @@
 import cron from 'node-cron';
 import * as accountCronJobs from './accountCronJobs';
 import * as hangoutCronJobs from './hangoutCronJobs';
+import { cleanHangoutClients } from '../webSockets/hangout/cleanHangoutClients';
 
 export function initCronJobs(): void {
   // every minute
   cron.schedule('* * * * *', async () => {
+    cleanHangoutClients();
+
     await accountCronJobs.removeUnverifiedAccounts();
     await accountCronJobs.removeExpiredRecoveryRequests();
     await accountCronJobs.removeExpiredEmailUpdateRequests();
@@ -17,4 +20,6 @@ export function initCronJobs(): void {
     await accountCronJobs.deleteMarkedAccounts();
     await hangoutCronJobs.archiveHangouts();
   });
+
+  console.log('CRON jobs started.');
 };

@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0] (2024-11-10)
+
+### Features
+
+- Added `chat` table.
+- Added `chat.ts` router.
+- Added POST `chat/add`.
+- Added POST `chat/retrieve`.
+- Implemented basic websocket structure for hangouts.
+  - Hangout websockets will be used for live chat as well as live hangout-related updates. 
+
+
+### Bug Fixes
+
+- Fixed suggestion descriptions being trimmed before validation in `suggestionValidation.ts`.
+
+
 ## [0.2.31] (2024-11-05)
 
 ### Features

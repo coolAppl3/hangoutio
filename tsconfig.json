@@ -10,7 +10,7 @@
     // "noUnusedParameters": true,
     "removeComments": true,
     "typeRoots": ["./node_modules/@types"],
-    "types": ["node", "express", "cors", "bcrypt", "nodemailer", "node-cron"],
+    "types": ["node", "express", "cors", "bcrypt", "nodemailer", "node-cron", "ws"],
   },
   "include": ["src/**/*", "globals.d.ts"],
   "exclude": ["node_modules"],

@@ -30,8 +30,10 @@ exports.initCronJobs = void 0;
 const node_cron_1 = __importDefault(require("node-cron"));
 const accountCronJobs = __importStar(require("./accountCronJobs"));
 const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
+const cleanHangoutClients_1 = require("../webSockets/hangout/cleanHangoutClients");
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
+        (0, cleanHangoutClients_1.cleanHangoutClients)();
         await accountCronJobs.removeUnverifiedAccounts();
         await accountCronJobs.removeExpiredRecoveryRequests();
         await accountCronJobs.removeExpiredEmailUpdateRequests();
@@ -42,6 +44,7 @@ function initCronJobs() {
         await accountCronJobs.deleteMarkedAccounts();
         await hangoutCronJobs.archiveHangouts();
     });
+    console.log('CRON jobs started.');
 }
 exports.initCronJobs = initCronJobs;
 ;
