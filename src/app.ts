@@ -33,7 +33,7 @@ const app: Application = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(compression());
+app.use(compression({ threshold: 1024 }));
 
 // cors policy
 if (process.env.NODE_ENV === 'development') {
