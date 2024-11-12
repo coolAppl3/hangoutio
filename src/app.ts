@@ -7,6 +7,7 @@ import { insertIntoHangoutClients, wss } from './webSockets/hangout/hangoutWebSo
 import { Socket } from 'net';
 import { WebSocket } from 'ws';
 import express, { Application } from 'express';
+import compression from 'compression';
 
 import { initDb } from './db/initDb';
 
@@ -32,6 +33,7 @@ const app: Application = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(compression());
 
 // cors policy
 if (process.env.NODE_ENV === 'development') {
