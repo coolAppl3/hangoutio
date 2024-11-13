@@ -1875,3 +1875,167 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
+
+hangoutsRouter.get('/dashboard', async (req: Request, res: Response) => {
+  const authHeader: string | undefined = req.headers['authorization'];
+  if (!authHeader) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const authToken: string = authHeader.substring(7);
+  if (!isValidAuthToken(authToken)) {
+    res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+    return;
+  };
+
+  const userId: number = getUserId(authToken);
+  const hangoutId = req.query.hangoutId;
+
+  if (typeof hangoutId !== 'string') {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    return;
+  };
+
+  if (!hangoutValidation.isValidHangoutId(hangoutId)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    return;
+  };
+
+  try {
+    interface UserDetails extends RowDataPacket {
+      auth_token: string,
+      hangout_member_id: number,
+      hangout_id: string,
+      is_leader: boolean,
+    };
+
+    const userType: 'account' | 'guest' = getUserType(authToken);
+    const [userRows] = await dbPool.execute<UserDetails[]>(
+      `SELECT
+        ${userType}s.auth_token,
+        hangout_members.hangout_member_id,
+        hangout_members.hangout_id,
+        hangout_members.is_leader
+      FROM
+        ${userType}s
+      LEFT JOIN
+        hangout_members ON ${userType}s.${userType}_id = hangout_members.${userType}_id
+      WHERE
+        ${userType}s.${userType}_id = ?;`,
+      [userId]
+    );
+
+    if (userRows.length === 0) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    if (authToken !== userRows[0].auth_token) {
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      return;
+    };
+
+    const requesterHangoutMember: UserDetails | undefined = userRows.find((member: UserDetails) => member.hangout_id === hangoutId);
+    if (!requesterHangoutMember) {
+      res.status(401).json({ success: false, message: `Hangout doesn't exist, or you're not a member.` });
+      return;
+    };
+
+    type HangoutData = [
+      hangoutUtils.HangoutsDetails[],
+      hangoutUtils.HangoutEvent[],
+      hangoutUtils.HangoutMember[],
+      hangoutUtils.HangoutMemberCountables[],
+      hangoutUtils.HangoutChat[],
+    ];
+
+    const [hangoutData] = await dbPool.query<HangoutData>(
+      `SELECT * FROM hangouts WHERE hangout_id = :hangoutId;
+
+      SELECT
+        event_description,
+        event_timestamp
+      FROM
+        hangout_events
+      WHERE
+        hangout_id = :hangoutId
+      ORDER BY
+        event_timestamp DESC
+      LIMIT 2;
+
+      SELECT
+        hangout_member_id,
+        user_type,
+        display_name,
+        is_leader
+      FROM
+        hangout_members
+      WHERE
+        hangout_id = :hangoutId;
+
+      SELECT
+        COUNT(DISTINCT availability_slots.availability_slot_id) AS availability_slots_count,
+        COUNT(DISTINCT suggestions.suggestion_id) AS suggestions_count,
+        COUNT(DISTINCT votes.vote_id) AS votes_count
+      FROM
+        availability_slots
+      LEFT JOIN
+        suggestions ON availability_slots.hangout_member_id = suggestions.hangout_member_id
+      LEFT JOIN
+        votes ON suggestions.hangout_member_id = votes.hangout_member_id
+      WHERE
+        availability_slots.hangout_member_id = :hangoutMemberId
+      LIMIT 1;
+      
+      SELECT
+        message_id,
+        hangout_member_id,
+        message_content,
+        message_timestamp
+      FROM
+        chat
+      WHERE
+        hangout_id = :hangoutId
+      ORDER BY
+        message_timestamp DESC
+      LIMIT 2;`,
+      { hangoutId, hangoutMemberId: requesterHangoutMember.hangout_member_id }
+    );
+
+    if (hangoutData.length !== 5) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    const hangoutDetails: hangoutUtils.HangoutsDetails = hangoutData[0][0];
+    const hangoutEvents: hangoutUtils.HangoutEvent[] = hangoutData[1];
+    const hangoutMembers: hangoutUtils.HangoutMember[] = hangoutData[2];
+    const hangoutMemberCountables: hangoutUtils.HangoutMemberCountables = hangoutData[3][0];
+    const hangoutChats: hangoutUtils.HangoutChat[] = hangoutData[4];
+
+    let decryptedHangoutPassword: string | null = null;
+    if (hangoutDetails.encrypted_password && requesterHangoutMember.is_leader) {
+      decryptedHangoutPassword = decryptPassword(hangoutDetails.encrypted_password);
+    };
+
+    res.json({
+      success: true,
+      resData: {
+        hangoutMemberId: requesterHangoutMember.hangout_member_id,
+        isLeader: requesterHangoutMember.is_leader,
+        decryptedHangoutPassword,
+
+        hangoutDetails,
+        hangoutEvents,
+        hangoutMembers,
+        hangoutMemberCountables,
+        hangoutChats,
+      },
+    });
+
+  } catch (err: unknown) {
+    console.log(err);
+    res.status(400).json({});
+  };
+});
