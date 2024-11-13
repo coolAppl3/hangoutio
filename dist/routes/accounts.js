@@ -125,14 +125,14 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         marked_for_deletion
       )
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(9)});`, [authToken, requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0, false]);
-        const accountID = firstResultSetHeader.insertId;
-        const idMarkedAuthToken = `${authToken}_${accountID}`;
+        const accountId = firstResultSetHeader.insertId;
+        const idMarkedAuthToken = `${authToken}_${accountId}`;
         const [secondResultSetHeader] = await connection.execute(`UPDATE
         accounts
       SET
         auth_token = ?
       WHERE
-        account_id = ?;`, [idMarkedAuthToken, accountID]);
+        account_id = ?;`, [idMarkedAuthToken, accountId]);
         if (secondResultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -146,12 +146,12 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         failed_verification_attempts,
         created_on_timestamp
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountID, verificationCode, 1, 0, createdOnTimestamp]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountId, verificationCode, 1, 0, createdOnTimestamp]);
         await connection.commit();
-        res.status(201).json({ success: true, resData: { accountID, createdOnTimestamp } });
+        res.status(201).json({ success: true, resData: { accountId, createdOnTimestamp } });
         const verificationEmailConfig = {
             to: requestData.email,
-            accountID,
+            accountId,
             verificationCode,
             displayName: requestData.displayName,
             createdOnTimestamp
@@ -198,14 +198,14 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
 exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['accountID'];
+    const expectedKeys = ['accountId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.accountID)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
+    if (!Number.isInteger(requestData.accountId)) {
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
         return;
     }
     ;
@@ -225,7 +225,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         account_verification ON accounts.account_id = account_verification.account_id
       WHERE
         accounts.account_id = ?
-      LIMIT 1;`, [requestData.accountID]);
+      LIMIT 1;`, [requestData.accountId]);
         if (accountRows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
             return;
@@ -261,7 +261,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
         const verificationEmailConfig = {
             to: accountDetails.email,
-            accountID: requestData.accountID,
+            accountId: requestData.accountId,
             verificationCode: accountDetails.verification_code,
             displayName: accountDetails.display_name,
             createdOnTimestamp: accountDetails.created_on_timestamp,
@@ -277,14 +277,14 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
 exports.accountsRouter.patch('/verification/verify', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['accountID', 'verificationCode'];
+    const expectedKeys = ['accountId', 'verificationCode'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.accountID)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
+    if (!Number.isInteger(requestData.accountId)) {
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
         return;
     }
     ;
@@ -308,7 +308,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
         account_verification ON accounts.account_id = account_verification.account_id
       WHERE
         accounts.account_id = ?
-      LIMIT 1;`, [requestData.accountID]);
+      LIMIT 1;`, [requestData.accountId]);
         if (accountRows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
             return;
@@ -325,7 +325,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
                 await db_1.dbPool.execute(`DELETE FROM
             accounts
           WHERE
-            account_id = ?;`, [requestData.accountID]);
+            account_id = ?;`, [requestData.accountId]);
                 res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.', reason: 'accountDeleted' });
                 return;
             }
@@ -347,7 +347,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
       SET
         is_verified = ?
       WHERE
-        account_id = ?;`, [true, requestData.accountID]);
+        account_id = ?;`, [true, requestData.accountId]);
         if (updateHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -542,7 +542,7 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
             res.json({ success: true, resData: { requestTimestamp } });
             const recoveryEmailConfig = {
                 to: requestData.email,
-                accountID: accountDetails.account_id,
+                accountId: accountDetails.account_id,
                 recoveryToken,
                 requestTimestamp,
                 displayName: accountDetails.display_name,
@@ -589,7 +589,7 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
         res.json({ success: true, resData: { requestTimestamp: accountDetails.request_timestamp } });
         const recoveryEmailConfig = {
             to: requestData.email,
-            accountID: accountDetails.account_id,
+            accountId: accountDetails.account_id,
             recoveryToken: accountDetails.recovery_token,
             requestTimestamp: accountDetails.request_timestamp,
             displayName: accountDetails.display_name,
@@ -605,14 +605,14 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
 exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['accountID', 'recoveryToken', 'newPassword'];
+    const expectedKeys = ['accountId', 'recoveryToken', 'newPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.accountID)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountID' });
+    if (!Number.isInteger(requestData.accountId)) {
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
         return;
     }
     ;
@@ -637,7 +637,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         account_recovery
       WHERE
         account_id = ?
-      LIMIT 1;`, [requestData.accountID]);
+      LIMIT 1;`, [requestData.accountId]);
         if (recoveryRows.length === 0) {
             res.status(404).json({ success: false, message: 'Recovery request not found.' });
             return;
@@ -679,7 +679,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
             return;
         }
         ;
-        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${requestData.accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${requestData.accountId}`;
         const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         accounts
@@ -688,7 +688,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         hashed_password = ?,
         failed_sign_in_attempts = ?
       WHERE
-        account_id = ?;`, [newAuthToken, newHashedPassword, 0, requestData.accountID]);
+        account_id = ?;`, [newAuthToken, newHashedPassword, 0, requestData.accountId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -720,7 +720,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
     const expectedKeys = ['password'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -745,7 +745,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -765,14 +765,14 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountId}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
             auth_token = ?,
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
-            account_id = ?;`, [newAuthToken, accountID]);
+            account_id = ?;`, [newAuthToken, accountId]);
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
             }
@@ -782,7 +782,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
-          account_id = ?;`, [accountID]);
+          account_id = ?;`, [accountId]);
             res.status(401).json({ success: false, message: 'Incorrect password.' });
             return;
         }
@@ -800,17 +800,17 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangout_members.account_id = ?;`, [accountID]);
+        hangout_members.account_id = ?;`, [accountId]);
         if (hangoutRows.length > 0) {
             const hangoutsInVotingStep = hangoutRows.filter((hangout) => hangout.current_step === 3);
             if (hangoutsInVotingStep.length > 0) {
-                const hangoutMemberIDs = hangoutsInVotingStep.map((hangout) => hangout.hangout_member_id);
+                const hangoutMemberIds = hangoutsInVotingStep.map((hangout) => hangout.hangout_member_id);
                 const [resultSetHeader] = await connection.execute(`DELETE FROM
             votes
           WHERE
-            hangout_member_id IN (${hangoutMemberIDs.join(', ')})
-          LIMIT ${hangoutMemberIDs.length};`);
-                if (resultSetHeader.affectedRows !== hangoutMemberIDs.length) {
+            hangout_member_id IN (${hangoutMemberIds.join(', ')})
+          LIMIT ${hangoutMemberIds.length};`);
+                if (resultSetHeader.affectedRows !== hangoutMemberIds.length) {
                     await connection.rollback();
                     res.status(500).json({ success: false, message: 'Internal server error.' });
                     return;
@@ -818,13 +818,13 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
                 ;
             }
             ;
-            const hangoutMemberIDs = hangoutRows.map((hangout) => hangout.hangout_member_id);
+            const hangoutMemberIds = hangoutRows.map((hangout) => hangout.hangout_member_id);
             const [resultSetHeader] = await connection.execute(`DELETE FROM
           hangout_members
         WHERE
-          hangout_member_id IN (${hangoutMemberIDs.join(', ')})
-        LIMIT ${hangoutMemberIDs.length};`);
-            if (resultSetHeader.affectedRows !== hangoutMemberIDs.length) {
+          hangout_member_id IN (${hangoutMemberIds.join(', ')})
+        LIMIT ${hangoutMemberIds.length};`);
+            if (resultSetHeader.affectedRows !== hangoutMemberIds.length) {
                 await connection.rollback();
                 res.status(500).json({ success: false, message: 'Internal server error.' });
                 return;
@@ -840,7 +840,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         auth_token = ?,
         marked_for_deletion = ?
       WHERE
-        account_id = ?;`, [markedAuthToken, true, accountID]);
+        account_id = ?;`, [markedAuthToken, true, accountId]);
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -852,7 +852,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         cancellation_token,
         request_timestamp
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountID, cancellationToken, Date.now()]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountId, cancellationToken, Date.now()]);
         await connection.commit();
         res.status(202).json({ success: true, resData: {} });
         const logDescription = `${accountDetails.display_name} has left the hangout.`;
@@ -871,7 +871,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
       VALUES(${logValues});`);
         const deletionEmailConfig = {
             to: accountDetails.email,
-            accountID,
+            accountId,
             cancellationToken,
             displayName: accountDetails.display_name,
         };
@@ -896,13 +896,13 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
 exports.accountsRouter.patch('/deletion/cancel', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['cancellationToken', 'accountID'];
+    const expectedKeys = ['cancellationToken', 'accountId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.accountID)) {
+    if (!Number.isInteger(requestData.accountId)) {
         res.status(400).json({ succesS: false, message: 'Invalid account ID.' });
         return;
     }
@@ -922,7 +922,7 @@ exports.accountsRouter.patch('/deletion/cancel', async (req, res) => {
         account_deletion
       WHERE
         account_id = ?
-      LIMIT 1;`, [requestData.accountID]);
+      LIMIT 1;`, [requestData.accountId]);
         if (deletionRows.length === 0) {
             res.status(404).json({ success: false, message: 'Deletion request not found.' });
             return;
@@ -936,14 +936,14 @@ exports.accountsRouter.patch('/deletion/cancel', async (req, res) => {
         ;
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${requestData.accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${requestData.accountId}`;
         const [updateHeader] = await connection.execute(`UPDATE
         accounts
       SET
         auth_token = ?,
         marked_for_deletion = ?
       WHERE
-        account_id = ?;`, [newAuthToken, false, requestData.accountID]);
+        account_id = ?;`, [newAuthToken, false, requestData.accountId]);
         if (updateHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -993,7 +993,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
     const expectedKeys = ['currentPassword', 'newPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -1020,7 +1020,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -1040,14 +1040,14 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.currentPassword, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountId}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
             auth_token = ?,
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
-            account_id = ?;`, [newAuthToken, accountID]);
+            account_id = ?;`, [newAuthToken, accountId]);
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
             }
@@ -1057,7 +1057,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
-          account_id = ?;`, [accountID]);
+          account_id = ?;`, [accountId]);
             res.status(401).json({ success: false, message: 'Incorrect password.' });
             return;
         }
@@ -1068,7 +1068,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
             return;
         }
         ;
-        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountId}`;
         const newHashedPassword = await bcrypt_1.default.hash(requestData.newPassword, 10);
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         accounts
@@ -1076,7 +1076,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         auth_token = ?,
         hashed_password = ?
       WHERE
-        account_id = ?;`, [newAuthToken, newHashedPassword, accountID]);
+        account_id = ?;`, [newAuthToken, newHashedPassword, accountId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -1104,7 +1104,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
     const expectedKeys = ['password', 'newEmail'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -1143,7 +1143,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         email_update ON accounts.account_id = email_update.account_id
       WHERE
         accounts.account_id = ?
-      LIMIT 1;`, [accountID]);
+      LIMIT 1;`, [accountId]);
         const accountDetails = accountRows[0];
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
@@ -1158,14 +1158,14 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountId}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
             auth_token = ?,
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
-            account_id = ?;`, [newAuthToken, accountID]);
+            account_id = ?;`, [newAuthToken, accountId]);
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
             }
@@ -1175,7 +1175,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
-          account_id = ?;`, [accountID]);
+          account_id = ?;`, [accountId]);
             res.status(401).json({ success: false, message: 'Incorrect password.' });
             return;
         }
@@ -1207,7 +1207,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
           update_emails_sent,
           failed_update_attempts
         )
-        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [accountID, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]);
+        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [accountId, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]);
             await connection.commit();
             res.json({ success: true, resData: {} });
             const updateEmailConfig = {
@@ -1291,7 +1291,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
     const expectedKeys = ['verificationCode'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -1321,7 +1321,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         email_update ON accounts.account_id = email_update.account_id
       WHERE
         accounts.account_id = ?
-      LIMIT 1;`, [accountID]);
+      LIMIT 1;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.' });
             return;
@@ -1375,14 +1375,14 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             return;
         }
         ;
-        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
+        const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountId}`;
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         accounts
       SET
         auth_token = ?,
         email = ?
       WHERE
-        account_id = ?;`, [newAuthToken, accountDetails.new_email, accountID]);
+        account_id = ?;`, [newAuthToken, accountDetails.new_email, accountId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -1410,7 +1410,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
     const expectedKeys = ['password', 'newDisplayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -1438,7 +1438,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -1458,14 +1458,14 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             if (accountDetails.failed_sign_in_attempts + 1 >= 5) {
-                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountID}`;
+                const newAuthToken = `${(0, tokenGenerator_1.generateAuthToken)('account')}_${accountId}`;
                 await db_1.dbPool.execute(`UPDATE
             accounts
           SET
             auth_token = ?,
             failed_sign_in_attempts = failed_sign_in_attempts + 1
           WHERE
-            account_id = ?;`, [newAuthToken, accountID]);
+            account_id = ?;`, [newAuthToken, accountId]);
                 res.status(401).json({ success: false, message: 'Incorrect password. Account locked.' });
                 return;
             }
@@ -1475,7 +1475,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         SET
           failed_sign_in_attempts = failed_sign_in_attempts + 1
         WHERE
-          account_id = ?;`, [accountID]);
+          account_id = ?;`, [accountId]);
             res.status(401).json({ success: false, message: 'Incorrect password.' });
             return;
         }
@@ -1490,7 +1490,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
       SET
         display_name = ?
       WHERE
-        account_id = ?;`, [requestData.newDisplayName, accountID]);
+        account_id = ?;`, [requestData.newDisplayName, accountId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -1524,7 +1524,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
     const expectedKeys = ['requesteeUsername'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
@@ -1545,7 +1545,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -1574,7 +1574,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
             return;
         }
         ;
-        const requesteeID = requesteeRows[0].account_id;
+        const requesteeId = requesteeRows[0].account_id;
         const [friendshipRows] = await db_1.dbPool.execute(`SELECT
         1
       FROM
@@ -1582,7 +1582,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
       WHERE
         account_id = ? AND
         friend_id = ?
-      LIMIT 1;`, [accountID, requesteeID]);
+      LIMIT 1;`, [accountId, requesteeId]);
         if (friendshipRows.length > 0) {
             res.status(409).json({ success: false, message: 'Already friends.' });
             return;
@@ -1598,14 +1598,14 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
       WHERE
         (requester_id = ? AND requestee_id = ?) OR
         (requester_id = ? AND requestee_id = ?)
-      LIMIT 2;`, [accountID, requesteeID, requesteeID, accountID]);
+      LIMIT 2;`, [accountId, requesteeId, requesteeId, accountId]);
         if (friendRequestRows.length === 0) {
             await db_1.dbPool.execute(`INSERT INTO friend_requests(
           requester_id,
           requestee_id,
           request_timestamp
         )
-        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountID, requesteeID, Date.now()]);
+        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountId, requesteeId, Date.now()]);
             res.json({ success: true, resData: {} });
             return;
         }
@@ -1613,11 +1613,11 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         let toRequester = false;
         let toRequestee = false;
         for (const request of friendRequestRows) {
-            if (request.requester_id === accountID) {
+            if (request.requester_id === accountId) {
                 toRequestee = true;
             }
             ;
-            if (request.requester_id === requesteeID) {
+            if (request.requester_id === requesteeId) {
                 toRequester = true;
             }
             ;
@@ -1628,7 +1628,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
             return;
         }
         ;
-        const friendRequest = friendRequestRows.find((request) => request.requester_id === requesteeID);
+        const friendRequest = friendRequestRows.find((request) => request.requester_id === requesteeId);
         if (!friendRequest) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -1638,7 +1638,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
             success: false,
             message: 'Pending friend request.',
             resData: {
-                friendRequestID: friendRequest.request_id,
+                friendRequestId: friendRequest.request_id,
             },
         });
     }
@@ -1662,15 +1662,15 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
-    const expectedKeys = ['friendRequestID'];
+    const expectedKeys = ['friendRequestId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.friendRequestID)) {
+    if (!Number.isInteger(requestData.friendRequestId)) {
         res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
         return;
     }
@@ -1683,7 +1683,7 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -1701,13 +1701,13 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
       FROM
         friend_requests
       WHERE
-        request_id = ?;`, [requestData.friendRequestID]);
+        request_id = ?;`, [requestData.friendRequestId]);
         if (friendRequestRows.length === 0) {
             res.status(404).json({ success: false, message: 'Friend request not found.' });
             return;
         }
         ;
-        const requesterID = friendRequestRows[0].requester_id;
+        const requesterId = friendRequestRows[0].requester_id;
         const friendshipTimestamp = Date.now();
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
@@ -1718,11 +1718,11 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
       )
       VALUES
         (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)}),
-        (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountID, requesterID, friendshipTimestamp, requesterID, accountID, friendshipTimestamp]);
+        (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountId, requesterId, friendshipTimestamp, requesterId, accountId, friendshipTimestamp]);
         const [resultSetHeader] = await connection.execute(`DELETE FROM
         friend_requests
       WHERE
-        request_id = ?;`, [requestData.friendRequestID]);
+        request_id = ?;`, [requestData.friendRequestId]);
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -1773,15 +1773,15 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
-    const expectedKeys = ['friendRequestID'];
+    const expectedKeys = ['friendRequestId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.friendRequestID)) {
+    if (!Number.isInteger(requestData.friendRequestId)) {
         res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
     }
     ;
@@ -1792,7 +1792,7 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -1807,7 +1807,7 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         friend_requests
       WHERE
-        request_id = ?;`, [requestData.friendRequestID]);
+        request_id = ?;`, [requestData.friendRequestId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(404).json({ success: false, message: 'Friend request not found.' });
             return;
@@ -1835,15 +1835,15 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
         return;
     }
     ;
-    const accountID = userUtils.getUserID(authToken);
+    const accountId = userUtils.getUserId(authToken);
     const requestData = req.body;
-    const expectedKeys = ['friendshipID'];
+    const expectedKeys = ['friendshipId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.friendshipID)) {
+    if (!Number.isInteger(requestData.friendshipId)) {
         res.status(400).json({ success: false, message: 'Invalid friendship ID.' });
         return;
     }
@@ -1855,7 +1855,7 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -1873,19 +1873,19 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
       FROM
         friendships
       WHERE
-        friendship_id = ?;`, [requestData.friendshipID]);
+        friendship_id = ?;`, [requestData.friendshipId]);
         if (friendshipRows.length === 0) {
             res.status(404).json({ success: false, message: 'Friend not found.' });
             return;
         }
         ;
-        const friendID = friendshipRows[0].friend_id;
+        const friendId = friendshipRows[0].friend_id;
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         friendships
       WHERE
         (account_id = ? AND friend_id = ?) OR
         (account_id = ? AND friend_id = ?)
-      LIMIT 2;`, [accountID, friendID, friendID, accountID]);
+      LIMIT 2;`, [accountId, friendId, friendId, accountId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(404).json({ success: false, message: 'Friend not found.' });
             return;

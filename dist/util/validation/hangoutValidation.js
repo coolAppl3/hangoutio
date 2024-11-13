@@ -1,33 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutTitle = exports.isValidHangoutID = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
+exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
 exports.hangoutMemberLimit = 20;
 exports.ongoingHangoutsLimit = 12;
-function isValidHangoutID(hangoutID) {
-    if (typeof hangoutID !== 'string') {
+function isValidHangoutId(hangoutId) {
+    if (typeof hangoutId !== 'string') {
         return false;
     }
     ;
-    if (hangoutID.length !== 46) {
+    if (hangoutId.length !== 46) {
         return false;
     }
     ;
-    if (!hangoutID.startsWith('h')) {
+    if (!hangoutId.startsWith('h')) {
         return false;
     }
     ;
-    if (hangoutID[32] !== '_') {
+    if (hangoutId[32] !== '_') {
         return false;
     }
     ;
-    if (hangoutID.substring(33).length !== 13 || !isValidTimestamp(+hangoutID.substring(33))) {
+    if (hangoutId.substring(33).length !== 13 || !isValidTimestamp(+hangoutId.substring(33))) {
         return false;
     }
     ;
     const regex = /^[A-Za-z0-9_]{46,}$/;
-    return regex.test(hangoutID);
+    return regex.test(hangoutId);
 }
-exports.isValidHangoutID = isValidHangoutID;
+exports.isValidHangoutId = isValidHangoutId;
 ;
 function isValidHangoutTitle(title) {
     if (typeof title !== 'string') {

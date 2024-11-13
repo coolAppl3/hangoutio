@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateHangoutID = exports.generateUniqueToken = exports.generateUniqueCode = exports.generateAuthToken = void 0;
+exports.generateHangoutId = exports.generateUniqueToken = exports.generateUniqueCode = exports.generateAuthToken = void 0;
 const allowedTokenCharacters = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz0123456789';
 const allowedCodeCharacters = 'ABCDEFGHIJKLMNPQRSTUVWXYZ0123456789';
 function generateAuthToken(userType) {
@@ -41,13 +41,13 @@ function generateUniqueToken() {
 }
 exports.generateUniqueToken = generateUniqueToken;
 ;
-function generateHangoutID(timestamp) {
-    let hangoutID = 'h';
-    while (hangoutID.length < 32) {
-        hangoutID += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
+function generateHangoutId(timestamp) {
+    let hangoutId = 'h';
+    while (hangoutId.length < 32) {
+        hangoutId += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
     }
     ;
-    return `${hangoutID}_${timestamp}`;
+    return `${hangoutId}_${timestamp}`;
 }
-exports.generateHangoutID = generateHangoutID;
+exports.generateHangoutId = generateHangoutId;
 ;

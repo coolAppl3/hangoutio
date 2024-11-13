@@ -27,16 +27,16 @@ exports.chatRouter.post('/add', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userUtils_1.getUserID)(authToken);
+    const userId = (0, userUtils_1.getUserId)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutMemberID', 'messageContent'];
+    const expectedKeys = ['hangoutMemberId', 'messageContent'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberID)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout member ID', reason: 'hangoutMemberID' });
+    if (!Number.isInteger(requestData.hangoutMemberId)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout member Id', reason: 'hangoutMemberId' });
         return;
     }
     ;
@@ -53,7 +53,7 @@ exports.chatRouter.post('/add', async (req, res) => {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?;`, [userID]);
+        ${userType}_id = ?;`, [userId]);
         if (userRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -72,7 +72,7 @@ exports.chatRouter.post('/add', async (req, res) => {
         hangout_members
       WHERE
         hangout_member_id = ? AND
-        ${userType}_id = ?;`, [requestData.hangoutMemberID, userID]);
+        ${userType}_id = ?;`, [requestData.hangoutMemberId, userId]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -86,12 +86,12 @@ exports.chatRouter.post('/add', async (req, res) => {
         message_content,
         message_timestamp
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberID, hangoutMember.hangout_id, requestData.messageContent, messageTimestamp]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, hangoutMember.hangout_id, requestData.messageContent, messageTimestamp]);
         ;
         const chatMessage = {
-            messageID: resultSetHeader.insertId,
-            hangoutMemberID: requestData.hangoutMemberID,
-            hangoutID: hangoutMember.hangout_id,
+            messageId: resultSetHeader.insertId,
+            hangoutMemberId: requestData.hangoutMemberId,
+            hangoutId: hangoutMember.hangout_id,
             messageContent: requestData.messageContent,
             messageTimestamp,
         };
@@ -117,21 +117,21 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userUtils_1.getUserID)(authToken);
+    const userId = (0, userUtils_1.getUserId)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'hangoutMemberID', 'messageOffset'];
+    const expectedKeys = ['hangoutId', 'hangoutMemberId', 'messageOffset'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutID' });
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberID)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout member ID', reason: 'hangoutMemberID' });
+    if (!Number.isInteger(requestData.hangoutMemberId)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
         return;
     }
     ;
@@ -148,7 +148,7 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?;`, [userID]);
+        ${userType}_id = ?;`, [userId]);
         if (userRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -166,7 +166,7 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
       WHERE
         hangout_member_id = ? AND
         ${userType}_id = ? AND
-        hangout_id = ?;`, [requestData.hangoutMemberID, userID, requestData.hangoutID]);
+        hangout_id = ?;`, [requestData.hangoutMemberId, userId, requestData.hangoutId]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -187,7 +187,7 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
         chat.hangout_id = ?
       ORDER BY
         chat.message_timestamp DESC
-      LIMIT 20 OFFSET ?;`, [requestData.hangoutID, requestData.messageOffset]);
+      LIMIT 20 OFFSET ?;`, [requestData.hangoutId, requestData.messageOffset]);
         res.json({ success: true, chatMessages: chatRows });
     }
     catch (err) {

@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.1] (2024-11-10)
+
+### Features
+
+- Implemented gzip compression middleware.
+- Added `encryptionUtils.ts`.
+- Renamed `hashed_password` to `encrypted_password` in the `hangouts` table.
+- Reworked hangout passwords to now be encrypted, not hashed, before being stored.
+  - This will help the hangout leader retrieve the password to share with potential new members.
+  - Updated `hangouts.ts` to align with the above change.
+- Added GET `hangouts/dashboard`.
+
+
+### Code Refactoring
+
+- Renamed `hangout_logs` table to `hangout_events`.
+- Unified the use of `Id` instead of `ID` where applicable for consistency throughout the app.
+
+
+### Build Changes
+
+- Enabled `multipleStatements` and `namedPlaceholders` in the connection pool config in `db.ts`.
+
+
 ## [0.3.0] (2024-11-10)
 
 ### Features

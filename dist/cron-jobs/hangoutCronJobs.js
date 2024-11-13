@@ -235,21 +235,21 @@ exports.archiveHangouts = archiveHangouts;
 ;
 function getWinningSuggestion(filteredSuggestions) {
     let highestVotesCount = 0;
-    let winningSuggestionID = -1;
+    let winningSuggestionId = -1;
     for (const suggestion of filteredSuggestions) {
         if (suggestion.votes_count > highestVotesCount) {
             highestVotesCount = suggestion.votes_count;
-            winningSuggestionID = suggestion.suggestion_id;
+            winningSuggestionId = suggestion.suggestion_id;
         }
         ;
     }
     ;
-    const tieDetected = filteredSuggestions.find((suggestion) => suggestion.votes_count === highestVotesCount && suggestion.suggestion_id !== winningSuggestionID) !== undefined;
+    const tieDetected = filteredSuggestions.find((suggestion) => suggestion.votes_count === highestVotesCount && suggestion.suggestion_id !== winningSuggestionId) !== undefined;
     if (tieDetected) {
         return null;
     }
     ;
-    const winningSuggestion = filteredSuggestions.find((suggestion) => suggestion.suggestion_id === winningSuggestionID) || null;
+    const winningSuggestion = filteredSuggestions.find((suggestion) => suggestion.suggestion_id === winningSuggestionId) || null;
     return winningSuggestion;
 }
 ;
