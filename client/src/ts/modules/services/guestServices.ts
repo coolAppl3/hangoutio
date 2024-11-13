@@ -14,7 +14,7 @@ export interface GuestSignInData {
   success: true,
   resData: {
     authToken: string,
-    hangoutID: string,
+    hangoutId: string,
   },
 };
 

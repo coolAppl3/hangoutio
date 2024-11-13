@@ -51,25 +51,25 @@ exports.votesRouter.post('/', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userUtils_1.getUserID)(authToken);
+    const userId = (0, userUtils_1.getUserId)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'hangoutMemberID', 'suggestionID'];
+    const expectedKeys = ['hangoutId', 'hangoutMemberId', 'suggestionId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberID)) {
+    if (!Number.isInteger(requestData.hangoutMemberId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.suggestionID)) {
+    if (!Number.isInteger(requestData.suggestionId)) {
         res.status(400).json({ success: false, message: 'Invalid suggestion ID.' });
         return;
     }
@@ -83,7 +83,7 @@ exports.votesRouter.post('/', async (req, res) => {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?;`, [userID]);
+        ${userType}_id = ?;`, [userId]);
         if (userRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -112,7 +112,7 @@ exports.votesRouter.post('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT 1;`, [requestData.suggestionID, requestData.hangoutMemberID, requestData.suggestionID, requestData.hangoutMemberID, voteValidation.votesLimit, requestData.hangoutID, requestData.hangoutMemberID]);
+      LIMIT 1;`, [requestData.suggestionId, requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutMemberId, voteValidation.votesLimit, requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
@@ -120,7 +120,7 @@ exports.votesRouter.post('/', async (req, res) => {
         }
         ;
         const hangoutMember = hangoutMemberRows[0];
-        if (hangoutMember[`${userType}_id`] !== userID) {
+        if (hangoutMember[`${userType}_id`] !== userId) {
             await connection.rollback();
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -163,7 +163,7 @@ exports.votesRouter.post('/', async (req, res) => {
       WHERE
         suggestions.suggestion_id = ? AND
         availability_slots.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation_1.availabilitySlotsLimit};`, [requestData.suggestionID, requestData.hangoutMemberID]);
+      LIMIT ${availabilitySlotValidation_1.availabilitySlotsLimit};`, [requestData.suggestionId, requestData.hangoutMemberId]);
         if (suggestionAvailabilityRows.length === 0) {
             await connection.rollback();
             res.status(409).json({ success: false, message: 'No matching availability.' });
@@ -191,9 +191,9 @@ exports.votesRouter.post('/', async (req, res) => {
         suggestion_id,
         hangout_id
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.hangoutMemberID, requestData.suggestionID, requestData.hangoutID]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutId]);
         await connection.commit();
-        res.status(201).json({ success: true, resData: { voteID: resultSetHeader.insertId } });
+        res.status(201).json({ success: true, resData: { voteId: resultSetHeader.insertId } });
     }
     catch (err) {
         console.log(err);
@@ -225,25 +225,25 @@ exports.votesRouter.delete('/', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userUtils_1.getUserID)(authToken);
+    const userId = (0, userUtils_1.getUserId)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'hangoutMemberID', 'voteID'];
+    const expectedKeys = ['hangoutId', 'hangoutMemberId', 'voteId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberID)) {
+    if (!Number.isInteger(requestData.hangoutMemberId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.voteID)) {
+    if (!Number.isInteger(requestData.voteId)) {
         res.status(400).json({ success: false, message: 'Invalid vote ID.' });
         return;
     }
@@ -256,7 +256,7 @@ exports.votesRouter.delete('/', async (req, res) => {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?;`, [userID]);
+        ${userType}_id = ?;`, [userId]);
         if (userRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -282,14 +282,14 @@ exports.votesRouter.delete('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${voteValidation.votesLimit};`, [requestData.hangoutID, requestData.hangoutMemberID]);
+      LIMIT ${voteValidation.votesLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
         }
         ;
         const hangoutMember = hangoutMemberRows[0];
-        if (hangoutMember[`${userType}_id`] !== userID) {
+        if (hangoutMember[`${userType}_id`] !== userId) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
         }
@@ -299,7 +299,7 @@ exports.votesRouter.delete('/', async (req, res) => {
             return;
         }
         ;
-        const voteFound = hangoutMemberRows.find((vote) => vote.vote_id === requestData.voteID) !== undefined;
+        const voteFound = hangoutMemberRows.find((vote) => vote.vote_id === requestData.voteId) !== undefined;
         if (!voteFound) {
             res.status(404).json({ success: false, message: 'Vote not found.' });
             return;
@@ -308,7 +308,7 @@ exports.votesRouter.delete('/', async (req, res) => {
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         votes
       WHERE
-        vote_id = ?;`, [requestData.voteID]);
+        vote_id = ?;`, [requestData.voteId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -336,20 +336,20 @@ exports.votesRouter.delete('/clear', async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userUtils_1.getUserID)(authToken);
+    const userId = (0, userUtils_1.getUserId)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'hangoutMemberID'];
+    const expectedKeys = ['hangoutId', 'hangoutMemberId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberID)) {
+    if (!Number.isInteger(requestData.hangoutMemberId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
         return;
     }
@@ -362,7 +362,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?;`, [userID]);
+        ${userType}_id = ?;`, [userId]);
         if (userRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -388,14 +388,14 @@ exports.votesRouter.delete('/clear', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${voteValidation.votesLimit};`, [requestData.hangoutID, requestData.hangoutMemberID]);
+      LIMIT ${voteValidation.votesLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
         }
         ;
         const hangoutMember = hangoutMemberRows[0];
-        if (hangoutMember[`${userType}_id`] !== userID) {
+        if (hangoutMember[`${userType}_id`] !== userId) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
         }
@@ -414,7 +414,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         votes
       WHERE
-        hangout_member_id = ?;`, [requestData.hangoutMemberID]);
+        hangout_member_id = ?;`, [requestData.hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;

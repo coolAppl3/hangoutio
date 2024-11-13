@@ -30,15 +30,15 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
         return;
     }
     ;
-    const accountID = (0, userUtils_1.getUserID)(authToken);
+    const accountId = (0, userUtils_1.getUserId)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'hangoutPassword'];
+    const expectedKeys = ['hangoutId', 'hangoutPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
@@ -56,7 +56,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
       FROM
         accounts
       WHERE
-        account_id = ?;`, [accountID]);
+        account_id = ?;`, [accountId]);
         if (accountRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -78,7 +78,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
       WHERE
         hangouts.is_concluded = ? AND
         hangout_members.account_id = ?
-      LIMIT ${hangoutValidation_1.ongoingHangoutsLimit};`, [false, accountID]);
+      LIMIT ${hangoutValidation_1.ongoingHangoutsLimit};`, [false, accountId]);
         if (ongoingHangoutsRows.length >= hangoutValidation_1.ongoingHangoutsLimit) {
             res.status(403).json({ success: false, message: 'Ongoing hangouts limit reached.' });
             return;
@@ -95,13 +95,13 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutId]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
         }
         ;
-        const isMember = hangoutRows.find((member) => member.account_id === accountID) !== undefined;
+        const isMember = hangoutRows.find((member) => member.account_id === accountId) !== undefined;
         if (isMember) {
             res.status(409).json({ success: false, message: 'Already a member of this hangout.' });
             return;
@@ -136,10 +136,10 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
         display_name,
         is_leader
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutID, 'account', accountID, null, accountDetails.display_name, false]);
-        res.json({ success: true, resData: { hangoutMemberID: resultSetHeader.insertId } });
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'account', accountId, null, accountDetails.display_name, false]);
+        res.json({ success: true, resData: { hangoutMemberId: resultSetHeader.insertId } });
         const logDescription = `${accountDetails.display_name} has joined the hangout.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutID, logDescription);
+        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -150,13 +150,13 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
 exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'hangoutPassword', 'username', 'password', 'displayName'];
+    const expectedKeys = ['hangoutId', 'hangoutPassword', 'username', 'password', 'displayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
@@ -194,7 +194,7 @@ exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?
-      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutID]);
+      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutId]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -246,15 +246,15 @@ exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
         display_name,
         hangout_id
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [authToken, requestData.username, guestHashedPassword, requestData.displayName, requestData.hangoutID]);
-        const guestID = firstResultSetHeader.insertId;
-        const idMarkedAuthToken = `${authToken}_${guestID}`;
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [authToken, requestData.username, guestHashedPassword, requestData.displayName, requestData.hangoutId]);
+        const guestId = firstResultSetHeader.insertId;
+        const idMarkedAuthToken = `${authToken}_${guestId}`;
         const [secondResultSetHeader] = await connection.execute(`UPDATE
         guests
       SET
         auth_token = ?
       WHERE
-        guest_id = ?;`, [idMarkedAuthToken, guestID]);
+        guest_id = ?;`, [idMarkedAuthToken, guestId]);
         if (secondResultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -269,11 +269,11 @@ exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
         display_name,
         is_leader
       )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutID, 'guest', null, guestID, requestData.displayName, false]);
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]);
         await connection.commit();
-        res.status(201).json({ success: true, resData: { authToken: idMarkedAuthToken, hangoutMemberID: thirdResultSetheader.insertId } });
+        res.status(201).json({ success: true, resData: { authToken: idMarkedAuthToken, hangoutMemberId: thirdResultSetheader.insertId } });
         const logDescription = `${requestData.displayName} has joined the hangout.`;
-        (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutID, logDescription);
+        (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -305,20 +305,20 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
         return;
     }
     ;
-    const userID = (0, userUtils_1.getUserID)(authToken);
+    const userId = (0, userUtils_1.getUserId)(authToken);
     const requestData = req.body;
-    const expectedKeys = ['hangoutID', 'hangoutMemberID'];
+    const expectedKeys = ['hangoutId', 'hangoutMemberId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutID)(requestData.hangoutID)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberID)) {
+    if (!Number.isInteger(requestData.hangoutMemberId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
@@ -333,7 +333,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?;`, [userID]);
+        ${userType}_id = ?;`, [userId]);
         if (userRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -363,7 +363,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT 1;`, [requestData.hangoutMemberID, requestData.hangoutID, requestData.hangoutID, requestData.hangoutMemberID]);
+      LIMIT 1;`, [requestData.hangoutMemberId, requestData.hangoutId, requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
@@ -371,7 +371,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
         }
         ;
         const hangoutMember = hangoutMemberRows[0];
-        if (hangoutMember[`${userType}_id`] !== userID) {
+        if (hangoutMember[`${userType}_id`] !== userId) {
             await connection.rollback();
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -381,7 +381,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
             const [resultSetHeader] = await connection.execute(`DELETE FROM
           hangouts
         WHERE
-          hangout_id = ?;`, [requestData.hangoutID]);
+          hangout_id = ?;`, [requestData.hangoutId]);
             if (resultSetHeader.affectedRows === 0) {
                 await connection.rollback();
                 res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -397,7 +397,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
           votes
         WHERE
           hangout_member_id = ?
-        LIMIT ${voteValidation_1.votesLimit};`, [requestData.hangoutMemberID]);
+        LIMIT ${voteValidation_1.votesLimit};`, [requestData.hangoutMemberId]);
             if (resultSetHeader.affectedRows === 0) {
                 await connection.rollback();
                 res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -410,7 +410,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
             const [resultSetHeader] = await connection.execute(`DELETE FROM
           guests
         WHERE
-          guest_id = ?;`, [userID]);
+          guest_id = ?;`, [userId]);
             if (resultSetHeader.affectedRows === 0) {
                 await connection.rollback();
                 res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -420,14 +420,14 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
             await connection.commit();
             res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: true } });
             const logDescription = `${userDetails.display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-            await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutID, logDescription);
+            await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
             return;
         }
         ;
         const [resultSetHeader] = await connection.execute(`DELETE FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`, [requestData.hangoutMemberID]);
+        hangout_member_id = ?;`, [requestData.hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -437,7 +437,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
         await connection.commit();
         res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: false } });
         const logDescription = `${userRows[0].display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutID, logDescription);
+        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);

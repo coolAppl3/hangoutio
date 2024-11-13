@@ -11,7 +11,7 @@ async function initDb() {
     await createFriendshipsTable();
     await createFriendshipsTable();
     await createHangoutsTable();
-    await createHangoutLogsTable();
+    await createHangoutEventsTable();
     await createGuestsTable();
     await createHangoutMembersTable();
     await createAvailabilitySlotsTable();
@@ -140,7 +140,7 @@ async function createHangoutsTable() {
         await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS hangouts (
         hangout_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
         hangout_title VARCHAR(40) NOT NULL,
-        hashed_password VARCHAR(255),
+        encrypted_password VARCHAR(255),
         member_limit INT NOT NULL CHECK (member_limit BETWEEN 2 AND 20),
         availability_step BIGINT NOT NULL,
         suggestions_step BIGINT NOT NULL,
@@ -159,12 +159,12 @@ async function createHangoutsTable() {
     ;
 }
 ;
-async function createHangoutLogsTable() {
+async function createHangoutEventsTable() {
     try {
-        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS hangout_logs (
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS hangout_events (
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
-        log_description VARCHAR(500) NOT NULL,
-        log_timestamp BIGINT NOT NULL,
+        event_description VARCHAR(500) NOT NULL,
+        event_timestamp BIGINT NOT NULL,
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE
       );`);
     }

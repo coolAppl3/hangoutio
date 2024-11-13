@@ -198,21 +198,21 @@ async function guestSignIn(): Promise<void> {
 
   try {
     const guestSignInData: AxiosResponse<GuestSignInData> = await guestSignInService(guestSignInBody);
-    const { authToken, hangoutID } = guestSignInData.data.resData;
+    const { authToken, hangoutId } = guestSignInData.data.resData;
 
     if (signInFormState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
 
       Cookies.set('authToken', authToken, 14 * daySeconds);
-      Cookies.set('guestHangoutID', hangoutID, 14 * daySeconds);
+      Cookies.set('guestHangoutId', hangoutId, 14 * daySeconds);
 
     } else {
       Cookies.set('authToken', authToken);
-      Cookies.set('guestHangoutID', hangoutID);
+      Cookies.set('guestHangoutId', hangoutId);
     };
 
     popup('Signed in successfully.', 'success');
-    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutID}`), 1000);
+    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutId}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);

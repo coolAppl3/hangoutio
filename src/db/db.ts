@@ -11,4 +11,6 @@ export const dbPool: Pool = mysql.createPool({
   queueLimit: 50,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+  multipleStatements: true,
+  namedPlaceholders: true,
 });

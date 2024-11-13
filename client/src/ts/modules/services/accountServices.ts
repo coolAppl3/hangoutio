@@ -34,7 +34,7 @@ export interface AccountSignUpBody {
 export interface AccountSignUpData {
   success: true,
   resData: {
-    accountID: number,
+    accountId: number,
     createdOnTimestamp: number,
   },
 };
@@ -52,14 +52,14 @@ export interface ResendVerificationEmailData {
   },
 };
 
-export async function resendVerificationEmailService(requestBody: { accountID: number }): Promise<AxiosResponse<ResendVerificationEmailData>> {
+export async function resendVerificationEmailService(requestBody: { accountId: number }): Promise<AxiosResponse<ResendVerificationEmailData>> {
   return axios.post(`${accountsApiUrl}/verification/resendEmail`, requestBody);
 };
 
 // --- --- ---
 
 export interface AccountVerificationBody {
-  accountID: number,
+  accountId: number,
   verificationCode: string,
 };
 
@@ -90,7 +90,7 @@ export async function sendRecoveryEmailService(requestBody: { email: string }): 
 // --- --- ---
 
 export interface RecoveryUpdatePasswordBody {
-  accountID: number,
+  accountId: number,
   recoveryToken: string,
   newPassword: string,
 };

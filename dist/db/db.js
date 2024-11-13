@@ -16,4 +16,6 @@ exports.dbPool = promise_1.default.createPool({
     queueLimit: 50,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
+    multipleStatements: true,
+    namedPlaceholders: true,
 });

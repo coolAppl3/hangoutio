@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTimeTillNextRequest = exports.getUserType = exports.getUserID = void 0;
-function getUserID(authToken) {
+exports.getTimeTillNextRequest = exports.getUserType = exports.getUserId = void 0;
+function getUserId(authToken) {
     return +authToken.substring(33);
 }
-exports.getUserID = getUserID;
+exports.getUserId = getUserId;
 ;
 function getUserType(authToken) {
     if (authToken.startsWith('a')) {

@@ -26,7 +26,7 @@ async function authenticateHandshake(req) {
         return null;
     }
     ;
-    if (!Number.isInteger(+hangoutMemberId) || !(0, hangoutValidation_1.isValidHangoutID)(hangoutId)) {
+    if (!Number.isInteger(+hangoutMemberId) || !(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
         return null;
     }
     ;
@@ -40,7 +40,7 @@ exports.authenticateHandshake = authenticateHandshake;
 ;
 async function isValidUserData(authToken, hangoutMemberId, hangoutId) {
     try {
-        const userID = (0, userUtils_1.getUserID)(authToken);
+        const userId = (0, userUtils_1.getUserId)(authToken);
         const userType = (0, userUtils_1.getUserType)(authToken);
         ;
         const [userRows] = await db_1.dbPool.execute(`SELECT
@@ -48,7 +48,7 @@ async function isValidUserData(authToken, hangoutMemberId, hangoutId) {
       FROM
         ${userType}s
       WHERE
-        ${userType}_id = ?;`, [userID]);
+        ${userType}_id = ?;`, [userId]);
         if (userRows.length === 0) {
             return false;
         }
@@ -64,7 +64,7 @@ async function isValidUserData(authToken, hangoutMemberId, hangoutId) {
       WHERE
         hangout_member_id = ? AND
         ${userType}_id = ? AND
-        hangout_id = ?;`, [hangoutMemberId, userID, hangoutId]);
+        hangout_id = ?;`, [hangoutMemberId, userId, hangoutId]);
         if (hangoutRows.length === 0) {
             return false;
         }

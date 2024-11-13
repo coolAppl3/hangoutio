@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEmailUpdateWarningTemplate = exports.getEmailUpdateTemplate = exports.getAccountDeletionTemplate = exports.getRecoveryEmailTemplate = exports.getVerificationEmailTemplate = void 0;
 function getVerificationEmailTemplate(verificationEmailConfig) {
-    const { accountID, verificationCode, displayName, createdOnTimestamp } = verificationEmailConfig;
+    const { accountId, verificationCode, displayName, createdOnTimestamp } = verificationEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -74,8 +74,8 @@ function getVerificationEmailTemplate(verificationEmailConfig) {
             Alternatively, you can click the following verification link:
             <a
               target="_blank"
-              href="https://hangoutio.com/sign-up.html?id=${accountID}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
-              >https://hangoutio.com/sign-up.html?id=${accountID}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
+              href="https://hangoutio.com/sign-up.html?id=${accountId}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
+              >https://hangoutio.com/sign-up.html?id=${accountId}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
             >.
           </p>
           <p>Your account will be automatically deleted if it's not verified within 15 minutes of being created.</p>
@@ -91,7 +91,7 @@ function getVerificationEmailTemplate(verificationEmailConfig) {
 exports.getVerificationEmailTemplate = getVerificationEmailTemplate;
 ;
 function getRecoveryEmailTemplate(recoveryEmailConfig) {
-    const { accountID, recoveryToken, requestTimestamp, displayName } = recoveryEmailConfig;
+    const { accountId, recoveryToken, requestTimestamp, displayName } = recoveryEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -162,8 +162,8 @@ function getRecoveryEmailTemplate(recoveryEmailConfig) {
             To start the recovery process, please click the following link:
             <a
               target="_blank"
-              href="https://hangoutio.com/account-recovery.html?id=${accountID}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}"
-              >https://hangoutio.com/account-recovery.html?id=${accountID}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}</a
+              href="https://hangoutio.com/account-recovery.html?id=${accountId}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}"
+              >https://hangoutio.com/account-recovery.html?id=${accountId}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}</a
             >.
           </p>
           <p>Please note that the recovery link is only valid for an hour.</p>
@@ -179,7 +179,7 @@ function getRecoveryEmailTemplate(recoveryEmailConfig) {
 exports.getRecoveryEmailTemplate = getRecoveryEmailTemplate;
 ;
 function getAccountDeletionTemplate(deletionEmailConfig) {
-    const { accountID, cancellationToken, displayName } = deletionEmailConfig;
+    const { accountId, cancellationToken, displayName } = deletionEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -254,8 +254,8 @@ function getAccountDeletionTemplate(deletionEmailConfig) {
             If you've changed your mind, or have made this request by mistake, you can cancel it before the account is fully deleted by clicking the following link:
             <a
               target="_blank"
-              href="https://hangoutio.com/cancelDeletion.html?id=${accountID}&recoveryToken=${cancellationToken}"
-              >https://hangoutio.com/cancelDeletion.html?id=${accountID}&recoveryToken=${cancellationToken}</a
+              href="https://hangoutio.com/cancelDeletion.html?id=${accountId}&recoveryToken=${cancellationToken}"
+              >https://hangoutio.com/cancelDeletion.html?id=${accountId}&recoveryToken=${cancellationToken}</a
             >.
           </p>
           <p>If this request wasn't made by you, please click the link above and change your account's password as soon as possible.</p>

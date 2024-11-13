@@ -142,10 +142,10 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     };
 
     const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
-    const { hangoutID } = accountLeaderHangoutData.data.resData;
+    const { hangoutId } = accountLeaderHangoutData.data.resData;
 
     popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.href = `hangout.html?id=${hangoutID}`, 1000);
+    setTimeout(() => window.location.href = `hangout.html?id=${hangoutId}`, 1000);
 
   } catch (err: unknown) {
     console.log(err)
@@ -170,7 +170,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 409 && errReason === 'duplicateHangoutID') {
+    if (status === 409 && errReason === 'duplicateHangoutId') {
       await createAccountLeaderHangout(++attemptCount);
       return;
     };
@@ -238,10 +238,10 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
 
   try {
     const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
-    const { hangoutID } = accountLeaderHangoutData.data.resData;
+    const { hangoutId } = accountLeaderHangoutData.data.resData;
 
     popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.href = `hangout.html?id=${hangoutID}`, 1000);
+    setTimeout(() => window.location.href = `hangout.html?id=${hangoutId}`, 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -266,7 +266,7 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 409 && errReason === 'duplicateHangoutID') {
+    if (status === 409 && errReason === 'duplicateHangoutId') {
       await createSignedInAccountLeaderHangout(++attemptCount);
       return;
     };
@@ -328,20 +328,20 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
 
   try {
     const guestLeaderHangoutData: AxiosResponse<GuestLeaderHangoutData> = await createGuestLeaderHangoutService(guestLeaderHangoutBody);
-    const { authToken, hangoutID } = guestLeaderHangoutData.data.resData;
+    const { authToken, hangoutId } = guestLeaderHangoutData.data.resData;
 
     if (hangoutThirdStepState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
       Cookies.set('authToken', authToken, daySeconds);
-      Cookies.set('guestHangoutID', hangoutID, daySeconds);
+      Cookies.set('guestHangoutId', hangoutId, daySeconds);
 
     } else {
       Cookies.set('authToken', authToken);
-      Cookies.set('guestHangoutID', authToken);
+      Cookies.set('guestHangoutId', authToken);
     };
 
     popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutID}`), 1000);
+    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutId}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -366,7 +366,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 409 && errReason === 'duplicateHangoutID') {
+    if (status === 409 && errReason === 'duplicateHangoutId') {
       await createGuestLeaderHangout(++attemptCount);
       return;
     };

@@ -18,8 +18,8 @@ export interface AccountLeaderHangoutBody {
 export interface AccountLeaderHangoutData {
   success: true,
   resData: {
-    hangoutID: string,
-    hangoutMemberID: number,
+    hangoutId: string,
+    hangoutMemberId: number,
   },
 };
 
@@ -48,7 +48,7 @@ export interface GuestLeaderHangoutBody {
 export interface GuestLeaderHangoutData {
   success: true,
   resData: {
-    hangoutID: string,
+    hangoutId: string,
     authToken: string,
   },
 };

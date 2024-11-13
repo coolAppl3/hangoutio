@@ -1,7 +1,7 @@
 import { dbPool } from "../db/db";
 import { generatePlaceHolders } from "./generatePlaceHolders";
 
-export async function addHangoutLog(hangoutID: string, logDescription: string): Promise<void> {
+export async function addHangoutLog(hangoutId: string, logDescription: string): Promise<void> {
   try {
     await dbPool.execute(
       `INSERT INTO hangout_logs(
@@ -10,7 +10,7 @@ export async function addHangoutLog(hangoutID: string, logDescription: string): 
         log_timestamp
       )
       VALUES(${generatePlaceHolders(3)});`,
-      [hangoutID, logDescription, Date.now()]
+      [hangoutId, logDescription, Date.now()]
     );
 
   } catch (err: any) {

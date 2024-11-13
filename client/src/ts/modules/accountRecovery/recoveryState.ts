@@ -10,7 +10,7 @@ interface RecoveryState {
   recoveryEmailsSent: number,
   recoveryEmailsSentLimit: number,
 
-  recoveryAccountID: number | null,
+  recoveryAccountId: number | null,
   recoveryStartTimestamp: number | null,
   recoveryToken: string | null,
   recoveryEmail: string | null,
@@ -22,7 +22,7 @@ export const recoveryState: RecoveryState = {
   recoveryEmailsSent: 0,
   recoveryEmailsSentLimit: 3,
 
-  recoveryAccountID: null,
+  recoveryAccountId: null,
   recoveryStartTimestamp: null,
   recoveryToken: null,
   recoveryEmail: null,
