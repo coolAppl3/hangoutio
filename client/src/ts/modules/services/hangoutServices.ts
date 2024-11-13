@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
+import { HangoutChat, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutDataTypes";
 
 const hangoutsApiUrl: string = window.location.hostname === 'localhost'
   ? `http://${window.location.hostname}:5000/api/hangouts`
@@ -55,4 +56,29 @@ export interface GuestLeaderHangoutData {
 
 export async function createGuestLeaderHangoutService(requestBody: GuestLeaderHangoutBody): Promise<AxiosResponse<GuestLeaderHangoutData>> {
   return axios.post(`${hangoutsApiUrl}/create/guestLeader`, requestBody);
+};
+
+// --- --- ---
+
+export interface HangoutDashboardData {
+  success: true,
+  resData: {
+    hangoutMemberId: number,
+    isLeader: boolean,
+    decryptedPassword: string | null,
+
+    hangoutDetails: HangoutsDetails,
+    hangoutEvents: HangoutEvent[],
+    hangoutMembers: HangoutMember[],
+    hangoutMemberCountables: HangoutMemberCountables,
+    hangoutChats: HangoutChat[],
+  },
+};
+
+export async function getHangoutDashboardData(authToken: string, hangoutId: string): Promise<AxiosResponse<HangoutDashboardData>> {
+  return axios.get(`${hangoutsApiUrl}/dashboard?hangoutId=${hangoutId}`, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
 };
