@@ -12,6 +12,7 @@ import { getUserId, getUserType } from '../util/userUtils';
 import { addHangoutLog } from '../util/hangoutLogger';
 import { getDateAndTimeSTring } from '../util/globalUtils';
 import { isSqlError } from '../util/isSqlError';
+import { decryptPassword, encryptPassword } from '../util/encryptionUtils';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -119,7 +120,8 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
     const createdOnTimestamp: number = Date.now();
     const hangoutId: string = generateHangoutId(createdOnTimestamp);
-    const hashedPassword: string | null = requestData.hangoutPassword ? await bcrypt.hash(requestData.hangoutPassword, 10) : null;
+
+    const encryptedPassword: string | null = requestData.hangoutPassword ? encryptPassword(requestData.hangoutPassword) : null;
 
     const nextStepTimestamp: number = createdOnTimestamp + availabilityStep;
     const conclusionTimestamp: number = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
@@ -131,7 +133,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       `INSERT INTO hangouts(
         hangout_id,
         hangout_title,
-        hashed_password,
+        encrypted_password,
         member_limit,
         availability_step,
         suggestions_step,
@@ -144,7 +146,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
         is_concluded
       )
       VALUES(${generatePlaceHolders(13)});`,
-      [hangoutId, requestData.hangoutTitle, hashedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
+      [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
     await connection.execute<ResultSetHeader>(
@@ -275,7 +277,8 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
     const createdOnTimestamp: number = Date.now();
     const hangoutId: string = generateHangoutId(createdOnTimestamp);
-    const hashedHangoutPassword: string | null = requestData.hangoutPassword ? await bcrypt.hash(requestData.hangoutPassword, 10) : null;
+
+    const encryptedPassword: string | null = requestData.hangoutPassword ? encryptPassword(requestData.hangoutPassword) : null;
 
     const nextStepTimestamp: number = createdOnTimestamp + availabilityStep;
     const conclusionTimestamp: number = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
@@ -284,7 +287,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
       `INSERT INTO hangouts(
         hangout_id,
         hangout_title,
-        hashed_password,
+        encrypted_password,
         member_limit,
         availability_step,
         suggestions_step,
@@ -297,7 +300,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
         is_concluded
       )
       VALUES(${generatePlaceHolders(13)});`,
-      [hangoutId, requestData.hangoutTitle, hashedHangoutPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
+      [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
     const authToken: string = generateAuthToken('guest');
@@ -449,7 +452,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     };
 
     interface HangoutDetails extends RowDataPacket {
-      hashed_password: string | null,
+      encrypted_password: string | null,
       account_id: number | null,
       guest_id: number | null,
       is_leader: boolean,
@@ -457,7 +460,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
-        hangouts.hashed_password,
+        hangouts.encrypted_password,
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader
@@ -489,23 +492,25 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
       return;
     };
 
-    if (hangoutDetails.hashed_password) {
-      const isIdenticalPassword: boolean = await bcrypt.compare(requestData.newPassword, hangoutDetails.hashed_password);
-      if (isIdenticalPassword) {
-        res.status(409).json({ success: false, message: 'Identical password.' });
-        return;
-      };
+    if (hangoutDetails.encrypted_password && requestData.newPassword === decryptPassword(hangoutDetails.encrypted_password)) {
+      res.status(409).json({ success: false, message: 'Identical password.' });
+      return;
     };
 
-    const newHashedPassword: string = await bcrypt.hash(requestData.newPassword, 10);
+    const newEncryptedPassword: string | null = encryptPassword(requestData.newPassword);
+    if (!newEncryptedPassword) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
         hangouts
       SET
-        hashed_password = ?
+        encrypted_password = ?
       WHERE
         hangout_id = ?;`,
-      [newHashedPassword, requestData.hangoutId]
+      [newEncryptedPassword, requestData.hangoutId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
