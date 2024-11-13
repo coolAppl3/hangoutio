@@ -145,7 +145,7 @@ async function createHangoutsTable(): Promise<void> {
       `CREATE TABLE IF NOT EXISTS hangouts (
         hangout_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
         hangout_title VARCHAR(40) NOT NULL,
-        hashed_password VARCHAR(255),
+        encrypted_password VARCHAR(255),
         member_limit INT NOT NULL CHECK (member_limit BETWEEN 2 AND 20),
         availability_step BIGINT NOT NULL,
         suggestions_step BIGINT NOT NULL,
