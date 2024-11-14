@@ -136,7 +136,7 @@ function displayEmailLimitReachedInfoModal(errMessage: string, requestTimestamp:
   const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(requestTimestamp);
   const infoModalConfig: InfoModalConfig = {
     title: errMessage,
-    description: `Make sure to check your spam and junk folders for the recovery email. \n If you still can't find it, you can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
+    description: `Make sure to check your spam and junk folders for the recovery email.\nIf you still can't find it, you can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
     btnTitle: 'Okay',
   };
 

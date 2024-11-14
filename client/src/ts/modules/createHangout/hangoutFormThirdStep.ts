@@ -558,7 +558,7 @@ function detectSignedInUser(): void {
 
   const confirmModalConfig: ConfirmModalConfig = {
     title: 'Signed in as a guest.',
-    description: `You must sign out of your guest account before creating a new hangout. \n Guest accounts can only be used within the hangout they were created for.`,
+    description: `You must sign out of your guest account before creating a new hangout.\nGuest accounts can only be used within the hangout they were created for.`,
     confirmBtnTitle: 'Sign out',
     cancelBtnTitle: 'Go to homepage',
     extraBtnTitle: null,

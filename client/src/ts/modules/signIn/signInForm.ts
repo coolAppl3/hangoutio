@@ -155,7 +155,7 @@ async function accountSignIn(): Promise<void> {
       if (errReason === 'unverified') {
         const infoModalConfig: InfoModalConfig = {
           title: errMessage,
-          description: `You need to first verify your account before being able to sign in. \n Check your inbox for a verification email.`,
+          description: `You need to first verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
           btnTitle: 'Okay',
         };
 

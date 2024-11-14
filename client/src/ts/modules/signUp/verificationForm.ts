@@ -135,7 +135,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
       if (errReason === 'accountDeleted') {
         const infoModalConfig: InfoModalConfig = {
           title: 'Too many failed verification attempts.',
-          description: 'Your account has been automatically deleted as a result. \n You can create it again by repeating the signup process.',
+          description: 'Your account has been automatically deleted as a result.\nYou can create it again by repeating the signup process.',
           btnTitle: 'Okay',
         };
 
@@ -390,7 +390,7 @@ function detectOngoingVerification(): void {
 
   const confirmModalConfig: ConfirmModalConfig = {
     title: 'Verification request detected.',
-    description: 'There seems to be an ongoing verification request. \n Would you like to proceed with verifying your account?',
+    description: 'There seems to be an ongoing verification request.\nWould you like to proceed with verifying your account?',
     confirmBtnTitle: 'Proceed',
     cancelBtnTitle: 'Remove request',
     extraBtnTitle: null,

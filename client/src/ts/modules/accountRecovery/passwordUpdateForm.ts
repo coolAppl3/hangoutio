@@ -154,7 +154,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
         const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.requestTimestamp);
         const infoModalConfig: InfoModalConfig = {
           title: 'Recovery request suspended.',
-          description: `Your recovery request has been suspended due to too many failed attempts. \n You can start the process again in ${minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`}.`,
+          description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`}.`,
           btnTitle: 'Okay',
         };
 
