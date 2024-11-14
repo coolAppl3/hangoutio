@@ -1876,7 +1876,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
   };
 });
 
-hangoutsRouter.get('/dashboard', async (req: Request, res: Response) => {
+hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => {
   const authHeader: string | undefined = req.headers['authorization'];
   if (!authHeader) {
     res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
