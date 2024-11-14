@@ -740,12 +740,11 @@
     .btn-container {
 
       button {
-        @apply mb-1 last:mb-0;
 
         &#confirm-modal {
 
           &-confirm-btn {
-            @apply btn w-full bg-cta dark:bg-cta-dark text-title;
+            @apply btn w-full bg-cta dark:bg-cta-dark text-title mb-1;
 
             &.danger {
               @apply btn w-full bg-danger text-title-dark;
@@ -753,13 +752,12 @@
 
           }
 
+          &-cancel-btn {
+            @apply btn w-full border-title dark:border-title-dark bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark mb-3;
+          }
 
           &-other-btn {
             @apply btn w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
-          }
-
-          &-cancel-btn {
-            @apply btn w-full border-title dark:border-title-dark bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark;
           }
         }
       }
