@@ -1914,16 +1914,11 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
     };
 
     const hangoutDetails: HangoutDetails = hangoutRows[0];
-    const isPasswordProtected: boolean = Boolean(hangoutDetails.encrypted_password);
 
-    res.json({
-      success: true,
-      resData: {
-        isPasswordProtected,
-        memberLimit: hangoutDetails.member_limit,
-        joinedMembers: hangoutDetails.joined_members,
-      },
-    });
+    const isPasswordProtected: boolean = Boolean(hangoutDetails.encrypted_password);
+    const isFull: boolean = hangoutDetails.joined_members === hangoutDetails.member_limit;
+
+    res.json({ success: true, resData: { isPasswordProtected, isFull } });
 
   } catch (err: unknown) {
     console.log(err);

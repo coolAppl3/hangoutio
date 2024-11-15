@@ -64,8 +64,7 @@ export interface HangoutExistsData {
   success: true,
   resData: {
     isPasswordProtected: boolean,
-    member_limit: number,
-    joined_members: number,
+    isFull: boolean,
   },
 };
 
