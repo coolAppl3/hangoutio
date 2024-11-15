@@ -1876,6 +1876,61 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
   };
 });
 
+hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response) => {
+  const hangoutId = req.query.hangoutId;
+
+  if (typeof hangoutId !== 'string') {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+    return;
+  };
+
+  if (!hangoutValidation.isValidHangoutId(hangoutId)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+    return;
+  };
+
+  try {
+    interface HangoutDetails extends RowDataPacket {
+      encrypted_password: string | null,
+      member_limit: number,
+      joined_members: number,
+    };
+
+    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
+      `SELECT
+        encrypted_password,
+        member_limit,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS joined_members
+      FROM
+        hangouts
+      WHERE
+        hangout_id = :hangoutId;`,
+      { hangoutId }
+    );
+
+    if (hangoutRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Hangout not found.' });
+      return;
+    };
+
+    const hangoutDetails: HangoutDetails = hangoutRows[0];
+    const isPasswordProtected: boolean = Boolean(hangoutDetails.encrypted_password);
+
+    res.json({
+      success: true,
+      resData: {
+        isPasswordProtected,
+        memberLimit: hangoutDetails.member_limit,
+        joinedMembers: hangoutDetails.joined_members,
+      },
+    });
+
+  } catch (err: unknown) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
 hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => {
   const authHeader: string | undefined = req.headers['authorization'];
   if (!authHeader) {
