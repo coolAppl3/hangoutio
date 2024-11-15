@@ -1,4 +1,4 @@
-import { isValidAuthToken, validateEmail, validatePassword, validateUsername } from '../global/validation';
+import { isValidAuthToken, isValidHangoutId, validateEmail, validatePassword, validateUsername } from '../global/validation';
 import revealPassword from '../global/revealPassword';
 import ErrorSpan from '../global/ErrorSpan';
 import Cookies from '../global/Cookies';
@@ -9,6 +9,7 @@ import axios, { AxiosError, AxiosResponse } from '../../../../node_modules/axios
 import { GuestSignInBody, GuestSignInData, guestSignInService } from '../services/guestServices';
 import { signOut } from '../global/signOut';
 import { InfoModal, InfoModalConfig } from '../global/InfoModal';
+import { ConfirmModal } from '../global/ConfirmModal';
 
 interface SignInFormState {
   isGuestUser: boolean,
@@ -97,6 +98,15 @@ async function accountSignIn(): Promise<void> {
     };
 
     popup('Signed in successfully.', 'success');
+
+    const pendingHangoutId: string | null = getPendingSignInHangoutId();
+    if (pendingHangoutId) {
+      LoadingModal.remove();
+      offerHangoutRedirect(pendingHangoutId);
+
+      return;
+    };
+
     setTimeout(() => window.location.replace('account.html'), 1000);
 
   } catch (err: unknown) {
@@ -402,4 +412,45 @@ function displayAccountLockedModal(): void {
   };
 
   InfoModal.display(infoModalConfig, { simple: true });
+};
+
+function getPendingSignInHangoutId(): string | null {
+  const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignInHangoutId');
+
+  if (!pendingHangoutId) {
+    return null;
+  };
+
+  if (!isValidHangoutId(pendingHangoutId)) {
+    return null;
+  };
+
+  return pendingHangoutId;
+};
+
+function offerHangoutRedirect(hangoutId: string): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Hangout ID found.',
+    description: `You've attempted to join a hangout earlier.\nWould you like to try again now that you're signed in?`,
+    confirmBtnTitle: 'Join hangout',
+    cancelBtnTitle: 'Go to my account',
+    extraBtnTitle: null,
+    isDangerousAction: false,
+  });
+
+  confirmModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      window.location.href = `hangout.html?hangoutId=${hangoutId}`;
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      sessionStorage.removeItem('pendingSignInHangoutId');
+      window.location.href = 'account.html';
+    };
+  });
 };
