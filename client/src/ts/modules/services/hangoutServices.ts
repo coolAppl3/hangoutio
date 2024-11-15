@@ -60,6 +60,19 @@ export async function createGuestLeaderHangoutService(requestBody: GuestLeaderHa
 
 // --- --- ---
 
+export interface HangoutExistsData {
+  success: true,
+  resData: {
+    isPasswordProtected: boolean,
+    member_limit: number,
+    joined_members: number,
+  },
+};
+
+export async function getHangoutExistsService(hangoutId: string): Promise<AxiosResponse<HangoutExistsData>> {
+  return axios.get(`${hangoutsApiUrl}/details/hangoutExists?hangoutId=${hangoutId}`);
+};
+
 export interface HangoutDashboardData {
   success: true,
   resData: {
@@ -75,8 +88,8 @@ export interface HangoutDashboardData {
   },
 };
 
-export async function getHangoutDashboardData(authToken: string, hangoutId: string): Promise<AxiosResponse<HangoutDashboardData>> {
-  return axios.get(`${hangoutsApiUrl}/dashboard?hangoutId=${hangoutId}`, {
+export async function getHangoutDashboardDataService(authToken: string, hangoutId: string): Promise<AxiosResponse<HangoutDashboardData>> {
+  return axios.get(`${hangoutsApiUrl}/details/dashboard?hangoutId=${hangoutId}`, {
     headers: {
       Authorization: `Bearer ${authToken}`,
     },
