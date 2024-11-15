@@ -38,7 +38,7 @@ async function init(): Promise<void> {
 
 function loadEventListeners(): void {
   verificationFormElement?.addEventListener('submit', verifyAccount);
-  resendVerificationCodeBtn?.addEventListener('slick', resendVerificationEmail);
+  resendVerificationCodeBtn?.addEventListener('click', resendVerificationEmail);
 };
 
 async function verifyAccount(e: SubmitEvent): Promise<void> {
