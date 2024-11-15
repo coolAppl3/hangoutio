@@ -445,7 +445,7 @@ function invalidVerificationLinkPresent(): boolean {
 };
 
 function getPendingSignUpHangoutId(): string | null {
-  const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignUpHangoutId');
+  const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignInHangoutId');
 
   if (!pendingHangoutId) {
     return null;
@@ -461,7 +461,7 @@ function getPendingSignUpHangoutId(): string | null {
 function offerHangoutRedirect(hangoutId: string): void {
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Hangout ID found.',
-    description: `You've attempted to join a hangout earlier.\nWould you like to try again now that you've signed up?`,
+    description: `You've attempted to join a hangout earlier.\nWould you like to try again now that you're signed in?`,
     confirmBtnTitle: 'Join hangout',
     cancelBtnTitle: 'Go to my account',
     extraBtnTitle: null,
@@ -479,7 +479,7 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      sessionStorage.removeItem('pendingSignUpHangoutId');
+      sessionStorage.removeItem('pendingSignInHangoutId');
       window.location.href = 'account.html';
     };
   });
