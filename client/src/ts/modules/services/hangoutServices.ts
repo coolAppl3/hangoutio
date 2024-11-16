@@ -74,7 +74,7 @@ export async function getHangoutExistsService(hangoutId: string): Promise<AxiosR
 
 // --- --- ---
 
-interface JoinHangoutAsAccountBody {
+export interface JoinHangoutAsAccountBody {
   hangoutId: string,
   hangoutPassword: string | null,
 };
@@ -89,7 +89,7 @@ export async function joinHangoutAsAccountService(authToken: string, requestBody
 
 // --- --- ---
 
-interface JoinHangoutAsGuestBody {
+export interface JoinHangoutAsGuestBody {
   hangoutId: string,
   hangoutPassword: string | null,
   username: string,
@@ -97,8 +97,11 @@ interface JoinHangoutAsGuestBody {
   displayName: string,
 };
 
-interface JoinHangoutAsGuestData {
-  authToken: string,
+export interface JoinHangoutAsGuestData {
+  success: true,
+  resData: {
+    authToken: string,
+  },
 };
 
 export async function joinHangoutAsGuestService(requestBody: JoinHangoutAsGuestBody): Promise<AxiosResponse<JoinHangoutAsGuestData>> {
