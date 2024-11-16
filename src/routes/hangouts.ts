@@ -1969,13 +1969,19 @@ hangoutsRouter.post('details/members/join/account', async (req: Request, res: Re
     return;
   };
 
+  let connection;
+
   try {
+    connection = await dbPool.getConnection();
+    connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+    connection.beginTransaction();
+
     interface UserDetails extends RowDataPacket {
       auth_token: string,
       display_name: string,
     };
 
-    const [userRows] = await dbPool.execute<UserDetails[]>(
+    const [userRows] = await connection.execute<UserDetails[]>(
       `SELECT
         auth_token,
         display_name
@@ -1987,14 +1993,18 @@ hangoutsRouter.post('details/members/join/account', async (req: Request, res: Re
     );
 
     if (userRows.length === 0) {
+      await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
       return;
     };
 
     const userDetails: UserDetails = userRows[0];
 
     if (authToken !== userDetails.auth_token) {
+      await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
       return;
     };
 
@@ -2005,7 +2015,7 @@ hangoutsRouter.post('details/members/join/account', async (req: Request, res: Re
       already_joined: boolean,
     };
 
-    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
+    const [hangoutRows] = await connection.execute<HangoutDetails[]>(
       `SELECT
         encrypted_password,
         member_limit,
@@ -2019,14 +2029,18 @@ hangoutsRouter.post('details/members/join/account', async (req: Request, res: Re
     );
 
     if (hangoutRows.length === 0) {
+      await connection.rollback();
       res.status(404).json({ success: false, message: 'Hangout not found.' });
+
       return;
     };
 
     const hangoutDetails: HangoutDetails = hangoutRows[0];
 
     if (hangoutDetails.already_joined) {
+      await connection.rollback();
       res.status(403).json({ success: false, message: 'Already a member of this hangout.' });
+
       return;
     };
 
@@ -2034,18 +2048,22 @@ hangoutsRouter.post('details/members/join/account', async (req: Request, res: Re
       const isCorrectHangoutPassword: boolean = requestData.hangoutPassword === decryptPassword(hangoutDetails.encrypted_password);
 
       if (!isCorrectHangoutPassword) {
+        await connection.rollback();
         res.status(401).json({ success: false, message: 'Incorrect hangout password.', reason: 'hangoutPassword' });
+
         return;
       };
     };
 
     const isFull: boolean = hangoutDetails.member_count === hangoutDetails.member_limit;
     if (isFull) {
+      await connection.rollback();
       res.status(409).json({ success: false, message: 'Hangout full.' });
+
       return;
     };
 
-    await dbPool.execute<ResultSetHeader>(
+    await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -2058,6 +2076,7 @@ hangoutsRouter.post('details/members/join/account', async (req: Request, res: Re
       [requestData.hangoutId, userType, userId, null, userDetails.display_name, false]
     );
 
+    await connection.commit();
     res.json({ success: true, resData: {} });
 
   } catch (err: unknown) {
@@ -2121,7 +2140,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
       member_count: number,
     };
 
-    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
+    const [hangoutRows] = await connection.execute<HangoutDetails[]>(
       `SELECT
         encrypted_password,
         member_limit,
@@ -2182,7 +2201,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
     const authToken: string = generateAuthToken('guest');
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
 
-    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO guests{
         auth_token,
         username,
@@ -2196,7 +2215,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
 
     const guestId: number = resultSetHeader.insertId;
 
-    await dbPool.execute<ResultSetHeader>(
+    await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
