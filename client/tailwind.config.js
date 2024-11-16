@@ -132,6 +132,10 @@ module.exports = {
         'span-16': 'span 16 / span 16',
         'span-24': 'span 24 / span 24',
       },
+
+      animation: {
+        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
     },
 
     screens: {
