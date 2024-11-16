@@ -1926,7 +1926,7 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
   };
 });
 
-hangoutsRouter.post('details/members/join/account', async (req: Request, res: Response) => {
+hangoutsRouter.post('/details/members/join/account', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutId: string,
     hangoutPassword: string | null,
@@ -2082,10 +2082,20 @@ hangoutsRouter.post('details/members/join/account', async (req: Request, res: Re
   } catch (err: unknown) {
     console.log(err);
 
+    if (connection) {
+      await connection.rollback();
+    };
+
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+
+  } finally {
+    if (connection) {
+      connection.release();
+    };
   };
 });
 
-hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Response) => {
+hangoutsRouter.post('/details/members/join/guest', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutId: string,
     hangoutPassword: string | null,
@@ -2122,6 +2132,10 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
     return;
   };
 
+  if (requestData.username === requestData.password) {
+    res.status(400).json({ success: false, message: `Username and password can't be identical.`, reason: 'usernamePasswordIdentical' });
+  };
+
   if (!isValidDisplayName(requestData.displayName)) {
     res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'displayName' });
     return;
@@ -2144,7 +2158,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
       `SELECT
         encrypted_password,
         member_limit,
-        (SELECT COUNT(*) FROM hangout_member WHERE hangout_id = :hangoutId) AS member_count
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count
       FROM
         hangouts
       WHERE
@@ -2193,7 +2207,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
 
     if (guestRows.length > 0) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Username already taken.', reason: 'guestUsernameTaken' });
+      res.status(409).json({ success: false, message: 'Username already taken.', reason: 'usernameTaken' });
 
       return;
     };
@@ -2202,18 +2216,29 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO guests{
+      `INSERT INTO guests(
         auth_token,
         username,
         hashed_password,
         display_name,
         hangout_id
-      }
+      )
       VALUES(${generatePlaceHolders(5)});`,
       [authToken, requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]
     );
 
     const guestId: number = resultSetHeader.insertId;
+    const idMarkedAuthToken: string = `${authToken}_${guestId}`;
+
+    await connection.execute<ResultSetHeader>(
+      `UPDATE
+        guests
+      SET
+        auth_token = ?
+      WHERE
+        guest_id = ?;`,
+      [idMarkedAuthToken, guestId]
+    );
 
     await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members(
@@ -2229,7 +2254,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
     );
 
     await connection.commit();
-    res.json({ success: true, resData: { authToken } });
+    res.json({ success: true, resData: { authToken: idMarkedAuthToken } });
 
   } catch (err: unknown) {
     console.log(err);
@@ -2407,6 +2432,6 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
 
   } catch (err: unknown) {
     console.log(err);
-    res.status(400).json({});
+    res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
