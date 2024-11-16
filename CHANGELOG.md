@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.3.2] (2024-11-16)
+
+### Features
+
+- Added `hangoutDataTypes.ts`.
+- Added `getHangoutDashboardData()` in `HangoutServices.ts`.
+- Added a loading skeleton for the dashboard in `hangout.html`.
+- Updated GET `hangouts/dashboard` to GET `hangouts/details/dashboard`.
+- Added pending hangout ID detection for when a user signs in or signs up.
+  - This is detected when a user attempts to join a hangout without being signed in.
+  - This won't apply to guest users.
+- Added GET `hangouts/details/hangoutExists`.
+- Added `getHangoutExistsService()` in `hangoutServices.ts`.
+- Added POST `hangouts/details/members/join/account`.
+- Added POST `hangouts/details/members/join/guest`.
+- Added `joinHangoutAsAccountService()` and `joinHangoutAsGuestService()` in `hangoutServices.ts`.
+- Added `initHangoutGuestSignUp`.
+- Users can now create a guest account to join the hangout if they're not signed in already.
+- Increased the margin between the two main buttons and the third button in `ConfirmModal.ts`.
+- Added a custom pulsing animation to `tailwind.config.js`.
+
+
+### Code Refactoring
+
+- Reworked `ConfirmModal.ts` and `InfoModal.ts` to look for `\n` without whitespace on both sides for multiline descriptions.
+- Increased the margin between the cancel and other buttons in modals created by `ConfirmModal.ts`.
+
+
+### Bug Fixes
+
+- Fixed a typo where the `resendVerificationCodeBtn` was listening to a "slick" event, instead of a `click` event.
+
+
 ## [0.3.1] (2024-11-13)
 
 ### Features
