@@ -2175,7 +2175,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
       return;
     };
 
-    const newAuthToken: string = generateAuthToken('guest');
+    const authToken: string = generateAuthToken('guest');
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
 
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
@@ -2187,7 +2187,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
         hangout_id
       }
       VALUES(${generatePlaceHolders(5)});`,
-      [newAuthToken, requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]
+      [authToken, requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]
     );
 
     const guestId: number = resultSetHeader.insertId;
@@ -2205,7 +2205,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
       [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]
     );
 
-    res.json({ success: true, resData: { newAuthToken } });
+    res.json({ success: true, resData: { authToken } });
 
   } catch (err: unknown) {
     console.log(err);
