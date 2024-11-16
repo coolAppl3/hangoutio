@@ -72,6 +72,41 @@ export async function getHangoutExistsService(hangoutId: string): Promise<AxiosR
   return axios.get(`${hangoutsApiUrl}/details/hangoutExists?hangoutId=${hangoutId}`);
 };
 
+// --- --- ---
+
+interface AccountJoinHangoutBody {
+  hangoutId: string,
+  hangoutPassword: string | null,
+};
+
+export async function accountJoinHangoutService(authToken: string, requestBody: AccountJoinHangoutBody): Promise<AxiosResponse> {
+  return axios.post(`${hangoutsApiUrl}/details/members/join/account`, requestBody, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+};
+
+// --- --- ---
+
+interface GuestJoinHangoutBody {
+  hangoutId: string,
+  hangoutPassword: string | null,
+  username: string,
+  password: string,
+  displayName: string,
+};
+
+interface GuestJoinHangoutData {
+  authToken: string,
+};
+
+export async function guestJoinHangoutService(requestBody: GuestJoinHangoutBody): Promise<AxiosResponse<GuestJoinHangoutData>> {
+  return axios.post(`${hangoutsApiUrl}/details/members/join/guest`, requestBody);
+};
+
+// --- --- ---
+
 export interface HangoutDashboardData {
   success: true,
   resData: {
