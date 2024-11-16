@@ -5,7 +5,7 @@ import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal, InfoModalConfig } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { isValidUniqueCode, isValidQueryString, isValidTimestamp, validateCode } from "../global/validation";
+import { isValidUniqueCode, isValidQueryString, isValidTimestamp, validateCode, isValidHangoutId } from "../global/validation";
 import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
@@ -38,7 +38,7 @@ async function init(): Promise<void> {
 
 function loadEventListeners(): void {
   verificationFormElement?.addEventListener('submit', verifyAccount);
-  resendVerificationCodeBtn?.addEventListener('slick', resendVerificationEmail);
+  resendVerificationCodeBtn?.addEventListener('click', resendVerificationEmail);
 };
 
 async function verifyAccount(e: SubmitEvent): Promise<void> {
@@ -89,6 +89,15 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     clearVerificationCookies();
 
     popup('Account successfully verified.', 'success');
+
+    const pendingHangoutId: string | null = getPendingSignUpHangoutId();
+    if (pendingHangoutId) {
+      LoadingModal.remove();
+      offerHangoutRedirect(pendingHangoutId);
+
+      return;
+    };
+
     setTimeout(() => window.location.replace('account.html'), 1000);
 
   } catch (err: unknown) {
@@ -135,7 +144,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
       if (errReason === 'accountDeleted') {
         const infoModalConfig: InfoModalConfig = {
           title: 'Too many failed verification attempts.',
-          description: 'Your account has been automatically deleted as a result. \n You can create it again by repeating the signup process.',
+          description: 'Your account has been automatically deleted as a result.\nYou can create it again by repeating the signup process.',
           btnTitle: 'Okay',
         };
 
@@ -390,7 +399,7 @@ function detectOngoingVerification(): void {
 
   const confirmModalConfig: ConfirmModalConfig = {
     title: 'Verification request detected.',
-    description: 'There seems to be an ongoing verification request. \n Would you like to proceed with verifying your account?',
+    description: 'There seems to be an ongoing verification request.\nWould you like to proceed with verifying your account?',
     confirmBtnTitle: 'Proceed',
     cancelBtnTitle: 'Remove request',
     extraBtnTitle: null,
@@ -433,4 +442,45 @@ function invalidVerificationLinkPresent(): boolean {
   };
 
   return false;
+};
+
+function getPendingSignUpHangoutId(): string | null {
+  const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignInHangoutId');
+
+  if (!pendingHangoutId) {
+    return null;
+  };
+
+  if (!isValidHangoutId(pendingHangoutId)) {
+    return null;
+  };
+
+  return pendingHangoutId;
+};
+
+function offerHangoutRedirect(hangoutId: string): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Hangout ID found.',
+    description: `You've attempted to join a hangout earlier.\nWould you like to try again now that you're signed in?`,
+    confirmBtnTitle: 'Join hangout',
+    cancelBtnTitle: 'Go to my account',
+    extraBtnTitle: null,
+    isDangerousAction: false,
+  });
+
+  confirmModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      window.location.href = `hangout.html?hangoutId=${hangoutId}`;
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      sessionStorage.removeItem('pendingSignInHangoutId');
+      window.location.href = 'account.html';
+    };
+  });
 };

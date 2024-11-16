@@ -740,12 +740,11 @@
     .btn-container {
 
       button {
-        @apply mb-1 last:mb-0;
 
         &#confirm-modal {
 
           &-confirm-btn {
-            @apply btn w-full bg-cta dark:bg-cta-dark text-title;
+            @apply btn w-full bg-cta dark:bg-cta-dark text-title mb-1;
 
             &.danger {
               @apply btn w-full bg-danger text-title-dark;
@@ -753,13 +752,12 @@
 
           }
 
-
-          &-other-btn {
-            @apply btn w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
-          }
-
           &-cancel-btn {
             @apply btn w-full border-title dark:border-title-dark bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark;
+          }
+
+          &-other-btn {
+            @apply btn w-full bg-description dark:bg-description-dark text-title-dark dark:text-title mt-3;
           }
         }
       }
@@ -1375,6 +1373,128 @@
 
         span {
           @apply text-description dark:text-description-dark;
+        }
+      }
+    }
+  }
+}
+
+// hangout loading skeleton --- ---
+#hangout-loading-skeleton {
+  @apply py-3;
+
+  .hangout-skeleton {
+    &-nav {
+      @apply bg-secondary dark:bg-secondary-dark h-[4.8rem] w-full mb-2 rounded-sm flex justify-end items-center shadow-simple md:hidden;
+
+      div {
+        @apply h-full w-full relative after:absolute after:top-0 after:left-0 after:right-0 after:bottom-0 after:m-auto after:h-[1.6rem] after:w-[70%] after:bg-title/50 after:dark:bg-title-dark/50 after:rounded-[2rem] after:animate-pulse-fast;
+      }
+    }
+
+    &-dashboard {
+      @apply w-full flex justify-center gap-2;
+
+      .hangout-skeleton-content {
+        @apply h-full w-full gap-2;
+
+        &-main {
+          @apply bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple mb-2 p-2;
+
+          &>.title {
+            @apply w-[40%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-3;
+          }
+
+          .summary {
+            @apply grid grid-cols-3 md:grid-cols-2 xs:grid-cols-1 gap-2 mb-3;
+
+            &-item {
+
+              div {
+                @apply h-[1.6rem] w-[70%] first:w-[40%] first:mb-1 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast;
+              }
+            }
+          }
+
+          .h-line {
+            @apply mb-3;
+          }
+
+          .description {
+
+            .title {
+              @apply w-[60%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-2;
+            }
+
+
+            .desc {
+
+              &-1 {
+                @apply w-[90%] h-[1.6rem] bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-1;
+              }
+
+              &-2 {
+                @apply w-[30%] h-[1.6rem] bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-1;
+              }
+            }
+          }
+        }
+
+        &-secondary {
+          @apply bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple p-2;
+
+          &>.title {
+            @apply w-[20%] md:w-[40%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-2;
+          }
+
+          .secondary-message {
+            @apply bg-primary dark:bg-primary-dark p-2 rounded-sm mb-1;
+
+            &.different {
+              label {
+                @apply w-[30%];
+              }
+
+              .content {
+                div {
+                  @apply last:w-[60%];
+                }
+              }
+            }
+
+            .label {
+              @apply w-[20%] h-1 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-1;
+            }
+
+            .content {
+              div {
+                @apply w-full last:w-[35%] h-1 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-[6px];
+              }
+            }
+          }
+        }
+      }
+
+      .hangout-skeleton-members {
+        @apply bg-secondary dark:bg-secondary-dark rounded-sm min-h-full shadow-simple w-full max-w-[24%] p-2 xl:hidden;
+
+        .header {
+
+          .title {
+            @apply w-[50%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-1;
+          }
+
+          .desc {
+            @apply w-[70%] h-[1.4rem] bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-2;
+          }
+        }
+
+        .h-line {
+          @apply mb-1;
+        }
+
+        .sk-member {
+          @apply h-3 w-full bg-title/50 dark:bg-title-dark/50 animate-pulse-fast mb-1 last:mb-0 rounded-sm;
         }
       }
     }

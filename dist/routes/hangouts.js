@@ -1477,7 +1477,312 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
     }
     ;
 });
-exports.hangoutsRouter.get('/dashboard', async (req, res) => {
+exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
+    const hangoutId = req.query.hangoutId;
+    if (typeof hangoutId !== 'string') {
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+        return;
+    }
+    ;
+    if (!hangoutValidation.isValidHangoutId(hangoutId)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+        return;
+    }
+    ;
+    try {
+        ;
+        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        encrypted_password,
+        member_limit,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count
+      FROM
+        hangouts
+      WHERE
+        hangout_id = :hangoutId;`, { hangoutId });
+        if (hangoutRows.length === 0) {
+            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            return;
+        }
+        ;
+        const hangoutDetails = hangoutRows[0];
+        const isPasswordProtected = Boolean(hangoutDetails.encrypted_password);
+        const isFull = hangoutDetails.member_count === hangoutDetails.member_limit;
+        res.json({ success: true, resData: { isPasswordProtected, isFull } });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    ;
+});
+exports.hangoutsRouter.post('/details/members/join/account', async (req, res) => {
+    ;
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const authToken = authHeader.substring(7);
+    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
+        res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+        return;
+    }
+    ;
+    const userId = (0, userUtils_1.getUserId)(authToken);
+    const requestData = req.body;
+    const expectedKeys = ['hangoutId', 'hangoutPassword'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!hangoutValidation.isValidHangoutId(requestData.hangoutId)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutID' });
+        return;
+    }
+    ;
+    if (requestData.hangoutPassword && !(0, userValidation_1.isValidNewPassword)(requestData.hangoutPassword)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout password', reason: 'hangoutPassword' });
+        return;
+    }
+    ;
+    const userType = (0, userUtils_1.getUserType)(authToken);
+    if (userType === 'guest') {
+        res.status(400).json({ success: false, message: `Guest accounts can't join more than one hangout.`, reason: 'guestAccount' });
+        return;
+    }
+    ;
+    let connection;
+    try {
+        connection = await db_1.dbPool.getConnection();
+        connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+        connection.beginTransaction();
+        ;
+        const [userRows] = await connection.execute(`SELECT
+        auth_token,
+        display_name
+      FROM
+        accounts
+      WHERE
+        account_id = ?;`, [userId]);
+        if (userRows.length === 0) {
+            await connection.rollback();
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            return;
+        }
+        ;
+        const userDetails = userRows[0];
+        if (authToken !== userDetails.auth_token) {
+            await connection.rollback();
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            return;
+        }
+        ;
+        ;
+        const [hangoutRows] = await connection.execute(`SELECT
+        encrypted_password,
+        member_limit,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId AND account_id = :userId) AS already_joined
+      FROM
+        hangouts
+      WHERE
+        hangout_id = :hangoutId;`, { hangoutId: requestData.hangoutId, userId });
+        if (hangoutRows.length === 0) {
+            await connection.rollback();
+            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            return;
+        }
+        ;
+        const hangoutDetails = hangoutRows[0];
+        if (hangoutDetails.already_joined) {
+            await connection.rollback();
+            res.status(403).json({ success: false, message: 'Already a member of this hangout.' });
+            return;
+        }
+        ;
+        if (hangoutDetails.encrypted_password) {
+            const isCorrectHangoutPassword = requestData.hangoutPassword === (0, encryptionUtils_1.decryptPassword)(hangoutDetails.encrypted_password);
+            if (!isCorrectHangoutPassword) {
+                await connection.rollback();
+                res.status(401).json({ success: false, message: 'Incorrect hangout password.', reason: 'hangoutPassword' });
+                return;
+            }
+            ;
+        }
+        ;
+        const isFull = hangoutDetails.member_count === hangoutDetails.member_limit;
+        if (isFull) {
+            await connection.rollback();
+            res.status(409).json({ success: false, message: 'Hangout full.' });
+            return;
+        }
+        ;
+        await connection.execute(`INSERT INTO hangout_members(
+        hangout_id,
+        user_type,
+        account_id,
+        guest_id,
+        display_name,
+        is_leader
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, userType, userId, null, userDetails.display_name, false]);
+        await connection.commit();
+        res.json({ success: true, resData: {} });
+    }
+    catch (err) {
+        console.log(err);
+        if (connection) {
+            await connection.rollback();
+        }
+        ;
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    finally {
+        if (connection) {
+            connection.release();
+        }
+        ;
+    }
+    ;
+});
+exports.hangoutsRouter.post('/details/members/join/guest', async (req, res) => {
+    ;
+    const requestData = req.body;
+    const expectedKeys = ['hangoutId', 'hangoutPassword', 'username', 'password', 'displayName'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!hangoutValidation.isValidHangoutId(requestData.hangoutId)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
+        return;
+    }
+    ;
+    if (requestData.hangoutPassword && !(0, userValidation_1.isValidNewPassword)(requestData.hangoutPassword)) {
+        res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
+        return;
+    }
+    ;
+    if (!(0, userValidation_1.isValidUsername)(requestData.username)) {
+        res.status(400).json({ success: false, message: 'Invalid username.', reason: 'username' });
+        return;
+    }
+    ;
+    if (!(0, userValidation_1.isValidNewPassword)(requestData.password)) {
+        res.status(400).json({ success: false, message: 'Invalid user password.', reason: 'userPassword' });
+        return;
+    }
+    ;
+    if (requestData.username === requestData.password) {
+        res.status(400).json({ success: false, message: `Username and password can't be identical.`, reason: 'usernamePasswordIdentical' });
+    }
+    ;
+    if (!(0, userValidation_1.isValidDisplayName)(requestData.displayName)) {
+        res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'displayName' });
+        return;
+    }
+    ;
+    let connection;
+    try {
+        connection = await db_1.dbPool.getConnection();
+        await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
+        await connection.beginTransaction();
+        ;
+        const [hangoutRows] = await connection.execute(`SELECT
+        encrypted_password,
+        member_limit,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count
+      FROM
+        hangouts
+      WHERE
+        hangout_id = :hangoutId;`, { hangoutId: requestData.hangoutId });
+        if (hangoutRows.length === 0) {
+            await connection.rollback();
+            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            return;
+        }
+        ;
+        const hangoutDetails = hangoutRows[0];
+        if (hangoutDetails.encrypted_password) {
+            const isCorrectHangoutPassword = requestData.hangoutPassword === (0, encryptionUtils_1.decryptPassword)(hangoutDetails.encrypted_password);
+            if (!isCorrectHangoutPassword) {
+                await connection.rollback();
+                res.status(401).json({ success: false, message: 'Incorrect hangout password.', reason: 'hangoutPassword' });
+                return;
+            }
+            ;
+        }
+        ;
+        const isFull = hangoutDetails.member_count === hangoutDetails.member_limit;
+        if (isFull) {
+            await connection.rollback();
+            res.status(409).json({ success: false, message: 'Hangout full.', reason: 'hangoutFull' });
+            return;
+        }
+        ;
+        const [guestRows] = await connection.execute(`SELECT
+        1
+      FROM
+        guests
+      WHERE
+        username = ?
+      LIMIT 1;`, [requestData.username]);
+        if (guestRows.length > 0) {
+            await connection.rollback();
+            res.status(409).json({ success: false, message: 'Username already taken.', reason: 'usernameTaken' });
+            return;
+        }
+        ;
+        const authToken = (0, tokenGenerator_1.generateAuthToken)('guest');
+        const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
+        const [resultSetHeader] = await connection.execute(`INSERT INTO guests(
+        auth_token,
+        username,
+        hashed_password,
+        display_name,
+        hangout_id
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [authToken, requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]);
+        const guestId = resultSetHeader.insertId;
+        const idMarkedAuthToken = `${authToken}_${guestId}`;
+        await connection.execute(`UPDATE
+        guests
+      SET
+        auth_token = ?
+      WHERE
+        guest_id = ?;`, [idMarkedAuthToken, guestId]);
+        await connection.execute(`INSERT INTO hangout_members(
+        hangout_id,
+        user_type,
+        account_id,
+        guest_id,
+        display_name,
+        is_leader
+      )
+      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]);
+        await connection.commit();
+        res.json({ success: true, resData: { authToken: idMarkedAuthToken } });
+    }
+    catch (err) {
+        console.log(err);
+        if (connection) {
+            await connection.rollback();
+        }
+        ;
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    finally {
+        if (connection) {
+            connection.release();
+        }
+        ;
+    }
+    ;
+});
+exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
         res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
@@ -1612,7 +1917,7 @@ exports.hangoutsRouter.get('/dashboard', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        res.status(400).json({});
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
 });

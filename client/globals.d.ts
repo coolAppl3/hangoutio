@@ -3,6 +3,6 @@ interface AxiosErrorResponseData {
   message: string,
   reason?: string,
   resData?: {
-    [key: string]: unknown
+    [key: string]: unknown,
   },
 }

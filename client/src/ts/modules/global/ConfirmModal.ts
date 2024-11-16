@@ -46,7 +46,7 @@ export class ConfirmModal {
     if (config.description) {
       const descriptionContainer: HTMLDivElement = this.createDescriptionContainer();
 
-      for (const descriptionLine of config.description.split(' \n ')) {
+      for (const descriptionLine of config.description.split('\n')) {
         descriptionContainer.appendChild(this.createModalDescription(descriptionLine));
       };
 

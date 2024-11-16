@@ -145,7 +145,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     const { hangoutId } = accountLeaderHangoutData.data.resData;
 
     popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.href = `hangout.html?id=${hangoutId}`, 1000);
+    setTimeout(() => window.location.href = `hangout.html?hangoutId=${hangoutId}`, 1000);
 
   } catch (err: unknown) {
     console.log(err)
@@ -241,7 +241,7 @@ async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Pro
     const { hangoutId } = accountLeaderHangoutData.data.resData;
 
     popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.href = `hangout.html?id=${hangoutId}`, 1000);
+    setTimeout(() => window.location.href = `hangout.html?hangoutId=${hangoutId}`, 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -341,7 +341,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     };
 
     popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutId}`), 1000);
+    setTimeout(() => window.location.replace(`hangout.html?hangoutId=${hangoutId}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -558,7 +558,7 @@ function detectSignedInUser(): void {
 
   const confirmModalConfig: ConfirmModalConfig = {
     title: 'Signed in as a guest.',
-    description: `You must sign out of your guest account before creating a new hangout. \n Guest accounts can only be used within the hangout they were created for.`,
+    description: `You must sign out of your guest account before creating a new hangout.\nGuest accounts can only be used within the hangout they were created for.`,
     confirmBtnTitle: 'Sign out',
     cancelBtnTitle: 'Go to homepage',
     extraBtnTitle: null,
