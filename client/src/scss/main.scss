@@ -753,11 +753,11 @@
           }
 
           &-cancel-btn {
-            @apply btn w-full border-title dark:border-title-dark bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark mb-3;
+            @apply btn w-full border-title dark:border-title-dark bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark;
           }
 
           &-other-btn {
-            @apply btn w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
+            @apply btn w-full bg-description dark:bg-description-dark text-title-dark dark:text-title mt-3;
           }
         }
       }
