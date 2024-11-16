@@ -2099,7 +2099,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
   };
 
   if (!isValidNewPassword(requestData.password)) {
-    res.status(400).json({ success: false, message: 'Invalid user password', reason: 'userPassword' });
+    res.status(400).json({ success: false, message: 'Invalid user password.', reason: 'userPassword' });
     return;
   };
 
@@ -2146,14 +2146,18 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
       const isCorrectHangoutPassword: boolean = requestData.hangoutPassword === decryptPassword(hangoutDetails.encrypted_password);
 
       if (!isCorrectHangoutPassword) {
+        await connection.rollback();
         res.status(401).json({ success: false, message: 'Incorrect hangout password.', reason: 'hangoutPassword' });
+
         return;
       };
     };
 
     const isFull: boolean = hangoutDetails.member_count === hangoutDetails.member_limit;
     if (isFull) {
+      await connection.rollback();
       res.status(409).json({ success: false, message: 'Hangout full.', reason: 'hangoutFull' });
+
       return;
     };
 
@@ -2205,6 +2209,7 @@ hangoutsRouter.post('details/members/join/guest', async (req: Request, res: Resp
       [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]
     );
 
+    await connection.commit();
     res.json({ success: true, resData: { authToken } });
 
   } catch (err: unknown) {
