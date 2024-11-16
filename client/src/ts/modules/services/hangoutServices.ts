@@ -74,12 +74,12 @@ export async function getHangoutExistsService(hangoutId: string): Promise<AxiosR
 
 // --- --- ---
 
-interface AccountJoinHangoutBody {
+interface JoinHangoutAsAccountBody {
   hangoutId: string,
   hangoutPassword: string | null,
 };
 
-export async function accountJoinHangoutService(authToken: string, requestBody: AccountJoinHangoutBody): Promise<AxiosResponse> {
+export async function joinHangoutAsAccountService(authToken: string, requestBody: JoinHangoutAsAccountBody): Promise<AxiosResponse> {
   return axios.post(`${hangoutsApiUrl}/details/members/join/account`, requestBody, {
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -89,7 +89,7 @@ export async function accountJoinHangoutService(authToken: string, requestBody: 
 
 // --- --- ---
 
-interface GuestJoinHangoutBody {
+interface JoinHangoutAsGuestBody {
   hangoutId: string,
   hangoutPassword: string | null,
   username: string,
@@ -97,11 +97,11 @@ interface GuestJoinHangoutBody {
   displayName: string,
 };
 
-interface GuestJoinHangoutData {
+interface JoinHangoutAsGuestData {
   authToken: string,
 };
 
-export async function guestJoinHangoutService(requestBody: GuestJoinHangoutBody): Promise<AxiosResponse<GuestJoinHangoutData>> {
+export async function joinHangoutAsGuestService(requestBody: JoinHangoutAsGuestBody): Promise<AxiosResponse<JoinHangoutAsGuestData>> {
   return axios.post(`${hangoutsApiUrl}/details/members/join/guest`, requestBody);
 };
 
