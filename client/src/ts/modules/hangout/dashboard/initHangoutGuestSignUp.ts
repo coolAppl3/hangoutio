@@ -58,7 +58,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
   if (!guestSignUpFormState) {
     popup('Something went wrong.', 'error');
-    LoadingModal.remove();
+    setTimeout(() => window.location.href = 'index.html', 1000);
 
     return;
   };
