@@ -2301,24 +2301,16 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
   try {
     interface UserDetails extends RowDataPacket {
       auth_token: string,
-      hangout_member_id: number,
-      hangout_id: string,
-      is_leader: boolean,
     };
 
     const userType: 'account' | 'guest' = getUserType(authToken);
     const [userRows] = await dbPool.execute<UserDetails[]>(
       `SELECT
-        ${userType}s.auth_token,
-        hangout_members.hangout_member_id,
-        hangout_members.hangout_id,
-        hangout_members.is_leader
+        auth_token
       FROM
         ${userType}s
-      LEFT JOIN
-        hangout_members ON ${userType}s.${userType}_id = hangout_members.${userType}_id
       WHERE
-        ${userType}s.${userType}_id = ?;`,
+        ${userType}_id = ?;`,
       [userId]
     );
 
@@ -2332,9 +2324,52 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
       return;
     };
 
-    const requesterHangoutMember: UserDetails | undefined = userRows.find((member: UserDetails) => member.hangout_id === hangoutId);
+    interface HangoutInfo extends RowDataPacket {
+      encrypted_password: string | null,
+      member_limit: number,
+      hangout_member_id: number,
+      user_id: number,
+      is_leader: boolean,
+    };
+
+    const [hangoutRows] = await dbPool.execute<HangoutInfo[]>(
+      `SELECT
+        hangouts.encrypted_password,
+        hangouts.member_limit,
+        hangout_members.hangout_member_id,
+        hangout_members.${userType}_id as user_id,
+        hangout_members.is_leader
+      FROM
+        hangouts
+      LEFT JOIN
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
+      WHERE
+        hangouts.hangout_id = ?;`,
+      [hangoutId]
+    );
+
+    if (hangoutRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Hangout not found.' });
+      return;
+    };
+
+    const hangoutInfo: HangoutInfo = hangoutRows[0];
+
+    const isPasswordProtected: boolean = Boolean(hangoutInfo.encrypted_password);
+    const isFull: boolean = hangoutRows.length === hangoutInfo.member_limit;
+
+    const requesterHangoutMember: HangoutInfo | undefined = hangoutRows.find((member: HangoutInfo) => member.user_id === userId);
     if (!requesterHangoutMember) {
-      res.status(401).json({ success: false, message: `Hangout doesn't exist, or you're not a member.` });
+      res.status(401).json({
+        success: false,
+        message: 'Not a member of this hangout.',
+        reason: 'notMember',
+        resData: {
+          isPasswordProtected,
+          isFull: isPasswordProtected ? null : isFull,
+        },
+      });
+
       return;
     };
 
@@ -2383,7 +2418,7 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
       WHERE
         availability_slots.hangout_member_id = :hangoutMemberId
       LIMIT 1;
-      
+
       SELECT
         message_id,
         hangout_member_id,
@@ -2420,6 +2455,7 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
       resData: {
         hangoutMemberId: requesterHangoutMember.hangout_member_id,
         isLeader: requesterHangoutMember.is_leader,
+        isPasswordProtected,
         decryptedHangoutPassword,
 
         hangoutDetails,
