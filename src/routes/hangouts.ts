@@ -1979,12 +1979,14 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
     interface UserDetails extends RowDataPacket {
       auth_token: string,
       display_name: string,
+      joined_hangouts_counts: number,
     };
 
     const [userRows] = await connection.execute<UserDetails[]>(
       `SELECT
         auth_token,
-        display_name
+        display_name,
+        (SELECT COUNT(*) FROM hangout_members WHERE account_id = :userId) AS joined_hangouts_count
       FROM
         accounts
       WHERE
@@ -2004,6 +2006,17 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
     if (authToken !== userDetails.auth_token) {
       await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+
+      return;
+    };
+
+    if (userDetails.joined_hangouts_counts >= hangoutValidation.ongoingHangoutsLimit) {
+      await connection.rollback();
+      res.status(409).json({
+        success: false,
+        message: `Ongoing hangouts limit of ${hangoutValidation.ongoingHangoutsLimit} has been reached.`,
+        reason: 'hangoutsLimitReached',
+      });
 
       return;
     };
@@ -2058,7 +2071,7 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
     const isFull: boolean = hangoutDetails.member_count === hangoutDetails.member_limit;
     if (isFull) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout full.' });
+      res.status(409).json({ success: false, message: 'Hangout full.', reason: 'hangoutFull' });
 
       return;
     };
