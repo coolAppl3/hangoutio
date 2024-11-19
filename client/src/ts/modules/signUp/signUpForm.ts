@@ -258,15 +258,14 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      signOut();
-      popup('Signed out.', 'success');
-      ConfirmModal.remove();
-
+      window.location.href = isGuestUser ? 'index.html' : 'account.html';
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = isGuestUser ? 'index.html' : 'account.html';
+      signOut();
+      popup('Signed out.', 'success');
+      ConfirmModal.remove();
     };
   });
 };
