@@ -1899,8 +1899,6 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
         encrypted_password,
-        member_limit,
-        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count
       FROM
         hangouts
       WHERE
@@ -1913,12 +1911,14 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
       return;
     };
 
-    const hangoutDetails: HangoutDetails = hangoutRows[0];
+    const isPasswordProtected: boolean = Boolean(hangoutRows[0].encrypted_password);
 
-    const isPasswordProtected: boolean = Boolean(hangoutDetails.encrypted_password);
-    const isFull: boolean = hangoutDetails.member_count === hangoutDetails.member_limit;
-
-    res.json({ success: true, resData: { isPasswordProtected, isFull } });
+    res.json({
+      success: true,
+      resData: {
+        isPasswordProtected,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1965,7 +1965,7 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
 
   const userType: 'account' | 'guest' = getUserType(authToken);
   if (userType === 'guest') {
-    res.status(400).json({ success: false, message: `Guest accounts can't join more than one hangout.`, reason: 'guestAccount' });
+    res.status(403).json({ success: false, message: `Guest accounts can't join more than one hangout.`, reason: 'guestAccount' });
     return;
   };
 
@@ -2014,7 +2014,7 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
       await connection.rollback();
       res.status(409).json({
         success: false,
-        message: `Ongoing hangouts limit of ${hangoutValidation.ongoingHangoutsLimit} has been reached.`,
+        message: `You've reached the limit of ${hangoutValidation.ongoingHangoutsLimit} ongoing hangouts.`,
         reason: 'hangoutsLimitReached',
       });
 
