@@ -64,7 +64,6 @@ export interface HangoutExistsData {
   success: true,
   resData: {
     isPasswordProtected: boolean,
-    isFull: boolean,
   },
 };
 
@@ -115,6 +114,7 @@ export interface HangoutDashboardData {
   resData: {
     hangoutMemberId: number,
     isLeader: boolean,
+    isPasswordProtected: boolean,
     decryptedPassword: string | null,
 
     hangoutDetails: HangoutsDetails,
