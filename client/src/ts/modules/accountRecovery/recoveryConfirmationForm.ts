@@ -21,13 +21,15 @@ async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
   LoadingModal.display();
 
   if (recoveryState.currentStage !== RecoveryStage.confirmationForm) {
+    popup(`Recovery process not yet started.`, 'error');
     LoadingModal.remove();
+
     return;
   };
 
   if (!recoveryState.recoveryEmail) {
     popup('Something went wrong.', 'error');
-    setTimeout(() => window.location.reload(), 1000);
+    LoadingModal.remove();
 
     return;
   };
@@ -44,40 +46,31 @@ async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
   } catch (err: unknown) {
     console.log(err);
 
-    if (!axios.isAxiosError(err)) {
-      LoadingModal.remove();
-      popup('Something went wrong.', 'error');
+    LoadingModal.remove();
 
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
       return;
     };
 
     const axiosError: AxiosError<AxiosErrorResponseData> = err;
 
     if (!axiosError.status || !axiosError.response) {
-      LoadingModal.remove();
       popup('Something went wrong.', 'error');
-
       return;
     };
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
 
-    if (status === 400) {
+    if (status === 400 || status === 404) {
+      LoadingModal.display();
       popup('Something went wrong.', 'error');
       setTimeout(() => window.location.reload(), 1000);
 
       return;
     };
 
-    LoadingModal.remove();
     popup(errMessage, 'error');
-
-    if (status === 404) {
-      LoadingModal.display();
-      setTimeout(() => window.location.reload(), 1000);
-
-      return;
-    };
   };
 };
