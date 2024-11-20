@@ -11,7 +11,7 @@ topNavbar();
 botNavbar();
 
 hangoutNav();
-hangoutDashboard();
+await hangoutDashboard();
 
 // web socket
 // initHangoutWebSocket('dummyAuthToken', 'dummyHangoutId', 123);
