@@ -8,7 +8,7 @@ import { AccountSignInBody, AccountSignInData, accountSignInService } from '../s
 import axios, { AxiosError, AxiosResponse } from '../../../../node_modules/axios/index';
 import { GuestSignInBody, GuestSignInData, guestSignInService } from '../services/guestServices';
 import { signOut } from '../global/signOut';
-import { InfoModal, InfoModalConfig } from '../global/InfoModal';
+import { InfoModal } from '../global/InfoModal';
 import { ConfirmModal } from '../global/ConfirmModal';
 
 interface SignInFormState {
