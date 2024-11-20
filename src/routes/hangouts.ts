@@ -1898,7 +1898,7 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
-        encrypted_password,
+        encrypted_password
       FROM
         hangouts
       WHERE
@@ -1958,7 +1958,7 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
     return;
   };
 
-  if (requestData.hangoutPassword && !isValidNewPassword(requestData.hangoutPassword)) {
+  if (requestData.hangoutPassword && !isValidPassword(requestData.hangoutPassword)) {
     res.status(400).json({ success: false, message: 'Invalid hangout password', reason: 'hangoutPassword' });
     return;
   };
@@ -1990,8 +1990,8 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
       FROM
         accounts
       WHERE
-        account_id = ?;`,
-      [userId]
+        account_id = :userId;`,
+      { userId }
     );
 
     if (userRows.length === 0) {
@@ -2395,7 +2395,22 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
     ];
 
     const [hangoutData] = await dbPool.query<HangoutData>(
-      `SELECT * FROM hangouts WHERE hangout_id = :hangoutId;
+      `SELECT
+        hangout_title,
+        member_limit,
+        availability_step,
+        suggestions_step,
+        voting_step,
+        current_step,
+        current_step_timestamp,
+        next_step_timestamp,
+        created_on_timestamp,
+        conclusion_timestamp,
+        is_concluded
+      FROM
+        hangouts
+      WHERE
+        hangout_id = :hangoutId;
 
       SELECT
         event_description,

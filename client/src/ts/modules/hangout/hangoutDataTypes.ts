@@ -1,7 +1,5 @@
 export interface HangoutsDetails {
-  hangout_id: string,
   hangout_title: string,
-  encrypted_password: string | null,
   member_limit: number,
   availability_step: number,
   suggestions_step: number,
