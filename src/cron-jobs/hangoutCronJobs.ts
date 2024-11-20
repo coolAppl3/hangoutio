@@ -93,7 +93,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
     hangoutValuesString = hangoutValuesString.slice(0, -1);
 
     await dbPool.execute(
-      `INSERT INTO hangout_logs(
+      `INSERT INTO hangout_events(
         hangout_id,
         log_description,
         log_timestamp

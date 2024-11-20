@@ -87,10 +87,9 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     };
 
     clearVerificationCookies();
-
     popup('Account successfully verified.', 'success');
 
-    const pendingHangoutId: string | null = getPendingSignUpHangoutId();
+    const pendingHangoutId: string | null = getPendingSignInHangoutId();
     if (pendingHangoutId) {
       LoadingModal.remove();
       offerHangoutRedirect(pendingHangoutId);
@@ -444,7 +443,7 @@ function invalidVerificationLinkPresent(): boolean {
   return false;
 };
 
-function getPendingSignUpHangoutId(): string | null {
+function getPendingSignInHangoutId(): string | null {
   const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignInHangoutId');
 
   if (!pendingHangoutId) {

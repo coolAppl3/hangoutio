@@ -100,7 +100,7 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: { [key: string]: unknown } | undefined = axiosError.response.data.resData;
+    const errResData: unknown = axiosError.response.data.resData;
 
     LoadingModal.remove();
     popup(errMessage, 'error');
@@ -118,7 +118,11 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
     if (status === 403) {
       ErrorSpan.display(recoveryEmailInput, errMessage);
 
-      if (errResData && 'requestTimestamp' in errResData && typeof errResData.requestTimestamp === 'number') {
+      if (typeof errResData === 'object' && errResData !== null) {
+        if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
+          return;
+        };
+
         if (errReason === 'emailLimitReached') {
           displayEmailLimitReachedInfoModal(errMessage, errResData.requestTimestamp);
           return;

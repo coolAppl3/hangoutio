@@ -733,7 +733,7 @@
     .description-container {
 
       p {
-        @apply font-medium text-sm md:text-base text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
+        @apply font-medium text-sm md:text-base text-description dark:text-description-dark mb-1 last:mb-2;
       }
     }
 
@@ -797,7 +797,7 @@
     .description-container {
 
       p {
-        @apply font-medium text-sm md:text-base text-description dark:text-description-dark mb-2 first:mb-1 last:mb-2;
+        @apply font-medium text-sm md:text-base text-description dark:text-description-dark mb-1 last:mb-2;
       }
     }
 
@@ -1496,6 +1496,48 @@
         .sk-member {
           @apply h-3 w-full bg-title/50 dark:bg-title-dark/50 animate-pulse-fast mb-1 last:mb-0 rounded-sm;
         }
+      }
+    }
+  }
+}
+
+// // join password protected hangout --- ---
+#join-hangout-form-container {
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[10] flex justify-center items-center outline-none;
+
+  &.revealed {
+
+    #join-hangout-form {
+      transform: translate3d(0, 0, 0) !important;
+      opacity: 1 !important;
+    }
+  }
+
+  #join-hangout-form {
+    @apply w-[32rem] max-w-[32rem] py-3 px-2 mx-2 rounded-sm bg-secondary dark:bg-secondary-dark shadow-simple;
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: opacity 150ms, transform 150ms;
+
+    p {
+
+      &.title {
+        @apply font-medium text-base text-title dark:text-title-dark mb-1;
+      }
+
+      &.description {
+        @apply font-medium text-sm md:text-base text-description dark:text-description-dark mb-2;
+      }
+    }
+
+    button {
+
+      &.submit-btn {
+        @apply btn bg-cta dark:bg-cta-dark w-full mb-1;
+      }
+
+      &.cancel-btn {
+        @apply btn bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark border-1 border-title dark:border-title-dark w-full;
       }
     }
   }

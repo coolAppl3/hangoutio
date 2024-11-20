@@ -79,7 +79,7 @@ async function concludeNoSuggestionHangouts() {
         }
         ;
         hangoutValuesString = hangoutValuesString.slice(0, -1);
-        await db_1.dbPool.execute(`INSERT INTO hangout_logs(
+        await db_1.dbPool.execute(`INSERT INTO hangout_events(
         hangout_id,
         log_description,
         log_timestamp

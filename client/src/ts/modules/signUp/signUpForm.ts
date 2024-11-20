@@ -6,7 +6,7 @@ import ErrorSpan from "../global/ErrorSpan";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
+import { isValidAuthToken, isValidHangoutId, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
 import { AccountSignUpBody, AccountSignUpData, accountSignUpService } from "../services/accountServices";
 import { switchToVerificationStage } from "./signUpUtils";
 import LoadingModal from "../global/LoadingModal";
@@ -245,8 +245,8 @@ function detectSignedInUser(): void {
   const confirmModalConfig: ConfirmModalConfig = {
     title: `You're signed in.`,
     description: 'You must sign out before creating a new account.',
-    confirmBtnTitle: 'Sign out',
-    cancelBtnTitle: isGuestUser ? 'Go to homepage' : 'Go to my account',
+    confirmBtnTitle: isGuestUser ? 'Go to homepage' : 'Go to my account',
+    cancelBtnTitle: 'Sign out',
     extraBtnTitle: null,
     isDangerousAction: false,
   };
@@ -258,15 +258,14 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      signOut();
-      popup('Signed out.', 'success');
-      ConfirmModal.remove();
-
+      window.location.href = isGuestUser ? 'index.html' : 'account.html';
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = isGuestUser ? 'index.html' : 'account.html';
+      signOut();
+      popup('Signed out.', 'success');
+      ConfirmModal.remove();
     };
   });
 };

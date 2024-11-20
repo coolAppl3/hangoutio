@@ -431,8 +431,8 @@ function getPendingSignInHangoutId(): string | null {
 function offerHangoutRedirect(hangoutId: string): void {
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Hangout ID found.',
-    description: `You've attempted to join a hangout earlier.\nWould you like to try again now that you're signed in?`,
-    confirmBtnTitle: 'Join hangout',
+    description: `You've attempted to access a hangout earlier.\nWould you like to try again now that you're signed in?`,
+    confirmBtnTitle: 'Yes',
     cancelBtnTitle: 'Go to my account',
     extraBtnTitle: null,
     isDangerousAction: false,

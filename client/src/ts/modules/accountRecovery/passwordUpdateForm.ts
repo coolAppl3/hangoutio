@@ -102,7 +102,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: { [key: string]: unknown } | undefined = axiosError.response.data.resData;
+    const errResData: unknown = axiosError.response.data.resData;
 
     LoadingModal.remove();
     popup(errMessage, 'error')
@@ -128,7 +128,11 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
       return;
     };
 
-    if (status === 403 && errResData) {
+    if (status === 403) {
+      if (typeof errResData !== 'object' || errResData === null) {
+        return;
+      };
+
       if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
         return;
       };
@@ -147,7 +151,11 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
       };
 
       if (errReason === 'recoverySuspended') {
-        if (!errResData || !('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
+        if (typeof errResData !== 'object' || errResData === null) {
+          return;
+        };
+
+        if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
           return;
         };
 
