@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.3] (2024-11-20)
+
+### Features
+
+- Improved the authentication logic in GET `hangouts/details/dashboard`.
+- Added a check for the ongoing hangout limit in POST `hangouts/details/members/join/account`.
+- Updated GET `hangouts/details/hangoutExists` to no longer return a `isFull` value to avoid potential data leaks.
+- Updated GET `hangouts/details/dashboard` to exclude `hangout_id` and `encrypted_password` when fetching data from the database.
+- Added `hangoutDashboardUtils.ts`.
+- Added `handleNotHangoutMember.ts`.
+- Added `iniJoinHangoutForm.ts`.
+- Hangout dashboard will now handle cases where users attempt to join a hangout they're not a member of yet.
+
+
+### Bug Fixes
+
+- Fixed `concludeNoSuggestionHangouts()` in `hangoutCronJobs.ts` referring to `hangout_logs` instead of `hangout_events`.
+
+
+### Code Refactoring
+
+- Changed the type of `resData`, in `AxiosErrorResponseData` interface in `client/globals.d.ts`, to be `unknown`. 
+
+
 ## [0.3.2] (2024-11-16)
 
 ### Features
