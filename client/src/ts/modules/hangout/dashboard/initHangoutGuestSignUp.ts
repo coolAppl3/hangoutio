@@ -8,6 +8,7 @@ import revealPassword from "../../global/revealPassword";
 import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateNewUsername, validatePassword } from "../../global/validation";
 import { JoinHangoutAsGuestBody, JoinHangoutAsGuestData, joinHangoutAsGuestService } from "../../services/hangoutServices";
 import { getHangoutDashboardData } from "./hangoutDashboard";
+import { handleHangoutFull } from "./hangoutDashboardUtils";
 
 const guestSignUpForm: HTMLFormElement | null = document.querySelector('#guest-sign-up-form');
 
@@ -58,7 +59,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
   if (!guestSignUpFormState) {
     popup('Something went wrong.', 'error');
-    setTimeout(() => window.location.href = 'index.html', 1000);
+    LoadingModal.remove();
 
     return;
   };
@@ -71,6 +72,9 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
   };
 
   if (!hangoutPasswordInput || !displayNameInput || !userNameInput || !guestPasswordInput) {
+    popup('Invalid sign up details.', 'error');
+    LoadingModal.remove();
+
     return;
   };
 
@@ -86,7 +90,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     const joinHangoutAsGuestData: AxiosResponse<JoinHangoutAsGuestData> = await joinHangoutAsGuestService(joinHangoutAsGuestBody);
     const authToken: string = joinHangoutAsGuestData.data.resData.authToken;
 
-    if (guestSignUpFormState?.keepSignedIn) {
+    if (guestSignUpFormState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
       Cookies.set('authToken', authToken, 14 * daySeconds);
 
@@ -97,6 +101,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     popup('Signed up successfully.', 'success');
     LoadingModal.remove();
 
+    hideGuestSignUpSection();
     await getHangoutDashboardData();
 
   } catch (err: unknown) {
@@ -126,29 +131,17 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     LoadingModal.remove();
 
     if (status === 400) {
-      if (errReason === 'hangoutPassword') {
-        ErrorSpan.display(hangoutPasswordInput, errMessage);
-        return;
+      const inputRecord: Record<string, HTMLInputElement | undefined> = {
+        hangoutPassword: hangoutPasswordInput,
+        username: userNameInput,
+        userPassword: guestPasswordInput,
+        usernamePasswordIdentical: guestPasswordInput,
+        displayName: displayNameInput,
       };
 
-      if (errReason === 'username') {
-        ErrorSpan.display(userNameInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'userPassword') {
-        ErrorSpan.display(guestPasswordInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'usernamePasswordIdentical') {
-        ErrorSpan.display(guestPasswordInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'displayName') {
-        ErrorSpan.display(displayNameInput, errMessage);
-        return;
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
       };
 
       return;
@@ -168,7 +161,6 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
         if (e.target.id === 'info-modal-btn') {
           window.location.href = 'index.html';
-          return;
         };
       });
 
@@ -182,32 +174,13 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
     if (status === 409) {
       if (errReason === 'hangoutFull') {
-        const infoModal: HTMLDivElement = InfoModal.display({
-          title: 'Hangout is full.',
-          description: 'Reach out to the hangout leader to check if they can increase the member limit.',
-          btnTitle: 'Go to homepage',
-        });
-
-        infoModal.addEventListener('click', (e: MouseEvent) => {
-          if (!(e.target instanceof HTMLElement)) {
-            return;
-          };
-
-          if (e.target.id === 'info-modal-btn') {
-            window.location.href = 'index.html';
-            return;
-          };
-        });
-
+        handleHangoutFull();
         return;
       };
 
       if (errReason === 'usernameTaken') {
         ErrorSpan.display(userNameInput, errMessage);
-        return;
       };
-
-      return;
     };
   };
 };
@@ -222,6 +195,14 @@ function revealGuestSignUpSection(): void {
   if (guestSignUpFormState?.isPasswordProtected) {
     guestSignUpForm?.classList.add('is-password-protected');
   };
+};
+
+function hideGuestSignUpSection(): void {
+  const guestSignUpSection: HTMLElement | null = document.querySelector('#guest-sign-up-section');
+  const hangoutLoadingSkeleton: HTMLDivElement | null = document.querySelector('#hangout-loading-skeleton');
+
+  guestSignUpSection?.classList.add('hidden');
+  hangoutLoadingSkeleton?.classList.remove('hidden');
 };
 
 function isValidSignUpData(): boolean {
