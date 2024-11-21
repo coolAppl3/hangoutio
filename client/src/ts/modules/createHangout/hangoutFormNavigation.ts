@@ -1,3 +1,4 @@
+import ErrorSpan from "../global/ErrorSpan";
 import { isValidFormFirstStepDetails } from "./hangoutFormFirstStep";
 
 interface HangoutFormNavigationState {
@@ -112,4 +113,12 @@ function updateProgressBar(): void {
 
 function triggerDOMRectUpdateEvent(): void {
   document.dispatchEvent(new CustomEvent('updateDOMRect'));
+};
+
+export function displayFirstStepError(errMessage: string, inputType: 'title' | 'password'): void {
+  moveBackwards();
+  moveBackwards();
+
+  const input: HTMLInputElement | null = document.querySelector(`#hangout-${inputType}-input`);
+  input ? ErrorSpan.display(input, errMessage) : undefined;
 };
