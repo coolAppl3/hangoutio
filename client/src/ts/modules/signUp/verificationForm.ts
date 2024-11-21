@@ -62,7 +62,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
   if (!signUpState.accountId) {
     popup('Something went wrong.', 'error');
-    LoadingModal.remove();
+    setTimeout(() => window.location.reload(), 1000);
 
     return;
   };
@@ -75,8 +75,6 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
   try {
     const accountVerificationData: AxiosResponse<AccountVerificationData> = await verifyAccountService(accountVerificationBody);
     const { authToken } = accountVerificationData.data.resData;
-
-    signUpState.verificationEmailsSent++;
 
     if (signUpState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
@@ -444,7 +442,7 @@ function invalidVerificationLinkPresent(): boolean {
 };
 
 function getPendingSignInHangoutId(): string | null {
-  const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignInHangoutId');
+  const pendingHangoutId: string | null = Cookies.get('pendingSignInHangoutId');
 
   if (!pendingHangoutId) {
     return null;
@@ -473,13 +471,13 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = `hangout.html?hangoutId=${hangoutId}`;
+      window.location.replace(`hangout.html?hangoutId=${hangoutId}`);
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      sessionStorage.removeItem('pendingSignInHangoutId');
-      window.location.href = 'account.html';
+      Cookies.remove('pendingSignInHangoutId');
+      window.location.replace('account.html');
     };
   });
 };

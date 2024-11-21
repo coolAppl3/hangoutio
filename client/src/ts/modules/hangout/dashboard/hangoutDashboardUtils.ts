@@ -142,7 +142,7 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      sessionStorage.setItem('pendingSignInHangoutId', hangoutId);
+      Cookies.set('pendingSignInHangoutId', hangoutId);
       window.location.href = 'sign-in.html';
 
       return;

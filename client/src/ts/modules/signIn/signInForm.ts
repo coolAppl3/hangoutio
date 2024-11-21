@@ -432,7 +432,7 @@ function handleAccountLocked(): void {
 };
 
 function getPendingSignInHangoutId(): string | null {
-  const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignInHangoutId');
+  const pendingHangoutId: string | null = Cookies.get('pendingSignInHangoutId');
 
   if (!pendingHangoutId) {
     return null;
@@ -466,7 +466,7 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      sessionStorage.removeItem('pendingSignInHangoutId');
+      Cookies.remove('pendingSignInHangoutId');
       window.location.href = 'account.html';
     };
   });
