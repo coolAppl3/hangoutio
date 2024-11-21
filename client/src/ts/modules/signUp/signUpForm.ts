@@ -1,12 +1,12 @@
 import { signUpState } from "./signUpState";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
-import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
+import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { isValidAuthToken, isValidHangoutId, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
+import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
 import { AccountSignUpBody, AccountSignUpData, accountSignUpService } from "../services/accountServices";
 import { switchToVerificationStage } from "./signUpUtils";
 import LoadingModal from "../global/LoadingModal";
@@ -231,16 +231,15 @@ function detectSignedInUser(): void {
 
   const isGuestUser: boolean = authToken.startsWith('g');
 
-  const confirmModalConfig: ConfirmModalConfig = {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: `You're signed in.`,
     description: 'You must sign out before creating a new account.',
     confirmBtnTitle: isGuestUser ? 'Go to homepage' : 'Go to my account',
     cancelBtnTitle: 'Sign out',
     extraBtnTitle: null,
     isDangerousAction: false,
-  };
+  });
 
-  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
