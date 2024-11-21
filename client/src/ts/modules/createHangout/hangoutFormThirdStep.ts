@@ -1,7 +1,8 @@
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
-import { ConfirmModalConfig, ConfirmModal } from "../global/ConfirmModal";
+import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
+import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
@@ -9,7 +10,7 @@ import { signOut } from "../global/signOut";
 import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
 import { AccountSignInBody, AccountSignInData, accountSignInService } from "../services/accountServices";
 import { AccountLeaderHangoutBody, AccountLeaderHangoutData, createAccountLeaderHangoutService, createGuestLeaderHangoutService, GuestLeaderHangoutBody, GuestLeaderHangoutData } from "../services/hangoutServices";
-import { hangoutFormNavigationState } from "./hangoutFormNavigation";
+import { displayFirstStepError, hangoutFormNavigationState } from "./hangoutFormNavigation";
 import { hangoutFormState } from "./hangoutFormState";
 
 interface HangoutThirdStepState {
@@ -23,7 +24,6 @@ const hangoutThirdStepState: HangoutThirdStepState = {
   isGuestUser: false,
   keepSignedIn: false,
 };
-
 
 const hangoutForm: HTMLFormElement | null = document.querySelector('#hangout-form');
 
@@ -67,7 +67,9 @@ async function submitHangout(e: SubmitEvent): Promise<void> {
   LoadingModal.display();
 
   if (hangoutFormNavigationState.currentStep !== 3) {
+    popup('Hangout form not completed.', 'error');
     LoadingModal.remove();
+
     return;
   };
 
@@ -77,15 +79,15 @@ async function submitHangout(e: SubmitEvent): Promise<void> {
   };
 
   if (hangoutThirdStepState.isSignedIn) {
-    await createSignedInAccountLeaderHangout();
+    await createAccountLeaderHangout();
     return;
   };
 
-  await createAccountLeaderHangout();
+  await accountSignIn();
 };
 
 async function createAccountLeaderHangout(attemptCount: number = 1): Promise<void> {
-  if (attemptCount > 2) {
+  if (attemptCount > 3) {
     popup('Internal server error.', 'error');
     LoadingModal.remove();
 
@@ -93,58 +95,49 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
   };
 
   if (!hangoutFormState.hangoutTitle) {
+    displayFirstStepError('Invalid hangout title.', 'title');
     popup('Invalid hangout title.', 'error');
     LoadingModal.remove();
 
     return;
   };
 
-  if (!accountEmailInput || !accountPasswordInput) {
-    popup('Something went wrong.', 'error');
+  if (!hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
+    displayFirstStepError('Invalid hangout title.', 'password');
+    popup('Invalid hangout password.', 'error');
     LoadingModal.remove();
 
     return;
   };
 
-  if (!isValidAccountDetails()) {
-    popup('Invalid account sign in details.', 'error');
+  const authToken: string | null = Cookies.get('authToken');
+
+  if (!authToken) {
+    signOut();
+    hangoutThirdStepState.isSignedIn = false;
+
+    popup('Invalid credentials detected.', 'error');
     LoadingModal.remove();
 
     return;
   };
 
-  const accountSignInBody: AccountSignInBody = {
-    email: accountEmailInput.value,
-    password: accountPasswordInput.value,
+  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
+
+  const accountLeaderHangoutBody: AccountLeaderHangoutBody = {
+    hangoutTitle: hangoutFormState.hangoutTitle,
+    hangoutPassword: hangoutFormState.hangoutPassword,
+    memberLimit: hangoutFormState.memberLimit,
+    availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
+    suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
+    votingStep: hangoutFormState.votingStep * dayMilliseconds,
   };
 
   try {
-    const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
-    const { authToken } = accountSignInData.data.resData;
-
-    if (hangoutThirdStepState.keepSignedIn) {
-      const daySeconds: number = 60 * 60 * 24;
-      Cookies.set('authToken', authToken, 14 * daySeconds);
-
-    } else {
-      Cookies.set('authToken', authToken);
-    };
-
-    const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-
-    const accountLeaderHangoutBody: AccountLeaderHangoutBody = {
-      hangoutTitle: hangoutFormState.hangoutTitle,
-      hangoutPassword: hangoutFormState.hangoutPassword,
-      memberLimit: hangoutFormState.memberLimit,
-      availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
-      suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
-      votingStep: hangoutFormState.votingStep * dayMilliseconds,
-    };
-
     const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
     const { hangoutId } = accountLeaderHangoutData.data.resData;
 
-    popup('Hangout created.', 'success', 1000);
+    popup('Hangout successfully created.', 'success');
     setTimeout(() => window.location.href = `hangout.html?hangoutId=${hangoutId}`, 1000);
 
   } catch (err: unknown) {
@@ -170,122 +163,48 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 409 && errReason === 'duplicateHangoutId') {
-      await createAccountLeaderHangout(++attemptCount);
+    if (status === 409) {
+      if (errReason === 'duplicateHangoutId') {
+        await createAccountLeaderHangout(++attemptCount);
+        return;
+      };
+
+      if (errReason === 'hangoutsLimitReached') {
+        LoadingModal.remove();
+        handleHangoutsLimitReached(errMessage);
+      };
+
       return;
     };
 
     popup(errMessage, 'error');
     LoadingModal.remove();
+
+    if (status === 401) {
+      signOut();
+      hangoutThirdStepState.isSignedIn = false;
+
+      popup('Invalid credentials detected.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
 
     if (status === 400) {
-      if (errReason === 'email') {
-        ErrorSpan.display(accountEmailInput, errMessage);
+      if (errReason === 'hangoutTitle') {
+        displayFirstStepError('Invalid hangout title.', 'title');
         return;
       };
 
-      if (errReason === 'password') {
-        ErrorSpan.display(accountPasswordInput, errMessage);
-        return;
+      if (errReason === 'hangoutPassword') {
+        displayFirstStepError('Invalid hangout title.', 'password');
       };
-
-      return;
-    };
-
-    if ((status === 404 || status === 403)) {
-      ErrorSpan.display(accountEmailInput, errMessage);
-      return;
-    };
-
-    if (status === 401) {
-      ErrorSpan.display(accountPasswordInput, errMessage);
-    };
-  };
-};
-
-async function createSignedInAccountLeaderHangout(attemptCount: number = 1): Promise<void> {
-  if (attemptCount > 2) {
-    popup('Internal server error.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
-  const authToken: string | null = Cookies.get('authToken');
-
-  if (!authToken) {
-    signOut();
-    popup('Not signed in.', 'error');
-
-    return;
-  };
-
-  if (!hangoutFormState.hangoutTitle) {
-    popup('Hangout title is required.', 'error');
-    return;
-  };
-
-  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-
-  const accountLeaderHangoutBody: AccountLeaderHangoutBody = {
-    hangoutTitle: hangoutFormState.hangoutTitle,
-    hangoutPassword: hangoutFormState.hangoutPassword,
-    memberLimit: hangoutFormState.memberLimit,
-    availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
-    suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
-    votingStep: hangoutFormState.votingStep * dayMilliseconds,
-  };
-
-  try {
-    const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
-    const { hangoutId } = accountLeaderHangoutData.data.resData;
-
-    popup('Hangout created.', 'success', 1000);
-    setTimeout(() => window.location.href = `hangout.html?hangoutId=${hangoutId}`, 1000);
-
-  } catch (err: unknown) {
-    console.log(err);
-
-    if (!axios.isAxiosError(err)) {
-      popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
-      return;
-    };
-
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-
-    if (status === 409 && errReason === 'duplicateHangoutId') {
-      await createSignedInAccountLeaderHangout(++attemptCount);
-      return;
-    };
-
-    popup(errMessage, 'error');
-    LoadingModal.remove();
-
-    if (status === 401) {
-      hangoutThirdStepState.isSignedIn = false;
-      signOut();
-
-      const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
-      thirdStepFormContainer?.classList.remove('disabled');
     };
   };
 };
 
 async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void> {
-  if (attemptCount > 2) {
+  if (attemptCount > 3) {
     popup('Internal server error.', 'error');
     LoadingModal.remove();
 
@@ -293,7 +212,18 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
   };
 
   if (!hangoutFormState.hangoutTitle) {
-    popup('Hangout title is required.', 'error');
+    displayFirstStepError('Invalid hangout title.', 'title');
+    popup('Invalid hangout title.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
+    displayFirstStepError('Invalid hangout title.', 'password');
+    popup('Invalid hangout password.', 'error');
+    LoadingModal.remove();
+
     return;
   };
 
@@ -311,7 +241,6 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     return;
   };
 
-  // 
   const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const guestLeaderHangoutBody: GuestLeaderHangoutBody = {
@@ -340,7 +269,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
       Cookies.set('guestHangoutId', authToken);
     };
 
-    popup('Hangout created.', 'success', 1000);
+    popup('Hangout successfully created.', 'success');
     setTimeout(() => window.location.replace(`hangout.html?hangoutId=${hangoutId}`), 1000);
 
   } catch (err: unknown) {
@@ -374,27 +303,121 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     popup(errMessage, 'error');
     LoadingModal.remove();
 
+    if (status === 409 && errReason === 'guestUsernameTaken') {
+      ErrorSpan.display(guestUsernameInput, errMessage);
+      return;
+    };
+
     if (status === 400) {
-      if (errReason === 'username') {
-        ErrorSpan.display(guestUsernameInput, errMessage);
+      const inputRecord: Record<string, HTMLInputElement | undefined> = {
+        guestDisplayName: guestDisplayNameInput,
+        username: guestUsernameInput,
+        guestPassword: guestPasswordInput,
+      };
+
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
         return;
       };
 
-      if (errReason === 'guestPassword') {
-        ErrorSpan.display(guestPasswordInput, errMessage);
+      if (errReason === 'hangoutTitle') {
+        displayFirstStepError(errMessage, 'title');
         return;
       };
 
-      if (errReason === 'guestDisplayName') {
-        ErrorSpan.display(guestDisplayNameInput, errMessage);
-        return;
+      if (errReason === 'hangoutPassword') {
+        displayFirstStepError(errMessage, 'password');
       };
+    };
+  };
+};
+
+async function accountSignIn(): Promise<void> {
+  if (!accountEmailInput || !accountPasswordInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!isValidAccountDetails()) {
+    popup('Invalid account sign in details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const accountSignInBody: AccountSignInBody = {
+    email: accountEmailInput.value,
+    password: accountPasswordInput.value,
+  };
+
+  try {
+    const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
+    const { authToken } = accountSignInData.data.resData;
+
+    if (hangoutThirdStepState.keepSignedIn) {
+      const daySeconds: number = 60 * 60 * 24;
+      Cookies.set('authToken', authToken, 14 * daySeconds);
+
+    } else {
+      Cookies.set('authToken', authToken);
+    };
+
+    await createAccountLeaderHangout();
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
 
       return;
     };
 
-    if (status === 409 && errReason === 'guestUsernameTaken') {
-      ErrorSpan.display(guestUsernameInput, errMessage);
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    popup(errMessage, 'error');
+    LoadingModal.remove();
+
+    if (status === 401) {
+      if (errReason === 'accountLocked') {
+        handleAccountLocked();
+        return;
+      };
+
+      ErrorSpan.display(accountPasswordInput, errMessage);
+      return;
+    };
+
+    if (status === 403 || status === 404) {
+      ErrorSpan.display(accountEmailInput, errMessage);
+      return;
+    };
+
+    if (status === 400) {
+      const inputRecord: Record<string, HTMLInputElement | undefined> = {
+        email: accountEmailInput,
+        password: accountPasswordInput,
+      };
+
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
+      };
     };
   };
 };
@@ -556,27 +579,24 @@ function detectSignedInUser(): void {
     return;
   };
 
-  const confirmModalConfig: ConfirmModalConfig = {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Signed in as a guest.',
     description: `You must sign out of your guest account before creating a new hangout.\nGuest accounts can only be used within the hangout they were created for.`,
     confirmBtnTitle: 'Sign out',
     cancelBtnTitle: 'Go to homepage',
     extraBtnTitle: null,
     isDangerousAction: false,
-  };
+  });
 
-  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      LoadingModal.display();
-      ConfirmModal.remove();
       signOut();
       popup('Successfully signed out.', 'success');
-      setTimeout(() => window.location.reload(), 1000);
+      ConfirmModal.remove();
 
       return;
     };
@@ -590,10 +610,8 @@ function detectSignedInUser(): void {
       };
 
       window.location.href = referrerHref;
-      return;
     };
   });
-
 };
 
 function displaySignedInStatus(): void {
@@ -612,4 +630,48 @@ function removeSignedInStatus(): void {
   popup('Signed out.', 'success');
 
   signOut();
+};
+
+function handleHangoutsLimitReached(errMessage: string): void {
+  const infoModal: HTMLDivElement = InfoModal.display({
+    title: errMessage,
+    description: `To create or join a new hangout, wait for one of your current hangouts to conclude or leave one to make room.`,
+    btnTitle: 'Go to my account',
+  });
+
+  infoModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'info-modal-btn') {
+      window.location.href = 'account.html';
+    };
+  });
+};
+
+function handleAccountLocked(): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Account locked.',
+    description: `Your account has been locked due to multiple failed sign in attempts.`,
+    confirmBtnTitle: 'Recover my account',
+    cancelBtnTitle: 'Go to homepage',
+    extraBtnTitle: null,
+    isDangerousAction: false,
+  });
+
+  confirmModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      window.location.href = 'account-recovery.html';
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      window.location.href = 'index.html';
+    };
+  });
 };
