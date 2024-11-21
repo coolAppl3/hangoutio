@@ -87,8 +87,8 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     signUpState.accountId = accountId;
     signUpState.verificationStartTimestamp = createdOnTimestamp;
 
-    Cookies.set('verificationAccountId', `${accountId}`);
-    Cookies.set('verificationStartTimestamp', `${createdOnTimestamp}`);
+    Cookies.set('verificationAccountId', `${accountId}`, 15 * 60);
+    Cookies.set('verificationStartTimestamp', `${createdOnTimestamp}`, 15 * 60);
 
     signUpState.verificationEmailsSent = 1;
     switchToVerificationStage();
