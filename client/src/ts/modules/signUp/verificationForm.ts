@@ -2,13 +2,13 @@ import { signUpState } from "./signUpState";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
-import { InfoModal, InfoModalConfig } from "../global/InfoModal";
+import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { isValidUniqueCode, isValidQueryString, isValidTimestamp, validateCode, isValidHangoutId } from "../global/validation";
 import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
-import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
+import { ConfirmModal } from "../global/ConfirmModal";
 import { signOut } from "../global/signOut";
 
 
@@ -62,6 +62,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
   if (!signUpState.accountId) {
     popup('Something went wrong.', 'error');
+    clearVerificationCookies();
     setTimeout(() => window.location.reload(), 1000);
 
     return;
@@ -122,7 +123,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (status === 400 && errReason === 'accountId') {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
+      window.location.reload();
 
       return;
     };
@@ -130,8 +131,8 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 400 && errReason === 'verificationCode') {
-      ErrorSpan.display(verificationCodeInput, errMessage);
+    if (status === 404) {
+      clearVerificationCookies();
       return;
     };
 
@@ -139,24 +140,28 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
       ErrorSpan.display(verificationCodeInput, errMessage);
 
       if (errReason === 'accountDeleted') {
-        const infoModalConfig: InfoModalConfig = {
+        clearVerificationCookies();
+
+        const infoModal: HTMLDivElement = InfoModal.display({
           title: 'Too many failed verification attempts.',
           description: 'Your account has been automatically deleted as a result.\nYou can create it again by repeating the signup process.',
           btnTitle: 'Okay',
-        };
+        });
 
-        const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
         infoModal.addEventListener('click', (e: MouseEvent) => {
           if (!(e.target instanceof HTMLElement)) {
             return;
           };
 
           if (e.target.id === 'info-modal-btn') {
-            clearVerificationCookies();
             window.location.reload();
           };
         });
       };
+    };
+
+    if (status === 400 && errReason === 'verificationCode') {
+      ErrorSpan.display(verificationCodeInput, errMessage);
     };
   };
 };
@@ -220,30 +225,23 @@ async function resendVerificationEmail(): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 400) {
-      if (errReason === 'accountId') {
-        popup(errMessage, 'error');
-        setTimeout(() => window.location.reload(), 1000);
-
-        return;
-      };
-
-      if (errReason === 'alreadyVerified') {
-        popup(errMessage, 'error');
-        setTimeout(() => window.location.href = 'sign-in.html', 1000);
-
-        return;
-      };
-    };
+    popup(errMessage, 'error');
 
     if (status === 404) {
-      popup(errMessage, 'error');
       setTimeout(() => window.location.reload(), 1000);
-
       return;
     };
 
-    popup(errMessage, 'error');
+    if (status === 400) {
+      if (errReason === 'alreadyVerified') {
+        setTimeout(() => window.location.replace('sign-in.html'), 1000);
+        return;
+      };
+
+      setTimeout(() => window.location.reload(), 1000);
+      return;
+    };
+
     LoadingModal.remove();
 
     if (status === 403 && errReason === 'limitReached') {
@@ -265,13 +263,12 @@ function verificationLinkDetected(): boolean {
 
   const verificationData: VerificationData | null = getVerificationLinkDetails(queryString);
   if (!verificationData) {
-    const infoModalConfig: InfoModalConfig = {
+    const infoModal: HTMLDivElement = InfoModal.display({
       title: 'Invalid verification link.',
       description: 'Please ensure your click the correct link in your verification email.',
       btnTitle: 'okay',
-    };
+    });
 
-    const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
     infoModal.addEventListener('click', (e: MouseEvent) => {
       if (!(e.target instanceof HTMLElement)) {
         return;
@@ -394,16 +391,15 @@ function detectOngoingVerification(): void {
     return;
   };
 
-  const confirmModalConfig: ConfirmModalConfig = {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Verification request detected.',
     description: 'There seems to be an ongoing verification request.\nWould you like to proceed with verifying your account?',
     confirmBtnTitle: 'Proceed',
     cancelBtnTitle: 'Remove request',
     extraBtnTitle: null,
     isDangerousAction: false,
-  };
+  });
 
-  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
