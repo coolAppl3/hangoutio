@@ -127,28 +127,13 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 400) {
-      if (errReason === 'email') {
-        ErrorSpan.display(emailInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'displayName') {
-        ErrorSpan.display(displayNameInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'username') {
-        ErrorSpan.display(usernameInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'password') {
-        ErrorSpan.display(passwordInput, errMessage);
-        return;
-      };
-
-      return;
+    const inputRecord: Record<string, HTMLInputElement | undefined> = {
+      email: emailInput,
+      emailTaken: emailInput,
+      displayName: displayNameInput,
+      username: usernameInput,
+      usernameTaken: usernameInput,
+      password: passwordInput,
     };
 
     if (status === 409) {
@@ -159,14 +144,18 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
         return;
       };
 
-      if (errReason === 'emailTaken') {
-        ErrorSpan.display(emailInput, errMessage);
-        return;
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
       };
 
-      if (errReason === 'usernameTaken') {
-        ErrorSpan.display(usernameInput, errMessage);
-        return;
+      return;
+    };
+
+    if (status === 400) {
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
       };
     };
   };
