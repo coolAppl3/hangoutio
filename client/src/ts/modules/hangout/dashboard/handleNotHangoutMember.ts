@@ -20,7 +20,7 @@ interface NotHangoutMemberState {
 
 let notHangoutMemberState: NotHangoutMemberState | null = null;
 
-export async function handleNotHangoutMember(errResData: unknown, hangoutId: string): Promise<void> {
+export function handleNotHangoutMember(errResData: unknown, hangoutId: string): void {
   if (!isValidNotHangoutMemberData(errResData)) {
     popup('Something went wrong.', 'error');
     setTimeout(() => window.location.href = 'index.html', 1000);
@@ -35,11 +35,12 @@ export async function handleNotHangoutMember(errResData: unknown, hangoutId: str
   };
 
   const authToken: string | null = Cookies.get('authToken');
+
   if (!authToken || !isValidAuthToken(authToken)) {
     Cookies.remove('authToken');
     popup('Invalid credentials detected.', 'error');
+    setTimeout(() => window.location.reload(), 1000);
 
-    await getHangoutDashboardData();
     return;
   };
 
@@ -74,7 +75,9 @@ export async function handleNotHangoutMember(errResData: unknown, hangoutId: str
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
+      confirmModal.remove();
       await joinHangoutAsAccount();
+
       return;
     };
 
@@ -89,16 +92,17 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
   if (!notHangoutMemberState) {
     popup('Something went wrong.', 'error');
-    setTimeout(() => window.location.href = 'index.html', 1000);
+    setTimeout(() => window.location.reload(), 1000);
 
     return;
   };
 
   const authToken: string | null = Cookies.get('authToken');
+
   if (!authToken || !isValidAuthToken(authToken)) {
     Cookies.remove('authToken');
-    popup('Not signed in.', 'error');
-    setTimeout(() => window.location.href = 'sign-in.html', 1000);
+    popup('Invalid credentials detected.', 'error');
+    setTimeout(() => window.location.reload(), 1000);
 
     return;
   };
@@ -113,9 +117,9 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
   try {
     await joinHangoutAsAccountService(authToken, joinHangoutAsAccountBody);
+    removeJoinHangoutForm();
 
     popup('Successfully joined hangout.', 'success');
-    removeJoinHangoutForm();
     LoadingModal.remove();
 
     await getHangoutDashboardData();
@@ -125,7 +129,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.reload(), 1000);
 
       return;
     };
@@ -134,7 +138,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.reload(), 1000);
 
       return;
     };
@@ -153,21 +157,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
       };
 
       Cookies.remove('authToken');
-      setTimeout(() => window.location.href = 'sign-in.html', 1000);
-
-      return;
-    };
-
-    if (status === 400) {
-      if (errReason === 'hangoutId') {
-        handleInvalidHangoutId();
-        return;
-      };
-
-      if (errReason === 'hangoutPassword') {
-        joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
-        return;
-      };
+      setTimeout(() => window.location.reload(), 1000);
 
       return;
     };
@@ -188,6 +178,10 @@ export async function joinHangoutAsAccount(): Promise<void> {
         return;
       };
 
+      if (errReason === 'alreadyJoined') {
+        setTimeout(() => window.location.reload(), 1000);
+      };
+
       return;
     };
 
@@ -196,7 +190,18 @@ export async function joinHangoutAsAccount(): Promise<void> {
       return;
     };
 
-    setTimeout(() => window.location.href = 'index.html', 1000);
+    if (status === 400) {
+      if (errReason === 'hangoutId') {
+        handleInvalidHangoutId();
+        return;
+      };
+
+      if (errReason === 'hangoutPassword') {
+        joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
+      };
+    };
+
+    setTimeout(() => window.location.reload(), 1000);
   };
 };
 
