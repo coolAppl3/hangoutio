@@ -4,7 +4,7 @@ import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getHangoutDashboardDataService, HangoutDashboardData } from "../../services/hangoutServices";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { handleHangoutFull, handleInvalidHangoutId, handleNoAuthToken, hideLoadingSkeleton, removeGuestSignUpSection } from "./hangoutDashboardUtils";
+import { handleHangoutNotFound, handleInvalidHangoutId, handleNoAuthToken, hideLoadingSkeleton, removeGuestSignUpSection } from "./hangoutDashboardUtils";
 
 const hangoutDashboardElement: HTMLElement | null = document.querySelector('#dashboard-section');
 
@@ -86,13 +86,13 @@ export async function getHangoutDashboardData(): Promise<void> {
       return;
     };
 
-    if (status === 400 && errReason === 'hangoutId') {
-      handleInvalidHangoutId();
+    if (status === 404) {
+      handleHangoutNotFound();
       return;
     };
 
-    if (status === 404) {
-      handleHangoutFull();
+    if (status === 400) {
+      handleInvalidHangoutId();
       return;
     };
 
