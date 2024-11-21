@@ -113,17 +113,17 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
 
     popup(errMessage, 'error');
 
-    if (status === 400) {
-      handleInvalidHangoutId();
-      return;
-    };
-
     if (status === 404) {
       handleHangoutNotFound();
       return;
     };
 
-    setTimeout(() => window.location.href = 'index.html');
+    if (status === 400) {
+      handleInvalidHangoutId();
+      return;
+    };
+
+    setTimeout(() => window.location.href = 'index.html', 1000);
     return;
   };
 
