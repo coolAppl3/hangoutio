@@ -74,7 +74,7 @@ export async function getHangoutDashboardData(): Promise<void> {
 
     if (status === 401) {
       if (errReason === 'notMember') {
-        await handleNotHangoutMember(errResData, hangoutId);
+        handleNotHangoutMember(errResData, hangoutId);
         return;
       };
 
