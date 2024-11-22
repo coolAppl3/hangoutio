@@ -9,7 +9,7 @@ import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import { isValidAuthToken, isValidDisplayName, isValidNewPassword, isValidPassword, isValidUsername } from '../util/validation/userValidation';
 import { generateAuthToken, generateHangoutId } from '../util/tokenGenerator';
 import { getUserId, getUserType } from '../util/userUtils';
-import { addHangoutLog } from '../util/hangoutLogger';
+import { addHangoutEvent } from '../util/addHangoutEvent';
 import { getDateAndTimeSTring } from '../util/globalUtils';
 import { isSqlError } from '../util/isSqlError';
 import { decryptPassword, encryptPassword } from '../util/encryptionUtils';
@@ -526,7 +526,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     res.json({ success: true, resData: {} });
 
     const logDescription: string = 'Hangout password was updated.';
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -692,7 +692,7 @@ hangoutsRouter.patch('/details/changeMemberLimit', async (req: Request, res: Res
     res.json({ success: true, resData: {} });
 
     const logDescription: string = `Hangout member limit was changed to ${requestData.newLimit}.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -954,7 +954,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
     });
 
     const logDescription: string = `Hangout steps have been updated and will now be concluded on ${getDateAndTimeSTring(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1173,7 +1173,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
       });
 
       const logDescription: string = `Hangout has been manually progressed and is now concluded. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-      await addHangoutLog(requestData.hangoutId, logDescription);
+      await addHangoutEvent(requestData.hangoutId, logDescription);
 
       return;
     };
@@ -1236,7 +1236,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
     });
 
     const logDescription: string = `Hangout has been manually progressed, and will now be concluded on ${getDateAndTimeSTring(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1380,7 +1380,7 @@ hangoutsRouter.delete('/details/members/kick', async (req: Request, res: Respons
       res.json({ success: true, resData: {} });
 
       const logDescription: string = `${memberToKick.display_name} was kicked.`;
-      await addHangoutLog(requestData.hangoutId, logDescription);
+      await addHangoutEvent(requestData.hangoutId, logDescription);
 
       return;
     };
@@ -1401,7 +1401,7 @@ hangoutsRouter.delete('/details/members/kick', async (req: Request, res: Respons
     res.json({ success: true, resData: {} });
 
     const logDescription: string = `${memberToKick.display_name} was kicked.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1580,7 +1580,7 @@ hangoutsRouter.patch('/details/members/transferLeadership', async (req: Request,
     res.json({ success: true, resData: {} });
 
     const logDescription: string = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1743,7 +1743,7 @@ hangoutsRouter.patch('/details/members/claimLeadership', async (req: Request, re
     res.json({ success: true, resData: {} });
 
     const logDescription: string = `${userDetails.display_name} has claimed the hangout leader role.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);

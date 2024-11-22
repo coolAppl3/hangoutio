@@ -8,7 +8,7 @@ import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { generateAuthToken } from "../util/tokenGenerator";
 import { getUserId, getUserType } from "../util/userUtils";
-import { addHangoutLog } from "../util/hangoutLogger";
+import { addHangoutEvent } from "../util/addHangoutEvent";
 import { votesLimit } from "../util/validation/voteValidation";
 
 export const hangoutMembersRouter: Router = express.Router();
@@ -169,7 +169,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
     res.json({ success: true, resData: { hangoutMemberId: resultSetHeader.insertId } });
 
     const logDescription: string = `${accountDetails.display_name} has joined the hangout.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -344,7 +344,7 @@ hangoutMembersRouter.post('/create/guestMember', async (req: Request, res: Respo
     res.status(201).json({ success: true, resData: { authToken: idMarkedAuthToken, hangoutMemberId: thirdResultSetheader.insertId } });
 
     const logDescription: string = `${requestData.displayName} has joined the hangout.`;
-    addHangoutLog(requestData.hangoutId, logDescription);
+    addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -537,7 +537,7 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
       res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: true } });
 
       const logDescription: string = `${userDetails.display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-      await addHangoutLog(requestData.hangoutId, logDescription);
+      await addHangoutEvent(requestData.hangoutId, logDescription);
 
       return;
     };
@@ -561,7 +561,7 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
     res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: false } });
 
     const logDescription: string = `${userRows[0].display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
