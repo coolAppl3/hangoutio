@@ -1,4 +1,4 @@
-export function isSqlError(err: unknown): boolean {
+export function isSqlError(err: unknown): err is SqlError {
   if (typeof err !== 'object' || err === null) {
     return false;
   };

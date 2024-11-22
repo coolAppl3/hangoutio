@@ -182,7 +182,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       return;
     };
 
-    const sqlError = err as SqlError;
+    const sqlError: SqlError = err;
 
     if (sqlError.errno === 1062) {
       res.status(409).json({ success: false, message: 'Duplicate hangout ID.', reason: 'duplicateHangoutId' });
@@ -371,7 +371,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
       return;
     };
 
-    const sqlError = err as SqlError;
+    const sqlError: SqlError = err;
 
     if (sqlError.errno === 1062) {
       res.status(409).json({ success: false, message: 'Duplicate hangout ID.', reason: 'duplicateHangoutId' });

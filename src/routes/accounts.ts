@@ -176,7 +176,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       return;
     };
 
-    const sqlError = err as SqlError;
+    const sqlError: SqlError = err;
 
     if (sqlError.errno === 1062 && sqlError.sqlMessage?.endsWith(`for key 'auth_token'`)) {
       res.status(409).json({ success: false, message: 'Duplicate authToken.', reason: 'duplicateAuthToken' });
@@ -2204,7 +2204,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
       return;
     };
 
-    const sqlError = err as SqlError;
+    const sqlError: SqlError = err;
 
     if (sqlError.errno === 1062) {
       res.status(409).json({ success: false, message: 'Already friends.' });
