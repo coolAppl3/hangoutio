@@ -428,12 +428,12 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         if (accountDetails.failed_sign_in_attempts >= 5) {
-            res.status(403).json({ success: false, message: 'Account is locked.', reason: 'accountLocked' });
+            res.status(403).json({ success: false, message: 'Account locked.', reason: 'accountLocked' });
             return;
         }
         ;
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: 'Account is unverified.', reason: 'unverified' });
+            res.status(403).json({ success: false, message: 'Account unverified.', reason: 'unverified' });
             return;
         }
         ;
@@ -639,7 +639,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         account_id = ?
       LIMIT 1;`, [requestData.accountId]);
         if (recoveryRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Recovery request not found.' });
+            res.status(404).json({ success: false, message: 'Recovery request not found or expired.' });
             return;
         }
         ;

@@ -118,7 +118,11 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         hangout_members.account_id = ?
       LIMIT ${hangoutValidation.ongoingHangoutsLimit};`, [false, accountId]);
         if (ongoingHangoutsRows.length >= hangoutValidation.ongoingHangoutsLimit) {
-            res.status(403).json({ success: false, message: 'Ongoing hangouts limit reached.' });
+            res.status(409).json({
+                success: false,
+                message: `You've reached the limit of ${hangoutValidation.ongoingHangoutsLimit} ongoing hangouts.`,
+                reason: 'hangoutsLimitReached',
+            });
             return;
         }
         ;
@@ -214,6 +218,11 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         return;
     }
     ;
+    if (!(0, userValidation_1.isValidDisplayName)(requestData.displayName)) {
+        res.status(400).json({ success: false, message: 'Invalid guest display name.', reason: 'guestDisplayName' });
+        return;
+    }
+    ;
     if (!(0, userValidation_1.isValidUsername)(requestData.username)) {
         res.status(400).json({ success: false, message: 'Invalid guest username.', reason: 'username' });
         return;
@@ -221,11 +230,6 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     ;
     if (!(0, userValidation_1.isValidNewPassword)(requestData.password)) {
         res.status(400).json({ success: false, message: 'Invalid guest password.', reason: 'guestPassword' });
-        return;
-    }
-    ;
-    if (!(0, userValidation_1.isValidDisplayName)(requestData.displayName)) {
-        res.status(400).json({ success: false, message: 'Invalid guest display name.', reason: 'guestDisplayName' });
         return;
     }
     ;
@@ -1479,12 +1483,7 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
 });
 exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
     const hangoutId = req.query.hangoutId;
-    if (typeof hangoutId !== 'string') {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
-        return;
-    }
-    ;
-    if (!hangoutValidation.isValidHangoutId(hangoutId)) {
+    if (typeof hangoutId !== 'string' || !hangoutValidation.isValidHangoutId(hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
@@ -1610,7 +1609,7 @@ exports.hangoutsRouter.post('/details/members/join/account', async (req, res) =>
         const hangoutDetails = hangoutRows[0];
         if (hangoutDetails.already_joined) {
             await connection.rollback();
-            res.status(403).json({ success: false, message: 'Already a member of this hangout.' });
+            res.status(409).json({ success: false, message: 'Already a member of this hangout.', reason: 'alreadyJoined' });
             return;
         }
         ;
