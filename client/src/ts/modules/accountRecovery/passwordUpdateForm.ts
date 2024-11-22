@@ -73,7 +73,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
 
   try {
     const recoveryUpdatePasswordData: AxiosResponse<RecoveryUpdatePasswordData> = await recoveryUpdatePasswordService(recoveryUpdatePasswordBody);
-    const { newAuthToken } = recoveryUpdatePasswordData.data.resData;
+    const newAuthToken: string = recoveryUpdatePasswordData.data.resData.newAuthToken;
 
     Cookies.set('authToken', newAuthToken);
     popup('Account recovery successful.', 'success');

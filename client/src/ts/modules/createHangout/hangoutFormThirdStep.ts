@@ -135,7 +135,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
 
   try {
     const accountLeaderHangoutData: AxiosResponse<CreateHangoutAsAccountData> = await createHangoutAsAccountService(authToken, accountLeaderHangoutBody);
-    const { hangoutId } = accountLeaderHangoutData.data.resData;
+    const hangoutId: string = accountLeaderHangoutData.data.resData.hangoutId;
 
     popup('Hangout successfully created.', 'success');
     setTimeout(() => window.location.href = `hangout.html?hangoutId=${hangoutId}`, 1000);
@@ -355,7 +355,7 @@ async function accountSignIn(): Promise<void> {
 
   try {
     const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
-    const { authToken } = accountSignInData.data.resData;
+    const authToken: string = accountSignInData.data.resData.authToken;
 
     if (hangoutThirdStepState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;

@@ -65,7 +65,7 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
 
   try {
     const sendRecoveryEmailData: AxiosResponse<SendRecoveryEmailData> = await sendRecoveryEmailService({ email: recoveryState.recoveryEmail });
-    const { requestTimestamp } = sendRecoveryEmailData.data.resData;
+    const requestTimestamp: number = sendRecoveryEmailData.data.resData.requestTimestamp;
 
     recoveryState.recoveryStartTimestamp = requestTimestamp;
     recoveryState.currentStage = RecoveryStage.confirmationForm;

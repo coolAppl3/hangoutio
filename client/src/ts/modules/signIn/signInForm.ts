@@ -87,7 +87,7 @@ async function accountSignIn(): Promise<void> {
 
   try {
     const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
-    const { authToken } = accountSignInData.data.resData;
+    const authToken: string = accountSignInData.data.resData.authToken;
 
     if (signInFormState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
