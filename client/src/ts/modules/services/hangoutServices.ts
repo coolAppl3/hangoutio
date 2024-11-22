@@ -7,7 +7,7 @@ const hangoutsApiUrl: string = window.location.hostname === 'localhost'
 //
 
 
-export interface AccountLeaderHangoutBody {
+export interface CreateHangoutAsAccountBody {
   hangoutTitle: string,
   hangoutPassword: string | null,
   memberLimit: number,
@@ -16,7 +16,7 @@ export interface AccountLeaderHangoutBody {
   votingStep: number,
 };
 
-export interface AccountLeaderHangoutData {
+export interface CreateHangoutAsAccountData {
   success: true,
   resData: {
     hangoutId: string,
@@ -24,7 +24,7 @@ export interface AccountLeaderHangoutData {
   },
 };
 
-export async function createAccountLeaderHangoutService(authToken: string, requestBody: AccountLeaderHangoutBody): Promise<AxiosResponse<AccountLeaderHangoutData>> {
+export async function createHangoutAsAccountService(authToken: string, requestBody: CreateHangoutAsAccountBody): Promise<AxiosResponse<CreateHangoutAsAccountData>> {
   return axios.post(`${hangoutsApiUrl}/create/accountLeader`, requestBody, {
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -34,7 +34,7 @@ export async function createAccountLeaderHangoutService(authToken: string, reque
 
 // --- --- ---
 
-export interface GuestLeaderHangoutBody {
+export interface CreateHangoutAsGuestBody {
   hangoutTitle: string,
   hangoutPassword: string | null,
   memberLimit: number,
@@ -46,7 +46,7 @@ export interface GuestLeaderHangoutBody {
   displayName: string,
 };
 
-export interface GuestLeaderHangoutData {
+export interface CreateHangoutAsGuestData {
   success: true,
   resData: {
     hangoutId: string,
@@ -54,7 +54,7 @@ export interface GuestLeaderHangoutData {
   },
 };
 
-export async function createGuestLeaderHangoutService(requestBody: GuestLeaderHangoutBody): Promise<AxiosResponse<GuestLeaderHangoutData>> {
+export async function createHangoutAsGuestService(requestBody: CreateHangoutAsGuestBody): Promise<AxiosResponse<CreateHangoutAsGuestData>> {
   return axios.post(`${hangoutsApiUrl}/create/guestLeader`, requestBody);
 };
 
