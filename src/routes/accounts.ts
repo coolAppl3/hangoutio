@@ -81,6 +81,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
           message: 'Email address and username are both already taken.',
           reason: 'emailAndUsernameTaken',
         });
+
         return;
       };
 

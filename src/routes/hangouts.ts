@@ -1973,8 +1973,8 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
 
   try {
     connection = await dbPool.getConnection();
-    connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
-    connection.beginTransaction();
+    await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+    await connection.beginTransaction();
 
     interface UserDetails extends RowDataPacket {
       auth_token: string,
