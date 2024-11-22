@@ -114,7 +114,12 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     );
 
     if (ongoingHangoutsRows.length >= hangoutValidation.ongoingHangoutsLimit) {
-      res.status(403).json({ success: false, message: 'Ongoing hangouts limit reached.' });
+      res.status(409).json({
+        success: false,
+        message: `You've reached the limit of ${hangoutValidation.ongoingHangoutsLimit} ongoing hangouts.`,
+        reason: 'hangoutsLimitReached',
+      });
+
       return;
     };
 
@@ -235,6 +240,11 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     return;
   };
 
+  if (!isValidDisplayName(requestData.displayName)) {
+    res.status(400).json({ success: false, message: 'Invalid guest display name.', reason: 'guestDisplayName' });
+    return;
+  };
+
   if (!isValidUsername(requestData.username)) {
     res.status(400).json({ success: false, message: 'Invalid guest username.', reason: 'username' });
     return;
@@ -242,11 +252,6 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
   if (!isValidNewPassword(requestData.password)) {
     res.status(400).json({ success: false, message: 'Invalid guest password.', reason: 'guestPassword' });
-    return;
-  };
-
-  if (!isValidDisplayName(requestData.displayName)) {
-    res.status(400).json({ success: false, message: 'Invalid guest display name.', reason: 'guestDisplayName' });
     return;
   };
 
@@ -1879,12 +1884,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
 hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response) => {
   const hangoutId = req.query.hangoutId;
 
-  if (typeof hangoutId !== 'string') {
-    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
-    return;
-  };
-
-  if (!hangoutValidation.isValidHangoutId(hangoutId)) {
+  if (typeof hangoutId !== 'string' || !hangoutValidation.isValidHangoutId(hangoutId)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
@@ -2052,7 +2052,7 @@ hangoutsRouter.post('/details/members/join/account', async (req: Request, res: R
 
     if (hangoutDetails.already_joined) {
       await connection.rollback();
-      res.status(403).json({ success: false, message: 'Already a member of this hangout.' });
+      res.status(409).json({ success: false, message: 'Already a member of this hangout.', reason: 'alreadyJoined' });
 
       return;
     };
