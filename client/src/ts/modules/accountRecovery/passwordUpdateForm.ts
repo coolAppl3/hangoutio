@@ -6,7 +6,7 @@ import revealPassword from "../global/revealPassword";
 import popup from "../global/popup";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
-import { InfoModal, InfoModalConfig } from "../global/InfoModal";
+import { InfoModal } from "../global/InfoModal";
 import { RecoveryUpdatePasswordBody, RecoveryUpdatePasswordData, recoveryUpdatePasswordService } from "../services/accountServices";
 import Cookies from "../global/Cookies";
 
@@ -107,20 +107,6 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     LoadingModal.remove();
     popup(errMessage, 'error')
 
-    if (status === 400) {
-      if (errReason === 'password') {
-        ErrorSpan.display(newPasswordInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'accountId' || errReason === 'recoveryToken') {
-        displayIncorrectRecoveryLinkDataInfoModal(errMessage);
-        return;
-      };
-
-      return;
-    };
-
     if (status === 404) {
       LoadingModal.display();
       setTimeout(() => reloadWithoutQueryString(), 1000);
@@ -145,50 +131,33 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     };
 
     if (status === 401) {
-      if (errReason === 'incorrectRecoveryToken') {
-        displayIncorrectRecoveryLinkDataInfoModal(errMessage);
+      if (errReason === 'recoverySuspended') {
+        handleRecoverySuspension(errResData);
         return;
       };
 
-      if (errReason === 'recoverySuspended') {
-        if (typeof errResData !== 'object' || errResData === null) {
-          return;
-        };
+      displayIncorrectRecoveryLinkDataInfoModal(errMessage);
+      return;
+    };
 
-        if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
-          return;
-        };
-
-        const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.requestTimestamp);
-        const infoModalConfig: InfoModalConfig = {
-          title: 'Recovery request suspended.',
-          description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`}.`,
-          btnTitle: 'Okay',
-        };
-
-        const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
-        infoModal.addEventListener('click', (e: MouseEvent) => {
-          if (!(e.target instanceof HTMLElement)) {
-            return;
-          };
-
-          if (e.target.id === 'info-modal-btn') {
-            reloadWithoutQueryString();
-          };
-        });
+    if (status === 400) {
+      if (errReason === 'password') {
+        ErrorSpan.display(newPasswordInput, errMessage);
+        return;
       };
+
+      displayIncorrectRecoveryLinkDataInfoModal(errMessage);
     };
   };
 };
 
 function displayIncorrectRecoveryLinkDataInfoModal(errMessage: string): void {
-  const infoModalConfig: InfoModalConfig = {
+  const infoModal: HTMLDivElement = InfoModal.display({
     title: errMessage,
     description: 'Make sure to click the correct link in your recovery email.',
     btnTitle: 'Okay',
-  };
+  });
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
   infoModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
@@ -209,5 +178,32 @@ function setActiveValidation(): void {
 
   confirmNewPasswordInput?.addEventListener('input', () => {
     newPasswordInput ? validateConfirmPassword(confirmNewPasswordInput, newPasswordInput) : undefined;
+  });
+};
+
+function handleRecoverySuspension(errResData: unknown): void {
+  if (typeof errResData !== 'object' || errResData === null) {
+    return;
+  };
+
+  if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
+    return;
+  };
+
+  const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.requestTimestamp);
+  const infoModal: HTMLDivElement = InfoModal.display({
+    title: 'Recovery request suspended.',
+    description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`}.`,
+    btnTitle: 'Okay',
+  });
+
+  infoModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'info-modal-btn') {
+      reloadWithoutQueryString();
+    };
   });
 };
