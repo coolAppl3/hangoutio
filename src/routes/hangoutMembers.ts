@@ -450,17 +450,17 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader,
-        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = ?) as requester_votes_count,
-        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = ?) as hangout_members_count
+        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = :hangoutMemberId) as requester_votes_count,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) as hangout_members_count
       FROM
         hangouts
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.hangout_member_id = ?
+        hangouts.hangout_id = :hangoutId AND
+        hangout_members.hangout_member_id = :hangoutMemberId
       LIMIT 1;`,
-      [requestData.hangoutMemberId, requestData.hangoutId, requestData.hangoutId, requestData.hangoutMemberId]
+      { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId }
     );
 
     if (hangoutMemberRows.length === 0) {

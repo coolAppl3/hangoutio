@@ -101,18 +101,23 @@ votesRouter.post('/', async (req: Request, res: Response) => {
         hangouts.current_step,
         hangout_members.account_id,
         hangout_members.guest_id,
-        EXISTS (SELECT 1 FROM suggestions WHERE suggestion_id = ?) AS suggestion_found,
-        EXISTS (SELECT 1 FROM votes WHERE hangout_member_id = ? AND suggestion_id = ?) AS already_voted,
-        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = ? LIMIT ?) AS total_votes
+        EXISTS (SELECT 1 FROM suggestions WHERE suggestion_id = :suggestionId) AS suggestion_found,
+        EXISTS (SELECT 1 FROM votes WHERE hangout_member_id = :hangoutMemberId AND suggestion_id = :suggestionId) AS already_voted,
+        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = :hangoutMemberId LIMIT :votesLimit) AS total_votes
       FROM
         hangouts
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.hangout_member_id = ?
-      LIMIT 1;`,
-      [requestData.suggestionId, requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutMemberId, voteValidation.votesLimit, requestData.hangoutId, requestData.hangoutMemberId]
+        hangouts.hangout_id = :hangoutId AND
+        hangout_members.hangout_member_id = :hangoutMemberId
+        LIMIT 1;`,
+      {
+        suggestionId: requestData.suggestionId,
+        hangoutMemberId: requestData.hangoutMemberId,
+        hangoutId: requestData.hangoutMemberId,
+        votesLimit: voteValidation.votesLimit
+      }
     );
 
     if (hangoutMemberRows.length === 0) {

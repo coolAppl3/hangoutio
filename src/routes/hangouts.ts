@@ -1061,16 +1061,16 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader,
-        (SELECT COUNT(*) FROM suggestions WHERE hangout_id = ?)
+        (SELECT COUNT(*) FROM suggestions WHERE hangout_id = :hangoutId)
       FROM
         hangouts
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.hangout_member_id = ?
+        hangouts.hangout_id = :hangoutId AND
+        hangout_members.hangout_member_id = :hangoutMemberId
       LIMIT 1;`,
-      [requestData.hangoutId, requestData.hangoutId, requestData.hangoutMemberId]
+      { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId }
     );
 
     if (hangoutRows.length === 0) {
@@ -1546,7 +1546,7 @@ hangoutsRouter.patch('/details/members/transferLeadership', async (req: Request,
       `UPDATE
         hangout_members
       SET
-        is_leader = false
+        is_leader = ?
       WHERE
         hangout_member_id = ?;`,
       [false, requestData.hangoutMemberId]

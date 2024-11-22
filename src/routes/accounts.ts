@@ -61,12 +61,12 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     await connection.beginTransaction();
 
     const [emailUsernameRows] = await connection.execute<RowDataPacket[]>(
-      `(SELECT 1 AS taken_status FROM accounts WHERE email = ? LIMIT 1)
+      `(SELECT 1 AS taken_status FROM accounts WHERE email = :email LIMIT 1)
       UNION ALL
-      (SELECT 1 AS taken_status FROM email_update WHERE new_email = ? LIMIT 1)
+      (SELECT 1 AS taken_status FROM email_update WHERE new_email = :email LIMIT 1)
       UNION ALL
-      (SELECT 2 AS taken_status FROM accounts WHERE username = ? LIMIT 1);`,
-      [requestData.email, requestData.email, requestData.username]
+      (SELECT 2 AS taken_status FROM accounts WHERE username = :username LIMIT 1);`,
+      { email: requestData.email, username: requestData.username }
     );
 
     if (emailUsernameRows.length > 0) {
@@ -1500,10 +1500,10 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       await connection.beginTransaction();
 
       const [emailRows] = await connection.execute<RowDataPacket[]>(
-        `(SELECT 1 FROM accounts WHERE email = ? LIMIT 1)
+        `(SELECT 1 FROM accounts WHERE email = :newEmail LIMIT 1)
         UNION ALL
-        (SELECT 1 FROM email_update WHERE new_email = ? LIMIT 1);`,
-        [requestData.newEmail, requestData.newEmail]
+        (SELECT 1 FROM email_update WHERE new_email = :newEmail LIMIT 1);`,
+        { newEmail: requestData.newEmail }
       );
 
       if (emailRows.length > 0) {
@@ -2019,10 +2019,10 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       FROM
         friend_requests
       WHERE
-        (requester_id = ? AND requestee_id = ?) OR
-        (requester_id = ? AND requestee_id = ?)
+        (requester_id = :requesterId AND requestee_id = :requesteeId) OR
+        (requester_id = :requesteeId AND requestee_id = :requesterId)
       LIMIT 2;`,
-      [accountId, requesteeId, requesteeId, accountId]
+      { requesterId: accountId, requesteeId }
     );
 
     if (friendRequestRows.length === 0) {
@@ -2169,9 +2169,9 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
         friendship_timestamp
       )
       VALUES
-        (${generatePlaceHolders(3)}),
-        (${generatePlaceHolders(3)});`,
-      [accountId, requesterId, friendshipTimestamp, requesterId, accountId, friendshipTimestamp]
+        (:accountId, :requesterId, :friendshipTimestamp),
+        (:requesterId, :accountId, :friendshipTimestamp);`,
+      { accountId, requesterId, friendshipTimestamp }
     );
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
@@ -2378,10 +2378,10 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
       `DELETE FROM
         friendships
       WHERE
-        (account_id = ? AND friend_id = ?) OR
-        (account_id = ? AND friend_id = ?)
+        (account_id = :accountId AND friend_id = friendId) OR
+        (account_id = :friendId AND friend_id = :accountId)
       LIMIT 2;`,
-      [accountId, friendId, friendId, accountId]
+      { accountId, friendId }
     );
 
     if (resultSetHeader.affectedRows === 0) {
