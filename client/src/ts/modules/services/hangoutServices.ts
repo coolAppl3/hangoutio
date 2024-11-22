@@ -20,7 +20,6 @@ export interface CreateHangoutAsAccountData {
   success: true,
   resData: {
     hangoutId: string,
-    hangoutMemberId: number,
   },
 };
 
