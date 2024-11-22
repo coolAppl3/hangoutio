@@ -1,7 +1,7 @@
 export enum RecoveryStage {
   emailForm = 'emailForm',
   confirmationForm = 'confirmationForm',
-  updatePasswordForm = 'updatePasswordForm'
+  updatePasswordForm = 'updatePasswordForm',
 };
 
 interface RecoveryState {
