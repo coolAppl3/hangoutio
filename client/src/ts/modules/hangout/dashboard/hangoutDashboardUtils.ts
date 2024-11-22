@@ -113,17 +113,17 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
 
     popup(errMessage, 'error');
 
-    if (status === 400) {
-      handleInvalidHangoutId();
-      return;
-    };
-
     if (status === 404) {
       handleHangoutNotFound();
       return;
     };
 
-    setTimeout(() => window.location.href = 'index.html');
+    if (status === 400) {
+      handleInvalidHangoutId();
+      return;
+    };
+
+    setTimeout(() => window.location.href = 'index.html', 1000);
     return;
   };
 
@@ -142,7 +142,7 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      sessionStorage.setItem('pendingSignInHangoutId', hangoutId);
+      Cookies.set('pendingSignInHangoutId', hangoutId);
       window.location.href = 'sign-in.html';
 
       return;

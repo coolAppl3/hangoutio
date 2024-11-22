@@ -4,7 +4,7 @@ import revealPassword from "../../global/revealPassword";
 import { validatePassword } from "../../global/validation";
 import { joinHangoutAsAccount } from "./handleNotHangoutMember";
 
-export async function initJoinHangoutForm(): Promise<void> {
+export function initJoinHangoutForm(): void {
   const joinHangoutFormContainer: HTMLDivElement = createJoinHangoutFormContainer();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {

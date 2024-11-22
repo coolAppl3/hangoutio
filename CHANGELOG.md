@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.4] (2024-11-22)
+
+### Features
+
+- Updated `signUpForm.ts` to have `VerificationAccountId` and `verificationTimestamp` stored in cookies only for 15 minutes instead of for the whole session.
+- Improved overall readability of a number of modules, mostly on the client end.
+
+
 ## [0.3.3] (2024-11-20)
 
 ### Features

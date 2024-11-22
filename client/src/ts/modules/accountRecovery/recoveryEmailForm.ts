@@ -1,13 +1,13 @@
 import { RecoveryStage, recoveryState } from "./recoveryState";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
-import { InfoModal, InfoModalConfig } from "../global/InfoModal";
+import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { isValidAuthToken, isValidQueryString, isValidTimestamp, isValidUniqueToken, validateEmail } from "../global/validation";
 import { SendRecoveryEmailData, sendRecoveryEmailService } from "../services/accountServices";
 import { signOut } from "../global/signOut";
-import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
+import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import { displayFailureLimitReachedInfoModal, displayRecoveryExpiryInfoModal, getMinutesTillRecoveryExpiry, initRecoveryTimers, updateDisplayedForm } from "./recoveryUtils";
 
@@ -46,8 +46,8 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
   };
 
   if (!recoveryEmailInput) {
-    LoadingModal.remove();
     popup('Something went wrong', 'error');
+    LoadingModal.remove();
 
     return;
   };
@@ -70,8 +70,9 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
     recoveryState.recoveryStartTimestamp = requestTimestamp;
     recoveryState.currentStage = RecoveryStage.confirmationForm;
 
-    disableRecoveryEmailInput();
     document.dispatchEvent(new CustomEvent('recoveryStarted'));
+
+    disableRecoveryEmailInput();
     updateDisplayedForm();
 
     popup('Recovery email sent.', 'success');
@@ -105,11 +106,6 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
     LoadingModal.remove();
     popup(errMessage, 'error');
 
-    if (status === 400 && errReason === 'email') {
-      ErrorSpan.display(recoveryEmailInput, errMessage);
-      return;
-    };
-
     if (status === 404) {
       ErrorSpan.display(recoveryEmailInput, errMessage);
       return;
@@ -132,19 +128,24 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
           displayFailureLimitReachedInfoModal(errMessage, errResData.requestTimestamp);
         };
       };
+
+      return;
+    };
+
+    if (status === 400 && errReason === 'email') {
+      ErrorSpan.display(recoveryEmailInput, errMessage);
     };
   };
 };
 
 function displayEmailLimitReachedInfoModal(errMessage: string, requestTimestamp: number): void {
   const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(requestTimestamp);
-  const infoModalConfig: InfoModalConfig = {
+
+  InfoModal.display({
     title: errMessage,
     description: `Make sure to check your spam and junk folders for the recovery email.\nIf you still can't find it, you can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
     btnTitle: 'Okay',
-  };
-
-  InfoModal.display(infoModalConfig, { simple: true });
+  }, { simple: true });
 };
 
 function setActiveValidation(): void {
@@ -258,16 +259,15 @@ function detectSignedInUser(): void {
 
   const isGuestUser: boolean = authToken.startsWith('g');
 
-  const confirmModalConfig: ConfirmModalConfig = {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: `You're signed in.`,
     description: 'You must sign out before starting the account recovery process.',
     confirmBtnTitle: 'Sign out',
     cancelBtnTitle: isGuestUser ? 'Go to homepage' : 'Go to my account',
     extraBtnTitle: null,
     isDangerousAction: false,
-  };
+  });
 
-  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
@@ -287,13 +287,12 @@ function detectSignedInUser(): void {
 };
 
 function displayInvalidRecoveryLinkModal(): void {
-  const infoModalConfig: InfoModalConfig = {
+  const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Invalid recovery link.',
     description: `Please ensure your click the correct link in your recovery email.`,
     btnTitle: 'Okay'
-  };
+  });
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
   infoModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;

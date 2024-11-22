@@ -1,12 +1,12 @@
 import { signUpState } from "./signUpState";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
-import { ConfirmModal, ConfirmModalConfig } from "../global/ConfirmModal";
+import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { isValidAuthToken, isValidHangoutId, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
+import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
 import { AccountSignUpBody, AccountSignUpData, accountSignUpService } from "../services/accountServices";
 import { switchToVerificationStage } from "./signUpUtils";
 import LoadingModal from "../global/LoadingModal";
@@ -87,8 +87,8 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     signUpState.accountId = accountId;
     signUpState.verificationStartTimestamp = createdOnTimestamp;
 
-    Cookies.set('verificationAccountId', `${accountId}`);
-    Cookies.set('verificationStartTimestamp', `${createdOnTimestamp}`);
+    Cookies.set('verificationAccountId', `${accountId}`, 15 * 60);
+    Cookies.set('verificationStartTimestamp', `${createdOnTimestamp}`, 15 * 60);
 
     signUpState.verificationEmailsSent = 1;
     switchToVerificationStage();
@@ -127,28 +127,13 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 400) {
-      if (errReason === 'email') {
-        ErrorSpan.display(emailInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'displayName') {
-        ErrorSpan.display(displayNameInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'username') {
-        ErrorSpan.display(usernameInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'password') {
-        ErrorSpan.display(passwordInput, errMessage);
-        return;
-      };
-
-      return;
+    const inputRecord: Record<string, HTMLInputElement | undefined> = {
+      email: emailInput,
+      emailTaken: emailInput,
+      displayName: displayNameInput,
+      username: usernameInput,
+      usernameTaken: usernameInput,
+      password: passwordInput,
     };
 
     if (status === 409) {
@@ -159,14 +144,18 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
         return;
       };
 
-      if (errReason === 'emailTaken') {
-        ErrorSpan.display(emailInput, errMessage);
-        return;
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
       };
 
-      if (errReason === 'usernameTaken') {
-        ErrorSpan.display(usernameInput, errMessage);
-        return;
+      return;
+    };
+
+    if (status === 400) {
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
       };
     };
   };
@@ -242,16 +231,15 @@ function detectSignedInUser(): void {
 
   const isGuestUser: boolean = authToken.startsWith('g');
 
-  const confirmModalConfig: ConfirmModalConfig = {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: `You're signed in.`,
     description: 'You must sign out before creating a new account.',
     confirmBtnTitle: isGuestUser ? 'Go to homepage' : 'Go to my account',
     cancelBtnTitle: 'Sign out',
     extraBtnTitle: null,
     isDangerousAction: false,
-  };
+  });
 
-  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;

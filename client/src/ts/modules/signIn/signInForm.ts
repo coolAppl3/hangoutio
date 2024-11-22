@@ -8,7 +8,7 @@ import { AccountSignInBody, AccountSignInData, accountSignInService } from '../s
 import axios, { AxiosError, AxiosResponse } from '../../../../node_modules/axios/index';
 import { GuestSignInBody, GuestSignInData, guestSignInService } from '../services/guestServices';
 import { signOut } from '../global/signOut';
-import { InfoModal, InfoModalConfig } from '../global/InfoModal';
+import { InfoModal } from '../global/InfoModal';
 import { ConfirmModal } from '../global/ConfirmModal';
 
 interface SignInFormState {
@@ -135,44 +135,8 @@ async function accountSignIn(): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 400) {
-      if (errReason === 'email') {
-        ErrorSpan.display(accountEmailInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'password') {
-        ErrorSpan.display(accountPasswordInput, errMessage);
-        return;
-      };
-
-      return;
-    };
-
     if ((status === 404)) {
       ErrorSpan.display(accountEmailInput, errMessage);
-      return;
-    };
-
-    if (status === 403) {
-      ErrorSpan.display(accountEmailInput, errMessage);
-
-      if (errReason === 'accountLocked') {
-        displayAccountLockedModal();
-        return;
-      };
-
-      if (errReason === 'unverified') {
-        const infoModalConfig: InfoModalConfig = {
-          title: errMessage,
-          description: `You need to first verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
-          btnTitle: 'Okay',
-        };
-
-        InfoModal.display(infoModalConfig, { simple: true });
-        return;
-      };
-
       return;
     };
 
@@ -180,7 +144,40 @@ async function accountSignIn(): Promise<void> {
       ErrorSpan.display(accountPasswordInput, errMessage);
 
       if (errReason === 'accountLocked') {
-        displayAccountLockedModal();
+        handleAccountLocked();
+      };
+
+      return;
+    };
+
+    if (status === 403) {
+      ErrorSpan.display(accountEmailInput, errMessage);
+
+      if (errReason === 'accountLocked') {
+        handleAccountLocked();
+        return;
+      };
+
+      if (errReason === 'unverified') {
+        InfoModal.display({
+          title: errMessage,
+          description: `You need to first verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
+          btnTitle: 'Okay',
+        }, { simple: true });
+      };
+
+      return;
+    };
+
+    if (status === 400) {
+      const inputRecord: Record<string, HTMLInputElement | undefined> = {
+        email: accountEmailInput,
+        password: accountPasswordInput,
+      };
+
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
       };
     };
   };
@@ -250,22 +247,26 @@ async function guestSignIn(): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 400) {
-      if (errReason === 'username') {
-        ErrorSpan.display(guestUsernameInput, errMessage);
-        return;
-      };
-
-      if (errReason === 'password') {
-        ErrorSpan.display(guestPasswordInput, errMessage);
-        return;
-      };
-
+    if (status === 404) {
+      ErrorSpan.display(guestUsernameInput, errMessage);
       return;
     };
 
     if (status === 401) {
       ErrorSpan.display(guestPasswordInput, errMessage);
+      return;
+    };
+
+    if (status === 400) {
+      const inputRecord: Record<string, HTMLInputElement | undefined> = {
+        username: guestUsernameInput,
+        password: guestPasswordInput,
+      };
+
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
+      };
     };
   };
 };
@@ -404,18 +405,34 @@ function updateSignedInDurationPreferences(): void {
   keepSignedInBtn?.classList.add('checked');
 };
 
-function displayAccountLockedModal(): void {
-  const infoModalConfig: InfoModalConfig = {
-    title: 'Your account has been locked due to multiple failed sign in attempts.',
-    description: `You can recover your account by clicking the "Forgot my password" link at the end of the form.`,
-    btnTitle: 'Okay',
-  };
+function handleAccountLocked(): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Account locked.',
+    description: `Your account has been locked due to multiple failed sign in attempts.`,
+    confirmBtnTitle: 'Recover my account',
+    cancelBtnTitle: 'Go to homepage',
+    extraBtnTitle: null,
+    isDangerousAction: false,
+  });
 
-  InfoModal.display(infoModalConfig, { simple: true });
+  confirmModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      window.location.href = 'account-recovery.html';
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      window.location.href = 'index.html';
+    };
+  });
 };
 
 function getPendingSignInHangoutId(): string | null {
-  const pendingHangoutId: string | null = sessionStorage.getItem('pendingSignInHangoutId');
+  const pendingHangoutId: string | null = Cookies.get('pendingSignInHangoutId');
 
   if (!pendingHangoutId) {
     return null;
@@ -449,7 +466,7 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      sessionStorage.removeItem('pendingSignInHangoutId');
+      Cookies.remove('pendingSignInHangoutId');
       window.location.href = 'account.html';
     };
   });
