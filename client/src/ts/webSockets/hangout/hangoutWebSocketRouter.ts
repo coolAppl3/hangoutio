@@ -45,7 +45,6 @@ export function hangoutWebSocketRouter(messageContent: unknown, ws: WebSocket): 
 
   if (messageContent.type === 'hangoutUtil') {
     handleHangoutUtilUpdates(messageContent, ws);
-    return;
   };
 };
 
@@ -57,7 +56,6 @@ function handleHangoutChatUpdates(messageContent: ValidServerSentMessage, ws: We
 
   if (messageContent.reason === 'userTyping') {
     // TODO: share user typing.
-    return;
   };
 };
 
@@ -74,7 +72,6 @@ function handleNewHangoutData(messageContent: ValidServerSentMessage, ws: WebSoc
 
   if (messageContent.reason === 'newVote') {
     // TODO: insert and share new vote
-    return;
   };
 };
 

@@ -109,6 +109,7 @@ function removeSlot(e: MouseEvent): void {
   if (slotIndex === -1) {
     selectedSlot.remove();
     popup('Slot removed.', 'success');
+
     return;
   };
 
@@ -216,6 +217,7 @@ function handleSubmission(e: MouseEvent): void {
 
   if (e.target.id === 'time-picker-close') {
     closeTimePicker();
+    return;
   };
 
   if (e.target.id === 'time-picker-confirm') {

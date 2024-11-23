@@ -28,8 +28,8 @@ export function updateDisplayedForm(): void {
   if (!accountRecoverySection) {
     LoadingModal.display();
     popup('Something went wrong.', 'error');
-
     setTimeout(() => reloadWithoutQueryString());
+
     return;
   };
 

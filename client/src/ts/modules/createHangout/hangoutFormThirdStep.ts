@@ -213,6 +213,7 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
   if (!hangoutFormState.hangoutTitle) {
     displayFirstStepError('Invalid hangout title.', 'title');
+
     popup('Invalid hangout title.', 'error');
     LoadingModal.remove();
 
@@ -221,6 +222,7 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
   if (!hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
     displayFirstStepError('Invalid hangout title.', 'password');
+
     popup('Invalid hangout password.', 'error');
     LoadingModal.remove();
 

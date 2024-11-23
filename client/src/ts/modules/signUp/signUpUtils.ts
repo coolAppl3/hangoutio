@@ -18,7 +18,6 @@ export function displayVerificationExpiryInfoModal(): void {
     if (e.target.id === 'info-modal-btn') {
       clearVerificationCookies();
       reloadWithoutQueryString();
-      return;
     };
   });
 };

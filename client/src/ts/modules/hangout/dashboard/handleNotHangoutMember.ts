@@ -200,6 +200,8 @@ export async function joinHangoutAsAccount(): Promise<void> {
       if (errReason === 'hangoutPassword') {
         joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
       };
+
+      return;
     };
 
     setTimeout(() => window.location.reload(), 1000);

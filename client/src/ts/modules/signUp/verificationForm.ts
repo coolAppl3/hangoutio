@@ -158,6 +158,8 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
           };
         });
       };
+
+      return;
     };
 
     if (status === 400 && errReason === 'verificationCode') {

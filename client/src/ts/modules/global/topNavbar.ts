@@ -28,40 +28,7 @@ function handleTopNavbarClicks(e: MouseEvent): void {
 
   if (e.target.classList.contains('sign-out-btn')) {
     e.preventDefault();
-
-    const confirmModalConfig: ConfirmModalConfig = {
-      title: 'Are you sure you want to sign out of your account?',
-      description: null,
-      confirmBtnTitle: 'Confirm',
-      cancelBtnTitle: 'Cancel',
-      extraBtnTitle: null,
-      isDangerousAction: true,
-    };
-
-    const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
-    confirmModal.addEventListener('click', (e: MouseEvent) => {
-      e.preventDefault();
-
-      if (!(e.target instanceof HTMLElement)) {
-        return;
-      };
-
-      if (e.target.id === 'confirm-modal-confirm-btn') {
-        LoadingModal.display();
-        signOut();
-        popup('Signed out successfully.', 'success');
-        setTimeout(() => window.location.reload(), 1000);
-
-        return;
-      };
-
-      if (e.target.id === 'confirm-modal-cancel-btn') {
-        ConfirmModal.remove();
-        return;
-      };
-    });
-
-    return;
+    displaySignOutModal();
   };
 };
 
@@ -113,4 +80,37 @@ function displayRelevantLinks(): void {
   };
 
   topNavbarElement?.classList.add('account-user');
+};
+
+function displaySignOutModal(): void {
+  const confirmModalConfig: ConfirmModalConfig = {
+    title: 'Are you sure you want to sign out of your account?',
+    description: null,
+    confirmBtnTitle: 'Confirm',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  };
+
+  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
+  confirmModal.addEventListener('click', (e: MouseEvent) => {
+    e.preventDefault();
+
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      LoadingModal.display();
+      signOut();
+      popup('Signed out successfully.', 'success');
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
 };
