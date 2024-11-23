@@ -248,7 +248,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
         await connection.beginTransaction();
         ;
-        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        const [hangoutMemberRows] = await connection.execute(`SELECT
         hangouts.conclusion_timestamp,
         hangouts.is_concluded,
         hangout_members.account_id,
