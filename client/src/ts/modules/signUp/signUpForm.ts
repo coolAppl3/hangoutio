@@ -37,15 +37,8 @@ function loadEventListeners(): void {
   signUpFormElement?.addEventListener('submit', signUp);
   keepSignedInBtn?.addEventListener('click', updateSignInDurationPreferences);
 
-  passwordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(passwordRevealBtn);
-  });
-
-  confirmPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(confirmPasswordRevealBtn);
-  });
+  passwordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(passwordRevealBtn));
+  confirmPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(confirmPasswordRevealBtn));
 };
 
 async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
@@ -201,8 +194,7 @@ function setActiveValidation(): void {
   });
 };
 
-function updateSignInDurationPreferences(e: MouseEvent): void {
-  e.preventDefault();
+function updateSignInDurationPreferences(): void {
   signUpState.keepSignedIn = !signUpState.keepSignedIn;
 
   if (keepSignedInBtn?.classList.contains('checked')) {

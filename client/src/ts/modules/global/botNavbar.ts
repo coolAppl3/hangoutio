@@ -90,8 +90,6 @@ function displaySignOutModal(): void {
 
   const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-
     if (!(e.target instanceof HTMLElement)) {
       return;
     };

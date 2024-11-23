@@ -20,19 +20,10 @@ function loadEventListeners(): void {
   hangoutPasswordInput?.addEventListener('input', () => { validateNewPassword(hangoutPasswordInput) });
 
   hangoutPasswordToggleBtn?.addEventListener('click', toggleHangoutPassword);
-  hangoutPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-    revealPassword(hangoutPasswordRevealBtn);
-  });
+  hangoutPasswordRevealBtn?.addEventListener('click', () => revealPassword(hangoutPasswordRevealBtn));
 };
 
-function toggleHangoutPassword(e: MouseEvent): void {
-  e.preventDefault();
-
-  if (!(e.target instanceof HTMLElement)) {
-    return;
-  };
-
+function toggleHangoutPassword(): void {
   hangoutFormState.isPasswordProtected = !hangoutFormState.isPasswordProtected;
 
   if (hangoutFormState.isPasswordProtected) {

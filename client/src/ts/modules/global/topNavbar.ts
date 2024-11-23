@@ -32,9 +32,7 @@ function handleTopNavbarClicks(e: MouseEvent): void {
   };
 };
 
-function enableAccountNavBtn(e: MouseEvent): void {
-  e.preventDefault();
-
+function enableAccountNavBtn(): void {
   const accountContainerLinks: HTMLDivElement | null = document.querySelector('#account-nav-container-links');
 
   if (accountContainerLinks?.classList.contains('expanded')) {
@@ -94,8 +92,6 @@ function displaySignOutModal(): void {
 
   const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    e.preventDefault();
-
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
