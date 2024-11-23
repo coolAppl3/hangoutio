@@ -1074,22 +1074,22 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     res.status(202).json({ success: true, resData: {} });
 
 
-    const logDescription: string = `${accountDetails.display_name} has left the hangout.`;
+    const eventDescription: string = `${accountDetails.display_name} has left the hangout.`;
     const currentTimestamp: number = Date.now();
 
-    let logValues: string = '';
+    let eventValues: string = '';
     for (const hangout of hangoutRows) {
-      logValues += `('${hangout.hangout_id}', '${logDescription})', ${currentTimestamp}),`;
+      eventValues += `('${hangout.hangout_id}', '${eventDescription})', ${currentTimestamp}),`;
     };
-    logValues.slice(0, -1);
+    eventValues.slice(0, -1);
 
     await dbPool.execute(
-      `INSERT INTO hangout_logs(
+      `INSERT INTO hangout_events(
         hangout_id,
-        log_description,
-        log_timestamp
+        event_description,
+        event_timestamp
       )
-      VALUES(${logValues});`
+      VALUES(${eventValues});`
     );
 
     const deletionEmailConfig: DeletionEmailConfig = {

@@ -85,19 +85,19 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       })
     };
 
-    const logDescription: string = 'Hangout could not progress into the voting step due to not having any suggestion, and is now concluded as a result.';
+    const eventDescription: string = 'Hangout could not progress into the voting step due to not having any suggestion, and is now concluded as a result.';
 
     let hangoutValuesString: string = '';
     for (const id of hangoutIds) {
-      hangoutValuesString += `('${id}', '${logDescription}', ${currentTimestamp}),`;
+      hangoutValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
     };
     hangoutValuesString = hangoutValuesString.slice(0, -1);
 
     await dbPool.execute(
       `INSERT INTO hangout_events(
         hangout_id,
-        log_description,
-        log_timestamp
+        event_description,
+        event_timestamp
       )
       VALUES ${hangoutValuesString};`
     );
