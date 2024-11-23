@@ -1,4 +1,4 @@
-import { ConfirmModalConfig, ConfirmModal } from "./ConfirmModal";
+import { ConfirmModal } from "./ConfirmModal";
 import Cookies from "./Cookies";
 import LoadingModal from "./LoadingModal";
 import popup from "./popup";
@@ -79,16 +79,15 @@ function toggleAccountList(): void {
 };
 
 function displaySignOutModal(): void {
-  const confirmModalConfig: ConfirmModalConfig = {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Are you sure you want to sign out of your account?',
     description: null,
     confirmBtnTitle: 'Confirm',
     cancelBtnTitle: 'Cancel',
     extraBtnTitle: null,
     isDangerousAction: true,
-  };
+  });
 
-  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;

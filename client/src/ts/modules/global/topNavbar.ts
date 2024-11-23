@@ -4,7 +4,7 @@ import popup from "./popup";
 import LoadingModal from "./LoadingModal";
 import Cookies from "./Cookies";
 import { isValidAuthToken } from "./validation";
-import { ConfirmModal, ConfirmModalConfig } from "./ConfirmModal";
+import { ConfirmModal } from "./ConfirmModal";
 
 const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
 const accountNavBtn: HTMLButtonElement | null = document.querySelector('#account-nav-container-btn');
@@ -81,16 +81,15 @@ function displayRelevantLinks(): void {
 };
 
 function displaySignOutModal(): void {
-  const confirmModalConfig: ConfirmModalConfig = {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Are you sure you want to sign out of your account?',
     description: null,
     confirmBtnTitle: 'Confirm',
     cancelBtnTitle: 'Cancel',
     extraBtnTitle: null,
     isDangerousAction: true,
-  };
+  });
 
-  const confirmModal: HTMLDivElement = ConfirmModal.display(confirmModalConfig);
   confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;

@@ -1,16 +1,15 @@
 import { recoveryState } from "./recoveryState";
-import { InfoModal, InfoModalConfig } from "../global/InfoModal";
+import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 
 export function displayRecoveryExpiryInfoModal(): void {
-  const infoModalConfig: InfoModalConfig = {
+  const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Recovery request expired.',
     description: 'Have no worries, you can start the account recovery process again.',
     btnTitle: 'Okay',
-  };
+  });
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
   infoModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
@@ -59,13 +58,12 @@ export function getMinutesTillRecoveryExpiry(recoveryStartTimestamp: number): nu
 
 export function displayFailureLimitReachedInfoModal(errMessage: string, requestTimestamp: number): void {
   const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(requestTimestamp);
-  const infoModalConfig: InfoModalConfig = {
+
+  InfoModal.display({
     title: errMessage,
     description: `You can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
     btnTitle: 'Okay',
-  };
-
-  InfoModal.display(infoModalConfig, { simple: true });
+  }, { simple: true });
 };
 
 export function initRecoveryTimers(): void {
