@@ -37,7 +37,7 @@ const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const userValidation_1 = require("../util/validation/userValidation");
 const tokenGenerator_1 = require("../util/tokenGenerator");
 const userUtils_1 = require("../util/userUtils");
-const hangoutLogger_1 = require("../util/hangoutLogger");
+const addHangoutEvent_1 = require("../util/addHangoutEvent");
 const globalUtils_1 = require("../util/globalUtils");
 const isSqlError_1 = require("../util/isSqlError");
 const encryptionUtils_1 = require("../util/encryptionUtils");
@@ -445,7 +445,7 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         ;
         res.json({ success: true, resData: {} });
         const logDescription = 'Hangout password was updated.';
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -574,7 +574,7 @@ exports.hangoutsRouter.patch('/details/changeMemberLimit', async (req, res) => {
         await connection.commit();
         res.json({ success: true, resData: {} });
         const logDescription = `Hangout member limit was changed to ${requestData.newLimit}.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -764,7 +764,7 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
             },
         });
         const logDescription = `Hangout steps have been updated and will now be concluded on ${(0, globalUtils_1.getDateAndTimeSTring)(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -845,15 +845,15 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader,
-        (SELECT COUNT(*) FROM suggestions WHERE hangout_id = ?)
+        (SELECT COUNT(*) FROM suggestions WHERE hangout_id = :hangoutId)
       FROM
         hangouts
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.hangout_member_id = ?
-      LIMIT 1;`, [requestData.hangoutId, requestData.hangoutId, requestData.hangoutMemberId]);
+        hangouts.hangout_id = :hangoutId AND
+        hangout_members.hangout_member_id = :hangoutMemberId
+      LIMIT 1;`, { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId });
         if (hangoutRows.length === 0) {
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
             return;
@@ -927,7 +927,7 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
                 },
             });
             const logDescription = `Hangout has been manually progressed and is now concluded. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-            await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
             return;
         }
         ;
@@ -974,7 +974,7 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
             },
         });
         const logDescription = `Hangout has been manually progressed, and will now be concluded on ${(0, globalUtils_1.getDateAndTimeSTring)(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -1089,7 +1089,7 @@ exports.hangoutsRouter.delete('/details/members/kick', async (req, res) => {
             ;
             res.json({ success: true, resData: {} });
             const logDescription = `${memberToKick.display_name} was kicked.`;
-            await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
             return;
         }
         ;
@@ -1104,7 +1104,7 @@ exports.hangoutsRouter.delete('/details/members/kick', async (req, res) => {
         ;
         res.json({ success: true, resData: {} });
         const logDescription = `${memberToKick.display_name} was kicked.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -1218,7 +1218,7 @@ exports.hangoutsRouter.patch('/details/members/transferLeadership', async (req, 
         const [firstResultSetHeader] = await connection.execute(`UPDATE
         hangout_members
       SET
-        is_leader = false
+        is_leader = ?
       WHERE
         hangout_member_id = ?;`, [false, requestData.hangoutMemberId]);
         if (firstResultSetHeader.affectedRows === 0) {
@@ -1242,7 +1242,7 @@ exports.hangoutsRouter.patch('/details/members/transferLeadership', async (req, 
         await connection.commit();
         res.json({ success: true, resData: {} });
         const logDescription = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -1369,7 +1369,7 @@ exports.hangoutsRouter.patch('/details/members/claimLeadership', async (req, res
         await connection.commit();
         res.json({ success: true, resData: {} });
         const logDescription = `${userDetails.display_name} has claimed the hangout leader role.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -1556,8 +1556,8 @@ exports.hangoutsRouter.post('/details/members/join/account', async (req, res) =>
     let connection;
     try {
         connection = await db_1.dbPool.getConnection();
-        connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
-        connection.beginTransaction();
+        await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+        await connection.beginTransaction();
         ;
         const [userRows] = await connection.execute(`SELECT
         auth_token,

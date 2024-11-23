@@ -13,7 +13,7 @@ const requestValidation_1 = require("../util/validation/requestValidation");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const tokenGenerator_1 = require("../util/tokenGenerator");
 const userUtils_1 = require("../util/userUtils");
-const hangoutLogger_1 = require("../util/hangoutLogger");
+const addHangoutEvent_1 = require("../util/addHangoutEvent");
 const voteValidation_1 = require("../util/validation/voteValidation");
 exports.hangoutMembersRouter = express_1.default.Router();
 exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
@@ -139,7 +139,7 @@ exports.hangoutMembersRouter.post('/create/accountMember', async (req, res) => {
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'account', accountId, null, accountDetails.display_name, false]);
         res.json({ success: true, resData: { hangoutMemberId: resultSetHeader.insertId } });
         const logDescription = `${accountDetails.display_name} has joined the hangout.`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -273,7 +273,7 @@ exports.hangoutMembersRouter.post('/create/guestMember', async (req, res) => {
         await connection.commit();
         res.status(201).json({ success: true, resData: { authToken: idMarkedAuthToken, hangoutMemberId: thirdResultSetheader.insertId } });
         const logDescription = `${requestData.displayName} has joined the hangout.`;
-        (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);
@@ -354,16 +354,16 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader,
-        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = ?) as requester_votes_count,
-        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = ?) as hangout_members_count
+        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = :hangoutMemberId) as requester_votes_count,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) as hangout_members_count
       FROM
         hangouts
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.hangout_member_id = ?
-      LIMIT 1;`, [requestData.hangoutMemberId, requestData.hangoutId, requestData.hangoutId, requestData.hangoutMemberId]);
+        hangouts.hangout_id = :hangoutId AND
+        hangout_members.hangout_member_id = :hangoutMemberId
+      LIMIT 1;`, { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId });
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
@@ -420,7 +420,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
             await connection.commit();
             res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: true } });
             const logDescription = `${userDetails.display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-            await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
             return;
         }
         ;
@@ -437,7 +437,7 @@ exports.hangoutMembersRouter.delete(`/`, async (req, res) => {
         await connection.commit();
         res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: false } });
         const logDescription = `${userRows[0].display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-        await (0, hangoutLogger_1.addHangoutLog)(requestData.hangoutId, logDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
     }
     catch (err) {
         console.log(err);

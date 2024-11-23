@@ -111,6 +111,7 @@ function handleSubmission(e: MouseEvent): void {
 
   if (e.target.id === 'date-picker-close') {
     closeDatePicker();
+    return;
   };
 
   if (e.target.id === 'date-picker-confirm') {

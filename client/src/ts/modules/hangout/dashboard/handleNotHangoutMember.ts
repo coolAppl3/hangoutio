@@ -5,6 +5,7 @@ import ErrorSpan from "../../global/ErrorSpan";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
+import { signOut } from "../../global/signOut";
 import { isValidAuthToken } from "../../global/validation";
 import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutServices";
 import { getHangoutDashboardData } from "./hangoutDashboard";
@@ -37,7 +38,7 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
   const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken || !isValidAuthToken(authToken)) {
-    Cookies.remove('authToken');
+    signOut();
     popup('Invalid credentials detected.', 'error');
     setTimeout(() => window.location.reload(), 1000);
 
@@ -100,7 +101,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
   const authToken: string | null = Cookies.get('authToken');
 
   if (!authToken || !isValidAuthToken(authToken)) {
-    Cookies.remove('authToken');
+    signOut();
     popup('Invalid credentials detected.', 'error');
     setTimeout(() => window.location.reload(), 1000);
 
@@ -156,7 +157,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
         return;
       };
 
-      Cookies.remove('authToken');
+      signOut();
       setTimeout(() => window.location.reload(), 1000);
 
       return;
@@ -199,6 +200,8 @@ export async function joinHangoutAsAccount(): Promise<void> {
       if (errReason === 'hangoutPassword') {
         joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
       };
+
+      return;
     };
 
     setTimeout(() => window.location.reload(), 1000);
@@ -253,7 +256,7 @@ function handleGuestNotMember(): void {
         return;
       };
 
-      Cookies.remove('authToken');
+      signOut();
       popup('Signed out.', 'success');
 
       initHangoutGuestSignUp(notHangoutMemberState.hangoutId, notHangoutMemberState.isPasswordProtected);

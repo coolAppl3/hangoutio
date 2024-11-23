@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
 import popup from "../../global/popup";
+import { signOut } from "../../global/signOut";
 import { isValidHangoutId } from "../../global/validation";
 import { getHangoutDashboardDataService, HangoutDashboardData } from "../../services/hangoutServices";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
@@ -78,7 +79,7 @@ export async function getHangoutDashboardData(): Promise<void> {
         return;
       };
 
-      Cookies.remove('authToken');
+      signOut();
 
       popup(errMessage, 'error');
       setTimeout(() => window.location.href = 'index.html', 1000);

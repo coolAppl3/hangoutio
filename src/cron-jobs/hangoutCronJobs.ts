@@ -11,9 +11,9 @@ export async function progressHangouts(): Promise<void> {
         hangouts
       SET
         next_step_timestamp = CASE
-          WHEN current_step = 1 THEN suggestions_step + ${currentTimestamp}
-          WHEN current_step = 2 THEN voting_step + ${currentTimestamp}
-          ELSE current_step = ${currentTimestamp + weekMilliseconds}
+          WHEN current_step = 1 THEN suggestions_step + :currentTimestamp
+          WHEN current_step = 2 THEN voting_step + :currentTimestamp
+          ELSE current_step = :beyondWeekMilliseconds
         END,
         is_concluded = CASE
           WHEN current_step = 3 THEN TRUE
@@ -23,10 +23,11 @@ export async function progressHangouts(): Promise<void> {
           WHEN current_step < 4 THEN current_step + 1
           ELSE current_step
         END,
-        current_step_timestamp = ${currentTimestamp}
+        current_step_timestamp = :currentTimestamp
       WHERE
         is_concluded = FALSE AND
-        next_step_timestamp <= ${currentTimestamp};`
+        next_step_timestamp <= :currentTimestamp;`,
+      { currentTimestamp, beyondWeekMilliseconds: (currentTimestamp + weekMilliseconds) }
     );
 
   } catch (err: any) {
@@ -84,19 +85,19 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       })
     };
 
-    const logDescription: string = 'Hangout could not progress into the voting step due to not having any suggestion, and is now concluded as a result.';
+    const eventDescription: string = 'Hangout could not progress into the voting step due to not having any suggestion, and is now concluded as a result.';
 
     let hangoutValuesString: string = '';
     for (const id of hangoutIds) {
-      hangoutValuesString += `('${id}', '${logDescription}', ${currentTimestamp}),`;
+      hangoutValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
     };
     hangoutValuesString = hangoutValuesString.slice(0, -1);
 
     await dbPool.execute(
       `INSERT INTO hangout_events(
         hangout_id,
-        log_description,
-        log_timestamp
+        event_description,
+        event_timestamp
       )
       VALUES ${hangoutValuesString};`
     );

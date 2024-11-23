@@ -10,9 +10,9 @@ export async function removeUnverifiedAccounts(): Promise<void> {
       `DELETE FROM
         accounts
       WHERE
-        is_verified = FALSE AND
+        is_verified = ? AND
         created_on_timestamp < ?;`,
-      [minimumAllowedTimestamp]
+      [false, minimumAllowedTimestamp]
     );
 
   } catch (err: any) {

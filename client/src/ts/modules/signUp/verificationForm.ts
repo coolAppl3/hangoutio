@@ -75,7 +75,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
   try {
     const accountVerificationData: AxiosResponse<AccountVerificationData> = await verifyAccountService(accountVerificationBody);
-    const { authToken } = accountVerificationData.data.resData;
+    const authToken: string = accountVerificationData.data.resData.authToken;
 
     if (signUpState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
@@ -158,6 +158,8 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
           };
         });
       };
+
+      return;
     };
 
     if (status === 400 && errReason === 'verificationCode') {
@@ -195,7 +197,7 @@ async function resendVerificationEmail(): Promise<void> {
 
   try {
     const resendVerificationEmailData: AxiosResponse<ResendVerificationEmailData> = await resendVerificationEmailService({ accountId: signUpState.accountId });
-    const { verificationEmailsSent } = resendVerificationEmailData.data.resData;
+    const verificationEmailsSent: number = resendVerificationEmailData.data.resData.verificationEmailsSent;
 
     signUpState.verificationEmailsSent = verificationEmailsSent;
 

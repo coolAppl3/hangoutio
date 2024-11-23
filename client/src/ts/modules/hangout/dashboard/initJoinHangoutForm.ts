@@ -6,6 +6,8 @@ import { joinHangoutAsAccount } from "./handleNotHangoutMember";
 
 export function initJoinHangoutForm(): void {
   const joinHangoutFormContainer: HTMLDivElement = createJoinHangoutFormContainer();
+  joinHangoutFormContainer.focus();
+
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       joinHangoutFormContainer.classList.add('revealed');

@@ -1,15 +1,14 @@
 import { signUpState } from "./signUpState";
 import Cookies from "../global/Cookies";
-import { InfoModal, InfoModalConfig } from "../global/InfoModal";
+import { InfoModal } from "../global/InfoModal";
 
 export function displayVerificationExpiryInfoModal(): void {
-  const infoModalConfig: InfoModalConfig = {
+  const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Verification request expired.',
     description: 'Your account has been automatically deleted as a result, but you can create it again and verify it within 15 minutes.',
     btnTitle: 'Okay',
-  };
+  });
 
-  const infoModal: HTMLDivElement = InfoModal.display(infoModalConfig);
   infoModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
@@ -18,7 +17,6 @@ export function displayVerificationExpiryInfoModal(): void {
     if (e.target.id === 'info-modal-btn') {
       clearVerificationCookies();
       reloadWithoutQueryString();
-      return;
     };
   });
 };

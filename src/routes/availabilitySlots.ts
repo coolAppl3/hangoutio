@@ -292,7 +292,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
       slot_end_timestamp: number,
     };
 
-    const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
+    const [hangoutMemberRows] = await connection.execute<HangoutMember[]>(
       `SELECT
         hangouts.conclusion_timestamp,
         hangouts.is_concluded,

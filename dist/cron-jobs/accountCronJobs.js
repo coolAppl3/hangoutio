@@ -9,8 +9,8 @@ async function removeUnverifiedAccounts() {
         await db_1.dbPool.execute(`DELETE FROM
         accounts
       WHERE
-        is_verified = FALSE AND
-        created_on_timestamp < ?;`, [minimumAllowedTimestamp]);
+        is_verified = ? AND
+        created_on_timestamp < ?;`, [false, minimumAllowedTimestamp]);
     }
     catch (err) {
         console.log(`CRON JOB ERROR: ${removeUnverifiedAccounts.name}`);

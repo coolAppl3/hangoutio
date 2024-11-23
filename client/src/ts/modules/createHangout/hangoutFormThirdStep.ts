@@ -9,7 +9,7 @@ import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
 import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
 import { AccountSignInBody, AccountSignInData, accountSignInService } from "../services/accountServices";
-import { AccountLeaderHangoutBody, AccountLeaderHangoutData, createAccountLeaderHangoutService, createGuestLeaderHangoutService, GuestLeaderHangoutBody, GuestLeaderHangoutData } from "../services/hangoutServices";
+import { CreateHangoutAsAccountBody, CreateHangoutAsAccountData, createHangoutAsAccountService, createHangoutAsGuestService, CreateHangoutAsGuestBody, CreateHangoutAsGuestData } from "../services/hangoutServices";
 import { displayFirstStepError, hangoutFormNavigationState } from "./hangoutFormNavigation";
 import { hangoutFormState } from "./hangoutFormState";
 
@@ -74,19 +74,19 @@ async function submitHangout(e: SubmitEvent): Promise<void> {
   };
 
   if (hangoutThirdStepState.isGuestUser) {
-    await createGuestLeaderHangout();
+    await createHangoutAsGuest();
     return;
   };
 
   if (hangoutThirdStepState.isSignedIn) {
-    await createAccountLeaderHangout();
+    await createHangoutAsAccount();
     return;
   };
 
   await accountSignIn();
 };
 
-async function createAccountLeaderHangout(attemptCount: number = 1): Promise<void> {
+async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
   if (attemptCount > 3) {
     popup('Internal server error.', 'error');
     LoadingModal.remove();
@@ -124,7 +124,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
 
   const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
-  const accountLeaderHangoutBody: AccountLeaderHangoutBody = {
+  const accountLeaderHangoutBody: CreateHangoutAsAccountBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
     hangoutPassword: hangoutFormState.hangoutPassword,
     memberLimit: hangoutFormState.memberLimit,
@@ -134,8 +134,8 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
   };
 
   try {
-    const accountLeaderHangoutData: AxiosResponse<AccountLeaderHangoutData> = await createAccountLeaderHangoutService(authToken, accountLeaderHangoutBody);
-    const { hangoutId } = accountLeaderHangoutData.data.resData;
+    const accountLeaderHangoutData: AxiosResponse<CreateHangoutAsAccountData> = await createHangoutAsAccountService(authToken, accountLeaderHangoutBody);
+    const hangoutId: string = accountLeaderHangoutData.data.resData.hangoutId;
 
     popup('Hangout successfully created.', 'success');
     setTimeout(() => window.location.href = `hangout.html?hangoutId=${hangoutId}`, 1000);
@@ -165,7 +165,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
 
     if (status === 409) {
       if (errReason === 'duplicateHangoutId') {
-        await createAccountLeaderHangout(++attemptCount);
+        await createHangoutAsAccount(++attemptCount);
         return;
       };
 
@@ -203,7 +203,7 @@ async function createAccountLeaderHangout(attemptCount: number = 1): Promise<voi
   };
 };
 
-async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void> {
+async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
   if (attemptCount > 3) {
     popup('Internal server error.', 'error');
     LoadingModal.remove();
@@ -213,6 +213,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
 
   if (!hangoutFormState.hangoutTitle) {
     displayFirstStepError('Invalid hangout title.', 'title');
+
     popup('Invalid hangout title.', 'error');
     LoadingModal.remove();
 
@@ -221,6 +222,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
 
   if (!hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
     displayFirstStepError('Invalid hangout title.', 'password');
+
     popup('Invalid hangout password.', 'error');
     LoadingModal.remove();
 
@@ -243,7 +245,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
 
   const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
-  const guestLeaderHangoutBody: GuestLeaderHangoutBody = {
+  const guestLeaderHangoutBody: CreateHangoutAsGuestBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
     hangoutPassword: hangoutFormState.hangoutPassword,
     memberLimit: hangoutFormState.memberLimit,
@@ -256,7 +258,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
   };
 
   try {
-    const guestLeaderHangoutData: AxiosResponse<GuestLeaderHangoutData> = await createGuestLeaderHangoutService(guestLeaderHangoutBody);
+    const guestLeaderHangoutData: AxiosResponse<CreateHangoutAsGuestData> = await createHangoutAsGuestService(guestLeaderHangoutBody);
     const { authToken, hangoutId } = guestLeaderHangoutData.data.resData;
 
     if (hangoutThirdStepState.keepSignedIn) {
@@ -296,7 +298,7 @@ async function createGuestLeaderHangout(attemptCount: number = 1): Promise<void>
     const errReason: string | undefined = axiosError.response.data.reason;
 
     if (status === 409 && errReason === 'duplicateHangoutId') {
-      await createGuestLeaderHangout(++attemptCount);
+      await createHangoutAsGuest(++attemptCount);
       return;
     };
 
@@ -355,7 +357,7 @@ async function accountSignIn(): Promise<void> {
 
   try {
     const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
-    const { authToken } = accountSignInData.data.resData;
+    const authToken: string = accountSignInData.data.resData.authToken;
 
     if (hangoutThirdStepState.keepSignedIn) {
       const daySeconds: number = 60 * 60 * 24;
@@ -365,7 +367,7 @@ async function accountSignIn(): Promise<void> {
       Cookies.set('authToken', authToken);
     };
 
-    await createAccountLeaderHangout();
+    await createHangoutAsAccount();
 
   } catch (err: unknown) {
     console.log(err);

@@ -1,10 +1,42 @@
 # Changelog
 
+## [0.3.5] (2024-11-23)
+
+### Features
+
+- Ensured that the hangout password form in `initJoinHangoutForm.ts` is focused, making the input next in line, to improve accessability.
+
+
+### Code Refactoring
+
+- Updated a few modules to use `signOut()` instead of `Cookies.remove('authToken')`.
+- Updated `isSqlError()` to now use a type guard to avoid type casting.
+- Implemented mysql2 named placeholders where it makes sense.
+- Refactored a few modules to not use unnecessary deconstruction.
+- Renamed `hangoutLogger.ts` to `addHangoutEvent.ts`, and renamed `addHangoutLogger()` to `addHangoutEvent()`.
+- Renamed a few functions and interfaces in `hangoutServices.ts` and `hangoutFormThirdStep.ts` to improve readability.
+- Refactored out a few unnecessary `return;` statements.
+- Refactored out a few unnecessary `e.preventDefault()` statements.
+- Simplified the use of `InfoModal` and `ConfirmModal` throughout the app.
+
+
+### Bug Fixes
+
+- Fixed `createHangoutAsAccountService()` expecting a hangoutMemberId in the response, which is no longer the case.
+- Fixed leftover references of hangout_logs and changed them to hangout_events.
+- Fixed a few tiny bugs with the use of SQL transactions.
+- Fixed leftover references of `log_description` and `event_timestamp` from the now renamed hangoutLogs table.
+
+
 ## [0.3.4] (2024-11-22)
 
 ### Features
 
 - Updated `signUpForm.ts` to have `VerificationAccountId` and `verificationTimestamp` stored in cookies only for 15 minutes instead of for the whole session.
+
+
+### Code Refactoring
+
 - Improved overall readability of a number of modules, mostly on the client end.
 
 

@@ -8,7 +8,7 @@ import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { generateAuthToken } from "../util/tokenGenerator";
 import { getUserId, getUserType } from "../util/userUtils";
-import { addHangoutLog } from "../util/hangoutLogger";
+import { addHangoutEvent } from "../util/addHangoutEvent";
 import { votesLimit } from "../util/validation/voteValidation";
 
 export const hangoutMembersRouter: Router = express.Router();
@@ -169,7 +169,7 @@ hangoutMembersRouter.post('/create/accountMember', async (req: Request, res: Res
     res.json({ success: true, resData: { hangoutMemberId: resultSetHeader.insertId } });
 
     const logDescription: string = `${accountDetails.display_name} has joined the hangout.`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -344,7 +344,7 @@ hangoutMembersRouter.post('/create/guestMember', async (req: Request, res: Respo
     res.status(201).json({ success: true, resData: { authToken: idMarkedAuthToken, hangoutMemberId: thirdResultSetheader.insertId } });
 
     const logDescription: string = `${requestData.displayName} has joined the hangout.`;
-    addHangoutLog(requestData.hangoutId, logDescription);
+    addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -450,17 +450,17 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader,
-        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = ?) as requester_votes_count,
-        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = ?) as hangout_members_count
+        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = :hangoutMemberId) as requester_votes_count,
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) as hangout_members_count
       FROM
         hangouts
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
-        hangouts.hangout_id = ? AND
-        hangout_members.hangout_member_id = ?
+        hangouts.hangout_id = :hangoutId AND
+        hangout_members.hangout_member_id = :hangoutMemberId
       LIMIT 1;`,
-      [requestData.hangoutMemberId, requestData.hangoutId, requestData.hangoutId, requestData.hangoutMemberId]
+      { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId }
     );
 
     if (hangoutMemberRows.length === 0) {
@@ -537,7 +537,7 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
       res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: true } });
 
       const logDescription: string = `${userDetails.display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-      await addHangoutLog(requestData.hangoutId, logDescription);
+      await addHangoutEvent(requestData.hangoutId, logDescription);
 
       return;
     };
@@ -561,7 +561,7 @@ hangoutMembersRouter.delete(`/`, async (req: Request, res: Response) => {
     res.json({ success: true, resData: { hangoutDeleted: false, guestUserDeleted: false } });
 
     const logDescription: string = `${userRows[0].display_name} has left the hangout.${hangoutMember.is_leader ? ' Hangout leader role is available to be claimed.' : ''}`;
-    await addHangoutLog(requestData.hangoutId, logDescription);
+    await addHangoutEvent(requestData.hangoutId, logDescription);
 
   } catch (err: unknown) {
     console.log(err);

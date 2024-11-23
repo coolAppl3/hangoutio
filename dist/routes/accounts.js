@@ -77,11 +77,11 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         connection = await db_1.dbPool.getConnection();
         await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
         await connection.beginTransaction();
-        const [emailUsernameRows] = await connection.execute(`(SELECT 1 AS taken_status FROM accounts WHERE email = ? LIMIT 1)
+        const [emailUsernameRows] = await connection.execute(`(SELECT 1 AS taken_status FROM accounts WHERE email = :email LIMIT 1)
       UNION ALL
-      (SELECT 1 AS taken_status FROM email_update WHERE new_email = ? LIMIT 1)
+      (SELECT 1 AS taken_status FROM email_update WHERE new_email = :email LIMIT 1)
       UNION ALL
-      (SELECT 2 AS taken_status FROM accounts WHERE username = ? LIMIT 1);`, [requestData.email, requestData.email, requestData.username]);
+      (SELECT 2 AS taken_status FROM accounts WHERE username = :username LIMIT 1);`, { email: requestData.email, username: requestData.username });
         if (emailUsernameRows.length > 0) {
             await connection.rollback();
             const takenDataSet = new Set();
@@ -855,20 +855,20 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
       VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountId, cancellationToken, Date.now()]);
         await connection.commit();
         res.status(202).json({ success: true, resData: {} });
-        const logDescription = `${accountDetails.display_name} has left the hangout.`;
+        const eventDescription = `${accountDetails.display_name} has left the hangout.`;
         const currentTimestamp = Date.now();
-        let logValues = '';
+        let eventValues = '';
         for (const hangout of hangoutRows) {
-            logValues += `('${hangout.hangout_id}', '${logDescription})', ${currentTimestamp}),`;
+            eventValues += `('${hangout.hangout_id}', '${eventDescription})', ${currentTimestamp}),`;
         }
         ;
-        logValues.slice(0, -1);
-        await db_1.dbPool.execute(`INSERT INTO hangout_logs(
+        eventValues.slice(0, -1);
+        await db_1.dbPool.execute(`INSERT INTO hangout_events(
         hangout_id,
-        log_description,
-        log_timestamp
+        event_description,
+        event_timestamp
       )
-      VALUES(${logValues});`);
+      VALUES(${eventValues});`);
         const deletionEmailConfig = {
             to: accountDetails.email,
             accountId,
@@ -1189,9 +1189,9 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
             connection = await db_1.dbPool.getConnection();
             await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
             await connection.beginTransaction();
-            const [emailRows] = await connection.execute(`(SELECT 1 FROM accounts WHERE email = ? LIMIT 1)
+            const [emailRows] = await connection.execute(`(SELECT 1 FROM accounts WHERE email = :newEmail LIMIT 1)
         UNION ALL
-        (SELECT 1 FROM email_update WHERE new_email = ? LIMIT 1);`, [requestData.newEmail, requestData.newEmail]);
+        (SELECT 1 FROM email_update WHERE new_email = :newEmail LIMIT 1);`, { newEmail: requestData.newEmail });
             if (emailRows.length > 0) {
                 await connection.rollback();
                 res.status(409).json({ success: false, message: 'Email already in use.' });
@@ -1596,9 +1596,9 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
       FROM
         friend_requests
       WHERE
-        (requester_id = ? AND requestee_id = ?) OR
-        (requester_id = ? AND requestee_id = ?)
-      LIMIT 2;`, [accountId, requesteeId, requesteeId, accountId]);
+        (requester_id = :requesterId AND requestee_id = :requesteeId) OR
+        (requester_id = :requesteeId AND requestee_id = :requesterId)
+      LIMIT 2;`, { requesterId: accountId, requesteeId });
         if (friendRequestRows.length === 0) {
             await db_1.dbPool.execute(`INSERT INTO friend_requests(
           requester_id,
@@ -1717,8 +1717,8 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
         friendship_timestamp
       )
       VALUES
-        (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)}),
-        (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [accountId, requesterId, friendshipTimestamp, requesterId, accountId, friendshipTimestamp]);
+        (:accountId, :requesterId, :friendshipTimestamp),
+        (:requesterId, :accountId, :friendshipTimestamp);`, { accountId, requesterId, friendshipTimestamp });
         const [resultSetHeader] = await connection.execute(`DELETE FROM
         friend_requests
       WHERE
@@ -1883,9 +1883,9 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         friendships
       WHERE
-        (account_id = ? AND friend_id = ?) OR
-        (account_id = ? AND friend_id = ?)
-      LIMIT 2;`, [accountId, friendId, friendId, accountId]);
+        (account_id = :accountId AND friend_id = friendId) OR
+        (account_id = :friendId AND friend_id = :accountId)
+      LIMIT 2;`, { accountId, friendId });
         if (resultSetHeader.affectedRows === 0) {
             res.status(404).json({ success: false, message: 'Friend not found.' });
             return;
