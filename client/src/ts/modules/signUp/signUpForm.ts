@@ -45,7 +45,7 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
 
-  if (attemptCount > 2) {
+  if (attemptCount > 3) {
     popup('Internal server error.', 'error');
     LoadingModal.remove();
 
@@ -127,6 +127,7 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
       username: usernameInput,
       usernameTaken: usernameInput,
       password: passwordInput,
+      passwordEqualsUsername: passwordInput,
     };
 
     if (status === 409) {

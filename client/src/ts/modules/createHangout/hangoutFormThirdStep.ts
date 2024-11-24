@@ -305,18 +305,24 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 409 && errReason === 'guestUsernameTaken') {
-      ErrorSpan.display(guestUsernameInput, errMessage);
+    const inputRecord: Record<string, HTMLInputElement | undefined> = {
+      guestUsernameTaken: guestUsernameInput,
+      guestDisplayName: guestDisplayNameInput,
+      username: guestUsernameInput,
+      guestPassword: guestPasswordInput,
+      passwordEqualsUsername: guestPasswordInput,
+    };
+
+    if (status === 409) {
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
+      };
+
       return;
     };
 
     if (status === 400) {
-      const inputRecord: Record<string, HTMLInputElement | undefined> = {
-        guestDisplayName: guestDisplayNameInput,
-        username: guestUsernameInput,
-        guestPassword: guestPasswordInput,
-      };
-
       const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
       if (input) {
         ErrorSpan.display(input, errMessage);

@@ -18,7 +18,7 @@ const confirmNewPasswordInput: HTMLInputElement | null = document.querySelector(
 const newPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#new-password-input-reveal-btn');
 const confirmNewPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#confirm-new-password-input-reveal-btn');
 
-export function passwordUpdateForm(): void {
+export function recoveryPasswordUpdateForm(): void {
   loadEventListeners();
   init();
 };
@@ -106,6 +106,11 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
 
     LoadingModal.remove();
     popup(errMessage, 'error')
+
+    if (status === 409) {
+      ErrorSpan.display(newPasswordInput, errMessage);
+      return;
+    };
 
     if (status === 404) {
       LoadingModal.display();
