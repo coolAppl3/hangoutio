@@ -1448,7 +1448,7 @@
           }
 
           .secondary-message {
-            @apply bg-primary dark:bg-primary-dark p-2 rounded-sm mb-1;
+            @apply bg-primary dark:bg-primary-dark p-2 rounded-sm mb-1 max-w-[70%] min-w-5 md:max-w-[85%];
 
             &.different {
               label {
