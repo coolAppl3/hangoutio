@@ -253,17 +253,18 @@ async function resendVerificationEmail(): Promise<void> {
 };
 
 function verificationLinkDetected(): boolean {
-  const queryString: string = window.location.search;
+  const url: URL = new URL(window.location.href);
 
-  if (queryString === '') {
+  if (url.search === '') {
     return false;
   };
 
-  if (!isValidQueryString(queryString)) {
+  if (!isValidQueryString(url.search)) {
     return false;
   };
 
-  const verificationData: VerificationData | null = getVerificationLinkDetails(queryString);
+  const verificationData: VerificationData | null = getVerificationLinkDetails(url);
+
   if (!verificationData) {
     const infoModal: HTMLDivElement = InfoModal.display({
       title: 'Invalid verification link.',
@@ -310,31 +311,10 @@ interface VerificationData {
   verificationCode: string,
 };
 
-function getVerificationLinkDetails(queryString: string): VerificationData | null {
-  const queryParams: string[] = queryString.substring(1).split('&');
-  const queryMap: Map<string, string> = new Map();
-
-  if (queryParams.length !== 3) {
-    return null;
-  };
-
-  for (const param of queryParams) {
-    const keyValuePair: string[] = param.split('=');
-
-    if (keyValuePair.length !== 2) {
-      return null;
-    };
-
-    if (keyValuePair[0] === '' || keyValuePair[1] === '') {
-      return null;
-    };
-
-    queryMap.set(keyValuePair[0], keyValuePair[1]);
-  };
-
-  const verificationAccountId: string | undefined = queryMap.get('id');
-  const verificationStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
-  const verificationCode: string | undefined = queryMap.get('verificationCode');
+function getVerificationLinkDetails(url: URL): VerificationData | null {
+  const verificationAccountId: string | null = url.searchParams.get('id');
+  const verificationStartTimestamp: string | null = url.searchParams.get('requestTimestamp');
+  const verificationCode: string | null = url.searchParams.get('verificationCode');
 
   if (!verificationAccountId || !verificationStartTimestamp || !verificationCode) {
     return null;

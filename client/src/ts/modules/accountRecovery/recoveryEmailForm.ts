@@ -153,18 +153,19 @@ function setActiveValidation(): void {
 };
 
 function recoveryLinkDetected(): boolean {
-  const queryString: string = window.location.search;
+  const url: URL = new URL(window.location.href);
 
-  if (queryString === '') {
+  if (url.search === '') {
     return false;
   };
 
-  if (!isValidQueryString(queryString)) {
+  if (!isValidQueryString(url.search)) {
     displayInvalidRecoveryLinkModal();
     return false;
   };
 
-  const recoveryLinkDetails: RecoveryLinkDetails | null = getRecoveryLinkDetails(queryString);
+  const recoveryLinkDetails: RecoveryLinkDetails | null = getRecoveryLinkDetails(url);
+
   if (!recoveryLinkDetails) {
     displayInvalidRecoveryLinkModal();
     return false;
@@ -194,31 +195,11 @@ interface RecoveryLinkDetails {
   recoveryToken: string,
 };
 
-function getRecoveryLinkDetails(queryString: string): RecoveryLinkDetails | null {
-  const queryParams: string[] = queryString.substring(1).split('&');
-  const queryMap: Map<string, string> = new Map();
+function getRecoveryLinkDetails(url: URL): RecoveryLinkDetails | null {
 
-  if (queryParams.length !== 3) {
-    return null;
-  };
-
-  for (const param of queryParams) {
-    const keyValuePair: string[] = param.split('=');
-
-    if (keyValuePair.length !== 2) {
-      return null;
-    };
-
-    if (keyValuePair[0] === '' || keyValuePair[1] === '') {
-      return null;
-    };
-
-    queryMap.set(keyValuePair[0], keyValuePair[1]);
-  };
-
-  const recoveryAccountId: string | undefined = queryMap.get('id');
-  const recoveryStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
-  const recoveryToken: string | undefined = queryMap.get('recoveryToken');
+  const recoveryAccountId: string | null = url.searchParams.get('id');
+  const recoveryStartTimestamp: string | null = url.searchParams.get('requestTimestamp');
+  const recoveryToken: string | null = url.searchParams.get('recoveryToken');
 
   if (!recoveryAccountId || !recoveryStartTimestamp || !recoveryToken) {
     return null;
