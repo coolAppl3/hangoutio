@@ -342,7 +342,7 @@ function getVerificationLinkDetails(url: URL): VerificationData | null {
 };
 
 function detectOngoingVerification(): void {
-  if (invalidVerificationLinkPresent()) {
+  if (window.location.search !== '') {
     return;
   };
 
@@ -407,16 +407,6 @@ function detectOngoingVerification(): void {
 
 function setActiveValidation(): void {
   verificationCodeInput?.addEventListener('input', () => validateCode(verificationCodeInput));
-};
-
-function invalidVerificationLinkPresent(): boolean {
-  const queryString: string = window.location.search;
-
-  if (queryString !== '') {
-    return true;
-  };
-
-  return false;
 };
 
 function getPendingSignInHangoutId(): string | null {
