@@ -20,6 +20,7 @@ import { hangoutMembersRouter } from './routers/hangoutMembers';
 import { availabilitySlotsRouter } from './routers/availabilitySlots';
 import { suggestionsRouter } from './routers/suggestions';
 import { votesRouter } from './routers/votes';
+import { htmlRouter } from './routers/htmlRouter';
 
 // middleware
 import { fallbackMiddleware } from './middleware/fallbackMiddleware';
@@ -58,6 +59,7 @@ app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
 
 // static files
+app.use(htmlRouter);
 app.use(express.static(path.join(__dirname, '../public')));
 
 // fallback middleware
