@@ -69,6 +69,9 @@ module.exports = {
     watchFiles: ['./src/html/**/*.html'],
     compress: true,
     historyApiFallback: true,
+    proxy: {
+      '/': 'http://localhost:5000',
+    },
   },
 
   module: {
