@@ -233,6 +233,11 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         return;
     }
     ;
+    if (requestData.username === requestData.password) {
+        res.status(409).json({ success: false, message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+        return;
+    }
+    ;
     let connection;
     try {
         connection = await db_1.dbPool.getConnection();
@@ -1688,7 +1693,8 @@ exports.hangoutsRouter.post('/details/members/join/guest', async (req, res) => {
     }
     ;
     if (requestData.username === requestData.password) {
-        res.status(400).json({ success: false, message: `Username and password can't be identical.`, reason: 'usernamePasswordIdentical' });
+        res.status(409).json({ success: false, message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+        return;
     }
     ;
     if (!(0, userValidation_1.isValidDisplayName)(requestData.displayName)) {

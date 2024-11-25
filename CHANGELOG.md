@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.3.6] (2024-11-25)
+
+### Features
+
+- Updated chat bubbles in the hangout loading skeleton to not take up 100% of the available width, to align with how chat bubbles actually look like when loaded.
+- Fixed the theme switcher button noticeably moving into position when the dark theme is selected, due to its transition properties.
+- Added `htmlRouter.ts` to remove the `.html` part from HTML GET requests, further polishing the user experience.
+
+
+### Code Refactoring
+
+- Removed unnecessary console logs when an email is sent.
+- Improved URL query string extraction using `searchParams` through the URL web API in `verificationForm.ts` and `recoveryEmailForm.ts`.
+- Refactored out no-longer-necessary `.html` extensions throughout the app to align with the new HTML router.
+- Refactored out no-longer-necessary .html extensions throughout the app to align with the new HTML router.
+
+
+### Bug Fixes
+
+- Fixed transaction not being committed in `deleteMarkedAccounts()`.
+- Fixed users being able to create an account (guest accounts included), or update their password, and have their username and password be identical.
+
+
+### Build Changes
+
+- Updated `cross-spawn` module using `npm audit fix` to address a high severity vulnerability.
+- Renamed `routes` directory to `routers`.
+- Added a proxy to `webpack.config.js` to reroute requests to the backend in development mode.
+- Implemented `setupMiddlewares` in `webpack.config.js` to properly handle the recent change to how `.html` is no longer required to reach the app's HTML pages.
+
+
 ## [0.3.5] (2024-11-23)
 
 ### Features

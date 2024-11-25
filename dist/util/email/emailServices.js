@@ -29,13 +29,12 @@ const initTransporter_1 = require("./initTransporter");
 ;
 async function sendVerificationEmail(verificationEmailConfig) {
     try {
-        const info = await initTransporter_1.emailTransporter.sendMail({
+        await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to: verificationEmailConfig.to,
             subject: 'Hangoutio - Account Verification',
             html: emailTemplates.getVerificationEmailTemplate(verificationEmailConfig),
         });
-        console.log(`Email sent: ${info.response}`);
     }
     catch (err) {
         console.log(err);
@@ -47,13 +46,12 @@ exports.sendVerificationEmail = sendVerificationEmail;
 ;
 async function sendRecoveryEmail(recoveryEmailConfig) {
     try {
-        const info = await initTransporter_1.emailTransporter.sendMail({
+        await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to: recoveryEmailConfig.to,
             subject: 'Hangoutio - Account Recovery',
             html: emailTemplates.getRecoveryEmailTemplate(recoveryEmailConfig),
         });
-        console.log(`Email sent: ${info.response}`);
     }
     catch (err) {
         console.log(err);
@@ -65,13 +63,12 @@ exports.sendRecoveryEmail = sendRecoveryEmail;
 ;
 async function sendDeletionEmail(deletionEmailConfig) {
     try {
-        const info = await initTransporter_1.emailTransporter.sendMail({
+        await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to: deletionEmailConfig.to,
             subject: 'Hangoutio - Account Deletion',
             html: emailTemplates.getAccountDeletionTemplate(deletionEmailConfig),
         });
-        console.log(`Email sent: ${info.response}`);
     }
     catch (err) {
         console.log(err);
@@ -83,13 +80,12 @@ exports.sendDeletionEmail = sendDeletionEmail;
 ;
 async function sendEmailUpdateEmail(updateEmailConfig) {
     try {
-        const info = await initTransporter_1.emailTransporter.sendMail({
+        await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to: updateEmailConfig.to,
             subject: 'Hangoutio - Email Update',
             html: emailTemplates.getEmailUpdateTemplate(updateEmailConfig),
         });
-        console.log(`Email sent: ${info.response}`);
     }
     catch (err) {
         console.log(err);
@@ -100,13 +96,12 @@ exports.sendEmailUpdateEmail = sendEmailUpdateEmail;
 ;
 async function sendEmailUpdateWarningEmail(to, displayName) {
     try {
-        const info = await initTransporter_1.emailTransporter.sendMail({
+        await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to,
             subject: 'Hangoutio - Suspicious Activity',
             html: emailTemplates.getEmailUpdateWarningTemplate(displayName),
         });
-        console.log(`Email sent: ${info.response}`);
     }
     catch (err) {
         console.log(err);

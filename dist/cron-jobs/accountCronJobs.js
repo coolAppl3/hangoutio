@@ -55,8 +55,8 @@ async function removeExpiredEmailUpdateRequests() {
 exports.removeExpiredEmailUpdateRequests = removeExpiredEmailUpdateRequests;
 ;
 async function deleteMarkedAccounts() {
-    const cancellationWindow = 1000 * 60 * 60 * 24 * 2;
-    const minimumAllowedTimestamp = Date.now() - cancellationWindow;
+    const twoDaysMilliseconds = 1000 * 60 * 60 * 24 * 2;
+    const minimumAllowedTimestamp = Date.now() - twoDaysMilliseconds;
     ;
     let connection;
     try {
@@ -70,7 +70,7 @@ async function deleteMarkedAccounts() {
       WHERE
         request_timestamp < ?;`, [minimumAllowedTimestamp]);
         if (accountRows.length === 0) {
-            await connection.commit();
+            await connection.rollback();
             return;
         }
         ;
@@ -79,6 +79,7 @@ async function deleteMarkedAccounts() {
         accounts
       WHERE
         account_id IN (?);`, [accountsToDelete.join(', ')]);
+        await connection.commit();
     }
     catch (err) {
         console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`);
