@@ -12,14 +12,14 @@ import compression from 'compression';
 import { initDb } from './db/initDb';
 
 // routers
-import { chatRouter } from './routes/chat';
-import { accountsRouter } from './routes/accounts';
-import { hangoutsRouter } from './routes/hangouts';
-import { guestsRouter } from './routes/guests';
-import { hangoutMembersRouter } from './routes/hangoutMembers';
-import { availabilitySlotsRouter } from './routes/availabilitySlots';
-import { suggestionsRouter } from './routes/suggestions';
-import { votesRouter } from './routes/votes';
+import { chatRouter } from './routers/chat';
+import { accountsRouter } from './routers/accounts';
+import { hangoutsRouter } from './routers/hangouts';
+import { guestsRouter } from './routers/guests';
+import { hangoutMembersRouter } from './routers/hangoutMembers';
+import { availabilitySlotsRouter } from './routers/availabilitySlots';
+import { suggestionsRouter } from './routers/suggestions';
+import { votesRouter } from './routers/votes';
 
 // middleware
 import { fallbackMiddleware } from './middleware/fallbackMiddleware';
