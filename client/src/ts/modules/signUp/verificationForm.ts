@@ -96,7 +96,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
       return;
     };
 
-    setTimeout(() => window.location.replace('account.html'), 1000);
+    setTimeout(() => window.location.replace('account'), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -236,7 +236,7 @@ async function resendVerificationEmail(): Promise<void> {
 
     if (status === 400) {
       if (errReason === 'alreadyVerified') {
-        setTimeout(() => window.location.replace('sign-in.html'), 1000);
+        setTimeout(() => window.location.replace('sign-in'), 1000);
         return;
       };
 
@@ -253,17 +253,18 @@ async function resendVerificationEmail(): Promise<void> {
 };
 
 function verificationLinkDetected(): boolean {
-  const queryString: string = window.location.search;
+  const url: URL = new URL(window.location.href);
 
-  if (queryString === '') {
+  if (url.search === '') {
     return false;
   };
 
-  if (!isValidQueryString(queryString)) {
+  if (!isValidQueryString(url.search)) {
     return false;
   };
 
-  const verificationData: VerificationData | null = getVerificationLinkDetails(queryString);
+  const verificationData: VerificationData | null = getVerificationLinkDetails(url);
+
   if (!verificationData) {
     const infoModal: HTMLDivElement = InfoModal.display({
       title: 'Invalid verification link.',
@@ -310,31 +311,10 @@ interface VerificationData {
   verificationCode: string,
 };
 
-function getVerificationLinkDetails(queryString: string): VerificationData | null {
-  const queryParams: string[] = queryString.substring(1).split('&');
-  const queryMap: Map<string, string> = new Map();
-
-  if (queryParams.length !== 3) {
-    return null;
-  };
-
-  for (const param of queryParams) {
-    const keyValuePair: string[] = param.split('=');
-
-    if (keyValuePair.length !== 2) {
-      return null;
-    };
-
-    if (keyValuePair[0] === '' || keyValuePair[1] === '') {
-      return null;
-    };
-
-    queryMap.set(keyValuePair[0], keyValuePair[1]);
-  };
-
-  const verificationAccountId: string | undefined = queryMap.get('id');
-  const verificationStartTimestamp: string | undefined = queryMap.get('requestTimestamp');
-  const verificationCode: string | undefined = queryMap.get('verificationCode');
+function getVerificationLinkDetails(url: URL): VerificationData | null {
+  const verificationAccountId: string | null = url.searchParams.get('id');
+  const verificationStartTimestamp: string | null = url.searchParams.get('requestTimestamp');
+  const verificationCode: string | null = url.searchParams.get('verificationCode');
 
   if (!verificationAccountId || !verificationStartTimestamp || !verificationCode) {
     return null;
@@ -362,7 +342,7 @@ function getVerificationLinkDetails(queryString: string): VerificationData | nul
 };
 
 function detectOngoingVerification(): void {
-  if (invalidVerificationLinkPresent()) {
+  if (window.location.search !== '') {
     return;
   };
 
@@ -429,16 +409,6 @@ function setActiveValidation(): void {
   verificationCodeInput?.addEventListener('input', () => validateCode(verificationCodeInput));
 };
 
-function invalidVerificationLinkPresent(): boolean {
-  const queryString: string = window.location.search;
-
-  if (queryString !== '') {
-    return true;
-  };
-
-  return false;
-};
-
 function getPendingSignInHangoutId(): string | null {
   const pendingHangoutId: string | null = Cookies.get('pendingSignInHangoutId');
 
@@ -469,13 +439,13 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.replace(`hangout.html?hangoutId=${hangoutId}`);
+      window.location.replace(`hangout?hangoutId=${hangoutId}`);
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
       Cookies.remove('pendingSignInHangoutId');
-      window.location.replace('account.html');
+      window.location.replace('account');
     };
   });
 };

@@ -54,7 +54,7 @@ export async function getHangoutDashboardData(): Promise<void> {
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.href = 'home', 1000);
 
       return;
     };
@@ -63,7 +63,7 @@ export async function getHangoutDashboardData(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.href = 'home', 1000);
 
       return;
     };
@@ -82,7 +82,7 @@ export async function getHangoutDashboardData(): Promise<void> {
       signOut();
 
       popup(errMessage, 'error');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.href = 'home', 1000);
 
       return;
     };
@@ -98,6 +98,6 @@ export async function getHangoutDashboardData(): Promise<void> {
     };
 
     popup(errMessage, 'error');
-    setTimeout(() => window.location.href = 'index.html', 1000);
+    setTimeout(() => window.location.href = 'home', 1000);
   };
 };

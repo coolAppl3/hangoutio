@@ -49,7 +49,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
   };
 
   if (requestData.username === requestData.password) {
-    res.status(400).json({ success: false, message: `Password identical to username.`, reason: 'passwordEqualsUsername' });
+    res.status(409).json({ success: false, message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
     return;
   };
 
@@ -771,6 +771,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       recovery_token: string,
       failed_recovery_attempts: number,
       request_timestamp: number,
+      username: string
     };
 
     const [recoveryRows] = await dbPool.execute<RecoveryDetails[]>(
@@ -778,13 +779,14 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         recovery_id,
         recovery_token,
         failed_recovery_attempts,
-        request_timestamp
+        request_timestamp,
+        (SELECT username FROM accounts WHERE account_id = :accountId) AS username
       FROM
         account_recovery
       WHERE
-        account_id = ?
+        account_id = :accountId
       LIMIT 1;`,
-      [requestData.accountId]
+      { accountId: requestData.accountId }
     );
 
     if (recoveryRows.length === 0) {
@@ -821,7 +823,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       if (recoveryDetails.failed_recovery_attempts + 1 >= 3) {
         res.status(401).json({
           success: false,
-          message: 'Incorrect recovery token.',
+          message: 'Incorrect recovery token. Recovery suspended',
           reason: 'recoverySuspended',
           requestData: {
             requestTimestamp: recoveryDetails.request_timestamp,
@@ -832,6 +834,11 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       };
 
       res.status(401).json({ success: false, message: 'Incorrect recovery token.', reason: 'incorrectRecoveryToken' });
+      return;
+    };
+
+    if (recoveryDetails.username === requestData.newPassword) {
+      res.status(409).json({ success: false, message: `New password can't be identical to username.` });
       return;
     };
 
@@ -1271,13 +1278,15 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
       auth_token: string,
       hashed_password: string,
       failed_sign_in_attempts: number,
+      username: string,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
         auth_token,
         hashed_password,
-        failed_sign_in_attempts
+        failed_sign_in_attempts,
+        username
       FROM
         accounts
       WHERE
@@ -1337,7 +1346,12 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     const isSamePassword: boolean = await bcrypt.compare(requestData.newPassword, accountDetails.hashed_password);
     if (isSamePassword) {
-      res.status(409).json({ success: false, message: 'New password matches existing one.' });
+      res.status(409).json({ success: false, message: `New password can't be identical to current password.`, reason: 'equalPasswords' });
+      return;
+    };
+
+    if (accountDetails.username === requestData.newPassword) {
+      res.status(409).json({ success: false, message: `New password can't be identical to username.`, reason: 'passwordEqualsUsername' });
       return;
     };
 
@@ -1491,7 +1505,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     };
 
     if (requestData.newEmail === accountDetails.email) {
-      res.status(409).json({ success: false, message: 'New email can not be equal to the current email.' });
+      res.status(409).json({ success: false, message: `New email can't be identical to current email.` });
       return;
     };
 

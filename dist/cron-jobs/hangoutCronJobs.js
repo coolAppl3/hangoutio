@@ -199,6 +199,7 @@ async function archiveHangouts() {
         hangouts
       WHERE
         hangout_id IN (${hangoutIdsString});`);
+        await connection.commit();
         if (resultSetHeader.affectedRows !== hangoutIds.length) {
             ;
             const error = {
@@ -212,7 +213,6 @@ async function archiveHangouts() {
             console.log(error);
         }
         ;
-        await connection.commit();
     }
     catch (err) {
         console.log(`CRON JOB ERROR: ${archiveHangouts.name}`);

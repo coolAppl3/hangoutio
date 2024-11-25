@@ -259,6 +259,8 @@ export async function archiveHangouts(): Promise<void> {
         hangout_id IN (${hangoutIdsString});`
     );
 
+    await connection.commit();
+
     if (resultSetHeader.affectedRows !== hangoutIds.length) {
       interface Error {
         description: string,
@@ -279,8 +281,6 @@ export async function archiveHangouts(): Promise<void> {
       console.log(`CRON JOB ERROR: ${archiveHangouts.name}`);
       console.log(error);
     };
-
-    await connection.commit();
 
   } catch (err: any) {
     console.log(`CRON JOB ERROR: ${archiveHangouts.name}`);

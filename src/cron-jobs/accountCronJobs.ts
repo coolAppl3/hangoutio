@@ -60,8 +60,8 @@ export async function removeExpiredEmailUpdateRequests(): Promise<void> {
 };
 
 export async function deleteMarkedAccounts(): Promise<void> {
-  const cancellationWindow: number = 1000 * 60 * 60 * 24 * 2;
-  const minimumAllowedTimestamp: number = Date.now() - cancellationWindow;
+  const twoDaysMilliseconds: number = 1000 * 60 * 60 * 24 * 2;
+  const minimumAllowedTimestamp: number = Date.now() - twoDaysMilliseconds;
 
   interface AccountDetails extends RowDataPacket {
     account_id: number,
@@ -85,7 +85,7 @@ export async function deleteMarkedAccounts(): Promise<void> {
     );
 
     if (accountRows.length === 0) {
-      await connection.commit();
+      await connection.rollback();
       return;
     };
 
@@ -97,6 +97,8 @@ export async function deleteMarkedAccounts(): Promise<void> {
         account_id IN (?);`,
       [accountsToDelete.join(', ')]
     );
+
+    await connection.commit();
 
   } catch (err: any) {
     console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`)

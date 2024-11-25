@@ -138,7 +138,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     const hangoutId: string = accountLeaderHangoutData.data.resData.hangoutId;
 
     popup('Hangout successfully created.', 'success');
-    setTimeout(() => window.location.href = `hangout.html?hangoutId=${hangoutId}`, 1000);
+    setTimeout(() => window.location.href = `hangout?hangoutId=${hangoutId}`, 1000);
 
   } catch (err: unknown) {
     console.log(err)
@@ -272,7 +272,7 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
     };
 
     popup('Hangout successfully created.', 'success');
-    setTimeout(() => window.location.replace(`hangout.html?hangoutId=${hangoutId}`), 1000);
+    setTimeout(() => window.location.replace(`hangout?hangoutId=${hangoutId}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -305,18 +305,24 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 409 && errReason === 'guestUsernameTaken') {
-      ErrorSpan.display(guestUsernameInput, errMessage);
+    const inputRecord: Record<string, HTMLInputElement | undefined> = {
+      guestUsernameTaken: guestUsernameInput,
+      guestDisplayName: guestDisplayNameInput,
+      username: guestUsernameInput,
+      guestPassword: guestPasswordInput,
+      passwordEqualsUsername: guestPasswordInput,
+    };
+
+    if (status === 409) {
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
+      };
+
       return;
     };
 
     if (status === 400) {
-      const inputRecord: Record<string, HTMLInputElement | undefined> = {
-        guestDisplayName: guestDisplayNameInput,
-        username: guestUsernameInput,
-        guestPassword: guestPasswordInput,
-      };
-
       const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
       if (input) {
         ErrorSpan.display(input, errMessage);
@@ -607,7 +613,7 @@ function detectSignedInUser(): void {
       const referrerHref: string = document.referrer;
 
       if (referrerHref === '' || referrerHref === window.location.href) {
-        window.location.href = 'index.html';
+        window.location.href = 'home';
         return;
       };
 
@@ -647,7 +653,7 @@ function handleHangoutsLimitReached(errMessage: string): void {
     };
 
     if (e.target.id === 'info-modal-btn') {
-      window.location.href = 'account.html';
+      window.location.href = 'account';
     };
   });
 };
@@ -668,12 +674,12 @@ function handleAccountLocked(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = 'account-recovery.html';
+      window.location.href = 'account-recovery';
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'index.html';
+      window.location.href = 'home';
     };
   });
 };

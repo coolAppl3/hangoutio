@@ -18,7 +18,7 @@ const confirmNewPasswordInput: HTMLInputElement | null = document.querySelector(
 const newPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#new-password-input-reveal-btn');
 const confirmNewPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#confirm-new-password-input-reveal-btn');
 
-export function passwordUpdateForm(): void {
+export function recoveryPasswordUpdateForm(): void {
   loadEventListeners();
   init();
 };
@@ -78,7 +78,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     Cookies.set('authToken', newAuthToken);
     popup('Account recovery successful.', 'success');
 
-    setTimeout(() => window.location.replace('account.html'), 1000);
+    setTimeout(() => window.location.replace('account'), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -106,6 +106,11 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
 
     LoadingModal.remove();
     popup(errMessage, 'error')
+
+    if (status === 409) {
+      ErrorSpan.display(newPasswordInput, errMessage);
+      return;
+    };
 
     if (status === 404) {
       LoadingModal.display();

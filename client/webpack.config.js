@@ -69,6 +69,24 @@ module.exports = {
     watchFiles: ['./src/html/**/*.html'],
     compress: true,
     historyApiFallback: true,
+
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer) {
+        throw new Error('webpack-dev-server is not defined');
+      };
+
+      devServer.app.use((req, res, next) => {
+        const requestBasename = path.basename(req.path);
+
+        if (!req.url.includes('.') && !req.url.endsWith('/')) {
+          req.url = requestBasename === 'home' ? req.url.replace(requestBasename, 'index.html') : req.url.replace(requestBasename, `${requestBasename}.html`);
+        };
+
+        next();
+      });
+
+      return middlewares;
+    },
   },
 
   module: {

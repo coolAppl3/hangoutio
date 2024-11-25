@@ -107,7 +107,7 @@ async function accountSignIn(): Promise<void> {
       return;
     };
 
-    setTimeout(() => window.location.replace('account.html'), 1000);
+    setTimeout(() => window.location.replace('account'), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -219,7 +219,7 @@ async function guestSignIn(): Promise<void> {
     };
 
     popup('Signed in successfully.', 'success');
-    setTimeout(() => window.location.replace(`hangout.html?id=${hangoutId}`), 1000);
+    setTimeout(() => window.location.replace(`hangout?id=${hangoutId}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -387,11 +387,11 @@ function redirectSignedInUser(): void {
   };
 
   if (authToken.startsWith('g')) {
-    window.location.replace('hangout.html');
+    window.location.replace('hangout');
     return;
   };
 
-  window.location.replace('account.html');
+  window.location.replace('account');
 };
 
 function updateSignedInDurationPreferences(): void {
@@ -421,12 +421,12 @@ function handleAccountLocked(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = 'account-recovery.html';
+      window.location.href = 'account-recovery';
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'index.html';
+      window.location.href = 'home';
     };
   });
 };
@@ -461,13 +461,13 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = `hangout.html?hangoutId=${hangoutId}`;
+      window.location.href = `hangout?hangoutId=${hangoutId}`;
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
       Cookies.remove('pendingSignInHangoutId');
-      window.location.href = 'account.html';
+      window.location.href = 'account';
     };
   });
 };

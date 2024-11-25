@@ -24,7 +24,7 @@ let notHangoutMemberState: NotHangoutMemberState | null = null;
 export function handleNotHangoutMember(errResData: unknown, hangoutId: string): void {
   if (!isValidNotHangoutMemberData(errResData)) {
     popup('Something went wrong.', 'error');
-    setTimeout(() => window.location.href = 'index.html', 1000);
+    setTimeout(() => window.location.href = 'home', 1000);
 
     return;
   };
@@ -83,7 +83,7 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'account.html';
+      window.location.href = 'account';
     };
   });
 };
@@ -251,7 +251,7 @@ function handleGuestNotMember(): void {
     if (e.target.id === 'confirm-modal-confirm-btn') {
       if (!notHangoutMemberState) {
         popup('Something went wrong.', 'error');
-        setTimeout(() => window.location.href = 'index.html', 1000);
+        setTimeout(() => window.location.href = 'home', 1000);
 
         return;
       };
@@ -264,7 +264,7 @@ function handleGuestNotMember(): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'index.html';
+      window.location.href = 'home';
     };
   });
 };
@@ -282,7 +282,7 @@ function handleHangoutsLimitReached(errMessage: string): void {
     };
 
     if (e.target.id === 'info-modal-btn') {
-      window.location.href = 'account.html';
+      window.location.href = 'account';
     };
   });
 };

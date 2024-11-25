@@ -160,7 +160,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
         };
 
         if (e.target.id === 'info-modal-btn') {
-          window.location.href = 'index.html';
+          window.location.href = 'home';
         };
       });
 

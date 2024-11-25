@@ -255,6 +255,11 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     return;
   };
 
+  if (requestData.username === requestData.password) {
+    res.status(409).json({ success: false, message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+    return;
+  };
+
   let connection;
 
   try {
@@ -2146,7 +2151,8 @@ hangoutsRouter.post('/details/members/join/guest', async (req: Request, res: Res
   };
 
   if (requestData.username === requestData.password) {
-    res.status(400).json({ success: false, message: `Username and password can't be identical.`, reason: 'usernamePasswordIdentical' });
+    res.status(409).json({ success: false, message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+    return;
   };
 
   if (!isValidDisplayName(requestData.displayName)) {
