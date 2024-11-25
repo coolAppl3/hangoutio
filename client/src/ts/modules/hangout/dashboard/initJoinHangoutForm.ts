@@ -134,7 +134,7 @@ function createBtnContainer(): HTMLDivElement {
   cancelBtn.className = 'cancel-btn';
   cancelBtn.setAttribute('type', 'button');
   cancelBtn.appendChild(document.createTextNode('Got to homepage'));
-  cancelBtn.addEventListener('click', () => window.location.href = 'index.html');
+  cancelBtn.addEventListener('click', () => window.location.href = 'home');
 
   btnContainer.appendChild(submitBtn);
   btnContainer.appendChild(cancelBtn);

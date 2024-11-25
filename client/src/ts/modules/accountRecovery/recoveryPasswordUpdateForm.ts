@@ -78,7 +78,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     Cookies.set('authToken', newAuthToken);
     popup('Account recovery successful.', 'success');
 
-    setTimeout(() => window.location.replace('account.html'), 1000);
+    setTimeout(() => window.location.replace('account'), 1000);
 
   } catch (err: unknown) {
     console.log(err);

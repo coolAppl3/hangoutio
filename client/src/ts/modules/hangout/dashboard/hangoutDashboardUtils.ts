@@ -28,7 +28,7 @@ export function handleInvalidHangoutId(): void {
     };
 
     if (e.target.id === 'info-modal-btn') {
-      window.location.href = 'index.html';
+      window.location.href = 'home';
     };
   });
 };
@@ -43,7 +43,7 @@ function handleEmptyHangoutGuestRequest(): void {
     return;
   };
 
-  window.location.href = `${window.location.origin}/hangout.html?hangoutId=${guestHangoutId}`;
+  window.location.href = `${window.location.origin}/hangout?hangoutId=${guestHangoutId}`;
 };
 
 export function handleHangoutNotFound(): void {
@@ -59,7 +59,7 @@ export function handleHangoutNotFound(): void {
     };
 
     if (e.target.id === 'info-modal-btn') {
-      window.location.href = 'index.html';
+      window.location.href = 'home';
     };
   });
 };
@@ -77,7 +77,7 @@ export function handleHangoutFull(): void {
     };
 
     if (e.target.id === 'info-modal-btn') {
-      window.location.href = 'index.html';
+      window.location.href = 'home';
       return;
     };
   });
@@ -95,7 +95,7 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.href = 'home', 1000);
 
       return;
     };
@@ -104,7 +104,7 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.href = 'home', 1000);
 
       return;
     };
@@ -124,7 +124,7 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
       return;
     };
 
-    setTimeout(() => window.location.href = 'index.html', 1000);
+    setTimeout(() => window.location.href = 'home', 1000);
     return;
   };
 
@@ -144,13 +144,13 @@ export async function handleNoAuthToken(hangoutId: string): Promise<void> {
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
       Cookies.set('pendingSignInHangoutId', hangoutId);
-      window.location.href = 'sign-in.html';
+      window.location.href = 'sign-in';
 
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'index.html';
+      window.location.href = 'home';
       return;
     };
 

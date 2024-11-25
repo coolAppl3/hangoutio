@@ -239,7 +239,7 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = isGuestUser ? 'index.html' : 'account.html';
+      window.location.href = isGuestUser ? 'home' : 'account';
       return;
     };
 

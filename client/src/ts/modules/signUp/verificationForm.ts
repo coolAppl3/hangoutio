@@ -96,7 +96,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
       return;
     };
 
-    setTimeout(() => window.location.replace('account.html'), 1000);
+    setTimeout(() => window.location.replace('account'), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -236,7 +236,7 @@ async function resendVerificationEmail(): Promise<void> {
 
     if (status === 400) {
       if (errReason === 'alreadyVerified') {
-        setTimeout(() => window.location.replace('sign-in.html'), 1000);
+        setTimeout(() => window.location.replace('sign-in'), 1000);
         return;
       };
 
@@ -439,13 +439,13 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.replace(`hangout.html?hangoutId=${hangoutId}`);
+      window.location.replace(`hangout?hangoutId=${hangoutId}`);
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
       Cookies.remove('pendingSignInHangoutId');
-      window.location.replace('account.html');
+      window.location.replace('account');
     };
   });
 };
