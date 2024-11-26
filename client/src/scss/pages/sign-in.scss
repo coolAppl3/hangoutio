@@ -1,0 +1,23 @@
+#sign-in-form {
+
+  .form-header {
+
+    #sign-in-options {
+
+      &.guest {
+
+        &::after {
+          transform: translate3d(100%, 0, 0);
+        }
+
+        button {
+          @apply first:text-title first:after:block dark:first:text-title-dark last:text-title last:after:hidden;
+        }
+      }
+
+      button {
+        @apply first:text-title first:after:hidden last:text-title dark:last:text-title-dark;
+      }
+    }
+  }
+}

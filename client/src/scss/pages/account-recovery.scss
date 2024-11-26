@@ -1,0 +1,26 @@
+#account-recovery {
+
+  &.emailForm {
+    form {
+      &:not(:first-child) {
+        @apply hidden;
+      }
+    }
+  }
+
+  &.confirmationForm {
+    form {
+      &:not(:nth-child(2)) {
+        @apply hidden;
+      }
+    }
+  }
+
+  &.updatePasswordForm {
+    form {
+      &:not(:nth-child(3)) {
+        @apply hidden;
+      }
+    }
+  }
+}

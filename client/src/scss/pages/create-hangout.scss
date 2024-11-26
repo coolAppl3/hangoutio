@@ -1,0 +1,49 @@
+#hangout-form {
+  @apply grid grid-cols-[100%_100%_100%] gap-x-4 transition-transform duration-200;
+
+  #hangout-form-step-3 {
+
+    &-container {
+      #account-preferences {
+
+        &.guest {
+
+          &::after {
+            transform: translate3d(100%, 0, 0);
+          }
+
+          button {
+            @apply first:text-title first:after:block dark:first:text-title-dark last:text-title last:after:hidden;
+          }
+        }
+
+        button {
+          @apply first:text-title first:after:hidden last:text-title dark:last:text-title-dark;
+        }
+      }
+
+      #already-signed-in {
+        @apply hidden;
+      }
+
+      &.disabled {
+
+        div {
+          @apply hidden;
+        }
+
+        #already-signed-in {
+          @apply block;
+        }
+      }
+    }
+  }
+
+  .content-item {
+    display: none;
+
+    &:first-child {
+      display: block;
+    }
+  }
+}
