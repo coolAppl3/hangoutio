@@ -108,6 +108,23 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
   };
 };
 
+export async function deleteNoMemberHangouts(): Promise<void> {
+  await dbPool.execute(
+    `DELETE
+      FROM
+    hangouts
+      WHERE
+    NOT EXISTS (
+      SELECT
+        1
+      FROM
+        hangout_members
+      WHERE
+        hangout_members.hangout_id = hangouts.hangout_id
+    );`
+  );
+};
+
 export async function archiveHangouts(): Promise<void> {
   const currentTimestamp: number = Date.now();
 
@@ -249,7 +266,7 @@ export async function archiveHangouts(): Promise<void> {
         display_name,
         is_leader
       )
-      VALUES ${archivedHangoutMembersValues}`
+      VALUES ${archivedHangoutMembersValues};`
     );
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(

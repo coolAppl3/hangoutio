@@ -18,6 +18,7 @@ export function initCronJobs(): void {
   // every hour
   cron.schedule('0 * * * *', async () => {
     await accountCronJobs.deleteMarkedAccounts();
+    await hangoutCronJobs.deleteNoMemberHangouts();
     await hangoutCronJobs.archiveHangouts();
   });
 
