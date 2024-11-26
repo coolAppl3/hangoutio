@@ -1,4 +1,4 @@
-import '../../../scss/main.scss';
+import '../../../scss/error-page.scss';
 
 import botNavbar from '../global/botNavbar';
 import topNavbar from '../global/topNavbar';
