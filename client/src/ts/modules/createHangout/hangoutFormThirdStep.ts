@@ -268,7 +268,7 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
     } else {
       Cookies.set('authToken', authToken);
-      Cookies.set('guestHangoutId', authToken);
+      Cookies.set('guestHangoutId', hangoutId);
     };
 
     popup('Hangout successfully created.', 'success');
