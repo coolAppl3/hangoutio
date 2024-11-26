@@ -103,7 +103,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
   };
 
   if (!hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
-    displayFirstStepError('Invalid hangout title.', 'password');
+    displayFirstStepError('Invalid hangout password.', 'password');
     popup('Invalid hangout password.', 'error');
     LoadingModal.remove();
 
@@ -197,7 +197,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
       };
 
       if (errReason === 'hangoutPassword') {
-        displayFirstStepError('Invalid hangout title.', 'password');
+        displayFirstStepError('Invalid hangout password.', 'password');
       };
     };
   };
@@ -220,8 +220,8 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
     return;
   };
 
-  if (!hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
-    displayFirstStepError('Invalid hangout title.', 'password');
+  if (hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
+    displayFirstStepError('Invalid hangout password.', 'password');
 
     popup('Invalid hangout password.', 'error');
     LoadingModal.remove();
