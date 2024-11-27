@@ -102,7 +102,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     return;
   };
 
-  if (!hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
+  if (hangoutFormState.isPasswordProtected && !hangoutFormState.hangoutPassword) {
     displayFirstStepError('Invalid hangout password.', 'password');
     popup('Invalid hangout password.', 'error');
     LoadingModal.remove();
