@@ -11,11 +11,11 @@ export default class Cookies {
 
   public static set(cookieName: string, cookieValue: string, maxAgeSeconds?: number): void {
     if (!maxAgeSeconds) {
-      document.cookie = `${cookieName}=${cookieValue}; path=/; Secure`;
+      document.cookie = `${cookieName}=${cookieValue}; path=/; Secure; SameSite=Strict`;
       return;
     };
 
-    document.cookie = `${cookieName}=${cookieValue}; max-age=${maxAgeSeconds}; path=/; Secure`;
+    document.cookie = `${cookieName}=${cookieValue}; max-age=${maxAgeSeconds}; path=/; Secure; SameSite=Strict`;
   };
 
   public static remove(cookieName: string): void {
