@@ -11,24 +11,27 @@ const http_1 = __importDefault(require("http"));
 const hangoutWebSocketServer_1 = require("./webSockets/hangout/hangoutWebSocketServer");
 const express_1 = __importDefault(require("express"));
 const compression_1 = __importDefault(require("compression"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const initDb_1 = require("./db/initDb");
-const chat_1 = require("./routers/chat");
-const accounts_1 = require("./routers/accounts");
-const hangouts_1 = require("./routers/hangouts");
-const guests_1 = require("./routers/guests");
-const hangoutMembers_1 = require("./routers/hangoutMembers");
-const availabilitySlots_1 = require("./routers/availabilitySlots");
-const suggestions_1 = require("./routers/suggestions");
-const votes_1 = require("./routers/votes");
+const chatRouter_1 = require("./routers/chatRouter");
+const accountsRouter_1 = require("./routers/accountsRouter");
+const hangoutsRouter_1 = require("./routers/hangoutsRouter");
+const guestsRouter_1 = require("./routers/guestsRouter");
+const hangoutMembersRouter_1 = require("./routers/hangoutMembersRouter");
+const availabilitySlotsRouter_1 = require("./routers/availabilitySlotsRouter");
+const suggestionsRouter_1 = require("./routers/suggestionsRouter");
+const votesRouter_1 = require("./routers/votesRouter");
 const htmlRouter_1 = require("./routers/htmlRouter");
+const authRouter_1 = require("./routers/authRouter");
 const fallbackMiddleware_1 = require("./middleware/fallbackMiddleware");
 const cronInit_1 = require("./cron-jobs/cronInit");
 const hangoutWebSocketAuth_1 = require("./webSockets/hangout/hangoutWebSocketAuth");
-const port = process.env.PORT || 5000;
+const port = process.env.PORT ? +process.env.PORT : 5000;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
 app.use((0, compression_1.default)({ threshold: 1024 }));
+app.use((0, cookie_parser_1.default)());
 if (process.env.NODE_ENV === 'development') {
     const whitelist = ['http://localhost:3000', 'http://localhost:5000'];
     app.use((0, cors_1.default)({
@@ -37,14 +40,15 @@ if (process.env.NODE_ENV === 'development') {
     }));
 }
 ;
-app.use('/api/chat', chat_1.chatRouter);
-app.use('/api/accounts', accounts_1.accountsRouter);
-app.use('/api/hangouts', hangouts_1.hangoutsRouter);
-app.use('/api/guests', guests_1.guestsRouter);
-app.use('/api/hangoutMembers', hangoutMembers_1.hangoutMembersRouter);
-app.use('/api/availabilitySlots', availabilitySlots_1.availabilitySlotsRouter);
-app.use('/api/suggestions', suggestions_1.suggestionsRouter);
-app.use('/api/votes', votes_1.votesRouter);
+app.use('/api/chat', chatRouter_1.chatRouter);
+app.use('/api/accounts', accountsRouter_1.accountsRouter);
+app.use('/api/hangouts', hangoutsRouter_1.hangoutsRouter);
+app.use('/api/guests', guestsRouter_1.guestsRouter);
+app.use('/api/hangoutMembers', hangoutMembersRouter_1.hangoutMembersRouter);
+app.use('/api/availabilitySlots', availabilitySlotsRouter_1.availabilitySlotsRouter);
+app.use('/api/suggestions', suggestionsRouter_1.suggestionsRouter);
+app.use('/api/votes', votesRouter_1.votesRouter);
+app.use('api/auth', authRouter_1.authRouter);
 app.use(htmlRouter_1.htmlRouter);
 app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use(fallbackMiddleware_1.fallbackMiddleware);
@@ -52,8 +56,8 @@ const server = http_1.default.createServer(app);
 server.on('upgrade', async (req, socket, head) => {
     const requestData = await (0, hangoutWebSocketAuth_1.authenticateHandshake)(req);
     if (!requestData) {
-        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-        socket.write('Invalid credentials\r\n');
+        socket.write('HTTP/1.1 401 Unauthorized.\r\n\r\n');
+        socket.write('Invalid credentials.\r\n');
         socket.destroy();
         return;
     }

@@ -1,14 +1,13 @@
 import { RecoveryStage, recoveryState } from "./recoveryState";
 import LoadingModal from "../global/LoadingModal";
 import { validateConfirmPassword, validateNewPassword } from "../global/validation";
-import { displayFailureLimitReachedInfoModal, getMinutesTillRecoveryExpiry, reloadWithoutQueryString, } from "./recoveryUtils";
+import { displayFailureLimitReachedInfoModal, getMinutesTillRecoveryExpiry, handleUserSignedIn, reloadWithoutQueryString, } from "./recoveryUtils";
 import revealPassword from "../global/revealPassword";
 import popup from "../global/popup";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal } from "../global/InfoModal";
 import { RecoveryUpdatePasswordBody, RecoveryUpdatePasswordData, recoveryUpdatePasswordService } from "../services/accountServices";
-import Cookies from "../global/Cookies";
 
 const passwordUpdateFormElement: HTMLFormElement | null = document.querySelector('#password-update-form');
 
@@ -73,12 +72,12 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
 
   try {
     const recoveryUpdatePasswordData: AxiosResponse<RecoveryUpdatePasswordData> = await recoveryUpdatePasswordService(recoveryUpdatePasswordBody);
-    const newAuthToken: string = recoveryUpdatePasswordData.data.resData.newAuthToken;
+    const authSessionCreated: boolean = recoveryUpdatePasswordData.data.resData.authSessionCreated;
 
-    Cookies.set('authToken', newAuthToken);
     popup('Account recovery successful.', 'success');
 
-    setTimeout(() => window.location.replace('account'), 1000);
+    const redirectHref: string = authSessionCreated ? 'account' : 'sign-in'
+    setTimeout(() => window.location.replace(redirectHref), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -120,6 +119,11 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     };
 
     if (status === 403) {
+      if (errReason === 'signedIn') {
+        handleUserSignedIn();
+        return;
+      };
+
       if (typeof errResData !== 'object' || errResData === null) {
         return;
       };

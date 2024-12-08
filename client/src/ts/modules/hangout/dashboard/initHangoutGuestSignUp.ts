@@ -6,7 +6,7 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import revealPassword from "../../global/revealPassword";
 import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateNewUsername, validatePassword } from "../../global/validation";
-import { JoinHangoutAsGuestBody, JoinHangoutAsGuestData, joinHangoutAsGuestService } from "../../services/hangoutServices";
+import { JoinHangoutAsGuestBody, JoinHangoutAsGuestData, joinHangoutAsGuestService } from "../../services/hangoutMemberServices";
 import { getHangoutDashboardData } from "./hangoutDashboard";
 import { handleHangoutFull } from "./hangoutDashboardUtils";
 
@@ -88,18 +88,32 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
   try {
     const joinHangoutAsGuestData: AxiosResponse<JoinHangoutAsGuestData> = await joinHangoutAsGuestService(joinHangoutAsGuestBody);
-    const authToken: string = joinHangoutAsGuestData.data.resData.authToken;
+    const authSessionCreated: boolean = joinHangoutAsGuestData.data.resData.authSessionCreated;
 
-    if (guestSignUpFormState.keepSignedIn) {
-      const daySeconds: number = 60 * 60 * 24;
-      Cookies.set('authToken', authToken, 14 * daySeconds);
-
-    } else {
-      Cookies.set('authToken', authToken);
-    };
-
-    popup('Signed up successfully.', 'success');
+    popup('Successfully joined hangout.', 'success');
     LoadingModal.remove();
+
+    if (!authSessionCreated) {
+      Cookies.set('pendingSignInHangoutId', guestSignUpFormState.hangoutId);
+
+      const infoModal: HTMLDivElement = InfoModal.display({
+        title: 'Successfully joined hangout.',
+        description: 'You just have to sign in before proceeding.',
+        btnTitle: 'Okay',
+      });
+
+      infoModal.addEventListener('click', (e: MouseEvent) => {
+        if (!(e.target instanceof HTMLElement)) {
+          return;
+        };
+
+        if (e.target.id === 'info-modal-btn') {
+          setTimeout(() => window.location.href = 'sign-in', 1000);
+        };
+      });
+
+      return;
+    };
 
     hideGuestSignUpSection();
     await getHangoutDashboardData();

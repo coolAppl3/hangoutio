@@ -1,18 +1,37 @@
 import { IncomingMessage } from "http";
-import { isValidAuthToken } from "../../util/validation/userValidation";
 import { isValidHangoutId } from "../../util/validation/hangoutValidation";
 import { dbPool } from "../../db/db";
 import { RowDataPacket } from "mysql2";
-import { getUserId, getUserType } from "../../util/userUtils";
+import { isValidAuthSessionDetails, isValidAuthSessionId } from "../../auth/authUtils";
+import { destroyAuthSession } from "../../auth/authSessions";
 
 export async function authenticateHandshake(req: IncomingMessage): Promise<{ hangoutId: string, hangoutMemberId: number } | null> {
-  const authToken: string | undefined = req.headersDistinct['sec-websocket-protocol']?.[0];
+  const cookieHeader: string | undefined = req.headers.cookie;
 
-  if (!authToken) {
+  if (!cookieHeader) {
     return null;
   };
 
-  if (!isValidAuthToken(authToken)) {
+  const cookieHeaderArr: string[] = cookieHeader.split('; ');
+  let authSessionId: string | null = null;
+
+  for (const cookie of cookieHeaderArr) {
+    const [cookieName, cookieValue] = cookie.split('=');
+    console.log(cookieName, cookieValue)
+
+    if (cookieName !== 'authSessionId') {
+      continue;
+    };
+
+    if (!isValidAuthSessionId(cookieValue)) {
+      continue;
+    };
+
+    authSessionId = cookieValue;
+    break;
+  };
+
+  if (!authSessionId) {
     return null;
   };
 
@@ -33,53 +52,73 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
     return null;
   };
 
-  if (!(await isValidUserData(authToken, +hangoutMemberId, hangoutId))) {
+  if (!(await isValidUserData(authSessionId, +hangoutMemberId, hangoutId))) {
     return null;
   };
 
   return { hangoutId, hangoutMemberId: +hangoutMemberId };
 };
 
-async function isValidUserData(authToken: string, hangoutMemberId: number, hangoutId: string): Promise<Boolean> {
+async function isValidUserData(authSessionId: string, hangoutMemberId: number, hangoutId: string): Promise<Boolean> {
   try {
-    const userId: number = getUserId(authToken);
-    const userType: 'account' | 'guest' = getUserType(authToken);
-
-    interface UserDetails extends RowDataPacket {
-      auth_token: string,
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
     };
 
-    const [userRows] = await dbPool.execute<UserDetails[]>(
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
       `SELECT
-        auth_token
+        user_id,
+        user_type,
+        expiry_timestamp
       FROM
-        ${userType}s
+        auth_sessions
       WHERE
-        ${userType}_id = ?;`,
-      [userId]
+        session_id = ?;`,
+      [authSessionId]
     );
 
-    if (userRows.length === 0) {
+    if (authSessionRows.length === 0) {
       return false;
     };
 
-    if (authToken !== userRows[0].auth_token) {
+    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
+
+    if (!isValidAuthSessionDetails(authSessionDetails)) {
+      await destroyAuthSession(authSessionId);
       return false;
     };
 
-    const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(
+    interface HangoutMemberDetails extends RowDataPacket {
+      hangout_id: string,
+      account_id: number | null,
+      guest_id: number | null,
+    };
+
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
-        1
+        hangout_id,
+        account_id,
+        guest_id
       FROM
         hangout_members
       WHERE
-        hangout_member_id = ? AND
-        ${userType}_id = ? AND
-        hangout_id = ?;`,
-      [hangoutMemberId, userId, hangoutId]
+        hangout_member_id = ?;`,
+      [hangoutMemberId]
     );
 
-    if (hangoutRows.length === 0) {
+    if (hangoutMemberRows.length === 0) {
+      return false;
+    };
+
+    const hangoutMemberDetails: HangoutMemberDetails = hangoutMemberRows[0];
+
+    if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
+      return false;
+    };
+
+    if (hangoutMemberDetails.hangout_id !== hangoutId) {
       return false;
     };
 

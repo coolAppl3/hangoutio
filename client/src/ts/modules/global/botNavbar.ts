@@ -1,9 +1,6 @@
 import { ConfirmModal } from "./ConfirmModal";
 import Cookies from "./Cookies";
-import LoadingModal from "./LoadingModal";
-import popup from "./popup";
 import { signOut } from "./signOut";
-import { isValidAuthToken } from "./validation";
 
 const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
 const accountListBtn: HTMLElement | null = document.querySelector('#account-list-btn');
@@ -32,21 +29,14 @@ function handleBotNavbarClicks(e: MouseEvent): void {
 };
 
 function displayRelevantLinks(): void {
-  const authToken: string | null = Cookies.get('authToken');
+  const signedInAs: string | null = Cookies.get('signedInAs');
 
-  if (!authToken) {
+  if (!signedInAs) {
     botNavbarElement?.classList.remove('guest-user', 'account-user');
     return;
   };
 
-  if (!isValidAuthToken(authToken)) {
-    botNavbarElement?.classList.remove('guest-user', 'account-user');
-    Cookies.remove('authToken');
-
-    return;
-  };
-
-  if (authToken.startsWith('g')) {
+  if (signedInAs === 'guest') {
     botNavbarElement?.classList.add('guest-user');
     return;
   };
@@ -82,21 +72,19 @@ function displaySignOutModal(): void {
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Are you sure you want to sign out of your account?',
     description: null,
-    confirmBtnTitle: 'Confirm',
+    confirmBtnTitle: 'Sign out',
     cancelBtnTitle: 'Cancel',
     extraBtnTitle: null,
     isDangerousAction: true,
   });
 
-  confirmModal.addEventListener('click', (e: MouseEvent) => {
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      LoadingModal.display();
-      signOut();
-      popup('Signed out successfully.', 'success');
+      await signOut();
       setTimeout(() => window.location.reload(), 1000);
 
       return;

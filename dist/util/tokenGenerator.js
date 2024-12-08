@@ -1,25 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateHangoutId = exports.generateUniqueToken = exports.generateUniqueCode = exports.generateAuthToken = void 0;
-const allowedTokenCharacters = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz0123456789';
+exports.generateHangoutId = exports.generateUniqueToken = exports.generateUniqueCode = exports.generateAuthSessionId = void 0;
+const allowedTokenCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const allowedCodeCharacters = 'ABCDEFGHIJKLMNPQRSTUVWXYZ0123456789';
-function generateAuthToken(userType) {
-    let authToken = '';
-    if (userType === 'account') {
-        authToken = 'a';
+function generateAuthSessionId() {
+    let sessionId = '';
+    while (sessionId.length < 32) {
+        sessionId += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
     }
     ;
-    if (userType === 'guest') {
-        authToken = 'g';
-    }
-    ;
-    while (authToken.length < 32) {
-        authToken += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
-    }
-    ;
-    return authToken;
+    return sessionId;
 }
-exports.generateAuthToken = generateAuthToken;
+exports.generateAuthSessionId = generateAuthSessionId;
 ;
 function generateUniqueCode() {
     let verificationCode = '';

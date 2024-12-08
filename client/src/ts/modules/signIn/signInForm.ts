@@ -1,13 +1,12 @@
-import { isValidAuthToken, isValidHangoutId, validateEmail, validatePassword, validateUsername } from '../global/validation';
+import { isValidHangoutId, validateEmail, validatePassword, validateUsername } from '../global/validation';
 import revealPassword from '../global/revealPassword';
 import ErrorSpan from '../global/ErrorSpan';
 import Cookies from '../global/Cookies';
 import LoadingModal from '../global/LoadingModal';
 import popup from '../global/popup';
-import { AccountSignInBody, AccountSignInData, accountSignInService } from '../services/accountServices';
-import axios, { AxiosError, AxiosResponse } from '../../../../node_modules/axios/index';
-import { GuestSignInBody, GuestSignInData, guestSignInService } from '../services/guestServices';
-import { signOut } from '../global/signOut';
+import { AccountSignInBody, accountSignInService } from '../services/accountServices';
+import axios, { AxiosError } from '../../../../node_modules/axios/index';
+import { GuestSignInBody, guestSignInService } from '../services/guestServices';
 import { InfoModal } from '../global/InfoModal';
 import { ConfirmModal } from '../global/ConfirmModal';
 
@@ -83,20 +82,11 @@ async function accountSignIn(): Promise<void> {
   const accountSignInBody: AccountSignInBody = {
     email: accountEmailInput.value,
     password: accountPasswordInput.value,
+    keepSignedIn: signInFormState.keepSignedIn,
   };
 
   try {
-    const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
-    const authToken: string = accountSignInData.data.resData.authToken;
-
-    if (signInFormState.keepSignedIn) {
-      const daySeconds: number = 60 * 60 * 24;
-      Cookies.set('authToken', authToken, 14 * daySeconds);
-
-    } else {
-      Cookies.set('authToken', authToken);
-    };
-
+    await accountSignInService(accountSignInBody);
     popup('Signed in successfully.', 'success');
 
     const pendingHangoutId: string | null = getPendingSignInHangoutId();
@@ -204,22 +194,11 @@ async function guestSignIn(): Promise<void> {
   };
 
   try {
-    const guestSignInData: AxiosResponse<GuestSignInData> = await guestSignInService(guestSignInBody);
-    const { authToken, hangoutId } = guestSignInData.data.resData;
-
-    if (signInFormState.keepSignedIn) {
-      const daySeconds: number = 60 * 60 * 24;
-
-      Cookies.set('authToken', authToken, 14 * daySeconds);
-      Cookies.set('guestHangoutId', hangoutId, 14 * daySeconds);
-
-    } else {
-      Cookies.set('authToken', authToken);
-      Cookies.set('guestHangoutId', hangoutId);
-    };
+    await guestSignInService(guestSignInBody);
+    const guestHangoutId = Cookies.get('guestHangoutId') as string;
 
     popup('Signed in successfully.', 'success');
-    setTimeout(() => window.location.replace(`hangout?id=${hangoutId}`), 1000);
+    setTimeout(() => window.location.replace(`hangout?id=${guestHangoutId}`), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -375,18 +354,13 @@ function setActiveValidation(): void {
 };
 
 function redirectSignedInUser(): void {
-  const authToken: string | null = Cookies.get('authToken');
+  const signedInAs: string | null = Cookies.get('signedInAs');
 
-  if (!authToken) {
+  if (!signedInAs) {
     return;
   };
 
-  if (!isValidAuthToken(authToken)) {
-    signOut();
-    return;
-  };
-
-  if (authToken.startsWith('g')) {
+  if (signedInAs === 'guest') {
     window.location.replace('hangout');
     return;
   };

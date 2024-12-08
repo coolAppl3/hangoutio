@@ -14,4 +14,4 @@ hangoutNav();
 await hangoutDashboard();
 
 // web socket
-// initHangoutWebSocket('dummyAuthToken', 'dummyHangoutId', 123);
+// initHangoutWebSocket('dummyHangoutId', 123);

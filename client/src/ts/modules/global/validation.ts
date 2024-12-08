@@ -1,26 +1,5 @@
 import ErrorSpan from "./ErrorSpan";
 
-export function isValidAuthToken(authToken: string): boolean {
-  if (authToken.length < 34) {
-    return false;
-  };
-
-  if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
-    return false;
-  };
-
-  if (authToken[32] !== '_') {
-    return false;
-  };
-
-  if (!Number.isInteger(+authToken.substring(33))) {
-    return false;
-  };
-
-  const regex: RegExp = /^[A-Za-z0-9_]{34,}$/;
-  return regex.test(authToken);
-};
-
 export function validateEmail(input: HTMLInputElement): boolean {
   const email: string = input.value;
 

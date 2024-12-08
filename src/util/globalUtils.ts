@@ -1,4 +1,4 @@
-export function getDateAndTimeSTring(timestamp: number): string {
+export function getDateAndTimeString(timestamp: number): string {
   const date: Date = new Date(timestamp);
   return `${getMonthName(date)} ${date.getDate()}, ${date.getFullYear()} - ${getTime(date)}`;
 };

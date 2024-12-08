@@ -7,8 +7,8 @@ import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
-import { AccountSignInBody, AccountSignInData, accountSignInService } from "../services/accountServices";
+import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
+import { AccountSignInBody, accountSignInService } from "../services/accountServices";
 import { CreateHangoutAsAccountBody, CreateHangoutAsAccountData, createHangoutAsAccountService, createHangoutAsGuestService, CreateHangoutAsGuestBody, CreateHangoutAsGuestData } from "../services/hangoutServices";
 import { displayFirstStepError, hangoutFormNavigationState } from "./hangoutFormNavigation";
 import { hangoutFormState } from "./hangoutFormState";
@@ -110,18 +110,6 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     return;
   };
 
-  const authToken: string | null = Cookies.get('authToken');
-
-  if (!authToken) {
-    signOut();
-    hangoutThirdStepState.isSignedIn = false;
-
-    popup('Invalid credentials detected.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
   const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const accountLeaderHangoutBody: CreateHangoutAsAccountBody = {
@@ -134,7 +122,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
   };
 
   try {
-    const accountLeaderHangoutData: AxiosResponse<CreateHangoutAsAccountData> = await createHangoutAsAccountService(authToken, accountLeaderHangoutBody);
+    const accountLeaderHangoutData: AxiosResponse<CreateHangoutAsAccountData> = await createHangoutAsAccountService(accountLeaderHangoutBody);
     const hangoutId: string = accountLeaderHangoutData.data.resData.hangoutId;
 
     popup('Hangout successfully created.', 'success');
@@ -179,16 +167,6 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
 
     popup(errMessage, 'error');
     LoadingModal.remove();
-
-    if (status === 401) {
-      signOut();
-      hangoutThirdStepState.isSignedIn = false;
-
-      popup('Invalid credentials detected.', 'error');
-      LoadingModal.remove();
-
-      return;
-    };
 
     if (status === 400) {
       if (errReason === 'hangoutTitle') {
@@ -259,20 +237,12 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
   try {
     const guestLeaderHangoutData: AxiosResponse<CreateHangoutAsGuestData> = await createHangoutAsGuestService(guestLeaderHangoutBody);
-    const { authToken, hangoutId } = guestLeaderHangoutData.data.resData;
-
-    if (hangoutThirdStepState.keepSignedIn) {
-      const daySeconds: number = 60 * 60 * 24;
-      Cookies.set('authToken', authToken, daySeconds);
-      Cookies.set('guestHangoutId', hangoutId, daySeconds);
-
-    } else {
-      Cookies.set('authToken', authToken);
-      Cookies.set('guestHangoutId', hangoutId);
-    };
+    const { authSessionCreated, hangoutId } = guestLeaderHangoutData.data.resData;
 
     popup('Hangout successfully created.', 'success');
-    setTimeout(() => window.location.replace(`hangout?hangoutId=${hangoutId}`), 1000);
+    const redirectHref: string = authSessionCreated ? `hangout?hangoutId=${hangoutId}` : 'sign-in';
+
+    setTimeout(() => window.location.replace(redirectHref), 1000);
 
   } catch (err: unknown) {
     console.log(err);
@@ -359,20 +329,11 @@ async function accountSignIn(): Promise<void> {
   const accountSignInBody: AccountSignInBody = {
     email: accountEmailInput.value,
     password: accountPasswordInput.value,
+    keepSignedIn: hangoutThirdStepState.keepSignedIn,
   };
 
   try {
-    const accountSignInData: AxiosResponse<AccountSignInData> = await accountSignInService(accountSignInBody);
-    const authToken: string = accountSignInData.data.resData.authToken;
-
-    if (hangoutThirdStepState.keepSignedIn) {
-      const daySeconds: number = 60 * 60 * 24;
-      Cookies.set('authToken', authToken, 14 * daySeconds);
-
-    } else {
-      Cookies.set('authToken', authToken);
-    };
-
+    await accountSignInService(accountSignInBody);
     await createHangoutAsAccount();
 
   } catch (err: unknown) {
@@ -569,18 +530,13 @@ function setActiveInputValidation(): void {
 };
 
 function detectSignedInUser(): void {
-  const authToken: string | null = Cookies.get('authToken');
+  const signedInAs: string | null = Cookies.get('signedInAs');
 
-  if (!authToken) {
+  if (!signedInAs) {
     return;
   };
 
-  if (!isValidAuthToken(authToken)) {
-    signOut();
-    return;
-  };
-
-  if (authToken.startsWith('a')) {
+  if (signedInAs === 'account') {
     hangoutThirdStepState.isSignedIn = true;
     displaySignedInStatus();
 
@@ -588,7 +544,7 @@ function detectSignedInUser(): void {
   };
 
   const confirmModal: HTMLDivElement = ConfirmModal.display({
-    title: 'Signed in as a guest.',
+    title: `You're signed in as a guest.`,
     description: `You must sign out of your guest account before creating a new hangout.\nGuest accounts can only be used within the hangout they were created for.`,
     confirmBtnTitle: 'Sign out',
     cancelBtnTitle: 'Go to homepage',
@@ -596,14 +552,13 @@ function detectSignedInUser(): void {
     isDangerousAction: false,
   });
 
-  confirmModal.addEventListener('click', (e: MouseEvent) => {
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      signOut();
-      popup('Successfully signed out.', 'success');
+      await signOut();
       ConfirmModal.remove();
 
       return;
@@ -630,14 +585,13 @@ function displaySignedInStatus(): void {
   signOutBtn?.addEventListener('click', removeSignedInStatus);
 };
 
-function removeSignedInStatus(): void {
+async function removeSignedInStatus(): Promise<void> {
   const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
   thirdStepFormContainer?.classList.remove('disabled');
 
   hangoutThirdStepState.isSignedIn = false;
-  popup('Signed out.', 'success');
 
-  signOut();
+  await signOut();
 };
 
 function handleHangoutsLimitReached(errMessage: string): void {

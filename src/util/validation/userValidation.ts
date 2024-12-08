@@ -52,31 +52,6 @@ export function isValidDisplayName(displayName: string): boolean {
   return regex.test(displayName);
 };
 
-export function isValidAuthToken(authToken: string): boolean {
-  if (typeof authToken !== 'string') {
-    return false;
-  };
-
-  if (authToken.length < 34) {
-    return false;
-  };
-
-  if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
-    return false;
-  };
-
-  if (authToken[32] !== '_') {
-    return false;
-  };
-
-  if (!Number.isInteger(+authToken.substring(33))) {
-    return false;
-  };
-
-  const regex: RegExp = /^[A-Za-z0-9_]{34,}$/;
-  return regex.test(authToken);
-};
-
 export function isValidUniqueToken(token: string): boolean {
   if (typeof token !== 'string') {
     return false;

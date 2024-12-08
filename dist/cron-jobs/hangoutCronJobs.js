@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.archiveHangouts = exports.concludeNoSuggestionHangouts = exports.progressHangouts = void 0;
+exports.archiveHangouts = exports.deleteNoMemberHangouts = exports.concludeNoSuggestionHangouts = exports.progressHangouts = void 0;
 const db_1 = require("../db/db");
 async function progressHangouts() {
     const currentTimestamp = Date.now();
@@ -93,6 +93,22 @@ async function concludeNoSuggestionHangouts() {
     ;
 }
 exports.concludeNoSuggestionHangouts = concludeNoSuggestionHangouts;
+;
+async function deleteNoMemberHangouts() {
+    await db_1.dbPool.execute(`DELETE
+      FROM
+    hangouts
+      WHERE
+    NOT EXISTS (
+      SELECT
+        1
+      FROM
+        hangout_members
+      WHERE
+        hangout_members.hangout_id = hangouts.hangout_id
+    );`);
+}
+exports.deleteNoMemberHangouts = deleteNoMemberHangouts;
 ;
 async function archiveHangouts() {
     const currentTimestamp = Date.now();
@@ -194,7 +210,7 @@ async function archiveHangouts() {
         display_name,
         is_leader
       )
-      VALUES ${archivedHangoutMembersValues}`);
+      VALUES ${archivedHangoutMembersValues};`);
         const [resultSetHeader] = await connection.execute(`DELETE FROM
         hangouts
       WHERE

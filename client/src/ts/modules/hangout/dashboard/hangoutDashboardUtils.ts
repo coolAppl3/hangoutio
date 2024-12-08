@@ -4,14 +4,14 @@ import Cookies from "../../global/Cookies";
 import { InfoModal } from "../../global/InfoModal";
 import popup from "../../global/popup";
 import { signOut } from "../../global/signOut";
-import { isValidAuthToken, isValidHangoutId } from "../../global/validation";
+import { isValidHangoutId } from "../../global/validation";
 import { getHangoutExistsService, HangoutExistsData } from "../../services/hangoutServices";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 
 export function handleInvalidHangoutId(): void {
-  const authToken: string | null = Cookies.get('authToken');
+  const signedInAs: string | null = Cookies.get('signedInAs');
 
-  if (authToken && isValidAuthToken(authToken) && authToken.startsWith('g')) {
+  if (signedInAs === 'guest') {
     handleEmptyHangoutGuestRequest();
     return;
   };
@@ -37,9 +37,7 @@ function handleEmptyHangoutGuestRequest(): void {
   const guestHangoutId: string | null = Cookies.get('guestHangoutId');
 
   if (!guestHangoutId || !isValidHangoutId(guestHangoutId)) {
-    signOut();
     handleInvalidHangoutId();
-
     return;
   };
 
@@ -83,7 +81,7 @@ export function handleHangoutFull(): void {
   });
 };
 
-export async function handleNoAuthToken(hangoutId: string): Promise<void> {
+export async function handleNotSignedIn(hangoutId: string): Promise<void> {
   let isPasswordProtected: boolean = false;
 
   try {

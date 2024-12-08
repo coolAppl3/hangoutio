@@ -8,7 +8,7 @@ async function initDb() {
     await createAccountRecoveryTable();
     await createAccountDeletionTable();
     await createEmailUpdateTable();
-    await createFriendshipsTable();
+    await createFriendRequestsTable();
     await createFriendshipsTable();
     await createHangoutsTable();
     await createHangoutEventsTable();
@@ -20,6 +20,7 @@ async function initDb() {
     await createChatTable();
     await createHangoutsArchiveTable();
     await createHangoutMembersArchiveTable();
+    await createAuthSessionsTable();
     console.log('Database initialized.');
 }
 exports.initDb = initDb;
@@ -28,7 +29,6 @@ async function createAccountsTable() {
     try {
         await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS accounts (
         account_id INT PRIMARY KEY AUTO_INCREMENT,
-        auth_token VARCHAR(50) NOT NULL UNIQUE COLLATE utf8mb4_bin,
         email VARCHAR(254) NOT NULL UNIQUE,
         hashed_password VARCHAR(255) NOT NULL,
         username VARCHAR(40) NOT NULL UNIQUE,
@@ -36,8 +36,7 @@ async function createAccountsTable() {
         created_on_timestamp BIGINT NOT NULL,
         is_verified BOOLEAN NOT NULL,
         failed_sign_in_attempts INT NOT NULL CHECK(failed_sign_in_attempts <= 5),
-        marked_for_deletion BOOLEAN NOT NULL,
-        INDEX idx_auth_token (auth_token)
+        marked_for_deletion BOOLEAN NOT NULL
       );`);
     }
     catch (err) {
@@ -117,6 +116,24 @@ async function createEmailUpdateTable() {
     ;
 }
 ;
+async function createFriendRequestsTable() {
+    try {
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS friend_requests (
+        request_id INT PRIMARY KEY AUTO_INCREMENT,
+        requester_id INT NOT NULL,
+        requestee_id INT NOT NULL,
+        request_timestamp BIGINT NOT NULL,
+        UNIQUE(requester_id, requestee_id),
+        FOREIGN KEY (requester_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
+        FOREIGN KEY (requestee_id) REFERENCES accounts(account_id) ON DELETE CASCADE
+      );`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+;
 async function createFriendshipsTable() {
     try {
         await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS friendships (
@@ -178,13 +195,11 @@ async function createGuestsTable() {
     try {
         await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS guests (
         guest_id INT PRIMARY KEY AUTO_INCREMENT,
-        auth_token VARCHAR(50) NOT NULL UNIQUE COLLATE utf8mb4_bin,
         username VARCHAR(40) NOT NULL UNIQUE,
         hashed_password VARCHAR(255) NOT NULL,
         display_name VARCHAR(40) NOT NULL,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
-        FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE,
-        INDEX idx_auth_token (auth_token)
+        FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE
       );`);
     }
     catch (err) {
@@ -319,6 +334,22 @@ async function createHangoutMembersArchiveTable() {
         is_leader BOOLEAN NOT NULL,
         FOREIGN KEY (hangout_id) REFERENCES hangouts_archive(hangout_id) ON DELETE CASCADE,
         UNIQUE (hangout_id, account_id)
+      );`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+;
+async function createAuthSessionsTable() {
+    try {
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS auth_sessions (
+        session_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
+        user_id INT NOT NULL,
+        user_type ENUM('account', 'guest') NOT NULL,
+        created_on_timestamp BIGINT NOT NULL,
+        expiry_timestamp BIGINT NOT NULL
       );`);
     }
     catch (err) {
