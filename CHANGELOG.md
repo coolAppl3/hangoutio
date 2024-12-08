@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.4.0] (2024-12-08)
+
+### Features
+
+- **Completely revamped authentication and authorization throughout the app into a cookie session system.**
+  - This change comes with a huge amount of added/removed functions, lots of refactoring, slight improvements, and a few bug fixes. Highly relevant changes will be noted in this patch.
+  - Further polishing meant to complete this change are to be expected in the next few patches.
+- Added `deleteNoMemberHangouts()` in `cronInit.ts` to handle potential edge cases where a hangout remains without any members. 
+- Added deleteNoMemberHangouts() to handle potential edge cases where a hangout remains without any members. 
+- Updated `Cookies.ts` to include `SameSite=Strict` when setting cookies for better security.
+- Added `authRouter.ts`.
+- Renamed all routers by adding `Router` at the end.
+- Added POST `auth/signOut`.
+- Moved some hangout member related requests to `hangoutMembersRouter.ts`, and removed the previous endpoints in said router.
+- Added DELETE `hangoutMembers/leave` to `hangoutMembersRouter.ts`.
+
+
+### Bug Fixes
+
+- Fixed a few error handling bugs in `hangoutFormThirdStep.ts`.
+- Fixed `guestHangoutId` being assigned the `authToken` in cookies in `hangoutFormThirdStep.ts`.
+
+
+### Code Refactoring
+
+- Refactored emails to be sent before a response is provided to the user.
+  - The decision to send them after the response was made to avoid waiting for the transporter to send an email, which could drastically increase the response time. However, there isn't any bespoke error handling for transporter errors, which could result in a response being attempted twice, effectively crashing the server.
+  - A future patch might improve the whole process.
+
+
+### Build Changes
+
+- Split `main.scss` into multiple modules to reduce unused CSS in some pages.
+- Set up proxy between webpack and the HTTP server on the backend.
+
+
 ## [0.3.6] (2024-11-25)
 
 ### Features

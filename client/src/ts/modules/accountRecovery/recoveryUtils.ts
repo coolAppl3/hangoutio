@@ -118,3 +118,11 @@ function getTimeTillRecoveryExpiry(recoveryStartTimestamp: number): string {
 
   return timeTillExpiry;
 };
+
+export function handleUserSignedIn(): void {
+  InfoModal.display({
+    title: `You're signed in.`,
+    description: 'You must sign out before proceeding.',
+    btnTitle: 'Okay',
+  }, { simple: true });
+};

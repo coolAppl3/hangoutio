@@ -1,11 +1,12 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
 import { HangoutChat, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutDataTypes";
 
+axios.defaults.withCredentials = true;
+
 const hangoutsApiUrl: string = window.location.hostname === 'localhost'
   ? `http://${window.location.hostname}:5000/api/hangouts`
   : `https://${window.location.hostname}/api/hangouts`;
 //
-
 
 export interface CreateHangoutAsAccountBody {
   hangoutTitle: string,
@@ -23,12 +24,8 @@ export interface CreateHangoutAsAccountData {
   },
 };
 
-export async function createHangoutAsAccountService(authToken: string, requestBody: CreateHangoutAsAccountBody): Promise<AxiosResponse<CreateHangoutAsAccountData>> {
-  return axios.post(`${hangoutsApiUrl}/create/accountLeader`, requestBody, {
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  });
+export async function createHangoutAsAccountService(requestBody: CreateHangoutAsAccountBody): Promise<AxiosResponse<CreateHangoutAsAccountData>> {
+  return axios.post(`${hangoutsApiUrl}/create/accountLeader`, requestBody);
 };
 
 // --- --- ---
@@ -48,8 +45,8 @@ export interface CreateHangoutAsGuestBody {
 export interface CreateHangoutAsGuestData {
   success: true,
   resData: {
+    authSessionCreated: boolean,
     hangoutId: string,
-    authToken: string,
   },
 };
 
@@ -72,42 +69,6 @@ export async function getHangoutExistsService(hangoutId: string): Promise<AxiosR
 
 // --- --- ---
 
-export interface JoinHangoutAsAccountBody {
-  hangoutId: string,
-  hangoutPassword: string | null,
-};
-
-export async function joinHangoutAsAccountService(authToken: string, requestBody: JoinHangoutAsAccountBody): Promise<AxiosResponse> {
-  return axios.post(`${hangoutsApiUrl}/details/members/join/account`, requestBody, {
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  });
-};
-
-// --- --- ---
-
-export interface JoinHangoutAsGuestBody {
-  hangoutId: string,
-  hangoutPassword: string | null,
-  username: string,
-  password: string,
-  displayName: string,
-};
-
-export interface JoinHangoutAsGuestData {
-  success: true,
-  resData: {
-    authToken: string,
-  },
-};
-
-export async function joinHangoutAsGuestService(requestBody: JoinHangoutAsGuestBody): Promise<AxiosResponse<JoinHangoutAsGuestData>> {
-  return axios.post(`${hangoutsApiUrl}/details/members/join/guest`, requestBody);
-};
-
-// --- --- ---
-
 export interface HangoutDashboardData {
   success: true,
   resData: {
@@ -124,10 +85,6 @@ export interface HangoutDashboardData {
   },
 };
 
-export async function getHangoutDashboardDataService(authToken: string, hangoutId: string): Promise<AxiosResponse<HangoutDashboardData>> {
-  return axios.get(`${hangoutsApiUrl}/details/dashboard?hangoutId=${hangoutId}`, {
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  });
+export async function getHangoutDashboardDataService(hangoutId: string): Promise<AxiosResponse<HangoutDashboardData>> {
+  return axios.get(`${hangoutsApiUrl}/details/dashboard?hangoutId=${hangoutId}`);
 };

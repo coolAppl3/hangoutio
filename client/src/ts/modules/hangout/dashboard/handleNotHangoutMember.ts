@@ -6,8 +6,7 @@ import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { signOut } from "../../global/signOut";
-import { isValidAuthToken } from "../../global/validation";
-import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutServices";
+import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutMemberServices";
 import { getHangoutDashboardData } from "./hangoutDashboard";
 import { handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
@@ -35,18 +34,8 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
     isFull: errResData.isFull,
   };
 
-  const authToken: string | null = Cookies.get('authToken');
-
-  if (!authToken || !isValidAuthToken(authToken)) {
-    signOut();
-    popup('Invalid credentials detected.', 'error');
-    setTimeout(() => window.location.reload(), 1000);
-
-    return;
-  };
-
-  const isGuestUser: boolean = authToken.startsWith('g');
-  if (isGuestUser) {
+  const signedInAs: string | null = Cookies.get('signedInAs');
+  if (signedInAs === 'guest') {
     handleGuestNotMember();
     return;
   };
@@ -98,16 +87,6 @@ export async function joinHangoutAsAccount(): Promise<void> {
     return;
   };
 
-  const authToken: string | null = Cookies.get('authToken');
-
-  if (!authToken || !isValidAuthToken(authToken)) {
-    signOut();
-    popup('Invalid credentials detected.', 'error');
-    setTimeout(() => window.location.reload(), 1000);
-
-    return;
-  };
-
   const joinHangoutPasswordInput: HTMLInputElement | null = document.querySelector('#join-hangout-password-input');
   const hangoutPassword: string | null = joinHangoutPasswordInput ? joinHangoutPasswordInput.value : null;
 
@@ -117,7 +96,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
   };
 
   try {
-    await joinHangoutAsAccountService(authToken, joinHangoutAsAccountBody);
+    await joinHangoutAsAccountService(joinHangoutAsAccountBody);
     removeJoinHangoutForm();
 
     popup('Successfully joined hangout.', 'success');
@@ -151,16 +130,10 @@ export async function joinHangoutAsAccount(): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status == 401) {
-      if (errReason === 'hangoutPassword') {
-        joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
-        return;
-      };
-
-      signOut();
-      setTimeout(() => window.location.reload(), 1000);
-
+    if (status == 401 && errReason === 'hangoutPassword') {
+      joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
       return;
+
     };
 
     if (status === 403) {
@@ -243,7 +216,7 @@ function handleGuestNotMember(): void {
     isDangerousAction: false,
   });
 
-  confirmModal.addEventListener('click', (e: MouseEvent) => {
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
@@ -256,10 +229,9 @@ function handleGuestNotMember(): void {
         return;
       };
 
-      signOut();
-      popup('Signed out.', 'success');
-
+      await signOut();
       initHangoutGuestSignUp(notHangoutMemberState.hangoutId, notHangoutMemberState.isPasswordProtected);
+
       return;
     };
 

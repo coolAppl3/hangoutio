@@ -8,19 +8,21 @@ import { Socket } from 'net';
 import { WebSocket } from 'ws';
 import express, { Application } from 'express';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 
 import { initDb } from './db/initDb';
 
 // routers
-import { chatRouter } from './routers/chat';
-import { accountsRouter } from './routers/accounts';
-import { hangoutsRouter } from './routers/hangouts';
-import { guestsRouter } from './routers/guests';
-import { hangoutMembersRouter } from './routers/hangoutMembers';
-import { availabilitySlotsRouter } from './routers/availabilitySlots';
-import { suggestionsRouter } from './routers/suggestions';
-import { votesRouter } from './routers/votes';
+import { chatRouter } from './routers/chatRouter';
+import { accountsRouter } from './routers/accountsRouter';
+import { hangoutsRouter } from './routers/hangoutsRouter';
+import { guestsRouter } from './routers/guestsRouter';
+import { hangoutMembersRouter } from './routers/hangoutMembersRouter';
+import { availabilitySlotsRouter } from './routers/availabilitySlotsRouter';
+import { suggestionsRouter } from './routers/suggestionsRouter';
+import { votesRouter } from './routers/votesRouter';
 import { htmlRouter } from './routers/htmlRouter';
+import { authRouter } from './routers/authRouter';
 
 // middleware
 import { fallbackMiddleware } from './middleware/fallbackMiddleware';
@@ -29,12 +31,13 @@ import { fallbackMiddleware } from './middleware/fallbackMiddleware';
 import { initCronJobs } from './cron-jobs/cronInit';
 import { authenticateHandshake } from './webSockets/hangout/hangoutWebSocketAuth';
 
-const port = process.env.PORT || 5000;
+const port: number = process.env.PORT ? +process.env.PORT : 5000;
 const app: Application = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(compression({ threshold: 1024 }));
+app.use(cookieParser());
 
 // cors policy
 if (process.env.NODE_ENV === 'development') {
@@ -57,6 +60,7 @@ app.use('/api/hangoutMembers', hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlotsRouter);
 app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
+app.use('api/auth', authRouter);
 
 // static files
 app.use(htmlRouter);
@@ -71,8 +75,8 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
   const requestData: { hangoutId: string, hangoutMemberId: number } | null = await authenticateHandshake(req);
 
   if (!requestData) {
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.write('Invalid credentials\r\n');
+    socket.write('HTTP/1.1 401 Unauthorized.\r\n\r\n');
+    socket.write('Invalid credentials.\r\n');
 
     socket.destroy();
     return;

@@ -1,23 +1,14 @@
-const allowedTokenCharacters: string = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz0123456789'; // letters O/o not included
-const allowedCodeCharacters: string = 'ABCDEFGHIJKLMNPQRSTUVWXYZ0123456789'; // letters O/o not included
+const allowedTokenCharacters: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const allowedCodeCharacters: string = 'ABCDEFGHIJKLMNPQRSTUVWXYZ0123456789'; // uppercase and lowercase O not included
 
-export function generateAuthToken(userType: 'account' | 'guest'): string {
+export function generateAuthSessionId(): string {
+  let sessionId: string = '';
 
-  let authToken: string = '';
-
-  if (userType === 'account') {
-    authToken = 'a';
+  while (sessionId.length < 32) {
+    sessionId += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
   };
 
-  if (userType === 'guest') {
-    authToken = 'g';
-  };
-
-  while (authToken.length < 32) {
-    authToken += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
-  };
-
-  return authToken;
+  return sessionId;
 };
 
 export function generateUniqueCode(): string {

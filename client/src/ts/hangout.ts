@@ -1,4 +1,4 @@
-import '../scss/main.scss';
+import '../scss/hangout.scss';
 
 import topNavbar from './modules/global/topNavbar';
 import botNavbar from './modules/global/botNavbar';
@@ -14,4 +14,4 @@ hangoutNav();
 await hangoutDashboard();
 
 // web socket
-// initHangoutWebSocket('dummyAuthToken', 'dummyHangoutId', 123);
+// initHangoutWebSocket('dummyHangoutId', 123);

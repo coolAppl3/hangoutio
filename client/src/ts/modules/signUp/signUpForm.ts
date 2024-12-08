@@ -6,7 +6,7 @@ import ErrorSpan from "../global/ErrorSpan";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { isValidAuthToken, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
+import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
 import { AccountSignUpBody, AccountSignUpData, accountSignUpService } from "../services/accountServices";
 import { switchToVerificationStage } from "./signUpUtils";
 import LoadingModal from "../global/LoadingModal";
@@ -37,8 +37,8 @@ function loadEventListeners(): void {
   signUpFormElement?.addEventListener('submit', signUp);
   keepSignedInBtn?.addEventListener('click', updateSignInDurationPreferences);
 
-  passwordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(passwordRevealBtn));
-  confirmPasswordRevealBtn?.addEventListener('click', (e: MouseEvent) => revealPassword(confirmPasswordRevealBtn));
+  passwordRevealBtn?.addEventListener('click', () => revealPassword(passwordRevealBtn));
+  confirmPasswordRevealBtn?.addEventListener('click', () => revealPassword(confirmPasswordRevealBtn));
 };
 
 async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
@@ -112,13 +112,14 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 409 && errReason === 'duplicateAuthToken') {
-      signUp(new SubmitEvent('submit'), ++attemptCount);
-      return;
-    };
 
     popup(errMessage, 'error');
     LoadingModal.remove();
+
+    if (status === 403 && errReason === 'signedIn') {
+      displaySignedInConfirmModal();
+      return;
+    };
 
     const inputRecord: Record<string, HTMLInputElement | undefined> = {
       email: emailInput,
@@ -207,22 +208,23 @@ function updateSignInDurationPreferences(): void {
 };
 
 function detectSignedInUser(): void {
-  if (signUpState.inVerificationStage) {
+  const signedInAs: string | null = Cookies.get('signedInAs');
+
+  if (!signedInAs) {
     return;
   };
 
-  const authToken: string | null = Cookies.get('authToken');
+  displaySignedInConfirmModal();
+};
 
-  if (!authToken) {
+function displaySignedInConfirmModal(): void {
+  const signedInAs: string | null = Cookies.get('signedInAs');
+
+  if (!signedInAs) {
     return;
   };
 
-  if (!isValidAuthToken(authToken)) {
-    signOut();
-    return;
-  };
-
-  const isGuestUser: boolean = authToken.startsWith('g');
+  const isGuestUser: boolean = signedInAs === 'guest';
 
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: `You're signed in.`,
@@ -233,7 +235,7 @@ function detectSignedInUser(): void {
     isDangerousAction: false,
   });
 
-  confirmModal.addEventListener('click', (e: MouseEvent) => {
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
@@ -244,8 +246,7 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      signOut();
-      popup('Signed out.', 'success');
+      await signOut();
       ConfirmModal.remove();
     };
   });

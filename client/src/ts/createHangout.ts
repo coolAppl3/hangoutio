@@ -1,4 +1,4 @@
-import '../scss/main.scss';
+import '../scss/create-hangout.scss';
 
 import topNavbar from './modules/global/topNavbar';
 import botNavbar from './modules/global/botNavbar';

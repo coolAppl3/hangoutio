@@ -1,15 +1,3 @@
-export function getUserId(authToken: string): number {
-  return +authToken.substring(33);
-};
-
-export function getUserType(authToken: string): 'account' | 'guest' {
-  if (authToken.startsWith('a')) {
-    return 'account';
-  };
-
-  return 'guest';
-};
-
 interface TimeTillNextRequest {
   hoursRemaining: number,
   minutesRemaining: number,

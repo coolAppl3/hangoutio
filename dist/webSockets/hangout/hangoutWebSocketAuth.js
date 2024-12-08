@@ -1,17 +1,34 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authenticateHandshake = void 0;
-const userValidation_1 = require("../../util/validation/userValidation");
 const hangoutValidation_1 = require("../../util/validation/hangoutValidation");
 const db_1 = require("../../db/db");
-const userUtils_1 = require("../../util/userUtils");
+const authUtils_1 = require("../../auth/authUtils");
+const authSessions_1 = require("../../auth/authSessions");
 async function authenticateHandshake(req) {
-    const authToken = req.headersDistinct['sec-websocket-protocol']?.[0];
-    if (!authToken) {
+    const cookieHeader = req.headers.cookie;
+    if (!cookieHeader) {
         return null;
     }
     ;
-    if (!(0, userValidation_1.isValidAuthToken)(authToken)) {
+    const cookieHeaderArr = cookieHeader.split('; ');
+    let authSessionId = null;
+    for (const cookie of cookieHeaderArr) {
+        const [cookieName, cookieValue] = cookie.split('=');
+        console.log(cookieName, cookieValue);
+        if (cookieName !== 'authSessionId') {
+            continue;
+        }
+        ;
+        if (!(0, authUtils_1.isValidAuthSessionId)(cookieValue)) {
+            continue;
+        }
+        ;
+        authSessionId = cookieValue;
+        break;
+    }
+    ;
+    if (!authSessionId) {
         return null;
     }
     ;
@@ -30,7 +47,7 @@ async function authenticateHandshake(req) {
         return null;
     }
     ;
-    if (!(await isValidUserData(authToken, +hangoutMemberId, hangoutId))) {
+    if (!(await isValidUserData(authSessionId, +hangoutMemberId, hangoutId))) {
         return null;
     }
     ;
@@ -38,34 +55,46 @@ async function authenticateHandshake(req) {
 }
 exports.authenticateHandshake = authenticateHandshake;
 ;
-async function isValidUserData(authToken, hangoutMemberId, hangoutId) {
+async function isValidUserData(authSessionId, hangoutMemberId, hangoutId) {
     try {
-        const userId = (0, userUtils_1.getUserId)(authToken);
-        const userType = (0, userUtils_1.getUserType)(authToken);
         ;
-        const [userRows] = await db_1.dbPool.execute(`SELECT
-        auth_token
+        const [authSessionRows] = await db_1.dbPool.execute(`SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
       FROM
-        ${userType}s
+        auth_sessions
       WHERE
-        ${userType}_id = ?;`, [userId]);
-        if (userRows.length === 0) {
+        session_id = ?;`, [authSessionId]);
+        if (authSessionRows.length === 0) {
             return false;
         }
         ;
-        if (authToken !== userRows[0].auth_token) {
+        const authSessionDetails = authSessionRows[0];
+        if (!(0, authUtils_1.isValidAuthSessionDetails)(authSessionDetails)) {
+            await (0, authSessions_1.destroyAuthSession)(authSessionId);
             return false;
         }
         ;
-        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
-        1
+        ;
+        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        hangout_id,
+        account_id,
+        guest_id
       FROM
         hangout_members
       WHERE
-        hangout_member_id = ? AND
-        ${userType}_id = ? AND
-        hangout_id = ?;`, [hangoutMemberId, userId, hangoutId]);
-        if (hangoutRows.length === 0) {
+        hangout_member_id = ?;`, [hangoutMemberId]);
+        if (hangoutMemberRows.length === 0) {
+            return false;
+        }
+        ;
+        const hangoutMemberDetails = hangoutMemberRows[0];
+        if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
+            return false;
+        }
+        ;
+        if (hangoutMemberDetails.hangout_id !== hangoutId) {
             return false;
         }
         ;

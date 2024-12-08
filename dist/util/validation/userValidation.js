@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidCode = exports.isValidUniqueToken = exports.isValidAuthToken = exports.isValidDisplayName = exports.isValidUsername = exports.isValidPassword = exports.isValidNewPassword = exports.isValidEmail = void 0;
+exports.isValidCode = exports.isValidUniqueToken = exports.isValidDisplayName = exports.isValidUsername = exports.isValidPassword = exports.isValidNewPassword = exports.isValidEmail = void 0;
 function isValidEmail(email) {
     if (typeof email !== 'string') {
         return false;
@@ -58,32 +58,6 @@ function isValidDisplayName(displayName) {
     return regex.test(displayName);
 }
 exports.isValidDisplayName = isValidDisplayName;
-;
-function isValidAuthToken(authToken) {
-    if (typeof authToken !== 'string') {
-        return false;
-    }
-    ;
-    if (authToken.length < 34) {
-        return false;
-    }
-    ;
-    if (!authToken.startsWith('a') && !authToken.startsWith('g')) {
-        return false;
-    }
-    ;
-    if (authToken[32] !== '_') {
-        return false;
-    }
-    ;
-    if (!Number.isInteger(+authToken.substring(33))) {
-        return false;
-    }
-    ;
-    const regex = /^[A-Za-z0-9_]{34,}$/;
-    return regex.test(authToken);
-}
-exports.isValidAuthToken = isValidAuthToken;
 ;
 function isValidUniqueToken(token) {
     if (typeof token !== 'string') {

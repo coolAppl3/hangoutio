@@ -1,28 +1,11 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
 
+axios.defaults.withCredentials = true;
+
 const accountsApiUrl: string = window.location.hostname === 'localhost'
   ? `http://${window.location.hostname}:5000/api/accounts`
   : `https://${window.location.hostname}/api/accounts`;
 // 
-
-
-export interface AccountSignInBody {
-  email: string,
-  password: string,
-};
-
-export interface AccountSignInData {
-  success: true,
-  resData: {
-    authToken: string,
-  },
-};
-
-export async function accountSignInService(requestBody: AccountSignInBody): Promise<AxiosResponse<AccountSignInData>> {
-  return axios.post(`${accountsApiUrl}/signIn`, requestBody);
-};
-
-// --- --- ---
 
 export interface AccountSignUpBody {
   email: string,
@@ -41,6 +24,18 @@ export interface AccountSignUpData {
 
 export async function accountSignUpService(requestBody: AccountSignUpBody): Promise<AxiosResponse<AccountSignUpData>> {
   return axios.post(`${accountsApiUrl}/signUp`, requestBody);
+};
+
+// --- --- ---
+
+export interface AccountSignInBody {
+  email: string,
+  password: string,
+  keepSignedIn: boolean,
+};
+
+export async function accountSignInService(requestBody: AccountSignInBody): Promise<AxiosResponse> {
+  return axios.post(`${accountsApiUrl}/signIn`, requestBody);
 };
 
 // --- --- ---
@@ -66,8 +61,8 @@ export interface AccountVerificationBody {
 export interface AccountVerificationData {
   success: true,
   resData: {
-    authToken: string,
-  },
+    authSessionCreated: boolean,
+  };
 };
 
 export async function verifyAccountService(requestBody: AccountVerificationBody): Promise<AxiosResponse<AccountVerificationData>> {
@@ -98,7 +93,7 @@ export interface RecoveryUpdatePasswordBody {
 export interface RecoveryUpdatePasswordData {
   success: true,
   resData: {
-    newAuthToken: string,
+    authSessionCreated: boolean,
   },
 };
 

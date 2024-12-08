@@ -9,7 +9,6 @@ import { isValidUniqueCode, isValidQueryString, isValidTimestamp, validateCode, 
 import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal } from "../global/ConfirmModal";
-import { signOut } from "../global/signOut";
 
 
 const verificationFormElement: HTMLFormElement | null = document.querySelector('#verification-form');
@@ -26,7 +25,6 @@ export function verificationForm(): void {
 async function init(): Promise<void> {
   if (verificationLinkDetected()) {
     signUpState.inVerificationStage = true;
-    signOut();
 
     await verifyAccount(new SubmitEvent('submit'));
     return;
@@ -75,18 +73,15 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
   try {
     const accountVerificationData: AxiosResponse<AccountVerificationData> = await verifyAccountService(accountVerificationBody);
-    const authToken: string = accountVerificationData.data.resData.authToken;
-
-    if (signUpState.keepSignedIn) {
-      const daySeconds: number = 60 * 60 * 24;
-      Cookies.set('authToken', authToken, 14 * daySeconds);
-
-    } else {
-      Cookies.set('authToken', authToken);
-    };
+    const authSessionCreated: boolean = accountVerificationData.data.resData.authSessionCreated;
 
     clearVerificationCookies();
     popup('Account successfully verified.', 'success');
+
+    if (!authSessionCreated) {
+      setTimeout(() => window.location.replace('sign-in'), 1000);
+      return;
+    };
 
     const pendingHangoutId: string | null = getPendingSignInHangoutId();
     if (pendingHangoutId) {
@@ -130,6 +125,16 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     popup(errMessage, 'error');
     LoadingModal.remove();
+
+    if (status === 403) {
+      InfoModal.display({
+        title: `You're signed in.`,
+        description: errMessage,
+        btnTitle: 'Okay',
+      }, { simple: true });
+
+      return;
+    };
 
     if (status === 404) {
       clearVerificationCookies();

@@ -4,12 +4,12 @@ import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { isValidAuthToken, isValidQueryString, isValidTimestamp, isValidUniqueToken, validateEmail } from "../global/validation";
+import { isValidQueryString, isValidTimestamp, isValidUniqueToken, validateEmail } from "../global/validation";
 import { SendRecoveryEmailData, sendRecoveryEmailService } from "../services/accountServices";
 import { signOut } from "../global/signOut";
 import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
-import { displayFailureLimitReachedInfoModal, displayRecoveryExpiryInfoModal, getMinutesTillRecoveryExpiry, initRecoveryTimers, updateDisplayedForm } from "./recoveryUtils";
+import { displayFailureLimitReachedInfoModal, displayRecoveryExpiryInfoModal, getMinutesTillRecoveryExpiry, handleUserSignedIn, initRecoveryTimers, updateDisplayedForm } from "./recoveryUtils";
 
 const recoveryEmailFormElement: HTMLFormElement | null = document.querySelector('#recovery-email-form');
 const recoveryEmailInput: HTMLInputElement | null = document.querySelector('#recovery-email-input');
@@ -112,6 +112,11 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
     };
 
     if (status === 403) {
+      if (errReason === 'signedIn') {
+        handleUserSignedIn();
+        return;
+      };
+
       ErrorSpan.display(recoveryEmailInput, errMessage);
 
       if (typeof errResData === 'object' && errResData !== null) {
@@ -227,18 +232,13 @@ function getRecoveryLinkDetails(url: URL): RecoveryLinkDetails | null {
 };
 
 function detectSignedInUser(): void {
-  const authToken: string | null = Cookies.get('authToken');
+  const signedInAs: string | null = Cookies.get('signedInAs');
 
-  if (!authToken) {
+  if (!signedInAs) {
     return;
   };
 
-  if (!isValidAuthToken(authToken)) {
-    signOut();
-    return;
-  };
-
-  const isGuestUser: boolean = authToken.startsWith('g');
+  const isGuestUser: boolean = signedInAs === 'guest';
 
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: `You're signed in.`,
@@ -249,13 +249,13 @@ function detectSignedInUser(): void {
     isDangerousAction: false,
   });
 
-  confirmModal.addEventListener('click', (e: MouseEvent) => {
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      signOut();
+      await signOut();
       ConfirmModal.remove();
 
       return;

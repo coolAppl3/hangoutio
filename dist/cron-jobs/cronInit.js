@@ -31,6 +31,7 @@ const node_cron_1 = __importDefault(require("node-cron"));
 const accountCronJobs = __importStar(require("./accountCronJobs"));
 const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
 const cleanHangoutClients_1 = require("../webSockets/hangout/cleanHangoutClients");
+const authCronJobs_1 = require("./authCronJobs");
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
         (0, cleanHangoutClients_1.cleanHangoutClients)();
@@ -40,8 +41,12 @@ function initCronJobs() {
         await hangoutCronJobs.progressHangouts();
         await hangoutCronJobs.concludeNoSuggestionHangouts();
     });
+    node_cron_1.default.schedule('*/10 * * * *', async () => {
+        await (0, authCronJobs_1.clearExpiredAuthSessions)();
+    });
     node_cron_1.default.schedule('0 * * * *', async () => {
         await accountCronJobs.deleteMarkedAccounts();
+        await hangoutCronJobs.deleteNoMemberHangouts();
         await hangoutCronJobs.archiveHangouts();
     });
     console.log('CRON jobs started.');
