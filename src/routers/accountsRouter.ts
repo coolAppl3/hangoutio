@@ -142,6 +142,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     );
 
     await connection.commit();
+    res.status(201).json({ success: true, resData: { accountId, createdOnTimestamp } });
 
     await sendVerificationEmail({
       to: requestData.email,
@@ -150,8 +151,6 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       displayName: requestData.displayName,
       createdOnTimestamp
     });
-
-    res.status(201).json({ success: true, resData: { accountId, createdOnTimestamp } });
 
   } catch (err: unknown) {
     console.log(err);
@@ -266,6 +265,8 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
+    res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
+
     await sendVerificationEmail({
       to: accountDetails.email,
       accountId: requestData.accountId,
@@ -273,8 +274,6 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       displayName: accountDetails.display_name,
       createdOnTimestamp: accountDetails.created_on_timestamp,
     });
-
-    res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
 
   } catch (err: unknown) {
     console.log(err);
@@ -660,6 +659,8 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         [accountDetails.account_id, recoveryToken, requestTimestamp, 1, 0]
       );
 
+      res.json({ success: true, resData: { requestTimestamp } });
+
       await sendRecoveryEmail({
         to: requestData.email,
         accountId: accountDetails.account_id,
@@ -668,7 +669,6 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         displayName: accountDetails.display_name,
       });
 
-      res.json({ success: true, resData: { requestTimestamp } });
       return;
     };
 
@@ -713,6 +713,8 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       return;
     };
 
+    res.json({ success: true, resData: { requestTimestamp: accountDetails.request_timestamp } });
+
     await sendRecoveryEmail({
       to: requestData.email,
       accountId: accountDetails.account_id,
@@ -720,8 +722,6 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       requestTimestamp: accountDetails.request_timestamp,
       displayName: accountDetails.display_name,
     });
-
-    res.json({ success: true, resData: { requestTimestamp: accountDetails.request_timestamp } });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1119,17 +1119,17 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     await connection.commit();
 
+    await purgeAuthSessions(authSessionDetails.user_id, 'account');
+    removeRequestCookie(res, 'authSessionId', true);
+
+    res.status(202).json({ success: true, resData: {} });
+
     await sendDeletionEmail({
       to: accountDetails.email,
       accountId: authSessionDetails.user_id,
       cancellationToken,
       displayName: accountDetails.display_name,
     });
-
-    await purgeAuthSessions(authSessionDetails.user_id, 'account');
-    removeRequestCookie(res, 'authSessionId', true);
-
-    res.status(202).json({ success: true, resData: {} });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1611,6 +1611,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       );
 
       await connection.commit();
+      res.json({ success: true, resData: {} });
 
       await sendEmailUpdateEmail({
         to: requestData.newEmail,
@@ -1618,7 +1619,6 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         displayName: accountDetails.display_name,
       });
 
-      res.json({ success: true, resData: {} });
       return;
     };
 
@@ -1661,13 +1661,13 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
+    res.json({ success: true, resData: {} });
+
     await sendEmailUpdateEmail({
       to: requestData.newEmail,
       verificationCode: accountDetails.verification_code,
       displayName: accountDetails.display_name,
     });
-
-    res.json({ success: true, resData: {} });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1824,8 +1824,6 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       if (requestSuspended) {
         await purgeAuthSessions(authSessionDetails.user_id, 'account');
         removeRequestCookie(res, 'authSessionId', true);
-
-        await sendEmailUpdateWarningEmail(accountDetails.email, accountDetails.display_name)
       };
 
       res.status(401).json({
@@ -1833,6 +1831,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
         message: `Incorrect verification code.${requestSuspended ? 'Request suspended.' : ''}`,
         reason: requestSuspended ? 'requestSuspended' : undefined,
       });
+
+      if (requestSuspended) {
+        await sendEmailUpdateWarningEmail(accountDetails.email, accountDetails.display_name);
+      };
 
       return;
     };
