@@ -119,7 +119,7 @@ export async function createAuthSession(res: Response, sessionConfig: CreateAuth
 
 export async function destroyAuthSession(sessionId: string): Promise<void> {
   try {
-    await dbPool.execute<ResultSetHeader>(
+    await dbPool.execute(
       `DELETE FROM
         auth_sessions
       WHERE
@@ -134,7 +134,7 @@ export async function destroyAuthSession(sessionId: string): Promise<void> {
 
 export async function purgeAuthSessions(userId: number, userType: 'account' | 'guest'): Promise<void> {
   try {
-    await dbPool.execute<ResultSetHeader>(
+    await dbPool.execute(
       `DELETE FROM
         auth_sessions
       WHERE

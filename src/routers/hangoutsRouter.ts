@@ -193,7 +193,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
-    await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -361,7 +361,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
     const guestId: number = resultSetHeader.insertId;
 
-    await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,

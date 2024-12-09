@@ -789,7 +789,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
     };
 
     if (requestData.recoveryToken !== recoveryDetails.recovery_token) {
-      await dbPool.execute<ResultSetHeader>(
+      await dbPool.execute(
         `UPDATE
           account_recovery
         SET
@@ -1511,7 +1511,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       };
 
       const newVerificationCode: string = generateUniqueCode();
-      await connection.execute<ResultSetHeader>(
+      await connection.execute(
         `INSERT INTO email_update(
           account_id,
           new_email,

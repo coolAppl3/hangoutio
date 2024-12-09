@@ -1,10 +1,9 @@
 import { dbPool } from "../db/db";
-import { ResultSetHeader } from "mysql2";
 
 export async function clearExpiredAuthSessions(): Promise<void> {
   try {
     const currentTimestamp: number = Date.now();
-    await dbPool.execute<ResultSetHeader>(
+    await dbPool.execute(
       `DELETE FROM
         auth_sessions
       WHERE

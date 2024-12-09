@@ -193,7 +193,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       return;
     };
 
-    await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -353,7 +353,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
     const guestId: number = resultSetHeader.insertId;
 
-    await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
