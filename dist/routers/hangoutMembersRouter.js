@@ -185,17 +185,11 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });
@@ -319,17 +313,11 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });
@@ -445,8 +433,8 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
             }
             ;
             res.json({ success: true, resData: {} });
-            const logDescription = `${memberToKick.display_name} was kicked.`;
-            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+            const eventDescription = `${memberToKick.display_name} was kicked.`;
+            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
             return;
         }
         ;
@@ -460,8 +448,8 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         }
         ;
         res.json({ success: true, resData: {} });
-        const logDescription = `${memberToKick.display_name} was kicked.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+        const eventDescription = `${memberToKick.display_name} was kicked.`;
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
         console.log(err);
@@ -730,22 +718,16 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         ;
         await connection.commit();
         res.json({ success: true, resData: {} });
-        const logDescription = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+        const eventDescription = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });
@@ -859,22 +841,16 @@ exports.hangoutMembersRouter.patch('/claimLeadership', async (req, res) => {
         ;
         await connection.commit();
         res.json({ success: true, resData: {} });
-        const logDescription = `${hangoutMember.display_name} has claimed the hangout leader role.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+        const eventDescription = `${hangoutMember.display_name} has claimed the hangout leader role.`;
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });

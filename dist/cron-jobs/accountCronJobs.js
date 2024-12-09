@@ -84,16 +84,10 @@ async function deleteMarkedAccounts() {
     catch (err) {
         console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`);
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 }

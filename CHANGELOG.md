@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.1] (2024-12-09)
+
+### Features
+
+- Added `handleAuthSessionExpired.ts`.
+- Added `accountServices.ts`.
+
+
+### Code Refactoring
+
+- Further polished API error handling on the front end to align with the changes in the previous patch.
+- Implemented optional chaining for rollback'ing and releasing connections to improve readability.
+- Renamed all occurrences of `logDescription` to `eventDescription` when `addHangoutEvent()` is used.
+- Moved email services back to being called after a response is sent, as they're contained within their own try-catch block.
+- Abstracted account-locking logic using `handleIncorrectAccountPassword()`.
+- Improved the readability of `SELECT 1` statements using the `AS` keyword.
+- Removed unnecessary `ResultSetHeader` types when making SQL requests.
+
+
 ## [0.4.0] (2024-12-08)
 
 ### Features

@@ -121,7 +121,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -184,10 +184,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         if (!(0, isSqlError_1.isSqlError)(err)) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -202,10 +199,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });
@@ -265,7 +259,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
         await connection.beginTransaction();
         const [guestRows] = await connection.execute(`SELECT
-        1
+        1 AS username_taken
       FROM
         guests
       WHERE
@@ -331,10 +325,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         if (!(0, isSqlError_1.isSqlError)(err)) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -349,10 +340,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });
@@ -464,8 +452,8 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         }
         ;
         res.json({ success: true, resData: {} });
-        const logDescription = 'Hangout password was updated.';
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+        const eventDescription = 'Hangout password was updated.';
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
         console.log(err);
@@ -606,22 +594,16 @@ exports.hangoutsRouter.patch('/details/changeMemberLimit', async (req, res) => {
         ;
         await connection.commit();
         res.json({ success: true, resData: {} });
-        const logDescription = `Hangout member limit was changed to ${requestData.newLimit}.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+        const eventDescription = `Hangout member limit was changed to ${requestData.newLimit}.`;
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });
@@ -802,22 +784,16 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
                 deletedSuggestions,
             },
         });
-        const logDescription = `Hangout steps have been updated and will now be concluded on ${(0, globalUtils_1.getDateAndTimeString)(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+        const eventDescription = `Hangout steps have been updated and will now be concluded on ${(0, globalUtils_1.getDateAndTimeString)(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 });
@@ -976,8 +952,8 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
                     deletedSuggestions,
                 },
             });
-            const logDescription = `Hangout has been manually progressed and is now concluded. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+            const eventDescription = `Hangout has been manually progressed and is now concluded. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
             return;
         }
         ;
@@ -1023,8 +999,8 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
                 deletedSuggestions,
             },
         });
-        const logDescription = `Hangout has been manually progressed, and will now be concluded on ${(0, globalUtils_1.getDateAndTimeString)(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, logDescription);
+        const eventDescription = `Hangout has been manually progressed, and will now be concluded on ${(0, globalUtils_1.getDateAndTimeString)(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
         console.log(err);
