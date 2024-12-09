@@ -257,17 +257,12 @@ votesRouter.post('/', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 

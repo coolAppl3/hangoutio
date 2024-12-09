@@ -303,14 +303,10 @@ export async function archiveHangouts(): Promise<void> {
     console.log(`CRON JOB ERROR: ${archiveHangouts.name}`);
     console.log(err);
 
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 };
 

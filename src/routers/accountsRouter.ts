@@ -155,10 +155,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     if (!isSqlError(err)) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -180,9 +177,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -242,7 +237,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     const accountDetails: AccountDetails = accountRows[0];
 
     if (accountDetails.is_verified) {
-      res.status(400).json({ success: false, message: 'Account has already been verified.', reason: 'alreadyVerified' });
+      res.status(409).json({ success: false, message: 'Account already verified.', reason: 'alreadyVerified' });
       return;
     };
 
@@ -351,7 +346,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
     const accountDetails: AccountDetails = accountRows[0];
 
     if (accountDetails.is_verified) {
-      res.status(400).json({ success: false, message: 'Account already verified.' });
+      res.status(409).json({ success: false, message: 'Account already verified.' });
       return;
     };
 
@@ -366,7 +361,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
           [requestData.accountId]
         );
 
-        res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.', reason: 'accountDeleted' });
+        res.status(401).json({ success: false, message: 'Incorrect verification code.', reason: 'accountDeleted' });
         return;
       };
 
@@ -431,17 +426,12 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -800,7 +790,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
     );
 
     if (recoveryRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Recovery request not found or expired.' });
+      res.status(404).json({ success: false, message: 'Recovery request not found or has expired.' });
       return;
     };
 
@@ -1143,17 +1133,12 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -1253,17 +1238,12 @@ accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => 
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -1691,17 +1671,12 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -2064,17 +2039,12 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -2372,10 +2342,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     if (!isSqlError(err)) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -2392,9 +2359,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 

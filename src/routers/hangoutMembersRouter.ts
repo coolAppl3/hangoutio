@@ -211,17 +211,12 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -386,17 +381,12 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -937,17 +927,12 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -1109,16 +1094,11 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });

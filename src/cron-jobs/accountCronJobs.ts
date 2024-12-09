@@ -104,13 +104,9 @@ export async function deleteMarkedAccounts(): Promise<void> {
     console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`)
     console.log(err);
 
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 };
