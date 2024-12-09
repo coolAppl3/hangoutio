@@ -558,8 +558,8 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = 'Hangout password was updated.';
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = 'Hangout password was updated.';
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -748,8 +748,8 @@ hangoutsRouter.patch('/details/changeMemberLimit', async (req: Request, res: Res
     await connection.commit();
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = `Hangout member limit was changed to ${requestData.newLimit}.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `Hangout member limit was changed to ${requestData.newLimit}.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1019,8 +1019,8 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
       },
     });
 
-    const logDescription: string = `Hangout steps have been updated and will now be concluded on ${getDateAndTimeString(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `Hangout steps have been updated and will now be concluded on ${getDateAndTimeString(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1252,8 +1252,8 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
         },
       });
 
-      const logDescription: string = `Hangout has been manually progressed and is now concluded. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-      await addHangoutEvent(requestData.hangoutId, logDescription);
+      const eventDescription: string = `Hangout has been manually progressed and is now concluded. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+      await addHangoutEvent(requestData.hangoutId, eventDescription);
 
       return;
     };
@@ -1315,8 +1315,8 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
       },
     });
 
-    const logDescription: string = `Hangout has been manually progressed, and will now be concluded on ${getDateAndTimeString(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `Hangout has been manually progressed, and will now be concluded on ${getDateAndTimeString(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);

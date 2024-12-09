@@ -540,8 +540,8 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
       res.json({ success: true, resData: {} });
 
-      const logDescription: string = `${memberToKick.display_name} was kicked.`;
-      await addHangoutEvent(requestData.hangoutId, logDescription);
+      const eventDescription: string = `${memberToKick.display_name} was kicked.`;
+      await addHangoutEvent(requestData.hangoutId, eventDescription);
 
       return;
     };
@@ -561,8 +561,8 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = `${memberToKick.display_name} was kicked.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `${memberToKick.display_name} was kicked.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -922,8 +922,8 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
     await connection.commit();
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -1089,8 +1089,8 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
     await connection.commit();
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = `${hangoutMember.display_name} has claimed the hangout leader role.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `${hangoutMember.display_name} has claimed the hangout leader role.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
