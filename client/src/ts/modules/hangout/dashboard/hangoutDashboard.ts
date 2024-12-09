@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
+import { handleAuthSessionExpired } from "../../global/authUtils";
 import popup from "../../global/popup";
 import { signOut } from "../../global/signOut";
 import { isValidHangoutId } from "../../global/validation";
@@ -73,8 +74,16 @@ export async function getHangoutDashboardData(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
     const errResData: unknown = axiosError.response.data.resData;
 
-    if (status === 401 && errReason === 'notMember') {
-      handleNotHangoutMember(errResData, hangoutId);
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(`hangout${window.location.search}`);
+        return;
+      };
+
+      if (errReason === 'notMember') {
+        handleNotHangoutMember(errResData, hangoutId);
+      };
+
       return;
     };
 

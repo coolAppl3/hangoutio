@@ -5,7 +5,6 @@ import ErrorSpan from "../../global/ErrorSpan";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { signOut } from "../../global/signOut";
 import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutMemberServices";
 import { getHangoutDashboardData } from "./hangoutDashboard";
 import { handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
@@ -229,9 +228,7 @@ function handleGuestNotMember(): void {
         return;
       };
 
-      await signOut();
       initHangoutGuestSignUp(notHangoutMemberState.hangoutId, notHangoutMemberState.isPasswordProtected);
-
       return;
     };
 

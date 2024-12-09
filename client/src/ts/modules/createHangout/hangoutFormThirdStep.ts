@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios
 import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
+import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../global/authUtils";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
@@ -167,6 +168,19 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
 
     popup(errMessage, 'error');
     LoadingModal.remove();
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired('create-hangout');
+        return;
+      };
+
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed('create-hangout');
+      };
+
+      return;
+    };
 
     if (status === 400) {
       if (errReason === 'hangoutTitle') {
@@ -363,12 +377,12 @@ async function accountSignIn(): Promise<void> {
     LoadingModal.remove();
 
     if (status === 401) {
+      ErrorSpan.display(accountPasswordInput, errMessage);
+
       if (errReason === 'accountLocked') {
         handleAccountLocked();
-        return;
       };
 
-      ErrorSpan.display(accountPasswordInput, errMessage);
       return;
     };
 

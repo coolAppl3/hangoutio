@@ -19,11 +19,11 @@ export function recoveryEmailForm(): void {
   init();
 };
 
-function init(): void {
+async function init(): Promise<void> {
   setActiveValidation();
 
   if (recoveryLinkDetected()) {
-    signOut();
+    await signOut();
     updateDisplayedForm();
 
     return;
