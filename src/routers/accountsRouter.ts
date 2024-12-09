@@ -1063,7 +1063,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     for (const hangout of hangoutRows) {
       eventValues += `('${hangout.hangout_id}', '${eventDescription})', ${currentTimestamp}),`;
     };
-    eventValues.slice(0, -1);
+    eventValues = eventValues.slice(0, -1);
 
     await connection.execute(
       `INSERT INTO hangout_events(
