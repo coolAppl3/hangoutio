@@ -12,6 +12,7 @@ import { isSqlError } from '../util/isSqlError';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from '../auth/authSessions';
 import { removeRequestCookie, getRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
+import { handleIncorrectAccountPassword } from '../util/accountServices';
 
 export const accountsRouter: Router = express.Router();
 
@@ -142,6 +143,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     );
 
     await connection.commit();
+    res.status(201).json({ success: true, resData: { accountId, createdOnTimestamp } });
 
     await sendVerificationEmail({
       to: requestData.email,
@@ -151,14 +153,9 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       createdOnTimestamp
     });
 
-    res.status(201).json({ success: true, resData: { accountId, createdOnTimestamp } });
-
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     if (!isSqlError(err)) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -180,9 +177,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -242,7 +237,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     const accountDetails: AccountDetails = accountRows[0];
 
     if (accountDetails.is_verified) {
-      res.status(400).json({ success: false, message: 'Account has already been verified.', reason: 'alreadyVerified' });
+      res.status(409).json({ success: false, message: 'Account already verified.', reason: 'alreadyVerified' });
       return;
     };
 
@@ -271,6 +266,8 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
+    res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
+
     await sendVerificationEmail({
       to: accountDetails.email,
       accountId: requestData.accountId,
@@ -278,8 +275,6 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       displayName: accountDetails.display_name,
       createdOnTimestamp: accountDetails.created_on_timestamp,
     });
-
-    res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
 
   } catch (err: unknown) {
     console.log(err);
@@ -351,7 +346,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
     const accountDetails: AccountDetails = accountRows[0];
 
     if (accountDetails.is_verified) {
-      res.status(400).json({ success: false, message: 'Account already verified.' });
+      res.status(409).json({ success: false, message: 'Account already verified.' });
       return;
     };
 
@@ -366,7 +361,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
           [requestData.accountId]
         );
 
-        res.status(401).json({ success: false, message: 'Incorrect verification code. Account deleted.', reason: 'accountDeleted' });
+        res.status(401).json({ success: false, message: 'Incorrect verification code.', reason: 'accountDeleted' });
         return;
       };
 
@@ -431,17 +426,12 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -522,29 +512,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [accountDetails.account_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(accountDetails.account_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, accountDetails.account_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -670,6 +638,8 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         [accountDetails.account_id, recoveryToken, requestTimestamp, 1, 0]
       );
 
+      res.json({ success: true, resData: { requestTimestamp } });
+
       await sendRecoveryEmail({
         to: requestData.email,
         accountId: accountDetails.account_id,
@@ -678,7 +648,6 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         displayName: accountDetails.display_name,
       });
 
-      res.json({ success: true, resData: { requestTimestamp } });
       return;
     };
 
@@ -723,6 +692,8 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       return;
     };
 
+    res.json({ success: true, resData: { requestTimestamp: accountDetails.request_timestamp } });
+
     await sendRecoveryEmail({
       to: requestData.email,
       accountId: accountDetails.account_id,
@@ -730,8 +701,6 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       requestTimestamp: accountDetails.request_timestamp,
       displayName: accountDetails.display_name,
     });
-
-    res.json({ success: true, resData: { requestTimestamp: accountDetails.request_timestamp } });
 
   } catch (err: unknown) {
     console.log(err);
@@ -800,7 +769,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
     );
 
     if (recoveryRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Recovery request not found or expired.' });
+      res.status(404).json({ success: false, message: 'Recovery request not found or has expired.' });
       return;
     };
 
@@ -820,7 +789,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
     };
 
     if (requestData.recoveryToken !== recoveryDetails.recovery_token) {
-      await dbPool.execute<ResultSetHeader>(
+      await dbPool.execute(
         `UPDATE
           account_recovery
         SET
@@ -993,29 +962,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [authSessionDetails.user_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -1129,6 +1076,11 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     await connection.commit();
 
+    await purgeAuthSessions(authSessionDetails.user_id, 'account');
+    removeRequestCookie(res, 'authSessionId', true);
+
+    res.status(202).json({ success: true, resData: {} });
+
     await sendDeletionEmail({
       to: accountDetails.email,
       accountId: authSessionDetails.user_id,
@@ -1136,24 +1088,14 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       displayName: accountDetails.display_name,
     });
 
-    await purgeAuthSessions(authSessionDetails.user_id, 'account');
-    removeRequestCookie(res, 'authSessionId', true);
-
-    res.status(202).json({ success: true, resData: {} });
-
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -1253,17 +1195,12 @@ accountsRouter.patch('/deletion/cancel', async (req: Request, res: Response) => 
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -1371,29 +1308,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.currentPassword, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-            accounts
-          SET
-            failed_sign_in_attempts = failed_sign_in_attempts + 1
-          WHERE
-            account_id = ?;`,
-        [accountDetails.account_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(accountDetails.account_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -1567,28 +1482,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [authSessionDetails.user_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-      if (isLocked) {
-        await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -1617,7 +1511,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       };
 
       const newVerificationCode: string = generateUniqueCode();
-      await connection.execute<ResultSetHeader>(
+      await connection.execute(
         `INSERT INTO email_update(
           account_id,
           new_email,
@@ -1631,6 +1525,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       );
 
       await connection.commit();
+      res.json({ success: true, resData: {} });
 
       await sendEmailUpdateEmail({
         to: requestData.newEmail,
@@ -1638,7 +1533,6 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         displayName: accountDetails.display_name,
       });
 
-      res.json({ success: true, resData: {} });
       return;
     };
 
@@ -1681,27 +1575,22 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
+    res.json({ success: true, resData: {} });
+
     await sendEmailUpdateEmail({
       to: requestData.newEmail,
       verificationCode: accountDetails.verification_code,
       displayName: accountDetails.display_name,
     });
 
-    res.json({ success: true, resData: {} });
-
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -1849,8 +1738,6 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       if (requestSuspended) {
         await purgeAuthSessions(authSessionDetails.user_id, 'account');
         removeRequestCookie(res, 'authSessionId', true);
-
-        await sendEmailUpdateWarningEmail(accountDetails.email, accountDetails.display_name)
       };
 
       res.status(401).json({
@@ -1858,6 +1745,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
         message: `Incorrect verification code.${requestSuspended ? 'Request suspended.' : ''}`,
         reason: requestSuspended ? 'requestSuspended' : undefined,
       });
+
+      if (requestSuspended) {
+        await sendEmailUpdateWarningEmail(accountDetails.email, accountDetails.display_name);
+      };
 
       return;
     };
@@ -1998,29 +1889,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [authSessionDetails.user_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -2064,17 +1933,12 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -2192,7 +2056,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       LIMIT 1;
       
       SELECT
-        1 request_already_sent
+        1 AS request_already_sent
       FROM
         friend_requests
       WHERE
@@ -2372,10 +2236,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     if (!isSqlError(err)) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -2392,9 +2253,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 

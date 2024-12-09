@@ -144,23 +144,6 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 400) {
-      const inputRecord: Record<string, HTMLInputElement | undefined> = {
-        hangoutPassword: hangoutPasswordInput,
-        username: userNameInput,
-        userPassword: guestPasswordInput,
-        usernamePasswordIdentical: guestPasswordInput,
-        displayName: displayNameInput,
-      };
-
-      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
-      if (input) {
-        ErrorSpan.display(input, errMessage);
-      };
-
-      return;
-    };
-
     if (status === 404) {
       const infoModal: HTMLDivElement = InfoModal.display({
         title: 'Hangout not found.',
@@ -194,6 +177,28 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
       if (errReason === 'usernameTaken') {
         ErrorSpan.display(userNameInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'passwordEqualsUsername') {
+        ErrorSpan.display(guestPasswordInput, errMessage);
+      };
+
+      return;
+    };
+
+    if (status === 400) {
+      const inputRecord: Record<string, HTMLInputElement | undefined> = {
+        hangoutPassword: hangoutPasswordInput,
+        username: userNameInput,
+        userPassword: guestPasswordInput,
+        usernamePasswordIdentical: guestPasswordInput,
+        displayName: displayNameInput,
+      };
+
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
       };
     };
   };

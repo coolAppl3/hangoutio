@@ -129,14 +129,14 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     if (status === 403) {
       InfoModal.display({
         title: `You're signed in.`,
-        description: errMessage,
+        description: 'You must sign out before proceeding.',
         btnTitle: 'Okay',
       }, { simple: true });
 
       return;
     };
 
-    if (status === 404) {
+    if (status === 404 || status === 409) {
       clearVerificationCookies();
       return;
     };
@@ -149,7 +149,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
         const infoModal: HTMLDivElement = InfoModal.display({
           title: 'Too many failed verification attempts.',
-          description: 'Your account has been automatically deleted as a result.\nYou can create it again by repeating the signup process.',
+          description: 'Your account has been deleted as a result.\nYou can create it again by repeating the signup process.',
           btnTitle: 'Okay',
         });
 
@@ -232,24 +232,20 @@ async function resendVerificationEmail(): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
+    if (status === 400 && errReason === 'accountId') {
+      popup('Something went wrong.', 'error');
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
     popup(errMessage, 'error');
-
-    if (status === 404) {
-      setTimeout(() => window.location.reload(), 1000);
-      return;
-    };
-
-    if (status === 400) {
-      if (errReason === 'alreadyVerified') {
-        setTimeout(() => window.location.replace('sign-in'), 1000);
-        return;
-      };
-
-      setTimeout(() => window.location.reload(), 1000);
-      return;
-    };
-
     LoadingModal.remove();
+
+    if (status === 404 || status === 409) {
+      clearVerificationCookies();
+      return;
+    };
 
     if (status === 403 && errReason === 'limitReached') {
       signUpState.verificationEmailsSent = 3;

@@ -101,7 +101,7 @@ async function deleteNoMemberHangouts() {
       WHERE
     NOT EXISTS (
       SELECT
-        1
+        1 AS members_exist
       FROM
         hangout_members
       WHERE
@@ -233,16 +233,10 @@ async function archiveHangouts() {
     catch (err) {
         console.log(`CRON JOB ERROR: ${archiveHangouts.name}`);
         console.log(err);
-        if (connection) {
-            await connection.rollback();
-        }
-        ;
+        await connection?.rollback();
     }
     finally {
-        if (connection) {
-            connection.release();
-        }
-        ;
+        connection?.release();
     }
     ;
 }

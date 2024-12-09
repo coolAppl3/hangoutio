@@ -193,7 +193,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       return;
     };
 
-    await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -211,17 +211,12 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -358,7 +353,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
     const guestId: number = resultSetHeader.insertId;
 
-    await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `INSERT INTO hangout_members(
         hangout_id,
         user_type,
@@ -386,17 +381,12 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -550,8 +540,8 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
       res.json({ success: true, resData: {} });
 
-      const logDescription: string = `${memberToKick.display_name} was kicked.`;
-      await addHangoutEvent(requestData.hangoutId, logDescription);
+      const eventDescription: string = `${memberToKick.display_name} was kicked.`;
+      await addHangoutEvent(requestData.hangoutId, eventDescription);
 
       return;
     };
@@ -571,8 +561,8 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = `${memberToKick.display_name} was kicked.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `${memberToKick.display_name} was kicked.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
@@ -932,22 +922,17 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
     await connection.commit();
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });
 
@@ -1104,21 +1089,16 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
     await connection.commit();
     res.json({ success: true, resData: {} });
 
-    const logDescription: string = `${hangoutMember.display_name} has claimed the hangout leader role.`;
-    await addHangoutEvent(requestData.hangoutId, logDescription);
+    const eventDescription: string = `${hangoutMember.display_name} has claimed the hangout leader role.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
     console.log(err);
-
-    if (connection) {
-      await connection.rollback();
-    };
+    await connection?.rollback();
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
-    if (connection) {
-      connection.release();
-    };
+    connection?.release();
   };
 });

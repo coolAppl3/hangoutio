@@ -89,6 +89,12 @@ async function accountSignIn(): Promise<void> {
     await accountSignInService(accountSignInBody);
     popup('Signed in successfully.', 'success');
 
+    const afterAuthRedirectHref: string | null = Cookies.get('afterAuthRedirectHref');
+    if (afterAuthRedirectHref) {
+      setTimeout(() => window.location.replace(afterAuthRedirectHref), 1000);
+      return;
+    };
+
     const pendingHangoutId: string | null = getPendingSignInHangoutId();
     if (pendingHangoutId) {
       LoadingModal.remove();
@@ -150,8 +156,8 @@ async function accountSignIn(): Promise<void> {
 
       if (errReason === 'unverified') {
         InfoModal.display({
-          title: errMessage,
-          description: `You need to first verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
+          title: 'Account unverified',
+          description: `You must first verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
           btnTitle: 'Okay',
         }, { simple: true });
       };
@@ -198,6 +204,13 @@ async function guestSignIn(): Promise<void> {
     const guestHangoutId = Cookies.get('guestHangoutId') as string;
 
     popup('Signed in successfully.', 'success');
+
+    const afterAuthRedirectHref: string | null = Cookies.get('afterAuthRedirectHref');
+    if (afterAuthRedirectHref) {
+      setTimeout(() => window.location.replace(afterAuthRedirectHref), 1000);
+      return;
+    };
+
     setTimeout(() => window.location.replace(`hangout?id=${guestHangoutId}`), 1000);
 
   } catch (err: unknown) {
