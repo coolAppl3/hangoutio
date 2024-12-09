@@ -303,7 +303,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
     const [guestRows] = await connection.execute<RowDataPacket[]>(
       `SELECT
-        1
+        1 AS username_taken
       FROM
         guests
       WHERE

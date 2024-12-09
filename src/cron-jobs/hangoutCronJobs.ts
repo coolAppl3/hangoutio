@@ -116,7 +116,7 @@ export async function deleteNoMemberHangouts(): Promise<void> {
       WHERE
     NOT EXISTS (
       SELECT
-        1
+        1 AS members_exist
       FROM
         hangout_members
       WHERE

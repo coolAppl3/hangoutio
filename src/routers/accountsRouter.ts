@@ -2056,7 +2056,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       LIMIT 1;
       
       SELECT
-        1 request_already_sent
+        1 AS request_already_sent
       FROM
         friend_requests
       WHERE

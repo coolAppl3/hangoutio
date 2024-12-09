@@ -248,7 +248,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
 
     const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(
       `SELECT
-        1
+        1 AS hangout_found
       FROM
         hangout_members
       WHERE
