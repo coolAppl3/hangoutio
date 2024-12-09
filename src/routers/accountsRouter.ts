@@ -12,6 +12,7 @@ import { isSqlError } from '../util/isSqlError';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from '../auth/authSessions';
 import { removeRequestCookie, getRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
+import { handleIncorrectAccountPassword } from '../util/accountServices';
 
 export const accountsRouter: Router = express.Router();
 
@@ -511,29 +512,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [accountDetails.account_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(accountDetails.account_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, accountDetails.account_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -983,29 +962,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [authSessionDetails.user_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -1351,29 +1308,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.currentPassword, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-            accounts
-          SET
-            failed_sign_in_attempts = failed_sign_in_attempts + 1
-          WHERE
-            account_id = ?;`,
-        [accountDetails.account_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(accountDetails.account_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -1547,28 +1482,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [authSessionDetails.user_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-      if (isLocked) {
-        await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
@@ -1975,29 +1889,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
-      await dbPool.execute(
-        `UPDATE
-          accounts
-        SET
-          failed_sign_in_attempts = failed_sign_in_attempts + 1
-        WHERE
-          account_id = ?;`,
-        [authSessionDetails.user_id]
-      );
-
-      const isLocked: boolean = accountDetails.failed_sign_in_attempts + 1 >= 5;
-
-      if (isLocked) {
-        await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
-      };
-
-      res.status(401).json({
-        success: false,
-        message: `Incorrect password.${isLocked ? ' Account has been locked' : ''}`,
-        reason: isLocked ? 'accountLocked' : undefined,
-      });
-
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
