@@ -1,17 +1,19 @@
 import { dbPool } from "../db/db";
 
 export async function removeUnverifiedAccounts(): Promise<void> {
-  const verificationWindow: number = 1000 * 60 * 20;
-  const minimumAllowedTimestamp: number = Date.now() - verificationWindow;
+  const currentTimestamp: number = Date.now();
 
   try {
     await dbPool.execute(
-      `DELETE FROM
+      `DELETE
         accounts
+      FROM
+        accounts
+      INNER JOIN
+        account_verification ON accounts.account_id = account_verification.account_id
       WHERE
-        is_verified = ? AND
-        created_on_timestamp < ?;`,
-      [false, minimumAllowedTimestamp]
+        account_verification.expiry_timestamp <= ?;`,
+      [currentTimestamp]
     );
 
   } catch (err: any) {
