@@ -88,8 +88,9 @@ async function createAccountDeletionTable(): Promise<void> {
       `CREATE TABLE IF NOT EXISTS account_deletion (
         deletion_id INT PRIMARY KEY AUTO_INCREMENT,
         account_id INT NOT NULL UNIQUE,
-        cancellation_token VARCHAR(40) NOT NULL COLLATE utf8mb4_bin,
-        request_timestamp BIGINT NOT NULL,
+        confirmation_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
+        expiry_timestamp BIGINT NOT NULL,
+        failed_deletion_attempts INT NOT NULL CHECK(failed_deletion_attempts <= 3),
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
       );`
     );

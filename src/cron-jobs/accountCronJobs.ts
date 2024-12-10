@@ -59,54 +59,20 @@ export async function removeExpiredEmailUpdateRequests(): Promise<void> {
   };
 };
 
-export async function deleteMarkedAccounts(): Promise<void> {
-  const twoDaysMilliseconds: number = 1000 * 60 * 60 * 24 * 2;
-  const minimumAllowedTimestamp: number = Date.now() - twoDaysMilliseconds;
-
-  interface AccountDetails extends RowDataPacket {
-    account_id: number,
-  };
-
-  let connection;
+export async function removeExpiredDeletionRequests(): Promise<void> {
+  const currentTimestamp: number = Date.now();
 
   try {
-    connection = await dbPool.getConnection();
-    await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
-    await connection.beginTransaction();
-
-    const [accountRows] = await connection.execute<AccountDetails[]>(
-      `SELECT
-        account_id
-      FROM
+    await dbPool.execute(
+      `DELETE FROM
         account_deletion
       WHERE
-        request_timestamp < ?;`,
-      [minimumAllowedTimestamp]
+        expiry_timestamp <= ?;`,
+      [currentTimestamp]
     );
 
-    if (accountRows.length === 0) {
-      await connection.rollback();
-      return;
-    };
-
-    const accountsToDelete: number[] = accountRows.map((account: AccountDetails) => account.account_id);
-    await connection.execute(
-      `DELETE FROM
-        accounts
-      WHERE
-        account_id IN (?);`,
-      [accountsToDelete.join(', ')]
-    );
-
-    await connection.commit();
-
-  } catch (err: any) {
-    console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`)
+  } catch (err: unknown) {
+    console.log(`CRON JOB ERROR: ${removeExpiredDeletionRequests.name}`)
     console.log(err);
-
-    await connection?.rollback();
-
-  } finally {
-    connection?.release();
   };
 };
