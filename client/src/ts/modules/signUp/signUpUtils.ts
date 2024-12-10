@@ -23,7 +23,7 @@ export function displayVerificationExpiryInfoModal(): void {
 
 export function clearVerificationCookies(): void {
   Cookies.remove('verificationAccountId');
-  Cookies.remove('verificationStartTimestamp');
+  Cookies.remove('verificationExpiryTimestamp');
 };
 
 export function reloadWithoutQueryString(): void {
@@ -45,14 +45,14 @@ export function initVerificationTimer(): void {
 };
 
 function updateVerificationTimer(requestExpiryTimer: HTMLSpanElement, intervalId: number): void {
-  if (!signUpState.verificationStartTimestamp) {
+  if (!signUpState.verificationExpiryTimestamp) {
     clearInterval(intervalId);
     requestExpiryTimer.classList.remove('displayed');
 
     return;
   };
 
-  const timerValue: string = getTimeTillVerificationExpiry(signUpState.verificationStartTimestamp);
+  const timerValue: string = getTimeTillVerificationExpiry(signUpState.verificationExpiryTimestamp);
 
   if (timerValue === '00:00') {
     requestExpiryTimer.textContent = timerValue;
@@ -66,10 +66,8 @@ function updateVerificationTimer(requestExpiryTimer: HTMLSpanElement, intervalId
 };
 
 
-function getTimeTillVerificationExpiry(verificationStartTimestamp: number): string {
-  const verificationPeriod: number = 1000 * 60 * 15;
-  const expiryTimestamp: number = verificationStartTimestamp + verificationPeriod;
-  const timeTillRequestExpiry: number = expiryTimestamp - Date.now();
+function getTimeTillVerificationExpiry(verificationExpiryTimestamp: number): string {
+  const timeTillRequestExpiry: number = verificationExpiryTimestamp - Date.now();
 
   if (timeTillRequestExpiry < 0) {
     return '00:00';

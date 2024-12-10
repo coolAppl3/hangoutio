@@ -113,6 +113,9 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
     const createdOnTimestamp: number = Date.now();
 
+    const verificationWindowMilliseconds: number = 1000 * 60 * 20;
+    const verificationExpiryTimestamp: number = createdOnTimestamp + verificationWindowMilliseconds;
+
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO accounts(
         email,
@@ -136,21 +139,21 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         verification_code,
         verification_emails_sent,
         failed_verification_attempts,
-        created_on_timestamp
+        expiry_timestamp
       )
       VALUES(${generatePlaceHolders(5)});`,
-      [accountId, verificationCode, 1, 0, createdOnTimestamp]
+      [accountId, verificationCode, 1, 0, verificationExpiryTimestamp]
     );
 
     await connection.commit();
-    res.status(201).json({ success: true, resData: { accountId, createdOnTimestamp } });
+    res.status(201).json({ success: true, resData: { accountId, verificationExpiryTimestamp } });
 
     await sendVerificationEmail({
       to: requestData.email,
       accountId,
       verificationCode,
       displayName: requestData.displayName,
-      createdOnTimestamp
+      expiryTimestamp: verificationExpiryTimestamp,
     });
 
   } catch (err: unknown) {
@@ -207,7 +210,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       verification_id: number,
       verification_code: string,
       verification_emails_sent: number,
-      created_on_timestamp: number,
+      expiry_timestamp: number,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
@@ -218,7 +221,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
         account_verification.verification_id,
         account_verification.verification_code,
         account_verification.verification_emails_sent,
-        account_verification.created_on_timestamp
+        account_verification.expiry_timestamp
       FROM
         accounts
       LEFT JOIN
@@ -273,7 +276,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       accountId: requestData.accountId,
       verificationCode: accountDetails.verification_code,
       displayName: accountDetails.display_name,
-      createdOnTimestamp: accountDetails.created_on_timestamp,
+      expiryTimestamp: accountDetails.expiry_timestamp,
     });
 
   } catch (err: unknown) {

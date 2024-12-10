@@ -1,5 +1,4 @@
 import { dbPool } from "../db/db";
-import { RowDataPacket } from "mysql2";
 
 export async function removeUnverifiedAccounts(): Promise<void> {
   const verificationWindow: number = 1000 * 60 * 20;

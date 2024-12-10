@@ -18,7 +18,7 @@ export interface AccountSignUpData {
   success: true,
   resData: {
     accountId: number,
-    createdOnTimestamp: number,
+    verificationExpiryTimestamp: number,
   },
 };
 

@@ -53,7 +53,7 @@ async function createAccountVerificationTable(): Promise<void> {
         verification_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
         verification_emails_sent INT NOT NULL CHECK(verification_emails_sent <= 3),
         failed_verification_attempts INT NOT NULL CHECK(failed_verification_attempts <= 3),
-        created_on_timestamp BIGINT NOT NULL,
+        expiry_timestamp BIGINT NOT NULL,
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
       );`
     );

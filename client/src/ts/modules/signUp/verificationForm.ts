@@ -183,7 +183,7 @@ async function resendVerificationEmail(): Promise<void> {
     return;
   };
 
-  if (!signUpState.accountId || !signUpState.verificationStartTimestamp) {
+  if (!signUpState.accountId || !signUpState.verificationExpiryTimestamp) {
     popup('Something went wrong.', 'error');
     clearVerificationCookies();
     setTimeout(() => window.location.reload(), 1000);
@@ -191,8 +191,7 @@ async function resendVerificationEmail(): Promise<void> {
     return;
   };
 
-  const verificationPeriod: number = 1000 * 60 * 15;
-  if (Date.now() > verificationPeriod + signUpState.verificationStartTimestamp) {
+  if (signUpState.verificationExpiryTimestamp >= Date.now()) {
     popup('Verification request expired.', 'error');
     clearVerificationCookies();
     setTimeout(() => window.location.reload(), 1000);
@@ -286,19 +285,18 @@ function verificationLinkDetected(): boolean {
     return false;
   };
 
-  const { verificationAccountId, verificationStartTimestamp, verificationCode } = verificationData;
+  const { verificationAccountId, verificationExpiryTimestamp, verificationCode } = verificationData;
 
-  const verificationPeriod: number = 1000 * 60 * 15;
-  if (Date.now() - +verificationStartTimestamp > verificationPeriod) {
+  if (+verificationExpiryTimestamp >= Date.now()) {
     displayVerificationExpiryInfoModal();
     return false;
   };
 
   Cookies.set('verificationAccountId', verificationAccountId);
-  Cookies.set('verificationStartTimestamp', verificationStartTimestamp);
+  Cookies.set('verificationExpiryTimestamp', verificationExpiryTimestamp);
 
   signUpState.accountId = +verificationAccountId;
-  signUpState.verificationStartTimestamp = +verificationStartTimestamp;
+  signUpState.verificationExpiryTimestamp = +verificationExpiryTimestamp;
 
   switchToVerificationStage();
   verificationCodeInput ? verificationCodeInput.value = verificationCode : undefined;
@@ -308,16 +306,16 @@ function verificationLinkDetected(): boolean {
 
 interface VerificationData {
   verificationAccountId: string,
-  verificationStartTimestamp: string,
+  verificationExpiryTimestamp: string,
   verificationCode: string,
 };
 
 function getVerificationLinkDetails(url: URL): VerificationData | null {
   const verificationAccountId: string | null = url.searchParams.get('id');
-  const verificationStartTimestamp: string | null = url.searchParams.get('requestTimestamp');
+  const verificationExpiryTimestamp: string | null = url.searchParams.get('expiryTimestamp');
   const verificationCode: string | null = url.searchParams.get('verificationCode');
 
-  if (!verificationAccountId || !verificationStartTimestamp || !verificationCode) {
+  if (!verificationAccountId || !verificationExpiryTimestamp || !verificationCode) {
     return null;
   };
 
@@ -325,7 +323,7 @@ function getVerificationLinkDetails(url: URL): VerificationData | null {
     return null;
   };
 
-  if (!isValidTimestamp(+verificationStartTimestamp)) {
+  if (!isValidTimestamp(+verificationExpiryTimestamp)) {
     return null;
   };
 
@@ -335,7 +333,7 @@ function getVerificationLinkDetails(url: URL): VerificationData | null {
 
   const verificationData: VerificationData = {
     verificationAccountId,
-    verificationStartTimestamp,
+    verificationExpiryTimestamp,
     verificationCode,
   };
 
@@ -348,9 +346,9 @@ function detectOngoingVerification(): void {
   };
 
   const existingAccountId: string | null = Cookies.get('verificationAccountId');
-  const existingVerificationStartTimestamp: string | null = Cookies.get('verificationStartTimestamp');
+  const existingVerificationExpiryTimestamp: string | null = Cookies.get('verificationExpiryTimestamp');
 
-  if (!existingAccountId || !existingVerificationStartTimestamp) {
+  if (!existingAccountId || !existingVerificationExpiryTimestamp) {
     clearVerificationCookies();
     return;
   };
@@ -360,16 +358,15 @@ function detectOngoingVerification(): void {
     return;
   };
 
-  if (!isValidTimestamp(+existingVerificationStartTimestamp)) {
+  if (!isValidTimestamp(+existingVerificationExpiryTimestamp)) {
     clearVerificationCookies();
     return;
   };
 
   const accountId: number = +existingAccountId;
-  const verificationStartTimestamp: number = +existingVerificationStartTimestamp;
+  const verificationExpiryTimestamp: number = +existingVerificationExpiryTimestamp;
 
-  const verificationPeriod: number = 1000 * 60 * 15;
-  if (Date.now() - verificationStartTimestamp >= verificationPeriod) {
+  if (verificationExpiryTimestamp >= Date.now()) {
     clearVerificationCookies();
     return;
   };
@@ -390,7 +387,7 @@ function detectOngoingVerification(): void {
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
       signUpState.accountId = accountId;
-      signUpState.verificationStartTimestamp = verificationStartTimestamp;
+      signUpState.verificationExpiryTimestamp = verificationExpiryTimestamp;
 
       switchToVerificationStage();
       ConfirmModal.remove();

@@ -75,13 +75,13 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
 
   try {
     const accountSignUpData: AxiosResponse<AccountSignUpData> = await accountSignUpService(accountSignUpBody);
-    const { accountId, createdOnTimestamp } = accountSignUpData.data.resData;
+    const { accountId, verificationExpiryTimestamp } = accountSignUpData.data.resData;
 
     signUpState.accountId = accountId;
-    signUpState.verificationStartTimestamp = createdOnTimestamp;
+    signUpState.verificationExpiryTimestamp = verificationExpiryTimestamp;
 
-    Cookies.set('verificationAccountId', `${accountId}`, 15 * 60);
-    Cookies.set('verificationStartTimestamp', `${createdOnTimestamp}`, 15 * 60);
+    Cookies.set('verificationAccountId', `${accountId}`, 20 * 60);
+    Cookies.set('verificationExpiryTimestamp', `${verificationExpiryTimestamp}`, 20 * 60);
 
     signUpState.verificationEmailsSent = 1;
     switchToVerificationStage();
