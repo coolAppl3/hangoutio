@@ -42,7 +42,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     return;
   };
 
-  if (!recoveryState.recoveryAccountId || !recoveryState.recoveryStartTimestamp || !recoveryState.recoveryToken) {
+  if (!recoveryState.recoveryAccountId || !recoveryState.expiryTimestamp || !recoveryState.recoveryToken) {
     popup('Something went wrong.', 'error');
     setTimeout(() => reloadWithoutQueryString(), 1000);
 
@@ -128,14 +128,14 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
         return;
       };
 
-      if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
+      if (!('expiryTimestamp' in errResData) || typeof errResData.expiryTimestamp !== 'number') {
         return;
       };
 
-      const requestTimestamp: number = errResData.requestTimestamp;
-      recoveryState.recoveryStartTimestamp = requestTimestamp;
+      const expiryTimestamp: number = errResData.expiryTimestamp;
+      recoveryState.expiryTimestamp = expiryTimestamp;
 
-      displayFailureLimitReachedInfoModal(errMessage, recoveryState.recoveryStartTimestamp);
+      displayFailureLimitReachedInfoModal(errMessage, recoveryState.expiryTimestamp);
       return;
     };
 
@@ -195,11 +195,11 @@ function handleRecoverySuspension(errResData: unknown): void {
     return;
   };
 
-  if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
+  if (!('expiryTimestamp' in errResData) || typeof errResData.expiryTimestamp !== 'number') {
     return;
   };
 
-  const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.requestTimestamp);
+  const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.expiryTimestamp);
   const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Recovery request suspended.',
     description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`}.`,

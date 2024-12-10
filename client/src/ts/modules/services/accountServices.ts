@@ -74,7 +74,7 @@ export async function verifyAccountService(requestBody: AccountVerificationBody)
 export interface SendRecoveryEmailData {
   success: true,
   resData: {
-    requestTimestamp: number,
+    expiryTimestamp: number,
   },
 };
 

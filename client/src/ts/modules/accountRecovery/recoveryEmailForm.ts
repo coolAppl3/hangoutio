@@ -65,9 +65,9 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
 
   try {
     const sendRecoveryEmailData: AxiosResponse<SendRecoveryEmailData> = await sendRecoveryEmailService({ email: recoveryState.recoveryEmail });
-    const requestTimestamp: number = sendRecoveryEmailData.data.resData.requestTimestamp;
+    const expiryTimestamp: number = sendRecoveryEmailData.data.resData.expiryTimestamp;
 
-    recoveryState.recoveryStartTimestamp = requestTimestamp;
+    recoveryState.expiryTimestamp = expiryTimestamp;
     recoveryState.currentStage = RecoveryStage.confirmationForm;
 
     document.dispatchEvent(new CustomEvent('recoveryStarted'));
@@ -120,17 +120,17 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
       ErrorSpan.display(recoveryEmailInput, errMessage);
 
       if (typeof errResData === 'object' && errResData !== null) {
-        if (!('requestTimestamp' in errResData) || typeof errResData.requestTimestamp !== 'number') {
+        if (!('expiryTimestamp' in errResData) || typeof errResData.expiryTimestamp !== 'number') {
           return;
         };
 
         if (errReason === 'emailLimitReached') {
-          displayEmailLimitReachedInfoModal(errMessage, errResData.requestTimestamp);
+          displayEmailLimitReachedInfoModal(errMessage, errResData.expiryTimestamp);
           return;
         };
 
         if (errReason === 'failureLimitReached') {
-          displayFailureLimitReachedInfoModal(errMessage, errResData.requestTimestamp);
+          displayFailureLimitReachedInfoModal(errMessage, errResData.expiryTimestamp);
         };
       };
 
@@ -143,8 +143,8 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
   };
 };
 
-function displayEmailLimitReachedInfoModal(errMessage: string, requestTimestamp: number): void {
-  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(requestTimestamp);
+function displayEmailLimitReachedInfoModal(errMessage: string, expiryTimestamp: number): void {
+  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(expiryTimestamp);
 
   InfoModal.display({
     title: errMessage,
@@ -176,16 +176,15 @@ function recoveryLinkDetected(): boolean {
     return false;
   };
 
-  const { recoveryAccountId, recoveryStartTimestamp, recoveryToken } = recoveryLinkDetails;
+  const { recoveryAccountId, expiryTimestamp, recoveryToken } = recoveryLinkDetails;
 
-  const recoveryPeriod: number = 1000 * 60 * 60;
-  if (Date.now() - recoveryStartTimestamp >= recoveryPeriod) {
+  if (expiryTimestamp >= Date.now()) {
     displayRecoveryExpiryInfoModal();
     return false;
   };
 
   recoveryState.recoveryAccountId = recoveryAccountId;
-  recoveryState.recoveryStartTimestamp = recoveryStartTimestamp;
+  recoveryState.expiryTimestamp = expiryTimestamp;
   recoveryState.recoveryToken = recoveryToken;
 
   recoveryState.currentStage = RecoveryStage.updatePasswordForm;
@@ -196,17 +195,17 @@ function recoveryLinkDetected(): boolean {
 
 interface RecoveryLinkDetails {
   recoveryAccountId: number,
-  recoveryStartTimestamp: number,
+  expiryTimestamp: number,
   recoveryToken: string,
 };
 
 function getRecoveryLinkDetails(url: URL): RecoveryLinkDetails | null {
 
   const recoveryAccountId: string | null = url.searchParams.get('id');
-  const recoveryStartTimestamp: string | null = url.searchParams.get('requestTimestamp');
+  const expiryTimestamp: string | null = url.searchParams.get('expiryTimestamp');
   const recoveryToken: string | null = url.searchParams.get('recoveryToken');
 
-  if (!recoveryAccountId || !recoveryStartTimestamp || !recoveryToken) {
+  if (!recoveryAccountId || !expiryTimestamp || !recoveryToken) {
     return null;
   };
 
@@ -214,7 +213,7 @@ function getRecoveryLinkDetails(url: URL): RecoveryLinkDetails | null {
     return null;
   };
 
-  if (!isValidTimestamp(+recoveryStartTimestamp)) {
+  if (!isValidTimestamp(+expiryTimestamp)) {
     return null;
   };
 
@@ -224,7 +223,7 @@ function getRecoveryLinkDetails(url: URL): RecoveryLinkDetails | null {
 
   const recoveryLinkDetails: RecoveryLinkDetails = {
     recoveryAccountId: +recoveryAccountId,
-    recoveryStartTimestamp: +recoveryStartTimestamp,
+    expiryTimestamp: +expiryTimestamp,
     recoveryToken: recoveryToken,
   };
 

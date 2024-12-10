@@ -40,9 +40,7 @@ export function reloadWithoutQueryString(): void {
   window.location.replace(hrefWithoutQueryString);
 };
 
-export function getMinutesTillRecoveryExpiry(recoveryStartTimestamp: number): number {
-  const recoveryPeriod: number = 1000 * 60 * 60;
-  const expiryTimestamp: number = recoveryStartTimestamp + recoveryPeriod;
+export function getMinutesTillRecoveryExpiry(expiryTimestamp: number): number {
   const timeTillRequestExpiry: number = expiryTimestamp - Date.now();
 
   if (timeTillRequestExpiry <= 0) {
@@ -56,8 +54,8 @@ export function getMinutesTillRecoveryExpiry(recoveryStartTimestamp: number): nu
   return Math.ceil(timeTillRequestExpiry / (1000 * 60));
 };
 
-export function displayFailureLimitReachedInfoModal(errMessage: string, requestTimestamp: number): void {
-  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(requestTimestamp);
+export function displayFailureLimitReachedInfoModal(errMessage: string, expiryTimestamp: number): void {
+  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(expiryTimestamp);
 
   InfoModal.display({
     title: errMessage,
@@ -78,7 +76,7 @@ export function initRecoveryTimers(): void {
 };
 
 export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanElement>, intervalId: number): void {
-  if (!recoveryState.recoveryStartTimestamp) {
+  if (!recoveryState.expiryTimestamp) {
     for (const timer of requestExpiryTimers) {
       timer.classList.add('displayed');
     };
@@ -87,7 +85,7 @@ export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanEleme
     return;
   };
 
-  const timerValue: string = getTimeTillRecoveryExpiry(recoveryState.recoveryStartTimestamp);
+  const timerValue: string = getTimeTillRecoveryExpiry(recoveryState.expiryTimestamp);
 
   for (const timer of requestExpiryTimers) {
     timer.textContent = timerValue;
@@ -99,9 +97,7 @@ export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanEleme
   };
 };
 
-function getTimeTillRecoveryExpiry(recoveryStartTimestamp: number): string {
-  const recoveryPeriod: number = 1000 * 60 * 60;
-  const expiryTimestamp: number = recoveryStartTimestamp + recoveryPeriod;
+function getTimeTillRecoveryExpiry(expiryTimestamp: number): string {
   const timeTillRequestExpiry: number = expiryTimestamp - Date.now();
 
   if (timeTillRequestExpiry < 0) {

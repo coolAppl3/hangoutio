@@ -582,7 +582,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       marked_for_deletion: boolean,
       recovery_id: number,
       recovery_token: string,
-      request_timestamp: number,
+      expiry_timestamp: number,
       recovery_emails_sent: number,
       failed_recovery_attempts: number,
     };
@@ -595,7 +595,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         accounts.marked_for_deletion,
         account_recovery.recovery_id,
         account_recovery.recovery_token,
-        account_recovery.request_timestamp,
+        account_recovery.expiry_timestamp,
         account_recovery.recovery_emails_sent,
         account_recovery.failed_recovery_attempts
       FROM
@@ -627,27 +627,29 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
 
     if (!accountDetails.recovery_id) {
       const recoveryToken: string = generateUniqueToken();
-      const requestTimestamp: number = Date.now();
+
+      const hourMilliseconds: number = 1000 * 60 * 60;
+      const expiryTimestamp: number = Date.now() + hourMilliseconds;
 
       await dbPool.execute(
         `INSERT INTO account_recovery(
           account_id,
           recovery_token,
-          request_timestamp,
+          expiry_timestamp,
           recovery_emails_sent,
           failed_recovery_attempts
         )
         VALUES(${generatePlaceHolders(5)});`,
-        [accountDetails.account_id, recoveryToken, requestTimestamp, 1, 0]
+        [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]
       );
 
-      res.json({ success: true, resData: { requestTimestamp } });
+      res.json({ success: true, resData: { expiryTimestamp } });
 
       await sendRecoveryEmail({
         to: requestData.email,
         accountId: accountDetails.account_id,
         recoveryToken,
-        requestTimestamp,
+        expiryTimestamp,
         displayName: accountDetails.display_name,
       });
 
@@ -660,7 +662,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         message: 'Recovery email limit has been reached.',
         reason: 'emailLimitReached',
         resData: {
-          requestTimestamp: accountDetails.request_timestamp,
+          expiryTimestamp: accountDetails.expiry_timestamp,
         },
       });
 
@@ -673,7 +675,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         message: 'Too many failed recovery attempts.',
         reason: 'failureLimitReached',
         resData: {
-          requestTimestamp: accountDetails.request_timestamp,
+          expiryTimestamp: accountDetails.expiry_timestamp,
         },
       });
 
@@ -695,13 +697,13 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       return;
     };
 
-    res.json({ success: true, resData: { requestTimestamp: accountDetails.request_timestamp } });
+    res.json({ success: true, resData: { expiryTimestamp: accountDetails.expiry_timestamp } });
 
     await sendRecoveryEmail({
       to: requestData.email,
       accountId: accountDetails.account_id,
       recoveryToken: accountDetails.recovery_token,
-      requestTimestamp: accountDetails.request_timestamp,
+      expiryTimestamp: accountDetails.expiry_timestamp,
       displayName: accountDetails.display_name,
     });
 
@@ -752,7 +754,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       recovery_id: number,
       recovery_token: string,
       failed_recovery_attempts: number,
-      request_timestamp: number,
+      expiry_timestamp: number,
       username: string,
     };
 
@@ -761,7 +763,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         recovery_id,
         recovery_token,
         failed_recovery_attempts,
-        request_timestamp,
+        expiry_timestamp,
         (SELECT username FROM accounts WHERE account_id = :accountId) AS username
       FROM
         account_recovery
@@ -784,7 +786,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         message: 'Too many failed recovery attempts.',
         reason: 'failureLimitReached',
         resData: {
-          requestTimestamp: recoveryDetails.request_timestamp,
+          expiryTimestamp: recoveryDetails.expiry_timestamp,
         },
       });
 
@@ -808,7 +810,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
           message: 'Incorrect recovery token. Recovery suspended',
           reason: 'recoverySuspended',
           requestData: {
-            requestTimestamp: recoveryDetails.request_timestamp,
+            expiryTimestamp: recoveryDetails.expiry_timestamp,
           },
         });
 

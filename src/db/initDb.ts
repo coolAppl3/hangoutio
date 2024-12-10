@@ -70,7 +70,7 @@ async function createAccountRecoveryTable(): Promise<void> {
         recovery_id INT PRIMARY KEY AUTO_INCREMENT,
         account_id INT NOT NULL UNIQUE,
         recovery_token VARCHAR(40) NOT NULL COLLATE utf8mb4_bin,
-        request_timestamp BIGINT NOT NULL,
+        expiry_timestamp BIGINT NOT NULL,
         recovery_emails_sent INT NOT NULL CHECK(recovery_emails_sent <= 3),
         failed_recovery_attempts INT NOT NULL CHECK(failed_recovery_attempts <= 3),
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE

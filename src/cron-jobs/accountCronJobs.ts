@@ -21,16 +21,15 @@ export async function removeUnverifiedAccounts(): Promise<void> {
 };
 
 export async function removeExpiredRecoveryRequests(): Promise<void> {
-  const recoveryWindow: number = 1000 * 60 * 60;
-  const minimumAllowedTimestamp: number = Date.now() - recoveryWindow;
+  const currentTimestamp: number = Date.now();
 
   try {
     await dbPool.execute(
       `DELETE FROM
         account_recovery
       WHERE
-        request_timestamp < ?;`,
-      [minimumAllowedTimestamp]
+        expiry_timestamp <= Date.now();`,
+      [currentTimestamp]
     );
 
   } catch (err: any) {

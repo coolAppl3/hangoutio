@@ -11,7 +11,7 @@ interface RecoveryState {
   recoveryEmailsSentLimit: number,
 
   recoveryAccountId: number | null,
-  recoveryStartTimestamp: number | null,
+  expiryTimestamp: number | null,
   recoveryToken: string | null,
   recoveryEmail: string | null,
 };
@@ -23,7 +23,7 @@ export const recoveryState: RecoveryState = {
   recoveryEmailsSentLimit: 3,
 
   recoveryAccountId: null,
-  recoveryStartTimestamp: null,
+  expiryTimestamp: null,
   recoveryToken: null,
   recoveryEmail: null,
 };

@@ -91,7 +91,7 @@ export function getVerificationEmailTemplate(verificationEmailConfig: Verificati
 };
 
 export function getRecoveryEmailTemplate(recoveryEmailConfig: RecoveryEmailConfig): string {
-  const { accountId, recoveryToken, requestTimestamp, displayName } = recoveryEmailConfig;
+  const { accountId, recoveryToken, expiryTimestamp, displayName } = recoveryEmailConfig;
 
   const htmlTemplate: string = `
     <!DOCTYPE html>
@@ -163,8 +163,8 @@ export function getRecoveryEmailTemplate(recoveryEmailConfig: RecoveryEmailConfi
             To start the recovery process, please click the following link:
             <a
               target="_blank"
-              href="https://hangoutio.com/account-recovery.html?id=${accountId}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}"
-              >https://hangoutio.com/account-recovery.html?id=${accountId}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}</a
+              href="https://hangoutio.com/account-recovery.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&recoveryToken=${recoveryToken}"
+              >https://hangoutio.com/account-recovery.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&recoveryToken=${recoveryToken}</a
             >.
           </p>
           <p>Please note that the recovery link is only valid for an hour.</p>
