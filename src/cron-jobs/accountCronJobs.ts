@@ -28,7 +28,7 @@ export async function removeExpiredRecoveryRequests(): Promise<void> {
       `DELETE FROM
         account_recovery
       WHERE
-        expiry_timestamp <= Date.now();`,
+        expiry_timestamp <= ?;`,
       [currentTimestamp]
     );
 
