@@ -7,7 +7,6 @@ import { generateUniqueCode, generateUniqueToken } from '../util/tokenGenerator'
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { sendDeletionConfirmationEmail, sendDeletionWarningEmail, sendEmailUpdateEmail, sendEmailUpdateWarningEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
-import * as userUtils from '../util/userUtils';
 import { isSqlError } from '../util/isSqlError';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from '../auth/authSessions';
 import { removeRequestCookie, getRequestCookie } from '../util/cookieUtils';
