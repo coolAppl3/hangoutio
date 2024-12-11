@@ -40,12 +40,12 @@ function initCronJobs() {
         await accountCronJobs.removeExpiredEmailUpdateRequests();
         await hangoutCronJobs.progressHangouts();
         await hangoutCronJobs.concludeNoSuggestionHangouts();
+        await accountCronJobs.removeExpiredDeletionRequests();
     });
     node_cron_1.default.schedule('*/10 * * * *', async () => {
         await (0, authCronJobs_1.clearExpiredAuthSessions)();
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
-        await accountCronJobs.deleteMarkedAccounts();
         await hangoutCronJobs.deleteNoMemberHangouts();
         await hangoutCronJobs.archiveHangouts();
     });
