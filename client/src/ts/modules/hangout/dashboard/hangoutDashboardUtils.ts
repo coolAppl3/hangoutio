@@ -3,7 +3,6 @@ import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
 import { InfoModal } from "../../global/InfoModal";
 import popup from "../../global/popup";
-import { signOut } from "../../global/signOut";
 import { isValidHangoutId } from "../../global/validation";
 import { getHangoutExistsService, HangoutExistsData } from "../../services/hangoutServices";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
