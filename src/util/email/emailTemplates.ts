@@ -78,7 +78,7 @@ export function getVerificationEmailTemplate(verificationEmailConfig: Verificati
               >https://hangoutio.com/sign-up.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&verificationCode=${verificationCode}</a
             >.
           </p>
-          <p>Your account will be automatically deleted if it's not verified within 15 minutes of being created.</p>
+          <p>Your account will be automatically deleted if it's not verified within 20 minutes of being created.</p>
           <p>If this request wasn't made by you, feel free to ignore it.</p>
           <p id="end-of-email">Warmest regards,</p>
           <p>Hangoutio</p>

@@ -1435,7 +1435,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       FROM
         auth_sessions
       WHERE
-        session_id = ?`,
+        session_id = ?;`,
       [authSessionId]
     );
 
@@ -1461,11 +1461,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       email: string,
       display_name: string,
       failed_sign_in_attempts: number,
-      update_id: number,
-      new_email: string,
-      verification_code: string,
-      request_timestamp: number,
-      update_emails_sent: number,
+      expiry_timestamp: number,
       failed_update_attempts: number,
     };
 
@@ -1475,19 +1471,14 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         accounts.email,
         accounts.display_name,
         accounts.failed_sign_in_attempts,
-        email_update.update_id,
-        email_update.new_email,
-        email_update.verification_code,
-        email_update.request_timestamp,
-        email_update.update_emails_sent,
+        email_update.expiry_timestamp,
         email_update.failed_update_attempts
       FROM
         accounts
       LEFT JOIN
         email_update ON accounts.account_id = email_update.account_id
       WHERE
-        accounts.account_id = ?
-      LIMIT 1;`,
+        accounts.account_id = ?;`,
       [authSessionDetails.user_id]
     );
 
@@ -1507,100 +1498,75 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    if (requestData.newEmail === accountDetails.email) {
-      res.status(409).json({ success: false, message: `New email can't be identical to current email.` });
-      return;
-    };
-
-    if (!accountDetails.update_id) {
-      connection = await dbPool.getConnection();
-      await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
-      await connection.beginTransaction();
-
-      const [emailRows] = await connection.execute<RowDataPacket[]>(
-        `(SELECT 1 FROM accounts WHERE email = :newEmail LIMIT 1)
-        UNION ALL
-        (SELECT 1 FROM email_update WHERE new_email = :newEmail LIMIT 1);`,
-        { newEmail: requestData.newEmail }
-      );
-
-      if (emailRows.length > 0) {
-        await connection.rollback();
-        res.status(409).json({ success: false, message: 'Email is already taken.' });
+    if (accountDetails.expiry_timestamp) {
+      if (accountDetails.failed_update_attempts >= 3) {
+        res.status(403).json({
+          success: false,
+          message: 'Request is suspended due to too many failed attempts.',
+          reason: 'requestSuspended',
+          resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+        });
 
         return;
       };
 
-      const newVerificationCode: string = generateUniqueCode();
-      await connection.execute(
-        `INSERT INTO email_update(
+      res.status(409).json({
+        success: false,
+        message: 'Ongoing email update request found.',
+        reason: 'ongoingRequest',
+        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+      });
+
+      return;
+    };
+
+    if (requestData.newEmail === accountDetails.email) {
+      res.status(409).json({ success: false, message: 'This email is already assigned to your account.', reason: 'identicalEmail' });
+      return;
+    };
+
+    connection = await dbPool.getConnection();
+    await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
+    await connection.beginTransaction();
+
+    const [emailRows] = await connection.execute<RowDataPacket[]>(
+      `(SELECT 1 FROM accounts WHERE email = :newEmail LIMIT 1)
+      UNION ALL
+      (SELECT 1 FROM email_update WHERE new_email = :newEmail LIMIT 1);`,
+      { newEmail: requestData.newEmail }
+    );
+
+    if (emailRows.length > 0) {
+      await connection.rollback();
+      res.status(409).json({ success: false, message: 'Email is already taken.', reason: 'emailTaken' });
+
+      return;
+    };
+
+    const newVerificationCode: string = generateUniqueCode();
+
+    const dayMilliseconds: number = 1000 * 60 * 60 * 24;
+    const expiryTimestamp: number = Date.now() + dayMilliseconds;
+
+    await connection.execute(
+      `INSERT INTO email_update(
           account_id,
           new_email,
           verification_code,
-          request_timestamp,
+          expiry_timestamp,
           update_emails_sent,
           failed_update_attempts
         )
         VALUES(${generatePlaceHolders(6)});`,
-        [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, Date.now(), 1, 0]
-      );
-
-      await connection.commit();
-      res.json({ success: true, resData: {} });
-
-      await sendEmailUpdateEmail({
-        to: requestData.newEmail,
-        verificationCode: newVerificationCode,
-        displayName: accountDetails.display_name,
-      });
-
-      return;
-    };
-
-    if (accountDetails.failed_update_attempts >= 3) {
-      const { hoursRemaining, minutesRemaining } = userUtils.getTimeTillNextRequest(accountDetails.request_timestamp, 'day');
-      res.status(403).json({
-        success: false,
-        message: 'Too many failed attempts.',
-        resData: {
-          hoursRemaining,
-          minutesRemaining: minutesRemaining || 1,
-        },
-      });
-
-      return;
-    };
-
-    if (requestData.newEmail !== accountDetails.new_email) {
-      res.status(409).json({ success: false, message: 'Ongoing request contains a different new email address.' });
-      return;
-    };
-
-    if (accountDetails.update_emails_sent >= 3) {
-      res.status(403).json({ success: false, message: 'Update email limit reached.' });
-      return;
-    };
-
-    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
-      `UPDATE
-        email_update
-      SET
-        update_emails_sent = update_emails_sent + 1
-      WHERE
-        update_id = ?;`,
-      [accountDetails.update_id]
+      [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]
     );
 
-    if (resultSetHeader.affectedRows === 0) {
-      res.status(500).json({ success: false, message: 'Internal server error.' });
-      return;
-    };
-
+    await connection.commit();
     res.json({ success: true, resData: {} });
 
     await sendEmailUpdateEmail({
       to: requestData.newEmail,
-      verificationCode: accountDetails.verification_code,
+      verificationCode: newVerificationCode,
       displayName: accountDetails.display_name,
     });
 
@@ -1615,8 +1581,138 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
   };
 });
 
+accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res: Response) => {
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    if (authSessionRows.length === 0) {
+      removeRequestCookie(res, 'authSessionId', true);
+      res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId', true);
+
+      res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    interface EmailUpdateDetails extends RowDataPacket {
+      new_email: string,
+      verification_code: string,
+      expiry_timestamp: number,
+      update_emails_sent: number,
+      failed_update_attempts: number,
+      display_name: string,
+    };
+
+    const [emailUpdateRows] = await dbPool.execute<EmailUpdateDetails[]>(
+      `SELECT
+        new_email,
+        verification_code,
+        expiry_timestamp,
+        update_emails_sent,
+        failed_update_attempts,
+        (SELECT display_name FROM accounts WHERE account_id = :accountId) AS display_name
+      FROM
+        email_update
+      WHERE
+        account_id = :accountId
+      LIMIT 1;`,
+      { accountId: authSessionDetails.user_id }
+    );
+
+    if (emailUpdateRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Email update request not found.' });
+      return;
+    };
+
+    const emailUpdateDetails: EmailUpdateDetails = emailUpdateRows[0];
+
+    if (emailUpdateDetails.failed_update_attempts >= 3) {
+      res.status(403).json({
+        success: false,
+        message: 'Request is suspended due to too many failed attempts.',
+        reason: 'requestSuspended',
+        resData: { expiryTimestamp: emailUpdateDetails.expiry_timestamp },
+      });
+
+      return;
+    };
+
+    if (emailUpdateDetails.update_emails_sent >= 3) {
+      res.status(409).json({ success: false, message: 'Update emails limit reached.' });
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `UPDATE
+        email_update
+      SET
+        update_emails_sent = update_emails_sent + 1
+      WHERE
+        account_id = ?
+      LIMIT 1;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    res.json({ success: true, resData: {} });
+
+    await sendEmailUpdateEmail({
+      to: emailUpdateDetails.newEmail,
+      verificationCode: emailUpdateDetails.verification_code,
+      displayName: emailUpdateDetails.display_name,
+    });
+
+  } catch (err: unknown) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
 accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: Response) => {
   interface RequestData {
+    password: string,
     verificationCode: string,
   };
 
@@ -1636,9 +1732,14 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['verificationCode'];
+  const expectedKeys: string[] = ['password', 'verificationCode'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!userValidation.isValidPassword(requestData.password)) {
+    res.status(401).json({ success: false, message: 'Invalid password.' });
     return;
   };
 
@@ -1646,6 +1747,8 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     res.status(400).json({ success: false, message: 'Invalid verification code.' });
     return;
   };
+
+  let connection;
 
   try {
     interface AuthSessionDetails extends RowDataPacket {
@@ -1684,23 +1787,27 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     };
 
     interface AccountDetails extends RowDataPacket {
-      display_name: string,
       email: string,
+      hashed_password: string,
+      failed_sign_in_attempts: number,
+      display_name: string,
       update_id: number,
       new_email: string,
       verification_code: string,
-      request_timestamp: number,
+      expiry_timestamp: number,
       failed_update_attempts: number,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        accounts.display_name,
         accounts.email,
+        accounts.hashed_password,
+        accounts.failed_sign_in_attempts,
+        accounts.display_name,
         email_update.update_id,
         email_update.new_email,
         email_update.verification_code,
-        email_update.request_timestamp,
+        email_update.expiry_timestamp,
         email_update.failed_update_attempts
       FROM
         accounts
@@ -1728,29 +1835,34 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     };
 
     if (accountDetails.failed_update_attempts >= 3) {
-      const { hoursRemaining, minutesRemaining } = userUtils.getTimeTillNextRequest(accountDetails.request_timestamp, 'day');
       res.status(403).json({
         success: false,
-        message: 'Too many failed attempts.',
-        resData: {
-          hoursRemaining,
-          minutesRemaining: minutesRemaining || 1,
-        },
+        message: 'Email update request suspended.',
+        reason: 'requestSuspended.',
+        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
+      return;
+    };
+
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
+    if (!isCorrectPassword) {
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
     if (requestData.verificationCode !== accountDetails.verification_code) {
       const requestSuspended: boolean = accountDetails.failed_update_attempts + 1 >= 3;
 
-      const resetRequestTimestamp: string = requestSuspended ? `, request_timestamp = ${Date.now()}` : '';
+      const dayMilliseconds: number = 1000 * 60 * 60 * 24;
+      const suspendRequestQuery: string = requestSuspended ? `, expiry_timestamp = ${Date.now() + dayMilliseconds}` : '';
+
       await dbPool.execute(
         `UPDATE
             email_update
           SET
             failed_update_attempts = failed_update_attempts + 1
-            ${resetRequestTimestamp}
+            ${suspendRequestQuery}
           WHERE
             update_id = ?;`,
         [Date.now(), accountDetails.update_id]
@@ -1763,8 +1875,8 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
       res.status(401).json({
         success: false,
-        message: `Incorrect verification code.${requestSuspended ? 'Request suspended.' : ''}`,
-        reason: requestSuspended ? 'requestSuspended' : undefined,
+        message: 'Incorrect verification code.',
+        reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
       });
 
       if (requestSuspended) {
@@ -1774,7 +1886,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       return;
     };
 
-    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+    connection = await dbPool.getConnection();
+    await connection.beginTransaction();
+
+    const [firstResultSetHeader] = await connection.execute<ResultSetHeader>(
       `UPDATE
         accounts
       SET
@@ -1784,10 +1899,30 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       [accountDetails.new_email, authSessionDetails.user_id]
     );
 
-    if (resultSetHeader.affectedRows === 0) {
+    if (firstResultSetHeader.affectedRows === 0) {
+      await connection.rollback();
       res.status(500).json({ success: false, message: 'Internal server error.' });
+
       return;
     };
+
+    const [secondResultSetHeader] = await connection.execute<ResultSetHeader>(
+      `DELETE FROM
+        email_update
+      WHERE
+        account_id = ?
+      LIMIT 1;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (secondResultSetHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+
+      return;
+    };
+
+    await connection.commit();
 
     await purgeAuthSessions(authSessionDetails.user_id, 'account');
     const authSessionCreated: boolean = await createAuthSession(res, {
@@ -1800,7 +1935,12 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
   } catch (err: unknown) {
     console.log(err);
+    await connection?.rollback();
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
+
+  } finally {
+    connection?.release();
   };
 });
 

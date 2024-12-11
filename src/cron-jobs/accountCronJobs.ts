@@ -41,16 +41,15 @@ export async function removeExpiredRecoveryRequests(): Promise<void> {
 };
 
 export async function removeExpiredEmailUpdateRequests(): Promise<void> {
-  const updateWindow: number = 1000 * 60 * 60 * 24;
-  const minimumAllowedTimestamp: number = Date.now() - updateWindow;
+  const currentTimestamp: number = Date.now();
 
   try {
     await dbPool.execute(
       `DELETE FROM
         email_update
       WHERE
-        request_timestamp < ?;`,
-      [minimumAllowedTimestamp]
+        expiry_timestamp <= ?;`,
+      [currentTimestamp]
     );
 
   } catch (err: any) {
