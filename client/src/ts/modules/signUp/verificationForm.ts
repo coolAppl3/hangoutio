@@ -191,7 +191,7 @@ async function resendVerificationEmail(): Promise<void> {
     return;
   };
 
-  if (signUpState.verificationExpiryTimestamp >= Date.now()) {
+  if (Date.now() >= signUpState.verificationExpiryTimestamp) {
     popup('Verification request expired.', 'error');
     clearVerificationCookies();
     setTimeout(() => window.location.reload(), 1000);
@@ -287,7 +287,7 @@ function verificationLinkDetected(): boolean {
 
   const { verificationAccountId, verificationExpiryTimestamp, verificationCode } = verificationData;
 
-  if (+verificationExpiryTimestamp >= Date.now()) {
+  if (Date.now() >= +verificationExpiryTimestamp) {
     displayVerificationExpiryInfoModal();
     return false;
   };
@@ -366,7 +366,7 @@ function detectOngoingVerification(): void {
   const accountId: number = +existingAccountId;
   const verificationExpiryTimestamp: number = +existingVerificationExpiryTimestamp;
 
-  if (verificationExpiryTimestamp >= Date.now()) {
+  if (Date.now() >= verificationExpiryTimestamp) {
     clearVerificationCookies();
     return;
   };
