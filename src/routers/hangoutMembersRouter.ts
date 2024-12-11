@@ -2,7 +2,7 @@ import { dbPool } from "../db/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import express, { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { hangoutMemberLimit, isValidHangoutId, ongoingHangoutsLimit } from '../util/validation/hangoutValidation';
+import { isValidHangoutId } from '../util/validation/hangoutValidation';
 import { isValidDisplayName, isValidNewPassword, isValidPassword, isValidUsername } from '../util/validation/userValidation';
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
@@ -11,6 +11,7 @@ import { getRequestCookie, removeRequestCookie, setResponseCookie } from "../uti
 import * as authUtils from '../auth/authUtils';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from "../auth/authSessions";
 import { decryptPassword } from "../util/encryptionUtils";
+import { HANGOUT_MEMBERS_LIMIT, ONGOING_HANGOUTS_LIMIT } from "../util/constants";
 
 export const hangoutMembersRouter: Router = express.Router();
 
@@ -127,11 +128,11 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
     const userDetails: UserDetails = userRows[0];
 
-    if (userDetails.joined_hangouts_counts >= ongoingHangoutsLimit) {
+    if (userDetails.joined_hangouts_counts >= ONGOING_HANGOUTS_LIMIT) {
       await connection.rollback();
       res.status(409).json({
         success: false,
-        message: `You've reached the limit of ${ongoingHangoutsLimit} ongoing hangouts.`,
+        message: `You've reached the limit of ${ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
         reason: 'hangoutsLimitReached',
       });
 
@@ -494,7 +495,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutMemberLimit};`,
+      LIMIT ${HANGOUT_MEMBERS_LIMIT};`,
       [requestData.hangoutId]
     );
 
@@ -847,7 +848,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutMemberLimit};`,
+      LIMIT ${HANGOUT_MEMBERS_LIMIT};`,
       [requestData.hangoutId]
     );
 
@@ -1035,7 +1036,7 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutMemberLimit};`,
+      LIMIT ${HANGOUT_MEMBERS_LIMIT};`,
       [requestData.hangoutId]
     );
 

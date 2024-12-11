@@ -12,6 +12,7 @@ import { createAuthSession, destroyAuthSession, purgeAuthSessions } from '../aut
 import { removeRequestCookie, getRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
 import { handleIncorrectAccountPassword } from '../util/accountServices';
+import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_DELETION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_RECOVERY_WINDOW, ACCOUNT_VERIFICATION_WINDOW, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT } from '../util/constants';
 
 export const accountsRouter: Router = express.Router();
 
@@ -112,8 +113,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
     const createdOnTimestamp: number = Date.now();
 
-    const verificationWindowMilliseconds: number = 1000 * 60 * 20;
-    const verificationExpiryTimestamp: number = createdOnTimestamp + verificationWindowMilliseconds;
+    const verificationExpiryTimestamp: number = createdOnTimestamp + ACCOUNT_VERIFICATION_WINDOW;
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO accounts(
@@ -125,7 +125,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         is_verified,
         failed_sign_in_attempts
       )
-      VALUES(${generatePlaceHolders(8)});`,
+      VALUES(${generatePlaceHolders(7)});`,
       [requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0]
     );
 
@@ -247,7 +247,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
-    if (accountDetails.verification_emails_sent >= 3) {
+    if (accountDetails.verification_emails_sent >= EMAILS_SENT_LIMIT) {
       res.status(403).json({ success: false, message: 'Verification emails limit reached.', reason: 'limitReached' });
       return;
     };
@@ -351,9 +351,9 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
       return;
     };
 
-    const isCorrectVerificationCode: boolean = requestData.verificationCode == accountDetails.verification_code;
+    const isCorrectVerificationCode: boolean = requestData.verificationCode === accountDetails.verification_code;
     if (!isCorrectVerificationCode) {
-      if (accountDetails.failed_verification_attempts + 1 >= 3) {
+      if (accountDetails.failed_verification_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT) {
         await dbPool.execute(
           `DELETE FROM
             accounts
@@ -494,7 +494,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     const accountDetails: AccountDetails = accountRows[0];
 
-    if (accountDetails.failed_sign_in_attempts >= 5) {
+    if (accountDetails.failed_sign_in_attempts >= FAILED_SIGN_IN_LIMIT) {
       res.status(403).json({ success: false, message: 'Account locked.', reason: 'accountLocked' });
       return;
     };
@@ -611,9 +611,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
 
     if (!accountDetails.recovery_id) {
       const recoveryToken: string = generateUniqueToken();
-
-      const hourMilliseconds: number = 1000 * 60 * 60;
-      const expiryTimestamp: number = Date.now() + hourMilliseconds;
+      const expiryTimestamp: number = Date.now() + ACCOUNT_RECOVERY_WINDOW;
 
       await dbPool.execute(
         `INSERT INTO account_recovery(
@@ -640,7 +638,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       return;
     };
 
-    if (accountDetails.recovery_emails_sent >= 3) {
+    if (accountDetails.recovery_emails_sent >= EMAILS_SENT_LIMIT) {
       res.status(403).json({
         success: false,
         message: 'Recovery email limit has been reached.',
@@ -653,7 +651,7 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       return;
     };
 
-    if (accountDetails.failed_recovery_attempts >= 3) {
+    if (accountDetails.failed_recovery_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         success: false,
         message: 'Too many failed recovery attempts.',
@@ -764,7 +762,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
 
     const recoveryDetails: RecoveryDetails = recoveryRows[0];
 
-    if (recoveryDetails.failed_recovery_attempts >= 3) {
+    if (recoveryDetails.failed_recovery_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         success: false,
         message: 'Too many failed recovery attempts.',
@@ -788,7 +786,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         [recoveryDetails.recovery_id]
       );
 
-      if (recoveryDetails.failed_recovery_attempts + 1 >= 3) {
+      if (recoveryDetails.failed_recovery_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT) {
         res.status(401).json({
           success: false,
           message: 'Incorrect recovery token. Recovery suspended',
@@ -960,8 +958,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     if (!accountDetails.expiry_timestamp) {
       const confirmationCode: string = generateUniqueCode();
 
-      const hourMilliseconds: number = 1000 * 60 * 60;
-      const expiryTimestamp: number = Date.now() + hourMilliseconds;
+      const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
 
       await dbPool.execute(
         `INSERT INTO account_deletion(
@@ -985,7 +982,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       return;
     };
 
-    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= 3;
+    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
     if (requestSuspended) {
       res.status(403).json({
         success: false,
@@ -1136,7 +1133,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       return;
     };
 
-    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= 3;
+    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
     if (requestSuspended) {
       res.status(403).json({
         success: false,
@@ -1150,15 +1147,16 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
     const isCorrectConfirmationCode: boolean = accountDetails.confirmation_code === requestData.confirmationCode;
     if (!isCorrectConfirmationCode) {
-      const toBeSuspended: boolean = accountDetails.failed_deletion_attempts + 1 >= 3;
+      const toBeSuspended: boolean = accountDetails.failed_deletion_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
 
       if (toBeSuspended) {
         await purgeAuthSessions(authSessionDetails.user_id, 'account');
         removeRequestCookie(res, 'authSessionId', true);
       };
 
-      const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-      const expiryTimestampValue: number = toBeSuspended ? Date.now() + dayMilliseconds : accountDetails.expiry_timestamp;
+      const expiryTimestampValue: number = toBeSuspended
+        ? Date.now() + ACCOUNT_DELETION_SUSPENSION_WINDOW
+        : accountDetails.expiry_timestamp;
 
       await dbPool.execute(
         `UPDATE
@@ -1483,7 +1481,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     };
 
     if (accountDetails.expiry_timestamp) {
-      if (accountDetails.failed_update_attempts >= 3) {
+      if (accountDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
         res.status(403).json({
           success: false,
           message: 'Request is suspended due to too many failed attempts.',
@@ -1528,9 +1526,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     };
 
     const newVerificationCode: string = generateUniqueCode();
-
-    const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-    const expiryTimestamp: number = Date.now() + dayMilliseconds;
+    const expiryTimestamp: number = Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW;
 
     await connection.execute(
       `INSERT INTO email_update(
@@ -1648,7 +1644,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     const emailUpdateDetails: EmailUpdateDetails = emailUpdateRows[0];
 
-    if (emailUpdateDetails.failed_update_attempts >= 3) {
+    if (emailUpdateDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         success: false,
         message: 'Request is suspended due to too many failed attempts.',
@@ -1659,7 +1655,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
       return;
     };
 
-    if (emailUpdateDetails.update_emails_sent >= 3) {
+    if (emailUpdateDetails.update_emails_sent >= EMAILS_SENT_LIMIT) {
       res.status(409).json({ success: false, message: 'Update emails limit reached.' });
       return;
     };
@@ -1818,7 +1814,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       return;
     };
 
-    if (accountDetails.failed_update_attempts >= 3) {
+    if (accountDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         success: false,
         message: 'Email update request suspended.',
@@ -1836,10 +1832,8 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     };
 
     if (requestData.verificationCode !== accountDetails.verification_code) {
-      const requestSuspended: boolean = accountDetails.failed_update_attempts + 1 >= 3;
-
-      const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-      const suspendRequestQuery: string = requestSuspended ? `, expiry_timestamp = ${Date.now() + dayMilliseconds}` : '';
+      const requestSuspended: boolean = accountDetails.failed_update_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
+      const suspendRequestQuery: string = requestSuspended ? `, expiry_timestamp = ${Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW}` : '';
 
       await dbPool.execute(
         `UPDATE

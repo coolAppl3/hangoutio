@@ -2,6 +2,7 @@ import { Response } from "express";
 import { dbPool } from "../db/db";
 import { purgeAuthSessions } from "../auth/authSessions";
 import { removeRequestCookie } from "./cookieUtils";
+import { FAILED_SIGN_IN_LIMIT } from "./constants";
 
 export async function handleIncorrectAccountPassword(res: Response, accountId: number, failedSignInAttempts: number): Promise<void> {
   try {
@@ -15,7 +16,7 @@ export async function handleIncorrectAccountPassword(res: Response, accountId: n
       [accountId]
     );
 
-    const isLocked: boolean = failedSignInAttempts + 1 >= 5;
+    const isLocked: boolean = failedSignInAttempts + 1 >= FAILED_SIGN_IN_LIMIT;
 
     if (isLocked) {
       await purgeAuthSessions(accountId, 'account');

@@ -1,5 +1,3 @@
-export const availabilitySlotsLimit: number = 10;
-
 export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boolean {
   if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
     return false;

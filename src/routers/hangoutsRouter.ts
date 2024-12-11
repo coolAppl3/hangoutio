@@ -15,6 +15,7 @@ import { decryptPassword, encryptPassword } from '../util/encryptionUtils';
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie, setResponseCookie } from '../util/cookieUtils';
 import { createAuthSession, destroyAuthSession } from '../auth/authSessions';
+import { HANGOUT_SUGGESTIONS_STEP, HANGOUT_VOTING_STEP, ONGOING_HANGOUTS_LIMIT } from '../util/constants';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -147,15 +148,15 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       WHERE
         hangouts.is_concluded = ? AND
         hangout_members.account_id = ?
-      LIMIT ${hangoutValidation.ongoingHangoutsLimit};`,
+      LIMIT ${ONGOING_HANGOUTS_LIMIT};`,
       [false, authSessionDetails.user_id]
     );
 
     const ongoingHangoutsCount: number = ongoingHangoutsRows[0].ongoing_hangouts_count;
-    if (ongoingHangoutsCount === hangoutValidation.ongoingHangoutsLimit) {
+    if (ongoingHangoutsCount === ONGOING_HANGOUTS_LIMIT) {
       res.status(409).json({
         success: false,
-        message: `You've reached the limit of ${hangoutValidation.ongoingHangoutsLimit} ongoing hangouts.`,
+        message: `You've reached the limit of ${ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
         reason: 'hangoutsLimitReached',
       });
 
@@ -1170,7 +1171,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
       return;
     };
 
-    if (hangoutDetails.current_step === 2 && hangoutDetails.suggestions_count === 0) {
+    if (hangoutDetails.current_step === HANGOUT_SUGGESTIONS_STEP && hangoutDetails.suggestions_count === 0) {
       res.status(409).json({ success: false, message: `Can't progress hangout without any suggestions.` });
       return;
     };
@@ -1194,7 +1195,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
     const { created_on_timestamp, availability_step, suggestions_step, voting_step }: HangoutDetails = hangoutDetails;
     const newConclusionTimestamp: number = created_on_timestamp + availability_step + suggestions_step + voting_step;
 
-    if (hangoutDetails.current_step === 3) {
+    if (hangoutDetails.current_step === HANGOUT_VOTING_STEP) {
       const [firstResultSetHeader] = await dbPool.execute<ResultSetHeader>(
         `UPDATE
           hangouts

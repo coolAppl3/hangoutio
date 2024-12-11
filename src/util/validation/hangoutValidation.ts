@@ -1,5 +1,4 @@
-export const hangoutMemberLimit: number = 20;
-export const ongoingHangoutsLimit: number = 12;
+import { HANGOUT_MEMBERS_LIMIT } from "../constants";
 
 export function isValidHangoutId(hangoutId: string): boolean { // will work till 2268 AD ;)
   if (typeof hangoutId !== 'string') {
@@ -49,7 +48,7 @@ export function isValidHangoutMemberLimit(limit: number): boolean {
     return false;
   };
 
-  if (limit < 2 || limit > hangoutMemberLimit) {
+  if (limit < 2 || limit > HANGOUT_MEMBERS_LIMIT) {
     return false;
   };
 

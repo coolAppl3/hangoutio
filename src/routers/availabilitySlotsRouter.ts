@@ -8,6 +8,7 @@ import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import { getRequestCookie, removeRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
 import { destroyAuthSession } from '../auth/authSessions';
+import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from '../util/constants';
 
 export const availabilitySlotsRouter: Router = express.Router();
 
@@ -124,7 +125,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
+      LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -171,7 +172,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
       slot_end_timestamp: member.slot_end_timestamp,
     }));
 
-    if (existingAvailabilitySlots.length >= availabilitySlotValidation.availabilitySlotsLimit) {
+    if (existingAvailabilitySlots.length >= HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Availability slots limit reached.' });
 
@@ -331,7 +332,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
+      LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -573,7 +574,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
+      LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -725,7 +726,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
+      LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -759,7 +760,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
         availability_slots
       WHERE
         hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`,
+      LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
       [requestData.hangoutMemberId]
     );
 
