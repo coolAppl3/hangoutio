@@ -123,11 +123,10 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         display_name,
         created_on_timestamp,
         is_verified,
-        failed_sign_in_attempts,
-        marked_for_deletion
+        failed_sign_in_attempts
       )
       VALUES(${generatePlaceHolders(8)});`,
-      [requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0, false]
+      [requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0]
     );
 
     const accountId: number = resultSetHeader.insertId;
@@ -472,7 +471,6 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
       hashed_password: string,
       is_verified: boolean,
       failed_sign_in_attempts: number,
-      marked_for_deletion: boolean,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
@@ -480,8 +478,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
         account_id,
         hashed_password,
         is_verified,
-        failed_sign_in_attempts,
-        marked_for_deletion
+        failed_sign_in_attempts
       FROM
         accounts
       WHERE
@@ -496,11 +493,6 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     };
 
     const accountDetails: AccountDetails = accountRows[0];
-
-    if (accountDetails.marked_for_deletion) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
-      return;
-    };
 
     if (accountDetails.failed_sign_in_attempts >= 5) {
       res.status(403).json({ success: false, message: 'Account locked.', reason: 'accountLocked' });
@@ -578,7 +570,6 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
       account_id: number,
       display_name: string,
       is_verified: boolean,
-      marked_for_deletion: boolean,
       recovery_id: number,
       recovery_token: string,
       expiry_timestamp: number,
@@ -591,7 +582,6 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
         accounts.account_id,
         accounts.display_name,
         accounts.is_verified,
-        accounts.marked_for_deletion,
         account_recovery.recovery_id,
         account_recovery.recovery_token,
         account_recovery.expiry_timestamp,
@@ -613,11 +603,6 @@ accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) =
     };
 
     const accountDetails: AccountDetails = accountRows[0];
-
-    if (accountDetails.marked_for_deletion) {
-      res.status(404).json({ success: false, message: 'Account not found.' });
-      return;
-    };
 
     if (!accountDetails.is_verified) {
       res.status(403).json({ success: false, message: 'Account unverified.', reason: 'unverified' });
