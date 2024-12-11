@@ -6,7 +6,7 @@ export interface VerificationEmailConfig {
   accountId: number,
   verificationCode: string,
   displayName: string,
-  createdOnTimestamp: number,
+  expiryTimestamp: number,
 };
 
 export async function sendVerificationEmail(verificationEmailConfig: VerificationEmailConfig): Promise<void> {
@@ -27,7 +27,7 @@ export interface RecoveryEmailConfig {
   to: string,
   accountId: number,
   recoveryToken: string,
-  requestTimestamp: number,
+  expiryTimestamp: number,
   displayName: string,
 };
 
@@ -47,18 +47,36 @@ export async function sendRecoveryEmail(recoveryEmailConfig: RecoveryEmailConfig
 
 export interface DeletionEmailConfig {
   to: string,
-  accountId: number,
-  cancellationToken: string,
+  confirmationCode: string,
   displayName: string,
 };
 
-export async function sendDeletionEmail(deletionEmailConfig: DeletionEmailConfig): Promise<void> {
+export async function sendDeletionConfirmationEmail(deletionEmailConfig: DeletionEmailConfig): Promise<void> {
   try {
     await emailTransporter.sendMail({
       from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
       to: deletionEmailConfig.to,
-      subject: 'Hangoutio - Account Deletion',
-      html: emailTemplates.getAccountDeletionTemplate(deletionEmailConfig),
+      subject: 'Hangoutio - Account Deletion Confirmation',
+      html: emailTemplates.getAccountDeletionConfirmationTemplate(deletionEmailConfig),
+    });
+
+  } catch (err: any) {
+    console.log(err);
+  };
+};
+
+export interface DeletionWarningConfig {
+  to: string,
+  displayName: string,
+};
+
+export async function sendDeletionWarningEmail(deletionEmailWarningConfig: DeletionWarningConfig): Promise<void> {
+  try {
+    await emailTransporter.sendMail({
+      from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
+      to: deletionEmailWarningConfig.to,
+      subject: 'Hangoutio - Security Warning',
+      html: emailTemplates.getAccountDeletionWarningTemplate(deletionEmailWarningConfig.displayName),
     });
 
   } catch (err: any) {

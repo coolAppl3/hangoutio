@@ -53,7 +53,7 @@ async function createAccountVerificationTable(): Promise<void> {
         verification_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
         verification_emails_sent INT NOT NULL CHECK(verification_emails_sent <= 3),
         failed_verification_attempts INT NOT NULL CHECK(failed_verification_attempts <= 3),
-        created_on_timestamp BIGINT NOT NULL,
+        expiry_timestamp BIGINT NOT NULL,
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
       );`
     );
@@ -70,7 +70,7 @@ async function createAccountRecoveryTable(): Promise<void> {
         recovery_id INT PRIMARY KEY AUTO_INCREMENT,
         account_id INT NOT NULL UNIQUE,
         recovery_token VARCHAR(40) NOT NULL COLLATE utf8mb4_bin,
-        request_timestamp BIGINT NOT NULL,
+        expiry_timestamp BIGINT NOT NULL,
         recovery_emails_sent INT NOT NULL CHECK(recovery_emails_sent <= 3),
         failed_recovery_attempts INT NOT NULL CHECK(failed_recovery_attempts <= 3),
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
@@ -88,8 +88,9 @@ async function createAccountDeletionTable(): Promise<void> {
       `CREATE TABLE IF NOT EXISTS account_deletion (
         deletion_id INT PRIMARY KEY AUTO_INCREMENT,
         account_id INT NOT NULL UNIQUE,
-        cancellation_token VARCHAR(40) NOT NULL COLLATE utf8mb4_bin,
-        request_timestamp BIGINT NOT NULL,
+        confirmation_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
+        expiry_timestamp BIGINT NOT NULL,
+        failed_deletion_attempts INT NOT NULL CHECK(failed_deletion_attempts <= 3),
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
       );`
     );
@@ -107,7 +108,7 @@ async function createEmailUpdateTable(): Promise<void> {
         account_id INT NOT NULL UNIQUE,
         new_email VARCHAR(254) NOT NULL UNIQUE,
         verification_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
-        request_timestamp BIGINT NOT NULL,
+        expiry_timestamp BIGINT NOT NULL,
         update_emails_sent INT NOT NULL CHECK(update_emails_sent <= 3),
         failed_update_attempts INT NOT NULL CHECK(failed_update_attempts <= 3),
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE

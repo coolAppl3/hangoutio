@@ -3,7 +3,7 @@ interface SignUpState {
   keepSignedIn: boolean,
 
   accountId: number | null,
-  verificationStartTimestamp: number | null,
+  verificationExpiryTimestamp: number | null,
   verificationEmailsSent: number,
 };
 
@@ -12,6 +12,6 @@ export const signUpState: SignUpState = {
   keepSignedIn: false,
 
   accountId: null,
-  verificationStartTimestamp: null,
+  verificationExpiryTimestamp: null,
   verificationEmailsSent: 0,
 };

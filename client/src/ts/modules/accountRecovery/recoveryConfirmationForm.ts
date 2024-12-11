@@ -36,9 +36,14 @@ async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
 
   try {
     const sendRecoveryEmailData: AxiosResponse<SendRecoveryEmailData> = await sendRecoveryEmailService({ email: recoveryState.recoveryEmail });
-    const requestTimestamp: number = sendRecoveryEmailData.data.resData.requestTimestamp;
+    const expiryTimestamp: number = sendRecoveryEmailData.data.resData.expiryTimestamp;
 
-    recoveryState.recoveryStartTimestamp = requestTimestamp;
+
+    // CONTINUE HEREEEEE ==========================
+    // double-check literally everything before moving forward
+    // Don't forget the cron jobs
+
+    recoveryState.expiryTimestamp = expiryTimestamp;
 
     popup('Recovery email resent.', 'success');
     LoadingModal.remove();

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.2] (2024-12-11)
+
+### Features
+
+- Reworked the account deletion process.
+  - Users will now submit a request and receive an email with a confirmation code, which they'll use to authenticate the request.
+  - Requests last a maximum of an hour, and multiple failures result in a 24-hour suspension, a warning email sent to the user, and all auth sessions purged.
+- Reworked the following processes to use an expiry timestamp to simplify logic:
+  - Account verification process.
+  - Account recovery process.
+  - Account email update process.
+- Removed `UserUtils.ts` as it's no longer needed.
+
+
+### Bug Fixes
+
+- Fixed `eventValues` in DELETE `accounts/deletion/start` not being sliced properly in `accountsRouter.ts`.
+
+
 ## [0.4.1] (2024-12-09)
 
 ### Features
@@ -23,7 +42,7 @@
 
 ### Features
 
-- **Completely revamped authentication and authorization throughout the app into a cookie session system.**
+- **Completely reworked authentication and authorization throughout the app into a cookie session system.**
   - This change comes with a huge amount of added/removed functions, lots of refactoring, slight improvements, and a few bug fixes. Highly relevant changes will be noted in this patch.
   - Further polishing meant to complete this change are to be expected in the next few patches.
 - Added `deleteNoMemberHangouts()` in `cronInit.ts` to handle potential edge cases where a hangout remains without any members. 

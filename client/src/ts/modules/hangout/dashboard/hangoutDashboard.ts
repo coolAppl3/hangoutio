@@ -2,7 +2,6 @@ import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/ax
 import Cookies from "../../global/Cookies";
 import { handleAuthSessionExpired } from "../../global/authUtils";
 import popup from "../../global/popup";
-import { signOut } from "../../global/signOut";
 import { isValidHangoutId } from "../../global/validation";
 import { getHangoutDashboardDataService, HangoutDashboardData } from "../../services/hangoutServices";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";

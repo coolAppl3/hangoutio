@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEmailUpdateWarningTemplate = exports.getEmailUpdateTemplate = exports.getAccountDeletionTemplate = exports.getRecoveryEmailTemplate = exports.getVerificationEmailTemplate = void 0;
+exports.getEmailUpdateWarningTemplate = exports.getEmailUpdateTemplate = exports.getAccountDeletionWarningTemplate = exports.getAccountDeletionConfirmationTemplate = exports.getRecoveryEmailTemplate = exports.getVerificationEmailTemplate = void 0;
 function getVerificationEmailTemplate(verificationEmailConfig) {
-    const { accountId, verificationCode, displayName, createdOnTimestamp } = verificationEmailConfig;
+    const { accountId, verificationCode, displayName, expiryTimestamp } = verificationEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -74,11 +74,11 @@ function getVerificationEmailTemplate(verificationEmailConfig) {
             Alternatively, you can click the following verification link:
             <a
               target="_blank"
-              href="https://hangoutio.com/sign-up.html?id=${accountId}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}"
-              >https://hangoutio.com/sign-up.html?id=${accountId}&requestTimestamp=${createdOnTimestamp}&verificationCode=${verificationCode}</a
+              href="https://hangoutio.com/sign-up.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&verificationCode=${verificationCode}"
+              >https://hangoutio.com/sign-up.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&verificationCode=${verificationCode}</a
             >.
           </p>
-          <p>Your account will be automatically deleted if it's not verified within 15 minutes of being created.</p>
+          <p>Your account will be automatically deleted if it's not verified within 20 minutes of being created.</p>
           <p>If this request wasn't made by you, feel free to ignore it.</p>
           <p id="end-of-email">Warmest regards,</p>
           <p>Hangoutio</p>
@@ -91,7 +91,7 @@ function getVerificationEmailTemplate(verificationEmailConfig) {
 exports.getVerificationEmailTemplate = getVerificationEmailTemplate;
 ;
 function getRecoveryEmailTemplate(recoveryEmailConfig) {
-    const { accountId, recoveryToken, requestTimestamp, displayName } = recoveryEmailConfig;
+    const { accountId, recoveryToken, expiryTimestamp, displayName } = recoveryEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -162,8 +162,8 @@ function getRecoveryEmailTemplate(recoveryEmailConfig) {
             To start the recovery process, please click the following link:
             <a
               target="_blank"
-              href="https://hangoutio.com/account-recovery.html?id=${accountId}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}"
-              >https://hangoutio.com/account-recovery.html?id=${accountId}&requestTimestamp=${requestTimestamp}&recoveryToken=${recoveryToken}</a
+              href="https://hangoutio.com/account-recovery.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&recoveryToken=${recoveryToken}"
+              >https://hangoutio.com/account-recovery.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&recoveryToken=${recoveryToken}</a
             >.
           </p>
           <p>Please note that the recovery link is only valid for an hour.</p>
@@ -178,8 +178,8 @@ function getRecoveryEmailTemplate(recoveryEmailConfig) {
 }
 exports.getRecoveryEmailTemplate = getRecoveryEmailTemplate;
 ;
-function getAccountDeletionTemplate(deletionEmailConfig) {
-    const { accountId, cancellationToken, displayName } = deletionEmailConfig;
+function getAccountDeletionConfirmationTemplate(deletionEmailConfig) {
+    const { confirmationCode, displayName } = deletionEmailConfig;
     const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
@@ -233,7 +233,7 @@ function getAccountDeletionTemplate(deletionEmailConfig) {
             max-height: fit-content;
           }
 
-          #verification-code {
+          #confirmation-code {
             font-weight: bold;
           }
 
@@ -247,18 +247,9 @@ function getAccountDeletionTemplate(deletionEmailConfig) {
           <p>Hey ${displayName},</p>
           <p>We're reaching out to confirm your account deletion request.</p>
           <p>
-            Your account has been marked for deletion, and will be fully removed from our records after 48 hours. In the meantime, it won't be accessible and will behave as if it's fully deleted.
+            To confirm your wish to delete your account, please use the following code: <span id="confirmation-code">${confirmationCode}</span>. This request is only valid for the next hour.
           </p>
-
-          <p>
-            If you've changed your mind, or have made this request by mistake, you can cancel it before the account is fully deleted by clicking the following link:
-            <a
-              target="_blank"
-              href="https://hangoutio.com/cancelDeletion.html?id=${accountId}&recoveryToken=${cancellationToken}"
-              >https://hangoutio.com/cancelDeletion.html?id=${accountId}&recoveryToken=${cancellationToken}</a
-            >.
-          </p>
-          <p>If this request wasn't made by you, please click the link above and change your account's password as soon as possible.</p>
+          <p>If this request wasn't made by you, please sign into your account and change your password as soon as possible to ensure it's protected.</p>
           <p>We're sad to see you leave, but wish you the best of luck moving forward!</p>
           <p id="end-of-email">Warmest regards,</p>
           <p>Hangoutio</p>
@@ -268,7 +259,88 @@ function getAccountDeletionTemplate(deletionEmailConfig) {
   `;
     return htmlTemplate;
 }
-exports.getAccountDeletionTemplate = getAccountDeletionTemplate;
+exports.getAccountDeletionConfirmationTemplate = getAccountDeletionConfirmationTemplate;
+;
+function getAccountDeletionWarningTemplate(displayName) {
+    const htmlTemplate = `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+          rel="stylesheet"
+        />
+
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+          }
+
+          body {
+            color: #222222;
+            font-weight: 500 !important;
+            font-size: 16px;
+          }
+
+          p {
+            margin-bottom: 10px;
+            line-height: 1.2;
+          }
+
+          a {
+            text-decoration: none;
+            color: #1155cc;
+            text-decoration: underline;
+            transition: filter 200ms;
+          }
+
+          a:hover {
+            filter: brightness(0.8);
+          }
+
+          .email-body {
+            padding: 30px 10px;
+            max-height: fit-content;
+          }
+
+          #confirmation-code {
+            font-weight: bold;
+          }
+
+          #end-of-email {
+            margin-bottom: 0px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-body">
+          <p>Hey ${displayName},</p>
+          <p>We're reaching out to confirm your account deletion request.</p>
+          <p>
+            We've detected 3 failed attempts to delete your account, and have therefore suspended further attempts for the next 24 hours.
+          </p>
+          <p>If this requests were not made by you, we highly suggest changing your account's password to ensure your account is secure.</p>
+          <p id="end-of-email">Warmest regards,</p>
+          <p>Hangoutio</p>
+        </div>
+      </body>
+    </html>
+  `;
+    return htmlTemplate;
+}
+exports.getAccountDeletionWarningTemplate = getAccountDeletionWarningTemplate;
 ;
 function getEmailUpdateTemplate(updateEmailConfig) {
     const { verificationCode, displayName } = updateEmailConfig;

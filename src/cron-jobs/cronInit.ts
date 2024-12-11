@@ -14,6 +14,7 @@ export function initCronJobs(): void {
     await accountCronJobs.removeExpiredEmailUpdateRequests();
     await hangoutCronJobs.progressHangouts();
     await hangoutCronJobs.concludeNoSuggestionHangouts();
+    await accountCronJobs.removeExpiredDeletionRequests();
   });
 
   // every 10 minutes
@@ -23,7 +24,6 @@ export function initCronJobs(): void {
 
   // every hour
   cron.schedule('0 * * * *', async () => {
-    await accountCronJobs.deleteMarkedAccounts();
     await hangoutCronJobs.deleteNoMemberHangouts();
     await hangoutCronJobs.archiveHangouts();
   });

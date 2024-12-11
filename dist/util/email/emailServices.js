@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmailUpdateWarningEmail = exports.sendEmailUpdateEmail = exports.sendDeletionEmail = exports.sendRecoveryEmail = exports.sendVerificationEmail = void 0;
+exports.sendEmailUpdateWarningEmail = exports.sendEmailUpdateEmail = exports.sendDeletionWarningEmail = exports.sendDeletionConfirmationEmail = exports.sendRecoveryEmail = exports.sendVerificationEmail = void 0;
 const emailTemplates = __importStar(require("./emailTemplates"));
 const initTransporter_1 = require("./initTransporter");
 ;
@@ -61,13 +61,13 @@ async function sendRecoveryEmail(recoveryEmailConfig) {
 exports.sendRecoveryEmail = sendRecoveryEmail;
 ;
 ;
-async function sendDeletionEmail(deletionEmailConfig) {
+async function sendDeletionConfirmationEmail(deletionEmailConfig) {
     try {
         await initTransporter_1.emailTransporter.sendMail({
             from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
             to: deletionEmailConfig.to,
-            subject: 'Hangoutio - Account Deletion',
-            html: emailTemplates.getAccountDeletionTemplate(deletionEmailConfig),
+            subject: 'Hangoutio - Account Deletion Confirmation',
+            html: emailTemplates.getAccountDeletionConfirmationTemplate(deletionEmailConfig),
         });
     }
     catch (err) {
@@ -75,7 +75,24 @@ async function sendDeletionEmail(deletionEmailConfig) {
     }
     ;
 }
-exports.sendDeletionEmail = sendDeletionEmail;
+exports.sendDeletionConfirmationEmail = sendDeletionConfirmationEmail;
+;
+;
+async function sendDeletionWarningEmail(deletionEmailWarningConfig) {
+    try {
+        await initTransporter_1.emailTransporter.sendMail({
+            from: `Hangoutio <${process.env.TRANSPORTER_USER}>`,
+            to: deletionEmailWarningConfig.to,
+            subject: 'Hangoutio - Security Warning',
+            html: emailTemplates.getAccountDeletionWarningTemplate(deletionEmailWarningConfig.displayName),
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+exports.sendDeletionWarningEmail = sendDeletionWarningEmail;
 ;
 ;
 async function sendEmailUpdateEmail(updateEmailConfig) {

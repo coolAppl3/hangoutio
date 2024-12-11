@@ -1,18 +1,19 @@
 import { dbPool } from "../db/db";
-import { RowDataPacket } from "mysql2";
 
 export async function removeUnverifiedAccounts(): Promise<void> {
-  const verificationWindow: number = 1000 * 60 * 20;
-  const minimumAllowedTimestamp: number = Date.now() - verificationWindow;
+  const currentTimestamp: number = Date.now();
 
   try {
     await dbPool.execute(
-      `DELETE FROM
+      `DELETE
         accounts
+      FROM
+        accounts
+      INNER JOIN
+        account_verification ON accounts.account_id = account_verification.account_id
       WHERE
-        is_verified = ? AND
-        created_on_timestamp < ?;`,
-      [false, minimumAllowedTimestamp]
+        account_verification.expiry_timestamp <= ?;`,
+      [currentTimestamp]
     );
 
   } catch (err: any) {
@@ -22,16 +23,15 @@ export async function removeUnverifiedAccounts(): Promise<void> {
 };
 
 export async function removeExpiredRecoveryRequests(): Promise<void> {
-  const recoveryWindow: number = 1000 * 60 * 60;
-  const minimumAllowedTimestamp: number = Date.now() - recoveryWindow;
+  const currentTimestamp: number = Date.now();
 
   try {
     await dbPool.execute(
       `DELETE FROM
         account_recovery
       WHERE
-        request_timestamp < ?;`,
-      [minimumAllowedTimestamp]
+        expiry_timestamp <= ?;`,
+      [currentTimestamp]
     );
 
   } catch (err: any) {
@@ -41,16 +41,15 @@ export async function removeExpiredRecoveryRequests(): Promise<void> {
 };
 
 export async function removeExpiredEmailUpdateRequests(): Promise<void> {
-  const updateWindow: number = 1000 * 60 * 60 * 24;
-  const minimumAllowedTimestamp: number = Date.now() - updateWindow;
+  const currentTimestamp: number = Date.now();
 
   try {
     await dbPool.execute(
       `DELETE FROM
         email_update
       WHERE
-        request_timestamp < ?;`,
-      [minimumAllowedTimestamp]
+        expiry_timestamp <= ?;`,
+      [currentTimestamp]
     );
 
   } catch (err: any) {
@@ -59,54 +58,20 @@ export async function removeExpiredEmailUpdateRequests(): Promise<void> {
   };
 };
 
-export async function deleteMarkedAccounts(): Promise<void> {
-  const twoDaysMilliseconds: number = 1000 * 60 * 60 * 24 * 2;
-  const minimumAllowedTimestamp: number = Date.now() - twoDaysMilliseconds;
-
-  interface AccountDetails extends RowDataPacket {
-    account_id: number,
-  };
-
-  let connection;
+export async function removeExpiredDeletionRequests(): Promise<void> {
+  const currentTimestamp: number = Date.now();
 
   try {
-    connection = await dbPool.getConnection();
-    await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
-    await connection.beginTransaction();
-
-    const [accountRows] = await connection.execute<AccountDetails[]>(
-      `SELECT
-        account_id
-      FROM
+    await dbPool.execute(
+      `DELETE FROM
         account_deletion
       WHERE
-        request_timestamp < ?;`,
-      [minimumAllowedTimestamp]
+        expiry_timestamp <= ?;`,
+      [currentTimestamp]
     );
 
-    if (accountRows.length === 0) {
-      await connection.rollback();
-      return;
-    };
-
-    const accountsToDelete: number[] = accountRows.map((account: AccountDetails) => account.account_id);
-    await connection.execute(
-      `DELETE FROM
-        accounts
-      WHERE
-        account_id IN (?);`,
-      [accountsToDelete.join(', ')]
-    );
-
-    await connection.commit();
-
-  } catch (err: any) {
-    console.log(`CRON JOB ERROR: ${deleteMarkedAccounts.name}`)
+  } catch (err: unknown) {
+    console.log(`CRON JOB ERROR: ${removeExpiredDeletionRequests.name}`)
     console.log(err);
-
-    await connection?.rollback();
-
-  } finally {
-    connection?.release();
   };
 };

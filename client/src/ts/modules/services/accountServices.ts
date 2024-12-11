@@ -18,7 +18,7 @@ export interface AccountSignUpData {
   success: true,
   resData: {
     accountId: number,
-    createdOnTimestamp: number,
+    verificationExpiryTimestamp: number,
   },
 };
 
@@ -74,7 +74,7 @@ export async function verifyAccountService(requestBody: AccountVerificationBody)
 export interface SendRecoveryEmailData {
   success: true,
   resData: {
-    requestTimestamp: number,
+    expiryTimestamp: number,
   },
 };
 
