@@ -102,7 +102,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
     const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
-    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId', true);
 

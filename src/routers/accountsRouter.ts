@@ -1143,7 +1143,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
     const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
-    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId', true);
 
@@ -1674,7 +1674,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
-    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId', true);
 
