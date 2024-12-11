@@ -195,15 +195,14 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     };
 
     await connection.execute(
-      `INSERT INTO hangout_members(
+      `INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${generatePlaceHolders(6)});`,
+      ) VALUES (${generatePlaceHolders(6)});`,
       [requestData.hangoutId, 'account', authSessionDetails.user_id, null, userDetails.display_name, false]
     );
 
@@ -342,28 +341,26 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO guests(
+      `INSERT INTO guests (
         username,
         hashed_password,
         display_name,
         hangout_id
-      )
-      VALUES(${generatePlaceHolders(5)});`,
+      ) VALUES (${generatePlaceHolders(5)});`,
       [requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]
     );
 
     const guestId: number = resultSetHeader.insertId;
 
     await connection.execute(
-      `INSERT INTO hangout_members(
+      `INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${generatePlaceHolders(6)});`,
+      ) VALUES (${generatePlaceHolders(6)});`,
       [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]
     );
 

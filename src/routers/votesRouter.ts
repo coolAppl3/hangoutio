@@ -243,12 +243,11 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     };
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO votes(
+      `INSERT INTO votes (
         hangout_member_id,
         suggestion_id,
         hangout_id
-      )
-      VALUES(${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(3)});`,
       [requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutId]
     );
 

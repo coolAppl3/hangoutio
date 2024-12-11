@@ -187,13 +187,12 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
     };
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO availability_slots(
+      `INSERT INTO availability_slots (
         hangout_member_id,
         hangout_id,
         slot_start_timestamp,
         slot_end_timestamp
-      )
-      VALUES(${generatePlaceHolders(4)});`,
+      ) VALUES (${generatePlaceHolders(4)});`,
       [requestData.hangoutMemberId, requestData.hangoutId, requestData.slotStartTimestamp, requestData.slotEndTimestamp]
     );
 

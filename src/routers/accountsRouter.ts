@@ -116,7 +116,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     const verificationExpiryTimestamp: number = createdOnTimestamp + ACCOUNT_VERIFICATION_WINDOW;
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO accounts(
+      `INSERT INTO accounts (
         email,
         hashed_password,
         username,
@@ -124,22 +124,20 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
         created_on_timestamp,
         is_verified,
         failed_sign_in_attempts
-      )
-      VALUES(${generatePlaceHolders(7)});`,
+      ) VALUES (${generatePlaceHolders(7)});`,
       [requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0]
     );
 
     const accountId: number = resultSetHeader.insertId;
 
     await connection.execute(
-      `INSERT INTO account_verification(
+      `INSERT INTO account_verification (
         account_id,
         verification_code,
         verification_emails_sent,
         failed_verification_attempts,
         expiry_timestamp
-      )
-      VALUES(${generatePlaceHolders(5)});`,
+      ) VALUES (${generatePlaceHolders(5)});`,
       [accountId, verificationCode, 1, 0, verificationExpiryTimestamp]
     );
 
@@ -633,14 +631,13 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
     const expiryTimestamp: number = Date.now() + ACCOUNT_RECOVERY_WINDOW;
 
     await dbPool.execute(
-      `INSERT INTO account_recovery(
+      `INSERT INTO account_recovery (
           account_id,
           recovery_token,
           expiry_timestamp,
           recovery_emails_sent,
           failed_recovery_attempts
-        )
-        VALUES(${generatePlaceHolders(5)});`,
+        ) VALUES (${generatePlaceHolders(5)});`,
       [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]
     );
 
@@ -1031,13 +1028,12 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
 
       await dbPool.execute(
-        `INSERT INTO account_deletion(
+        `INSERT INTO account_deletion (
         account_id,
         confirmation_code,
         expiry_timestamp,
         failed_deletion_attempts
-      )
-      VALUES(${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(3)});`,
         [authSessionDetails.user_id, confirmationCode, expiryTimestamp]
       );
 
@@ -1599,15 +1595,14 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     const expiryTimestamp: number = Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW;
 
     await connection.execute(
-      `INSERT INTO email_update(
+      `INSERT INTO email_update (
           account_id,
           new_email,
           verification_code,
           expiry_timestamp,
           update_emails_sent,
           failed_update_attempts
-        )
-        VALUES(${generatePlaceHolders(6)});`,
+        ) VALUES (${generatePlaceHolders(6)});`,
       [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]
     );
 
@@ -2289,12 +2284,11 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     };
 
     await dbPool.execute(
-      `INSERT INTO friend_requests(
+      `INSERT INTO friend_requests (
         requester_id,
         requestee_id,
         request_timestamp
-      )
-      VALUES(${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(3)});`,
       [authSessionDetails.user_id, requesteeId, Date.now()]
     );
 
@@ -2414,12 +2408,11 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     await connection.beginTransaction();
 
     await connection.execute(
-      `INSERT INTO friendships(
+      `INSERT INTO friendships (
         first_account_id,
         second_account_id,
         friendship_timestamp
-      )
-      VALUES(${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(3)});`,
       [authSessionDetails.user_id, requesterId, friendshipTimestamp]
     );
 

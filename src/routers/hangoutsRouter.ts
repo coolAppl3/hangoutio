@@ -175,7 +175,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     await connection.beginTransaction();
 
     await connection.execute(
-      `INSERT INTO hangouts(
+      `INSERT INTO hangouts (
         hangout_id,
         hangout_title,
         encrypted_password,
@@ -189,21 +189,19 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
         created_on_timestamp,
         conclusion_timestamp,
         is_concluded
-      )
-      VALUES(${generatePlaceHolders(13)});`,
+      ) VALUES (${generatePlaceHolders(13)});`,
       [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
     await connection.execute(
-      `INSERT INTO hangout_members(
+      `INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${generatePlaceHolders(6)});`,
+      ) VALUES (${generatePlaceHolders(6)});`,
       [hangoutId, 'account', authSessionDetails.user_id, null, displayName, true]
     );
 
@@ -329,7 +327,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     const conclusionTimestamp: number = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
 
     await connection.execute(
-      `INSERT INTO hangouts(
+      `INSERT INTO hangouts (
         hangout_id,
         hangout_title,
         encrypted_password,
@@ -343,35 +341,32 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
         created_on_timestamp,
         conclusion_timestamp,
         is_concluded
-      )
-      VALUES(${generatePlaceHolders(13)});`,
+      ) VALUES (${generatePlaceHolders(13)});`,
       [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]
     );
 
     const hashedGuestPassword: string = await bcrypt.hash(requestData.password, 10);
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO guests(
+      `INSERT INTO guests (
         username,
         hashed_password,
         display_name,
         hangout_id
-      )
-      VALUES(${generatePlaceHolders(5)});`,
+      ) VALUES (${generatePlaceHolders(5)});`,
       [requestData.username, hashedGuestPassword, requestData.displayName, hangoutId]
     );
 
     const guestId: number = resultSetHeader.insertId;
 
     await connection.execute(
-      `INSERT INTO hangout_members(
+      `INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${generatePlaceHolders(6)});`,
+      ) VALUES (${generatePlaceHolders(6)});`,
       [hangoutId, 'guest', null, guestId, requestData.displayName, true]
     );
 

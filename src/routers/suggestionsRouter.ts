@@ -185,7 +185,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     };
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO suggestions(
+      `INSERT INTO suggestions (
         hangout_member_id,
         hangout_id,
         suggestion_title,
@@ -193,8 +193,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
         suggestion_start_timestamp,
         suggestion_end_timestamp,
         is_edited
-      )
-      VALUES(${generatePlaceHolders(7)});`,
+      ) VALUES (${generatePlaceHolders(7)});`,
       [requestData.hangoutMemberId, requestData.hangoutId, requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, false]
     );
 
