@@ -561,7 +561,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
 
   const existingAuthSessionId: string | null = getRequestCookie(req, 'authSessionId');
   if (existingAuthSessionId) {
-    res.status(403).json({ success: false, message: `Can't recover account while signed in.`, reason: 'signedIn' });
+    res.status(403).json({ success: false, message: 'Must sign out before proceeding.', reason: 'signedIn' });
     return;
   };
 
@@ -570,10 +570,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       account_id: number,
       display_name: string,
       is_verified: boolean,
-      recovery_id: number,
-      recovery_token: string,
       expiry_timestamp: number,
-      recovery_emails_sent: number,
       failed_recovery_attempts: number,
     };
 
@@ -582,10 +579,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
         accounts.account_id,
         accounts.display_name,
         accounts.is_verified,
-        account_recovery.recovery_id,
-        account_recovery.recovery_token,
         account_recovery.expiry_timestamp,
-        account_recovery.recovery_emails_sent,
         account_recovery.failed_recovery_attempts
       FROM
         accounts
@@ -605,16 +599,41 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
     const accountDetails: AccountDetails = accountRows[0];
 
     if (!accountDetails.is_verified) {
-      res.status(403).json({ success: false, message: 'Account unverified.', reason: 'unverified' });
+      res.status(403).json({ success: false, message: `Can't recover an unverified accounts.`, reason: 'unverified' });
       return;
     };
 
-    if (!accountDetails.recovery_id) {
-      const recoveryToken: string = generateUniqueToken();
-      const expiryTimestamp: number = Date.now() + ACCOUNT_RECOVERY_WINDOW;
+    if (accountDetails.expiry_timestamp) {
+      if (accountDetails.failed_recovery_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
+        res.status(403).json({
+          success: false,
+          message: 'Recovery suspended.',
+          reason: 'recoverySuspended',
+          resData: {
+            expiryTimestamp: accountDetails.expiry_timestamp,
+          },
+        });
 
-      await dbPool.execute(
-        `INSERT INTO account_recovery(
+        return;
+      };
+
+      res.status(403).json({
+        success: false,
+        message: 'Ongoing recovery request detected.',
+        reason: 'ongoingRequest',
+        resData: {
+          expiryTimestamp: accountDetails.expiry_timestamp,
+        },
+      });
+
+      return;
+    };
+
+    const recoveryToken: string = generateUniqueToken();
+    const expiryTimestamp: number = Date.now() + ACCOUNT_RECOVERY_WINDOW;
+
+    await dbPool.execute(
+      `INSERT INTO account_recovery(
           account_id,
           recovery_token,
           expiry_timestamp,
@@ -622,45 +641,95 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
           failed_recovery_attempts
         )
         VALUES(${generatePlaceHolders(5)});`,
-        [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]
-      );
+      [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]
+    );
 
-      res.json({ success: true, resData: { expiryTimestamp } });
+    res.json({ success: true, resData: { expiryTimestamp } });
 
-      await sendRecoveryEmail({
-        to: requestData.email,
-        accountId: accountDetails.account_id,
-        recoveryToken,
-        expiryTimestamp,
-        displayName: accountDetails.display_name,
-      });
+    await sendRecoveryEmail({
+      to: requestData.email,
+      accountId: accountDetails.account_id,
+      recoveryToken,
+      expiryTimestamp,
+      displayName: accountDetails.display_name,
+    });
 
+  } catch (err: unknown) {
+    console.log(err);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
+accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response) => {
+  interface RequestData {
+    email: string,
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['email'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!userValidation.isValidEmail(requestData.email)) {
+    res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
+    return;
+  };
+
+  try {
+    interface AccountDetails extends RowDataPacket {
+      account_id: string,
+      display_name: string,
+      recovery_token: string,
+      expiry_timestamp: number,
+      recovery_emails_sent: number,
+      failed_recovery_attempts: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
+      `SELECT
+        accounts.account_id,
+        accounts.display_name,
+        account_recovery.recovery_token
+        account_recovery.expiry_timestamp,
+        account_recovery.recovery_emails_sent,
+        account_recovery.failed_recovery_attempts
+      FROM
+        accounts
+      LEFT JOIN
+        account_recovery ON accounts.account_id = account_recovery.account_id
+      WHERE
+        accounts.email = ?;`,
+      [requestData.email]
+    );
+
+    if (accountRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Account not found.' });
       return;
     };
 
-    if (accountDetails.recovery_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(403).json({
-        success: false,
-        message: 'Recovery email limit has been reached.',
-        reason: 'emailLimitReached',
-        resData: {
-          expiryTimestamp: accountDetails.expiry_timestamp,
-        },
-      });
+    const accountDetails: AccountDetails = accountRows[0];
 
+    if (!accountDetails.recovery_token) {
+      res.status(404).json({ success: false, message: 'Recovery request not found.' });
       return;
     };
 
     if (accountDetails.failed_recovery_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         success: false,
-        message: 'Too many failed recovery attempts.',
-        reason: 'failureLimitReached',
-        resData: {
-          expiryTimestamp: accountDetails.expiry_timestamp,
-        },
+        message: 'Recovery request suspended.',
+        reason: 'requestSuspended',
+        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
+      return;
+    };
+
+    if (accountDetails.recovery_emails_sent >= EMAILS_SENT_LIMIT) {
+      res.status(409).json({ success: false, message: 'Recovery emails limit reached.' });
       return;
     };
 
@@ -670,8 +739,9 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       SET
         recovery_emails_sent = recovery_emails_sent + 1
       WHERE
-        recovery_id = ?;`,
-      [accountDetails.recovery_id]
+        account_id = ?
+      LIMIT 1;`,
+      [accountDetails.user_id]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -679,11 +749,11 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       return;
     };
 
-    res.json({ success: true, resData: { expiryTimestamp: accountDetails.expiry_timestamp } });
+    res.json({ success: true, resData: {} });
 
     await sendRecoveryEmail({
       to: requestData.email,
-      accountId: accountDetails.account_id,
+      accountId: accountDetails.user_id,
       recoveryToken: accountDetails.recovery_token,
       expiryTimestamp: accountDetails.expiry_timestamp,
       displayName: accountDetails.display_name,
