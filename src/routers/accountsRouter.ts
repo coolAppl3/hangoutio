@@ -541,7 +541,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
   };
 });
 
-accountsRouter.post('/recovery/sendEmail', async (req: Request, res: Response) => {
+accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
   interface RequestData {
     email: string,
   };
