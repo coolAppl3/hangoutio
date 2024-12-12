@@ -7,7 +7,7 @@ export async function clearExpiredAuthSessions(): Promise<void> {
       `DELETE FROM
         auth_sessions
       WHERE
-        expiry_timestamp >= ?;`,
+        expiry_timestamp <= ?;`,
       [currentTimestamp]
     );
 
