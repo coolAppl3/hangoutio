@@ -137,7 +137,7 @@ async function startAccountRecovery(e: SubmitEvent): Promise<void> {
       return;
     };
 
-    if (status === 400 && errReason === 'email') {
+    if (status === 400 && errReason === 'invalidEmail') {
       ErrorSpan.display(recoveryEmailInput, errMessage);
     };
   };

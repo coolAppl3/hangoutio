@@ -121,7 +121,6 @@ export async function handleNotSignedIn(hangoutId: string): Promise<void> {
       return;
     };
 
-    setTimeout(() => window.location.href = 'home', 1000);
     return;
   };
 

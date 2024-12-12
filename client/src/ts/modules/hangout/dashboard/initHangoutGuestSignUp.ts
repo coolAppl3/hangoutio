@@ -189,11 +189,11 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
     if (status === 400) {
       const inputRecord: Record<string, HTMLInputElement | undefined> = {
-        hangoutPassword: hangoutPasswordInput,
-        username: userNameInput,
-        userPassword: guestPasswordInput,
+        invalidHangoutPassword: hangoutPasswordInput,
+        invalidUsername: userNameInput,
+        invalidUserPassword: guestPasswordInput,
         usernamePasswordIdentical: guestPasswordInput,
-        displayName: displayNameInput,
+        invalidDisplayName: displayNameInput,
       };
 
       const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];

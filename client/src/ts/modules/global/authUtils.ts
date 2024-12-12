@@ -1,6 +1,5 @@
 import { ConfirmModal } from "./ConfirmModal";
 import Cookies from "./Cookies";
-import { InfoModal } from "./InfoModal";
 
 export function handleAuthSessionExpired(afterAuthRedirectHref: string): void {
   removeRelevantCookies();
@@ -39,19 +38,27 @@ export function handleAuthSessionDestroyed(afterAuthRedirectHref: string): void 
 
   Cookies.set('afterAuthRedirectHref', afterAuthRedirectHref);
 
-  const infoModal: HTMLDivElement = InfoModal.display({
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Invalid sign in credentials detected.',
-    description: `You've been signed out. Please sign back in to continue.`,
-    btnTitle: 'Sign back in',
+    description: `You've been signed out as a result. Please sign back in to continue.`,
+    confirmBtnTitle: 'Sign back in',
+    cancelBtnTitle: 'Go to homepage',
+    extraBtnTitle: null,
+    isDangerousAction: false,
   });
 
-  infoModal.addEventListener('click', (e: MouseEvent) => {
+  confirmModal.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
 
-    if (e.target.id === 'info-modal-btn') {
-      window.location.href = afterAuthRedirectHref;
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      window.location.href = 'home';
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      window.location.href = 'home';
     };
   });
 };

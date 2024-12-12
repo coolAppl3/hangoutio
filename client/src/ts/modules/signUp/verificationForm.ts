@@ -9,6 +9,7 @@ import { isValidUniqueCode, isValidQueryString, isValidTimestamp, validateCode, 
 import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal } from "../global/ConfirmModal";
+import { handleSignedInUser } from "../accountRecovery/recoveryUtils";
 
 
 const verificationFormElement: HTMLFormElement | null = document.querySelector('#verification-form');
@@ -118,7 +119,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (status === 400 && errReason === 'accountId') {
       popup('Something went wrong.', 'error');
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1000);
 
       return;
     };
@@ -127,12 +128,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     LoadingModal.remove();
 
     if (status === 403) {
-      InfoModal.display({
-        title: `You're signed in.`,
-        description: 'You must sign out before proceeding.',
-        btnTitle: 'Okay',
-      }, { simple: true });
-
+      handleSignedInUser();
       return;
     };
 
@@ -231,7 +227,7 @@ async function resendVerificationEmail(): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 400 && errReason === 'accountId') {
+    if (status === 400 && errReason === 'invalidAccountId') {
       popup('Something went wrong.', 'error');
       setTimeout(() => window.location.reload(), 1000);
 
@@ -246,7 +242,7 @@ async function resendVerificationEmail(): Promise<void> {
       return;
     };
 
-    if (status === 403 && errReason === 'limitReached') {
+    if (status === 403 && errReason === 'emailLimitReached') {
       signUpState.verificationEmailsSent = 3;
     };
   };

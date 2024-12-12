@@ -112,22 +112,21 @@ async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-
     popup(errMessage, 'error');
     LoadingModal.remove();
 
     if (status === 403 && errReason === 'signedIn') {
-      displaySignedInConfirmModal();
+      handleSignedInUser();
       return;
     };
 
     const inputRecord: Record<string, HTMLInputElement | undefined> = {
-      email: emailInput,
+      invalidEmail: emailInput,
       emailTaken: emailInput,
-      displayName: displayNameInput,
-      username: usernameInput,
+      invalidDisplayName: displayNameInput,
+      invalidUsername: usernameInput,
       usernameTaken: usernameInput,
-      password: passwordInput,
+      invalidPassword: passwordInput,
       passwordEqualsUsername: passwordInput,
     };
 
@@ -214,10 +213,10 @@ function detectSignedInUser(): void {
     return;
   };
 
-  displaySignedInConfirmModal();
+  handleSignedInUser();
 };
 
-function displaySignedInConfirmModal(): void {
+function handleSignedInUser(): void {
   const signedInAs: string | null = Cookies.get('signedInAs');
 
   if (!signedInAs) {
