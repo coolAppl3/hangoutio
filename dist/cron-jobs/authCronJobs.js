@@ -8,7 +8,7 @@ async function clearExpiredAuthSessions() {
         await db_1.dbPool.execute(`DELETE FROM
         auth_sessions
       WHERE
-        expiry_timestamp >= ?;`, [currentTimestamp]);
+        expiry_timestamp <= ?;`, [currentTimestamp]);
     }
     catch (err) {
         console.log(`CRON JOB ERROR: ${clearExpiredAuthSessions.name}`);
