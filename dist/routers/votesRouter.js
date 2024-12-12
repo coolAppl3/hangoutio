@@ -32,11 +32,11 @@ const express_1 = __importDefault(require("express"));
 const requestValidation_1 = require("../util/validation/requestValidation");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 const voteValidation = __importStar(require("../util/validation/voteValidation"));
-const availabilitySlotValidation_1 = require("../util/validation/availabilitySlotValidation");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const authUtils = __importStar(require("../auth/authUtils"));
 const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
+const constants_1 = require("../util/constants");
 exports.votesRouter = express_1.default.Router();
 exports.votesRouter.post('/', async (req, res) => {
     ;
@@ -122,7 +122,7 @@ exports.votesRouter.post('/', async (req, res) => {
             suggestionId: requestData.suggestionId,
             hangoutMemberId: requestData.hangoutMemberId,
             hangoutId: requestData.hangoutMemberId,
-            votesLimit: voteValidation.votesLimit
+            votesLimit: constants_1.HANGOUT_VOTES_LIMIT
         });
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
@@ -139,7 +139,7 @@ exports.votesRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step !== 3) {
+        if (hangoutMemberDetails.current_step !== constants_1.HANGOUT_VOTING_STEP) {
             await connection.rollback();
             res.status(409).json({
                 success: false,
@@ -160,7 +160,7 @@ exports.votesRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.total_votes >= voteValidation.votesLimit) {
+        if (hangoutMemberDetails.total_votes >= constants_1.HANGOUT_VOTES_LIMIT) {
             await connection.rollback();
             res.status(409).json({ success: false, message: 'Votes limit reached.' });
             return;
@@ -179,7 +179,7 @@ exports.votesRouter.post('/', async (req, res) => {
       WHERE
         suggestions.suggestion_id = ? AND
         availability_slots.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation_1.availabilitySlotsLimit};`, [requestData.suggestionId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.suggestionId, requestData.hangoutMemberId]);
         if (suggestionAvailabilityRows.length === 0) {
             await connection.rollback();
             res.status(409).json({ success: false, message: `Your availability doesn't match this suggestions time slot.` });
@@ -202,12 +202,11 @@ exports.votesRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        const [resultSetHeader] = await connection.execute(`INSERT INTO votes(
+        const [resultSetHeader] = await connection.execute(`INSERT INTO votes (
         hangout_member_id,
         suggestion_id,
         hangout_id
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutId]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutId]);
         await connection.commit();
         res.status(201).json({ success: true, resData: { voteId: resultSetHeader.insertId } });
     }
@@ -297,7 +296,7 @@ exports.votesRouter.delete('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${voteValidation.votesLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_VOTES_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -311,7 +310,7 @@ exports.votesRouter.delete('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step !== 3) {
+        if (hangoutMemberDetails.current_step !== constants_1.HANGOUT_VOTING_STEP) {
             res.status(409).json({
                 success: false,
                 message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,
@@ -413,7 +412,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${voteValidation.votesLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_VOTES_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -427,7 +426,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step !== 3) {
+        if (hangoutMemberDetails.current_step !== constants_1.HANGOUT_VOTING_STEP) {
             res.status(409).json({
                 success: false,
                 message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,

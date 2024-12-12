@@ -124,13 +124,12 @@ exports.chatRouter.post('/add', async (req, res) => {
         }
         ;
         const messageTimestamp = Date.now();
-        const [resultSetHeader] = await db_1.dbPool.execute(`INSERT INTO chat(
+        const [resultSetHeader] = await db_1.dbPool.execute(`INSERT INTO chat (
         hangout_member_id,
         hangout_id,
         message_content,
         message_timestamp
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, hangoutMemberDetails.hangout_id, requestData.messageContent, messageTimestamp]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, hangoutMemberDetails.hangout_id, requestData.messageContent, messageTimestamp]);
         ;
         const chatMessage = {
             messageId: resultSetHeader.insertId,

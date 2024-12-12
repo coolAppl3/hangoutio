@@ -43,6 +43,7 @@ const encryptionUtils_1 = require("../util/encryptionUtils");
 const authUtils = __importStar(require("../auth/authUtils"));
 const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
+const constants_1 = require("../util/constants");
 exports.hangoutsRouter = express_1.default.Router();
 exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     ;
@@ -104,7 +105,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         }
         ;
         const authSessionDetails = authSessionRows[0];
-        if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -136,12 +137,12 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
       WHERE
         hangouts.is_concluded = ? AND
         hangout_members.account_id = ?
-      LIMIT ${hangoutValidation.ongoingHangoutsLimit};`, [false, authSessionDetails.user_id]);
+      LIMIT ${constants_1.ONGOING_HANGOUTS_LIMIT};`, [false, authSessionDetails.user_id]);
         const ongoingHangoutsCount = ongoingHangoutsRows[0].ongoing_hangouts_count;
-        if (ongoingHangoutsCount === hangoutValidation.ongoingHangoutsLimit) {
+        if (ongoingHangoutsCount === constants_1.ONGOING_HANGOUTS_LIMIT) {
             res.status(409).json({
                 success: false,
-                message: `You've reached the limit of ${hangoutValidation.ongoingHangoutsLimit} ongoing hangouts.`,
+                message: `You've reached the limit of ${constants_1.ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
                 reason: 'hangoutsLimitReached',
             });
             return;
@@ -154,7 +155,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         const conclusionTimestamp = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        await connection.execute(`INSERT INTO hangouts(
+        await connection.execute(`INSERT INTO hangouts (
         hangout_id,
         hangout_title,
         encrypted_password,
@@ -168,17 +169,15 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         created_on_timestamp,
         conclusion_timestamp,
         is_concluded
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(13)});`, [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
-        await connection.execute(`INSERT INTO hangout_members(
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(13)});`, [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
+        await connection.execute(`INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutId, 'account', authSessionDetails.user_id, null, displayName, true]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutId, 'account', authSessionDetails.user_id, null, displayName, true]);
         await connection.commit();
         res.status(201).json({ success: true, resData: { hangoutId } });
     }
@@ -276,7 +275,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         const encryptedPassword = requestData.hangoutPassword ? (0, encryptionUtils_1.encryptPassword)(requestData.hangoutPassword) : null;
         const nextStepTimestamp = createdOnTimestamp + availabilityStep;
         const conclusionTimestamp = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
-        await connection.execute(`INSERT INTO hangouts(
+        await connection.execute(`INSERT INTO hangouts (
         hangout_id,
         hangout_title,
         encrypted_password,
@@ -290,26 +289,23 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         created_on_timestamp,
         conclusion_timestamp,
         is_concluded
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(13)});`, [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(13)});`, [hangoutId, requestData.hangoutTitle, encryptedPassword, requestData.memberLimit, availabilityStep, suggestionsStep, votingStep, 1, createdOnTimestamp, nextStepTimestamp, createdOnTimestamp, conclusionTimestamp, false]);
         const hashedGuestPassword = await bcrypt_1.default.hash(requestData.password, 10);
-        const [resultSetHeader] = await connection.execute(`INSERT INTO guests(
+        const [resultSetHeader] = await connection.execute(`INSERT INTO guests (
         username,
         hashed_password,
         display_name,
         hangout_id
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [requestData.username, hashedGuestPassword, requestData.displayName, hangoutId]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [requestData.username, hashedGuestPassword, requestData.displayName, hangoutId]);
         const guestId = resultSetHeader.insertId;
-        await connection.execute(`INSERT INTO hangout_members(
+        await connection.execute(`INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutId, 'guest', null, guestId, requestData.displayName, true]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutId, 'guest', null, guestId, requestData.displayName, true]);
         await connection.commit();
         const authSessionCreated = await (0, authSessions_1.createAuthSession)(res, {
             user_id: guestId,
@@ -896,7 +892,7 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
             return;
         }
         ;
-        if (hangoutDetails.current_step === 2 && hangoutDetails.suggestions_count === 0) {
+        if (hangoutDetails.current_step === constants_1.HANGOUT_SUGGESTIONS_STEP && hangoutDetails.suggestions_count === 0) {
             res.status(409).json({ success: false, message: `Can't progress hangout without any suggestions.` });
             return;
         }
@@ -909,7 +905,7 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         const newNextStepTimestamp = hangoutUtils.getNextStepTimestamp(newCurrentStep, requestTimestamp, hangoutDetails.availability_step, hangoutDetails.suggestions_step, hangoutDetails.voting_step);
         const { created_on_timestamp, availability_step, suggestions_step, voting_step } = hangoutDetails;
         const newConclusionTimestamp = created_on_timestamp + availability_step + suggestions_step + voting_step;
-        if (hangoutDetails.current_step === 3) {
+        if (hangoutDetails.current_step === constants_1.HANGOUT_VOTING_STEP) {
             const [firstResultSetHeader] = await db_1.dbPool.execute(`UPDATE
           hangouts
         SET

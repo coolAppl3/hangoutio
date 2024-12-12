@@ -39,6 +39,7 @@ const cookieUtils_1 = require("../util/cookieUtils");
 const authUtils = __importStar(require("../auth/authUtils"));
 const authSessions_1 = require("../auth/authSessions");
 const encryptionUtils_1 = require("../util/encryptionUtils");
+const constants_1 = require("../util/constants");
 exports.hangoutMembersRouter = express_1.default.Router();
 exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
     ;
@@ -121,11 +122,11 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
         }
         ;
         const userDetails = userRows[0];
-        if (userDetails.joined_hangouts_counts >= hangoutValidation_1.ongoingHangoutsLimit) {
+        if (userDetails.joined_hangouts_counts >= constants_1.ONGOING_HANGOUTS_LIMIT) {
             await connection.rollback();
             res.status(409).json({
                 success: false,
-                message: `You've reached the limit of ${hangoutValidation_1.ongoingHangoutsLimit} ongoing hangouts.`,
+                message: `You've reached the limit of ${constants_1.ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
                 reason: 'hangoutsLimitReached',
             });
             return;
@@ -171,15 +172,14 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
             return;
         }
         ;
-        await connection.execute(`INSERT INTO hangout_members(
+        await connection.execute(`INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'account', authSessionDetails.user_id, null, userDetails.display_name, false]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'account', authSessionDetails.user_id, null, userDetails.display_name, false]);
         await connection.commit();
         res.json({ success: true, resData: {} });
     }
@@ -284,23 +284,21 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
         }
         ;
         const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
-        const [resultSetHeader] = await connection.execute(`INSERT INTO guests(
+        const [resultSetHeader] = await connection.execute(`INSERT INTO guests (
         username,
         hashed_password,
         display_name,
         hangout_id
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]);
         const guestId = resultSetHeader.insertId;
-        await connection.execute(`INSERT INTO hangout_members(
+        await connection.execute(`INSERT INTO hangout_members (
         hangout_id,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]);
         await connection.commit();
         const authSessionCreated = await (0, authSessions_1.createAuthSession)(res, {
             user_id: guestId,
@@ -397,7 +395,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutId]);
+      LIMIT ${constants_1.HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -663,7 +661,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutId]);
+      LIMIT ${constants_1.HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });
@@ -801,7 +799,7 @@ exports.hangoutMembersRouter.patch('/claimLeadership', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${hangoutValidation_1.hangoutMemberLimit};`, [requestData.hangoutId]);
+      LIMIT ${constants_1.HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });

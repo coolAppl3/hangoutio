@@ -79,12 +79,11 @@ async function concludeNoSuggestionHangouts() {
         }
         ;
         hangoutValuesString = hangoutValuesString.slice(0, -1);
-        await db_1.dbPool.execute(`INSERT INTO hangout_events(
+        await db_1.dbPool.execute(`INSERT INTO hangout_events (
         hangout_id,
         event_description,
         event_timestamp
-      )
-      VALUES ${hangoutValuesString};`);
+      ) VALUES ${hangoutValuesString};`);
     }
     catch (err) {
         console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
@@ -194,7 +193,7 @@ async function archiveHangouts() {
         archivedHangoutValues = archivedHangoutValues.slice(0, -1);
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        await connection.execute(`INSERT INTO hangouts_archive(
+        await connection.execute(`INSERT INTO hangouts_archive (
         hangout_id,
         hangout_title,
         created_on_timestamp,
@@ -202,15 +201,13 @@ async function archiveHangouts() {
         total_members,
         suggestion_title,
         suggestion_description
-      )
-      VALUES ${archivedHangoutValues};`);
-        await connection.execute(`INSERT INTO hangout_members_archive(
+      ) VALUES ${archivedHangoutValues};`);
+        await connection.execute(`INSERT INTO hangout_members_archive( 
         hangout_id,
         account_id,
         display_name,
         is_leader
-      )
-      VALUES ${archivedHangoutMembersValues};`);
+      ) VALUES ${archivedHangoutMembersValues};`);
         const [resultSetHeader] = await connection.execute(`DELETE FROM
         hangouts
       WHERE

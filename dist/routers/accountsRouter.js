@@ -40,6 +40,7 @@ const authSessions_1 = require("../auth/authSessions");
 const cookieUtils_1 = require("../util/cookieUtils");
 const authUtils = __importStar(require("../auth/authUtils"));
 const accountServices_1 = require("../util/accountServices");
+const constants_1 = require("../util/constants");
 exports.accountsRouter = express_1.default.Router();
 exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
@@ -121,28 +122,24 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         const verificationCode = (0, tokenGenerator_1.generateUniqueCode)();
         const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
         const createdOnTimestamp = Date.now();
-        const verificationWindowMilliseconds = 1000 * 60 * 20;
-        const verificationExpiryTimestamp = createdOnTimestamp + verificationWindowMilliseconds;
-        const [resultSetHeader] = await connection.execute(`INSERT INTO accounts(
+        const verificationExpiryTimestamp = createdOnTimestamp + constants_1.ACCOUNT_VERIFICATION_WINDOW;
+        const [resultSetHeader] = await connection.execute(`INSERT INTO accounts (
         email,
         hashed_password,
         username,
         display_name,
         created_on_timestamp,
         is_verified,
-        failed_sign_in_attempts,
-        marked_for_deletion
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(8)});`, [requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0, false]);
+        failed_sign_in_attempts
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(7)});`, [requestData.email, hashedPassword, requestData.username, requestData.displayName, createdOnTimestamp, false, 0]);
         const accountId = resultSetHeader.insertId;
-        await connection.execute(`INSERT INTO account_verification(
+        await connection.execute(`INSERT INTO account_verification (
         account_id,
         verification_code,
         verification_emails_sent,
         failed_verification_attempts,
         expiry_timestamp
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountId, verificationCode, 1, 0, verificationExpiryTimestamp]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountId, verificationCode, 1, 0, verificationExpiryTimestamp]);
         await connection.commit();
         res.status(201).json({ success: true, resData: { accountId, verificationExpiryTimestamp } });
         await (0, emailServices_1.sendVerificationEmail)({
@@ -226,7 +223,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
             return;
         }
         ;
-        if (accountDetails.verification_emails_sent >= 3) {
+        if (accountDetails.verification_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
             res.status(403).json({ success: false, message: 'Verification emails limit reached.', reason: 'limitReached' });
             return;
         }
@@ -308,9 +305,9 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
             return;
         }
         ;
-        const isCorrectVerificationCode = requestData.verificationCode == accountDetails.verification_code;
+        const isCorrectVerificationCode = requestData.verificationCode === accountDetails.verification_code;
         if (!isCorrectVerificationCode) {
-            if (accountDetails.failed_verification_attempts + 1 >= 3) {
+            if (accountDetails.failed_verification_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 await db_1.dbPool.execute(`DELETE FROM
             accounts
           WHERE
@@ -400,8 +397,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         account_id,
         hashed_password,
         is_verified,
-        failed_sign_in_attempts,
-        marked_for_deletion
+        failed_sign_in_attempts
       FROM
         accounts
       WHERE
@@ -413,12 +409,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         const accountDetails = accountRows[0];
-        if (accountDetails.marked_for_deletion) {
-            res.status(404).json({ success: false, message: 'Account not found.' });
-            return;
-        }
-        ;
-        if (accountDetails.failed_sign_in_attempts >= 5) {
+        if (accountDetails.failed_sign_in_attempts >= constants_1.FAILED_SIGN_IN_LIMIT) {
             res.status(403).json({ success: false, message: 'Account locked.', reason: 'accountLocked' });
             return;
         }
@@ -461,7 +452,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
+exports.accountsRouter.post('/recovery/start', async (req, res) => {
     ;
     const requestData = req.body;
     const expectedKeys = ['email'];
@@ -477,7 +468,7 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: `Can't recover account while signed in.`, reason: 'signedIn' });
+        res.status(403).json({ success: false, message: 'Must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -487,11 +478,7 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
         accounts.account_id,
         accounts.display_name,
         accounts.is_verified,
-        accounts.marked_for_deletion,
-        account_recovery.recovery_id,
-        account_recovery.recovery_token,
         account_recovery.expiry_timestamp,
-        account_recovery.recovery_emails_sent,
         account_recovery.failed_recovery_attempts
       FROM
         accounts
@@ -506,60 +493,111 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
         }
         ;
         const accountDetails = accountRows[0];
-        if (accountDetails.marked_for_deletion) {
-            res.status(404).json({ success: false, message: 'Account not found.' });
-            return;
-        }
-        ;
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: 'Account unverified.', reason: 'unverified' });
+            res.status(403).json({ success: false, message: `Can't recover an unverified accounts.`, reason: 'unverified' });
             return;
         }
         ;
-        if (!accountDetails.recovery_id) {
-            const recoveryToken = (0, tokenGenerator_1.generateUniqueToken)();
-            const hourMilliseconds = 1000 * 60 * 60;
-            const expiryTimestamp = Date.now() + hourMilliseconds;
-            await db_1.dbPool.execute(`INSERT INTO account_recovery(
+        if (accountDetails.expiry_timestamp) {
+            if (accountDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
+                res.status(403).json({
+                    success: false,
+                    message: 'Recovery suspended.',
+                    reason: 'recoverySuspended',
+                    resData: {
+                        expiryTimestamp: accountDetails.expiry_timestamp,
+                    },
+                });
+                return;
+            }
+            ;
+            res.status(403).json({
+                success: false,
+                message: 'Ongoing recovery request detected.',
+                reason: 'ongoingRequest',
+                resData: {
+                    expiryTimestamp: accountDetails.expiry_timestamp,
+                },
+            });
+            return;
+        }
+        ;
+        const recoveryToken = (0, tokenGenerator_1.generateUniqueToken)();
+        const expiryTimestamp = Date.now() + constants_1.ACCOUNT_RECOVERY_WINDOW;
+        await db_1.dbPool.execute(`INSERT INTO account_recovery (
           account_id,
           recovery_token,
           expiry_timestamp,
           recovery_emails_sent,
           failed_recovery_attempts
-        )
-        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]);
-            res.json({ success: true, resData: { expiryTimestamp } });
-            await (0, emailServices_1.sendRecoveryEmail)({
-                to: requestData.email,
-                accountId: accountDetails.account_id,
-                recoveryToken,
-                expiryTimestamp,
-                displayName: accountDetails.display_name,
+        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]);
+        res.json({ success: true, resData: { expiryTimestamp } });
+        await (0, emailServices_1.sendRecoveryEmail)({
+            to: requestData.email,
+            accountId: accountDetails.account_id,
+            recoveryToken,
+            expiryTimestamp,
+            displayName: accountDetails.display_name,
+        });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+    ;
+});
+exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
+    ;
+    const requestData = req.body;
+    const expectedKeys = ['email'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!userValidation.isValidEmail(requestData.email)) {
+        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
+        return;
+    }
+    ;
+    try {
+        ;
+        const [accountRows] = await db_1.dbPool.execute(`SELECT
+        accounts.account_id,
+        accounts.display_name,
+        account_recovery.recovery_token
+        account_recovery.expiry_timestamp,
+        account_recovery.recovery_emails_sent,
+        account_recovery.failed_recovery_attempts
+      FROM
+        accounts
+      LEFT JOIN
+        account_recovery ON accounts.account_id = account_recovery.account_id
+      WHERE
+        accounts.email = ?;`, [requestData.email]);
+        if (accountRows.length === 0) {
+            res.status(404).json({ success: false, message: 'Account not found.' });
+            return;
+        }
+        ;
+        const accountDetails = accountRows[0];
+        if (!accountDetails.recovery_token) {
+            res.status(404).json({ success: false, message: 'Recovery request not found.' });
+            return;
+        }
+        ;
+        if (accountDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
+            res.status(403).json({
+                success: false,
+                message: 'Recovery request suspended.',
+                reason: 'requestSuspended',
+                resData: { expiryTimestamp: accountDetails.expiry_timestamp },
             });
             return;
         }
         ;
-        if (accountDetails.recovery_emails_sent >= 3) {
-            res.status(403).json({
-                success: false,
-                message: 'Recovery email limit has been reached.',
-                reason: 'emailLimitReached',
-                resData: {
-                    expiryTimestamp: accountDetails.expiry_timestamp,
-                },
-            });
-            return;
-        }
-        ;
-        if (accountDetails.failed_recovery_attempts >= 3) {
-            res.status(403).json({
-                success: false,
-                message: 'Too many failed recovery attempts.',
-                reason: 'failureLimitReached',
-                resData: {
-                    expiryTimestamp: accountDetails.expiry_timestamp,
-                },
-            });
+        if (accountDetails.recovery_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
+            res.status(409).json({ success: false, message: 'Recovery emails limit reached.' });
             return;
         }
         ;
@@ -568,16 +606,17 @@ exports.accountsRouter.post('/recovery/sendEmail', async (req, res) => {
       SET
         recovery_emails_sent = recovery_emails_sent + 1
       WHERE
-        recovery_id = ?;`, [accountDetails.recovery_id]);
+        account_id = ?
+      LIMIT 1;`, [accountDetails.user_id]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: { expiryTimestamp: accountDetails.expiry_timestamp } });
+        res.json({ success: true, resData: {} });
         await (0, emailServices_1.sendRecoveryEmail)({
             to: requestData.email,
-            accountId: accountDetails.account_id,
+            accountId: accountDetails.user_id,
             recoveryToken: accountDetails.recovery_token,
             expiryTimestamp: accountDetails.expiry_timestamp,
             displayName: accountDetails.display_name,
@@ -638,7 +677,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         }
         ;
         const recoveryDetails = recoveryRows[0];
-        if (recoveryDetails.failed_recovery_attempts >= 3) {
+        if (recoveryDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 success: false,
                 message: 'Too many failed recovery attempts.',
@@ -657,7 +696,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
           failed_recovery_attempts = failed_recovery_attempts + 1
         WHERE
           recovery_id = ?;`, [recoveryDetails.recovery_id]);
-            if (recoveryDetails.failed_recovery_attempts + 1 >= 3) {
+            if (recoveryDetails.failed_recovery_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(401).json({
                     success: false,
                     message: 'Incorrect recovery token. Recovery suspended',
@@ -786,15 +825,13 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         ;
         if (!accountDetails.expiry_timestamp) {
             const confirmationCode = (0, tokenGenerator_1.generateUniqueCode)();
-            const hourMilliseconds = 1000 * 60 * 60;
-            const expiryTimestamp = Date.now() + hourMilliseconds;
-            await db_1.dbPool.execute(`INSERT INTO account_deletion(
+            const expiryTimestamp = Date.now() + constants_1.ACCOUNT_DELETION_WINDOW;
+            await db_1.dbPool.execute(`INSERT INTO account_deletion (
         account_id,
         confirmation_code,
         expiry_timestamp,
         failed_deletion_attempts
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, confirmationCode, expiryTimestamp]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, confirmationCode, expiryTimestamp]);
             res.json({ success: true, resData: {} });
             await (0, emailServices_1.sendDeletionConfirmationEmail)({
                 to: accountDetails.email,
@@ -804,7 +841,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
             return;
         }
         ;
-        const requestSuspended = accountDetails.failed_deletion_attempts >= 3;
+        const requestSuspended = accountDetails.failed_deletion_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
         if (requestSuspended) {
             res.status(403).json({
                 success: false,
@@ -876,7 +913,7 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         }
         ;
         const authSessionDetails = authSessionRows[0];
-        if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -919,7 +956,7 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
             return;
         }
         ;
-        const requestSuspended = accountDetails.failed_deletion_attempts >= 3;
+        const requestSuspended = accountDetails.failed_deletion_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
         if (requestSuspended) {
             res.status(403).json({
                 success: false,
@@ -932,14 +969,15 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         ;
         const isCorrectConfirmationCode = accountDetails.confirmation_code === requestData.confirmationCode;
         if (!isCorrectConfirmationCode) {
-            const toBeSuspended = accountDetails.failed_deletion_attempts + 1 >= 3;
+            const toBeSuspended = accountDetails.failed_deletion_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
             if (toBeSuspended) {
                 await (0, authSessions_1.purgeAuthSessions)(authSessionDetails.user_id, 'account');
                 (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             }
             ;
-            const dayMilliseconds = 1000 * 60 * 60 * 24;
-            const expiryTimestampValue = toBeSuspended ? Date.now() + dayMilliseconds : accountDetails.expiry_timestamp;
+            const expiryTimestampValue = toBeSuspended
+                ? Date.now() + constants_1.ACCOUNT_DELETION_SUSPENSION_WINDOW
+                : accountDetails.expiry_timestamp;
             await db_1.dbPool.execute(`UPDATE
           account_deletion
         SET
@@ -1184,7 +1222,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         }
         ;
         if (accountDetails.expiry_timestamp) {
-            if (accountDetails.failed_update_attempts >= 3) {
+            if (accountDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(403).json({
                     success: false,
                     message: 'Request is suspended due to too many failed attempts.',
@@ -1221,17 +1259,15 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         }
         ;
         const newVerificationCode = (0, tokenGenerator_1.generateUniqueCode)();
-        const dayMilliseconds = 1000 * 60 * 60 * 24;
-        const expiryTimestamp = Date.now() + dayMilliseconds;
-        await connection.execute(`INSERT INTO email_update(
+        const expiryTimestamp = Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW;
+        await connection.execute(`INSERT INTO email_update (
           account_id,
           new_email,
           verification_code,
           expiry_timestamp,
           update_emails_sent,
           failed_update_attempts
-        )
-        VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]);
+        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]);
         await connection.commit();
         res.json({ success: true, resData: {} });
         await (0, emailServices_1.sendEmailUpdateEmail)({
@@ -1280,7 +1316,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         }
         ;
         const authSessionDetails = authSessionRows[0];
-        if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -1306,7 +1342,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         }
         ;
         const emailUpdateDetails = emailUpdateRows[0];
-        if (emailUpdateDetails.failed_update_attempts >= 3) {
+        if (emailUpdateDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 success: false,
                 message: 'Request is suspended due to too many failed attempts.',
@@ -1316,7 +1352,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
             return;
         }
         ;
-        if (emailUpdateDetails.update_emails_sent >= 3) {
+        if (emailUpdateDetails.update_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
             res.status(409).json({ success: false, message: 'Update emails limit reached.' });
             return;
         }
@@ -1433,7 +1469,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             return;
         }
         ;
-        if (accountDetails.failed_update_attempts >= 3) {
+        if (accountDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 success: false,
                 message: 'Email update request suspended.',
@@ -1450,9 +1486,8 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         }
         ;
         if (requestData.verificationCode !== accountDetails.verification_code) {
-            const requestSuspended = accountDetails.failed_update_attempts + 1 >= 3;
-            const dayMilliseconds = 1000 * 60 * 60 * 24;
-            const suspendRequestQuery = requestSuspended ? `, expiry_timestamp = ${Date.now() + dayMilliseconds}` : '';
+            const requestSuspended = accountDetails.failed_update_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
+            const suspendRequestQuery = requestSuspended ? `, expiry_timestamp = ${Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW}` : '';
             await db_1.dbPool.execute(`UPDATE
             email_update
           SET
@@ -1738,12 +1773,11 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
             return;
         }
         ;
-        await db_1.dbPool.execute(`INSERT INTO friend_requests(
+        await db_1.dbPool.execute(`INSERT INTO friend_requests (
         requester_id,
         requestee_id,
         request_timestamp
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, requesteeId, Date.now()]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, requesteeId, Date.now()]);
         res.json({ success: true, resData: {} });
         return;
     }
@@ -1830,12 +1864,11 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
         const friendshipTimestamp = Date.now();
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        await connection.execute(`INSERT INTO friendships(
+        await connection.execute(`INSERT INTO friendships (
         first_account_id,
         second_account_id,
         friendship_timestamp
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, requesterId, friendshipTimestamp]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, requesterId, friendshipTimestamp]);
         const [resultSetHeader] = await connection.execute(`DELETE FROM
         friend_requests
       WHERE

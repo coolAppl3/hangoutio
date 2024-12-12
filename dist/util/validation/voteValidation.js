@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isAvailableForSuggestion = exports.votesLimit = void 0;
-exports.votesLimit = 3;
+exports.isAvailableForSuggestion = void 0;
 ;
 ;
 function isAvailableForSuggestion(suggestionTimeSlot, availabilitySlots) {

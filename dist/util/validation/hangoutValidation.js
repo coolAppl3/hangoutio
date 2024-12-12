@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = exports.ongoingHangoutsLimit = exports.hangoutMemberLimit = void 0;
-exports.hangoutMemberLimit = 20;
-exports.ongoingHangoutsLimit = 12;
+exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = void 0;
+const constants_1 = require("../constants");
 function isValidHangoutId(hangoutId) {
     if (typeof hangoutId !== 'string') {
         return false;
@@ -53,7 +52,7 @@ function isValidHangoutMemberLimit(limit) {
         return false;
     }
     ;
-    if (limit < 2 || limit > exports.hangoutMemberLimit) {
+    if (limit < 2 || limit > constants_1.HANGOUT_MEMBERS_LIMIT) {
         return false;
     }
     ;

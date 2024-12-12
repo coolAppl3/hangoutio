@@ -36,6 +36,7 @@ const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const cookieUtils_1 = require("../util/cookieUtils");
 const authUtils = __importStar(require("../auth/authUtils"));
 const authSessions_1 = require("../auth/authSessions");
+const constants_1 = require("../util/constants");
 exports.availabilitySlotsRouter = express_1.default.Router();
 exports.availabilitySlotsRouter.post('/', async (req, res) => {
     ;
@@ -118,7 +119,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });
@@ -151,7 +152,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
             slot_start_timestamp: member.slot_start_timestamp,
             slot_end_timestamp: member.slot_end_timestamp,
         }));
-        if (existingAvailabilitySlots.length >= availabilitySlotValidation.availabilitySlotsLimit) {
+        if (existingAvailabilitySlots.length >= constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
             await connection.rollback();
             res.status(409).json({ success: false, message: 'Availability slots limit reached.' });
             return;
@@ -163,13 +164,12 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        const [resultSetHeader] = await connection.execute(`INSERT INTO availability_slots(
+        const [resultSetHeader] = await connection.execute(`INSERT INTO availability_slots (
         hangout_member_id,
         hangout_id,
         slot_start_timestamp,
         slot_end_timestamp
-      )
-      VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, requestData.hangoutId, requestData.slotStartTimestamp, requestData.slotEndTimestamp]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, requestData.hangoutId, requestData.slotStartTimestamp, requestData.slotEndTimestamp]);
         await connection.commit();
         res.status(201).json({ success: true, resData: { availabilitySlotId: resultSetHeader.insertId } });
     }
@@ -270,7 +270,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });
@@ -451,7 +451,7 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -568,7 +568,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -596,7 +596,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         availability_slots
       WHERE
         hangout_member_id = ?
-      LIMIT ${availabilitySlotValidation.availabilitySlotsLimit};`, [requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
