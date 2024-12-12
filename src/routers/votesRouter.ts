@@ -148,7 +148,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       removeRequestCookie(res, 'authSessionId', true);
 
       await connection.rollback();
-      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
 
       return;
     };
@@ -385,7 +385,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'guestHangoutId', true);
 
-      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
     };
 
@@ -538,7 +538,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId', true);
 
-      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+      res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
     };
 
