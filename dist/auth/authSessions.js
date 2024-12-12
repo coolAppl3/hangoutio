@@ -38,9 +38,9 @@ async function createAuthSession(res, sessionConfig, attemptCount = 1) {
           session_id,
           user_id,
           user_type,
-          created_on_timestamp
+          created_on_timestamp,
           expiry_timestamp
-        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [newAuthSessionId, sessionConfig.user_id, sessionConfig.user_type, currentTimestamp, expiryTimestamp]);
+        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [newAuthSessionId, sessionConfig.user_id, sessionConfig.user_type, currentTimestamp, expiryTimestamp]);
             await connection.commit();
             (0, cookieUtils_1.setResponseCookie)(res, 'authSessionId', newAuthSessionId, maxAge, true);
             (0, cookieUtils_1.setResponseCookie)(res, 'signedInAs', sessionConfig.user_type, maxAge, false);

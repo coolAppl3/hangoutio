@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
+import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
 import ErrorSpan from "../../global/ErrorSpan";
@@ -129,10 +130,22 @@ export async function joinHangoutAsAccount(): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status == 401 && errReason === 'hangoutPassword') {
-      joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
-      return;
+    if (status == 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(window.location.href);
+        return;
+      };
 
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed(window.location.href);
+        return;
+      };
+
+      if (errReason === 'hangoutPassword') {
+        joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
+      };
+
+      return;
     };
 
     if (status === 403) {
@@ -164,12 +177,12 @@ export async function joinHangoutAsAccount(): Promise<void> {
     };
 
     if (status === 400) {
-      if (errReason === 'hangoutId') {
+      if (errReason === 'invalidHangoutId') {
         handleInvalidHangoutId();
         return;
       };
 
-      if (errReason === 'hangoutPassword') {
+      if (errReason === 'invalidHangoutPassword') {
         joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
       };
 
@@ -207,7 +220,7 @@ function isValidNotHangoutMemberData(errResData: unknown): errResData is ValidNo
 
 function handleGuestNotMember(): void {
   const confirmModal: HTMLDivElement = ConfirmModal.display({
-    title: `You're not a member of this hangout.`,
+    title: `You're signed in as a guest.`,
     description: 'This is not the hangout linked to your guest account.\nGuest accounts can only access the hangout they were created for.',
     confirmBtnTitle: 'Create a new guest account',
     cancelBtnTitle: 'Go to homepage',

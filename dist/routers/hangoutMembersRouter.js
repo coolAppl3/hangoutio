@@ -63,12 +63,12 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutID' });
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'invalidHangoutID' });
         return;
     }
     ;
     if (requestData.hangoutPassword && !(0, userValidation_1.isValidPassword)(requestData.hangoutPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout password', reason: 'hangoutPassword' });
+        res.status(400).json({ success: false, message: 'Invalid hangout password', reason: 'invalidHangoutPassword' });
         return;
     }
     ;
@@ -117,7 +117,7 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             await connection.rollback();
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -203,22 +203,22 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
+        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'invalidHangoutId' });
         return;
     }
     ;
     if (requestData.hangoutPassword && !(0, userValidation_1.isValidNewPassword)(requestData.hangoutPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'hangoutPassword' });
+        res.status(400).json({ success: false, message: 'Invalid hangout password.', reason: 'invalidHangoutPassword' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidUsername)(requestData.username)) {
-        res.status(400).json({ success: false, message: 'Invalid username.', reason: 'username' });
+        res.status(400).json({ success: false, message: 'Invalid username.', reason: 'invalidUsername' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidNewPassword)(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid user password.', reason: 'userPassword' });
+        res.status(400).json({ success: false, message: 'Invalid user password.', reason: 'invalidUserPassword' });
         return;
     }
     ;
@@ -228,7 +228,7 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
     }
     ;
     if (!(0, userValidation_1.isValidDisplayName)(requestData.displayName)) {
-        res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'displayName' });
+        res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'invalidDisplayName' });
         return;
     }
     ;
@@ -266,7 +266,7 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
         const isFull = hangoutDetails.member_count === hangoutDetails.member_limit;
         if (isFull) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Hangout full.', reason: 'hangoutFull' });
+            res.status(409).json({ success: false, message: 'Hangout is full.', reason: 'hangoutFull' });
             return;
         }
         ;
@@ -405,7 +405,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         if (!hangoutMember) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -536,7 +536,7 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
         if (hangoutMemberDetails[`${authSessionDetails.user_type}`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -673,7 +673,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             await connection.rollback();
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -811,7 +811,7 @@ exports.hangoutMembersRouter.patch('/claimLeadership', async (req, res) => {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             await connection.rollback();
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;

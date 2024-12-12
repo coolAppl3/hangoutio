@@ -145,22 +145,22 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
         return;
       };
 
-      displayIncorrectRecoveryLinkDataInfoModal(errMessage);
+      handleIncorrectRecoveryLink(errMessage);
       return;
     };
 
     if (status === 400) {
-      if (errReason === 'password') {
+      if (errReason === 'invalidPassword') {
         ErrorSpan.display(newPasswordInput, errMessage);
         return;
       };
 
-      displayIncorrectRecoveryLinkDataInfoModal(errMessage);
+      handleIncorrectRecoveryLink(errMessage);
     };
   };
 };
 
-function displayIncorrectRecoveryLinkDataInfoModal(errMessage: string): void {
+function handleIncorrectRecoveryLink(errMessage: string): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: errMessage,
     description: 'Make sure to click the correct link in your recovery email.',

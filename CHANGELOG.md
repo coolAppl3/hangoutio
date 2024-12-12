@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.4] (2024-12-12)
+
+### Code Refactoring
+
+- Improved the general look of emails in `emailTemplates.ts`.
+- Fixed error handling in a number of endpoints and services, fixing a few bugs along the way.
+- Included missing `authSessionDestroyed` reason in some 401 responses.
+- Removed unused date picker and time picker CSS from all scss files apart from `hangout.scss`.
+- Removed unnecessary `.html` from links in `emailTemplates.ts`.
+
+
+### Bug Fixes
+
+- Fixed auth sessions being deleted based off of an incorrect condition in `authCronJobs.ts`.
+- Fixed a bug in the auth session INSERT statement in `authSessions.ts`.
+
+
 ## [0.4.3] (2024-12-12)
 
 ### Features

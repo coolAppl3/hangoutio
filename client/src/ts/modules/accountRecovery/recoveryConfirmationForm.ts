@@ -61,9 +61,10 @@ async function resendAccountRecoveryEmail(e: SubmitEvent): Promise<void> {
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
     const errResData: unknown = axiosError.response.data.resData;
 
-    if (status === 400 || status === 404) {
+    if (status === 400) {
       popup('Something went wrong.', 'error');
       setTimeout(() => window.location.reload(), 1000);
 
@@ -73,7 +74,12 @@ async function resendAccountRecoveryEmail(e: SubmitEvent): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 403) {
+    if (status === 404) {
+      setTimeout(() => window.location.reload(), 1000);
+      return;
+    };
+
+    if (status === 403 && errReason === 'recoverySuspended') {
       if (!errResData || typeof errResData !== 'object') {
         return;
       };

@@ -91,7 +91,9 @@ async function accountSignIn(): Promise<void> {
 
     const afterAuthRedirectHref: string | null = Cookies.get('afterAuthRedirectHref');
     if (afterAuthRedirectHref) {
+      Cookies.remove('afterAuthRedirectHref');
       setTimeout(() => window.location.replace(afterAuthRedirectHref), 1000);
+
       return;
     };
 
@@ -136,16 +138,6 @@ async function accountSignIn(): Promise<void> {
       return;
     };
 
-    if (status === 401) {
-      ErrorSpan.display(accountPasswordInput, errMessage);
-
-      if (errReason === 'accountLocked') {
-        handleAccountLocked();
-      };
-
-      return;
-    };
-
     if (status === 403) {
       ErrorSpan.display(accountEmailInput, errMessage);
 
@@ -156,8 +148,8 @@ async function accountSignIn(): Promise<void> {
 
       if (errReason === 'unverified') {
         InfoModal.display({
-          title: 'Account unverified',
-          description: `You must first verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
+          title: 'Account is unverified.',
+          description: `You must verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
           btnTitle: 'Okay',
         }, { simple: true });
       };
@@ -167,8 +159,8 @@ async function accountSignIn(): Promise<void> {
 
     if (status === 400) {
       const inputRecord: Record<string, HTMLInputElement | undefined> = {
-        email: accountEmailInput,
-        password: accountPasswordInput,
+        invalidEmail: accountEmailInput,
+        invalidPassword: accountPasswordInput,
       };
 
       const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
@@ -251,8 +243,8 @@ async function guestSignIn(): Promise<void> {
 
     if (status === 400) {
       const inputRecord: Record<string, HTMLInputElement | undefined> = {
-        username: guestUsernameInput,
-        password: guestPasswordInput,
+        invalidUsername: guestUsernameInput,
+        invalidPassword: guestPasswordInput,
       };
 
       const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];

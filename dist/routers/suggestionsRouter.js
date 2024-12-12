@@ -141,7 +141,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             await connection.rollback();
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -293,7 +293,7 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -435,7 +435,7 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -552,7 +552,7 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -673,7 +673,7 @@ exports.suggestionsRouter.delete('/leader/delete', async (req, res) => {
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;

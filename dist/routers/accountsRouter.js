@@ -52,22 +52,22 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
     }
     ;
     if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
+        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
         return;
     }
     ;
     if (!userValidation.isValidDisplayName(requestData.displayName)) {
-        res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'displayName' });
+        res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'invalidDisplayName' });
         return;
     }
     ;
     if (!userValidation.isValidUsername(requestData.username)) {
-        res.status(400).json({ success: false, message: 'Invalid username.', reason: 'username' });
+        res.status(400).json({ success: false, message: 'Invalid username.', reason: 'invalidUsername' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.', reason: 'password' });
+        res.status(400).json({ success: false, message: 'Invalid password.', reason: 'invalidPassword' });
         return;
     }
     ;
@@ -78,7 +78,7 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: 'You must sign out before creating a new account.', reason: 'signedIn' });
+        res.status(403).json({ success: false, message: 'You must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -186,7 +186,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
     }
     ;
     if (!Number.isInteger(requestData.accountId)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'invalidAccountId' });
         return;
     }
     ;
@@ -224,7 +224,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         }
         ;
         if (accountDetails.verification_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(403).json({ success: false, message: 'Verification emails limit reached.', reason: 'limitReached' });
+            res.status(403).json({ success: false, message: 'Verification emails limit reached.', reason: 'emailLimitReached' });
             return;
         }
         ;
@@ -371,19 +371,19 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
 exports.accountsRouter.post('/signIn', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['email', 'password'];
+    const expectedKeys = ['email', 'password', 'keepSignedIn'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
+        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'password' });
+        res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'invalidPassword' });
         return;
     }
     ;
@@ -462,13 +462,13 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
     }
     ;
     if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'email' });
+        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
         return;
     }
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: 'Must sign out before proceeding.', reason: 'signedIn' });
+        res.status(403).json({ success: false, message: 'You must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -494,7 +494,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         ;
         const accountDetails = accountRows[0];
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: `Can't recover an unverified accounts.`, reason: 'unverified' });
+            res.status(403).json({ success: false, message: `Can't recover an unverified account.`, reason: 'accountUnverified' });
             return;
         }
         ;
@@ -576,21 +576,21 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
       WHERE
         accounts.email = ?;`, [requestData.email]);
         if (accountRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Account not found.' });
+            res.status(404).json({ success: false, message: 'Account not found.', reason: 'accountNotFound' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
         if (!accountDetails.recovery_token) {
-            res.status(404).json({ success: false, message: 'Recovery request not found.' });
+            res.status(404).json({ success: false, message: 'Recovery request not found.', reason: 'requestNotFound' });
             return;
         }
         ;
         if (accountDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 success: false,
-                message: 'Recovery request suspended.',
-                reason: 'requestSuspended',
+                message: 'Recovery suspended.',
+                reason: 'recoverySuspended',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
             });
             return;
@@ -638,23 +638,23 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
     }
     ;
     if (!Number.isInteger(requestData.accountId)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'invalidAccountId' });
         return;
     }
     ;
     if (!userValidation.isValidUniqueToken(requestData.recoveryToken)) {
-        res.status(400).json({ success: false, message: 'Invalid recovery token.', reason: 'recoveryToken' });
+        res.status(400).json({ success: false, message: 'Invalid recovery token.', reason: 'invalidRecoveryToken' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid new password.', reason: 'password' });
+        res.status(400).json({ success: false, message: 'Invalid new password.', reason: 'invalidPassword' });
         return;
     }
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: `Can't recover account while signed in.`, reason: 'signedIn' });
+        res.status(403).json({ success: false, message: 'You must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -672,7 +672,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         account_id = :accountId
       LIMIT 1;`, { accountId: requestData.accountId });
         if (recoveryRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Recovery request not found or has expired.' });
+            res.status(404).json({ success: false, message: 'Recovery request not found.' });
             return;
         }
         ;
@@ -680,8 +680,8 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         if (recoveryDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 success: false,
-                message: 'Too many failed recovery attempts.',
-                reason: 'failureLimitReached',
+                message: 'Recovery suspended.',
+                reason: 'recoverySuspended',
                 resData: {
                     expiryTimestamp: recoveryDetails.expiry_timestamp,
                 },
@@ -699,7 +699,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
             if (recoveryDetails.failed_recovery_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(401).json({
                     success: false,
-                    message: 'Incorrect recovery token. Recovery suspended',
+                    message: 'Incorrect recovery token.',
                     reason: 'recoverySuspended',
                     requestData: {
                         expiryTimestamp: recoveryDetails.expiry_timestamp,
@@ -812,7 +812,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -1085,7 +1085,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -1211,7 +1211,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -1459,7 +1459,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -1624,7 +1624,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.' });
+            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;

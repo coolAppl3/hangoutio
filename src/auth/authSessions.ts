@@ -58,9 +58,9 @@ export async function createAuthSession(res: Response, sessionConfig: CreateAuth
           session_id,
           user_id,
           user_type,
-          created_on_timestamp
+          created_on_timestamp,
           expiry_timestamp
-        ) VALUES (${generatePlaceHolders(4)});`,
+        ) VALUES (${generatePlaceHolders(5)});`,
         [newAuthSessionId, sessionConfig.user_id, sessionConfig.user_type, currentTimestamp, expiryTimestamp]
       );
 

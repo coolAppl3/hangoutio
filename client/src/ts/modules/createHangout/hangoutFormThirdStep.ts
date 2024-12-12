@@ -152,43 +152,39 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 409) {
-      if (errReason === 'duplicateHangoutId') {
-        await createHangoutAsAccount(++attemptCount);
-        return;
-      };
-
-      if (errReason === 'hangoutsLimitReached') {
-        LoadingModal.remove();
-        handleHangoutsLimitReached(errMessage);
-      };
-
+    if (status === 409 && errReason === 'duplicationHangoutId') {
+      await createHangoutAsAccount(++attemptCount);
       return;
     };
 
     popup(errMessage, 'error');
     LoadingModal.remove();
 
+    if (status === 409 && errReason === 'hangoutsLimitReached') {
+      handleHangoutsLimitReached(errMessage);
+      return;
+    };
+
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired('create-hangout');
+        handleAuthSessionExpired(window.location.href);
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed('create-hangout');
+        handleAuthSessionDestroyed(window.location.href);
       };
 
       return;
     };
 
     if (status === 400) {
-      if (errReason === 'hangoutTitle') {
+      if (errReason === 'invalidHangoutTitle') {
         displayFirstStepError('Invalid hangout title.', 'title');
         return;
       };
 
-      if (errReason === 'hangoutPassword') {
+      if (errReason === 'invalidHangoutPassword') {
         displayFirstStepError('Invalid hangout password.', 'password');
       };
     };
@@ -291,9 +287,9 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
     const inputRecord: Record<string, HTMLInputElement | undefined> = {
       guestUsernameTaken: guestUsernameInput,
-      guestDisplayName: guestDisplayNameInput,
-      username: guestUsernameInput,
-      guestPassword: guestPasswordInput,
+      invalidDisplayName: guestDisplayNameInput,
+      invalidUsername: guestUsernameInput,
+      invalidGuestPassword: guestPasswordInput,
       passwordEqualsUsername: guestPasswordInput,
     };
 
@@ -313,12 +309,12 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
         return;
       };
 
-      if (errReason === 'hangoutTitle') {
+      if (errReason === 'invalidHangoutTitle') {
         displayFirstStepError(errMessage, 'title');
         return;
       };
 
-      if (errReason === 'hangoutPassword') {
+      if (errReason === 'invalidHangoutPassword') {
         displayFirstStepError(errMessage, 'password');
       };
     };
@@ -376,16 +372,6 @@ async function accountSignIn(): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 401) {
-      ErrorSpan.display(accountPasswordInput, errMessage);
-
-      if (errReason === 'accountLocked') {
-        handleAccountLocked();
-      };
-
-      return;
-    };
-
     if (status === 403 || status === 404) {
       ErrorSpan.display(accountEmailInput, errMessage);
       return;
@@ -393,8 +379,8 @@ async function accountSignIn(): Promise<void> {
 
     if (status === 400) {
       const inputRecord: Record<string, HTMLInputElement | undefined> = {
-        email: accountEmailInput,
-        password: accountPasswordInput,
+        invalidEmail: accountEmailInput,
+        invalidPassword: accountPasswordInput,
       };
 
       const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
