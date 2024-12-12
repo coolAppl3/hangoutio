@@ -34,8 +34,7 @@ async function createAccountsTable(): Promise<void> {
         display_name VARCHAR(40) NOT NULL,
         created_on_timestamp BIGINT NOT NULL,
         is_verified BOOLEAN NOT NULL,
-        failed_sign_in_attempts INT NOT NULL CHECK(failed_sign_in_attempts <= 5),
-        marked_for_deletion BOOLEAN NOT NULL
+        failed_sign_in_attempts INT NOT NULL CHECK(failed_sign_in_attempts <= 5)
       );`
     );
 

@@ -54,14 +54,13 @@ export async function createAuthSession(res: Response, sessionConfig: CreateAuth
 
     if (sessionRows.length < 3) {
       await connection.execute(
-        `INSERT INTO auth_sessions(
+        `INSERT INTO auth_sessions (
           session_id,
           user_id,
           user_type,
           created_on_timestamp
           expiry_timestamp
-        )
-        VALUES(${generatePlaceHolders(4)});`,
+        ) VALUES (${generatePlaceHolders(4)});`,
         [newAuthSessionId, sessionConfig.user_id, sessionConfig.user_type, currentTimestamp, expiryTimestamp]
       );
 

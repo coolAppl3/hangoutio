@@ -3,11 +3,11 @@ import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 
-export function displayRecoveryExpiryInfoModal(): void {
+export function handleRecoveryExpired(): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Recovery request expired.',
-    description: 'Have no worries, you can start the account recovery process again.',
-    btnTitle: 'Okay',
+    description: null,
+    btnTitle: 'Start again',
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
@@ -41,25 +41,27 @@ export function reloadWithoutQueryString(): void {
 };
 
 export function getMinutesTillRecoveryExpiry(expiryTimestamp: number): number {
+  const minuteMilliseconds: number = 1000 * 60;
   const timeTillRequestExpiry: number = expiryTimestamp - Date.now();
 
   if (timeTillRequestExpiry <= 0) {
     return 0;
   };
 
-  if (timeTillRequestExpiry < 1000 * 60) {
+  if (timeTillRequestExpiry < minuteMilliseconds) {
     return 1;
   };
 
-  return Math.ceil(timeTillRequestExpiry / (1000 * 60));
+  return Math.ceil(timeTillRequestExpiry / minuteMilliseconds);
 };
 
-export function displayFailureLimitReachedInfoModal(errMessage: string, expiryTimestamp: number): void {
+export function handleRecoverySuspended(expiryTimestamp: number): void {
   const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(expiryTimestamp);
+  const minutesRemainingString: string = minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`;
 
   InfoModal.display({
-    title: errMessage,
-    description: `You can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
+    title: 'Recovery suspended.',
+    description: `You can start the recovery process again in ${minutesRemainingString}.`,
     btnTitle: 'Okay',
   }, { simple: true });
 };
@@ -78,7 +80,7 @@ export function initRecoveryTimers(): void {
 export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanElement>, intervalId: number): void {
   if (!recoveryState.expiryTimestamp) {
     for (const timer of requestExpiryTimers) {
-      timer.classList.add('displayed');
+      timer.classList.remove('displayed');
     };
 
     clearInterval(intervalId);
@@ -93,7 +95,7 @@ export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanEleme
 
   if (timerValue === '00:00') {
     clearInterval(intervalId);
-    displayRecoveryExpiryInfoModal();
+    handleRecoveryExpired();
   };
 };
 
@@ -115,7 +117,7 @@ function getTimeTillRecoveryExpiry(expiryTimestamp: number): string {
   return timeTillExpiry;
 };
 
-export function handleUserSignedIn(): void {
+export function handleSignedInUser(): void {
   InfoModal.display({
     title: `You're signed in.`,
     description: 'You must sign out before proceeding.',

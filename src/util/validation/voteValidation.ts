@@ -1,6 +1,3 @@
-
-export const votesLimit: number = 3;
-
 interface SuggestionTimeSlot {
   start: number,
   end: number,
@@ -38,7 +35,7 @@ function intersectsWithAvailabilitySlot(suggestionTimeSlot: SuggestionTimeSlot, 
   };
 
   // --- --- --- ---       | suggestion slot
-  //      --- --- --- ---  | availability slot
+  //     --- --- --- ---   | availability slot
   if (suggestionTimeSlot.end <= availabilitySlot.end && suggestionTimeSlot.end - availabilitySlot.start >= hourMilliseconds) {
     return true;
   };

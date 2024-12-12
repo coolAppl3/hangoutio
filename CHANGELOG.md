@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.3] (2024-12-12)
+
+### Features
+
+- Added `constants.ts` to improve readability and modularity.
+- Added POST `accounts/recovery/start` to decouple the start of the recovery process from email-resend functionality.
+
+
+### Code Refactoring
+
+- Removed `marked_for_deletion` column from the `accounts` table as it's no longer needed.
+- Renamed POST `/recovery/sendEmail` to `POST /recovery/start`.
+- Improved the look aesthetic look of `INSERT` statements throughout the app.
+
+
+### Bug Fixes
+
+- Fixed the account `INSERT` query in POST `accounts/signUp` having an incorrect number of placeholders.
+- Fixed `isValidAuthSessionDetails()` not specifying an `account` user type when used in account-only endpoints.
+
+
 ## [0.4.2] (2024-12-11)
 
 ### Features

@@ -130,13 +130,12 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
     const messageTimestamp: number = Date.now();
 
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
-      `INSERT INTO chat(
+      `INSERT INTO chat (
         hangout_member_id,
         hangout_id,
         message_content,
         message_timestamp
-      )
-      VALUES(${generatePlaceHolders(4)});`,
+      ) VALUES (${generatePlaceHolders(4)});`,
       [requestData.hangoutMemberId, hangoutMemberDetails.hangout_id, requestData.messageContent, messageTimestamp]
     );
 

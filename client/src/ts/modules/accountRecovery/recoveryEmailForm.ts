@@ -5,11 +5,11 @@ import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { isValidQueryString, isValidTimestamp, isValidUniqueToken, validateEmail } from "../global/validation";
-import { SendRecoveryEmailData, sendRecoveryEmailService } from "../services/accountServices";
+import { SendRecoveryEmailData, startAccountRecoveryService } from "../services/accountServices";
 import { signOut } from "../global/signOut";
 import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
-import { displayFailureLimitReachedInfoModal, displayRecoveryExpiryInfoModal, getMinutesTillRecoveryExpiry, handleUserSignedIn, initRecoveryTimers, updateDisplayedForm } from "./recoveryUtils";
+import { handleRecoverySuspended, handleRecoveryExpired, getMinutesTillRecoveryExpiry, handleSignedInUser, initRecoveryTimers, updateDisplayedForm } from "./recoveryUtils";
 
 const recoveryEmailFormElement: HTMLFormElement | null = document.querySelector('#recovery-email-form');
 const recoveryEmailInput: HTMLInputElement | null = document.querySelector('#recovery-email-input');
@@ -33,10 +33,10 @@ async function init(): Promise<void> {
 };
 
 function loadEventListeners(): void {
-  recoveryEmailFormElement?.addEventListener('submit', sendRecoveryEmail);
+  recoveryEmailFormElement?.addEventListener('submit', startAccountRecovery);
 };
 
-async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
+async function startAccountRecovery(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
 
@@ -64,7 +64,7 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
   recoveryState.recoveryEmail = recoveryEmailInput.value;
 
   try {
-    const sendRecoveryEmailData: AxiosResponse<SendRecoveryEmailData> = await sendRecoveryEmailService({ email: recoveryState.recoveryEmail });
+    const sendRecoveryEmailData: AxiosResponse<SendRecoveryEmailData> = await startAccountRecoveryService({ email: recoveryState.recoveryEmail });
     const expiryTimestamp: number = sendRecoveryEmailData.data.resData.expiryTimestamp;
 
     recoveryState.expiryTimestamp = expiryTimestamp;
@@ -113,7 +113,7 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
 
     if (status === 403) {
       if (errReason === 'signedIn') {
-        handleUserSignedIn();
+        handleSignedInUser();
         return;
       };
 
@@ -124,13 +124,13 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
           return;
         };
 
-        if (errReason === 'emailLimitReached') {
-          displayEmailLimitReachedInfoModal(errMessage, errResData.expiryTimestamp);
+        if (errReason === 'ongoingRequest') {
+          handleOngoingRequestDetected();
           return;
         };
 
-        if (errReason === 'failureLimitReached') {
-          displayFailureLimitReachedInfoModal(errMessage, errResData.expiryTimestamp);
+        if (errReason === 'recoverySuspended') {
+          handleRecoverySuspended(errResData.expiryTimestamp);
         };
       };
 
@@ -143,14 +143,22 @@ async function sendRecoveryEmail(e: SubmitEvent): Promise<void> {
   };
 };
 
-function displayEmailLimitReachedInfoModal(errMessage: string, expiryTimestamp: number): void {
-  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(expiryTimestamp);
+function handleOngoingRequestDetected(): void {
+  const infoModal: HTMLDivElement = InfoModal.display({
+    title: 'Ongoing recovery request detected.',
+    description: 'Please check your inbox for a recovery email and follow its instructions.',
+    btnTitle: 'Go to homepage',
+  });
 
-  InfoModal.display({
-    title: errMessage,
-    description: `Make sure to check your spam and junk folders for the recovery email.\nIf you still can't find it, you can start the recovery process again in ${minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`}.`,
-    btnTitle: 'Okay',
-  }, { simple: true });
+  infoModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
+
+    if (e.target.id === 'info-modal-btn') {
+      window.location.href = 'home';
+    };
+  });
 };
 
 function setActiveValidation(): void {
@@ -165,21 +173,21 @@ function recoveryLinkDetected(): boolean {
   };
 
   if (!isValidQueryString(url.search)) {
-    displayInvalidRecoveryLinkModal();
+    handleInvalidRecoveryLink();
     return false;
   };
 
   const recoveryLinkDetails: RecoveryLinkDetails | null = getRecoveryLinkDetails(url);
 
   if (!recoveryLinkDetails) {
-    displayInvalidRecoveryLinkModal();
+    handleInvalidRecoveryLink();
     return false;
   };
 
   const { recoveryAccountId, expiryTimestamp, recoveryToken } = recoveryLinkDetails;
 
-  if (expiryTimestamp >= Date.now()) {
-    displayRecoveryExpiryInfoModal();
+  if (Date.now() >= expiryTimestamp) {
+    handleRecoveryExpired();
     return false;
   };
 
@@ -266,7 +274,7 @@ function detectSignedInUser(): void {
   });
 };
 
-function displayInvalidRecoveryLinkModal(): void {
+function handleInvalidRecoveryLink(): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Invalid recovery link.',
     description: `Please ensure your click the correct link in your recovery email.`,

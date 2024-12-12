@@ -94,12 +94,11 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
     hangoutValuesString = hangoutValuesString.slice(0, -1);
 
     await dbPool.execute(
-      `INSERT INTO hangout_events(
+      `INSERT INTO hangout_events (
         hangout_id,
         event_description,
         event_timestamp
-      )
-      VALUES ${hangoutValuesString};`
+      ) VALUES ${hangoutValuesString};`
     );
 
   } catch (err: any) {
@@ -247,7 +246,7 @@ export async function archiveHangouts(): Promise<void> {
     await connection.beginTransaction();
 
     await connection.execute(
-      `INSERT INTO hangouts_archive(
+      `INSERT INTO hangouts_archive (
         hangout_id,
         hangout_title,
         created_on_timestamp,
@@ -255,18 +254,16 @@ export async function archiveHangouts(): Promise<void> {
         total_members,
         suggestion_title,
         suggestion_description
-      )
-      VALUES ${archivedHangoutValues};`
+      ) VALUES ${archivedHangoutValues};`
     );
 
     await connection.execute(
-      `INSERT INTO hangout_members_archive(
+      `INSERT INTO hangout_members_archive( 
         hangout_id,
         account_id,
         display_name,
         is_leader
-      )
-      VALUES ${archivedHangoutMembersValues};`
+      ) VALUES ${archivedHangoutMembersValues};`
     );
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(

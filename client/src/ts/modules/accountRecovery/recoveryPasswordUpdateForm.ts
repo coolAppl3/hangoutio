@@ -1,7 +1,7 @@
 import { RecoveryStage, recoveryState } from "./recoveryState";
 import LoadingModal from "../global/LoadingModal";
 import { validateConfirmPassword, validateNewPassword } from "../global/validation";
-import { displayFailureLimitReachedInfoModal, getMinutesTillRecoveryExpiry, handleUserSignedIn, reloadWithoutQueryString, } from "./recoveryUtils";
+import { handleRecoverySuspended, getMinutesTillRecoveryExpiry, handleSignedInUser, reloadWithoutQueryString, } from "./recoveryUtils";
 import revealPassword from "../global/revealPassword";
 import popup from "../global/popup";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
@@ -120,7 +120,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
 
     if (status === 403) {
       if (errReason === 'signedIn') {
-        handleUserSignedIn();
+        handleSignedInUser();
         return;
       };
 
@@ -135,7 +135,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
       const expiryTimestamp: number = errResData.expiryTimestamp;
       recoveryState.expiryTimestamp = expiryTimestamp;
 
-      displayFailureLimitReachedInfoModal(errMessage, recoveryState.expiryTimestamp);
+      handleRecoverySuspended(recoveryState.expiryTimestamp);
       return;
     };
 
@@ -200,9 +200,11 @@ function handleRecoverySuspension(errResData: unknown): void {
   };
 
   const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.expiryTimestamp);
+  const minutesRemainingString: string = minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`;
+
   const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Recovery request suspended.',
-    description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`}.`,
+    description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesRemainingString}.`,
     btnTitle: 'Okay',
   });
 

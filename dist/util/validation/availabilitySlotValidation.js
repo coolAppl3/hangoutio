@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.intersectsWithExistingSlots = exports.isValidAvailabilitySlotStart = exports.isValidAvailabilitySlot = exports.availabilitySlotsLimit = void 0;
-exports.availabilitySlotsLimit = 10;
+exports.intersectsWithExistingSlots = exports.isValidAvailabilitySlotStart = exports.isValidAvailabilitySlot = void 0;
 function isValidAvailabilitySlot(slotStart, slotEnd) {
     if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
         return false;

@@ -4,11 +4,11 @@ import express, { Router, Request, Response } from "express";
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { isValidHangoutId } from "../util/validation/hangoutValidation";
 import * as voteValidation from '../util/validation/voteValidation';
-import { availabilitySlotsLimit } from "../util/validation/availabilitySlotValidation";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
+import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STEP } from "../util/constants";
 
 export const votesRouter: Router = express.Router();
 
@@ -130,7 +130,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
         suggestionId: requestData.suggestionId,
         hangoutMemberId: requestData.hangoutMemberId,
         hangoutId: requestData.hangoutMemberId,
-        votesLimit: voteValidation.votesLimit
+        votesLimit: HANGOUT_VOTES_LIMIT
       }
     );
 
@@ -153,7 +153,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step !== 3) {
+    if (hangoutMemberDetails.current_step !== HANGOUT_VOTING_STEP) {
       await connection.rollback();
       res.status(409).json({
         success: false,
@@ -177,7 +177,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.total_votes >= voteValidation.votesLimit) {
+    if (hangoutMemberDetails.total_votes >= HANGOUT_VOTES_LIMIT) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Votes limit reached.' });
 
@@ -204,7 +204,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       WHERE
         suggestions.suggestion_id = ? AND
         availability_slots.hangout_member_id = ?
-      LIMIT ${availabilitySlotsLimit};`,
+      LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
       [requestData.suggestionId, requestData.hangoutMemberId]
     );
 
@@ -243,12 +243,11 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     };
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO votes(
+      `INSERT INTO votes (
         hangout_member_id,
         suggestion_id,
         hangout_id
-      )
-      VALUES(${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(3)});`,
       [requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutId]
     );
 
@@ -371,7 +370,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${voteValidation.votesLimit};`,
+      LIMIT ${HANGOUT_VOTES_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -390,7 +389,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step !== 3) {
+    if (hangoutMemberDetails.current_step !== HANGOUT_VOTING_STEP) {
       res.status(409).json({
         success: false,
         message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,
@@ -524,7 +523,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${voteValidation.votesLimit};`,
+      LIMIT ${HANGOUT_VOTES_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -543,7 +542,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step !== 3) {
+    if (hangoutMemberDetails.current_step !== HANGOUT_VOTING_STEP) {
       res.status(409).json({
         success: false,
         message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,

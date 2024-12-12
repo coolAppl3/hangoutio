@@ -8,6 +8,7 @@ import { isValidHangoutId } from "../util/validation/hangoutValidation";
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
+import { HANGOUT_AVAILABILITY_STEP, HANGOUT_CONCLUSION_STEP, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STEP, HANGOUT_VOTING_STEP } from "../util/constants";
 
 export const suggestionsRouter: Router = express.Router();
 
@@ -136,7 +137,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      LIMIT ${HANGOUT_SUGGESTIONS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -159,7 +160,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step !== 2) {
+    if (hangoutMemberDetails.current_step !== HANGOUT_SUGGESTIONS_STEP) {
       await connection.rollback();
       res.status(409).json({
         success: false,
@@ -176,7 +177,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberRows.length === suggestionValidation.suggestionsLimit) {
+    if (hangoutMemberRows.length === HANGOUT_SUGGESTIONS_LIMIT) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Suggestions limit reached.' });
 
@@ -184,7 +185,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     };
 
     const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO suggestions(
+      `INSERT INTO suggestions (
         hangout_member_id,
         hangout_id,
         suggestion_title,
@@ -192,8 +193,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
         suggestion_start_timestamp,
         suggestion_end_timestamp,
         is_edited
-      )
-      VALUES(${generatePlaceHolders(7)});`,
+      ) VALUES (${generatePlaceHolders(7)});`,
       [requestData.hangoutMemberId, requestData.hangoutId, requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, false]
     );
 
@@ -342,7 +342,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      LIMIT ${HANGOUT_SUGGESTIONS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -361,12 +361,12 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 1) {
+    if (hangoutMemberDetails.current_step === HANGOUT_AVAILABILITY_STEP) {
       res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 4) {
+    if (hangoutMemberDetails.current_step === HANGOUT_CONCLUSION_STEP) {
       res.status(409).json({ success: false, message: 'Hangout already concluded.' });
       return;
     };
@@ -402,7 +402,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     let deletedVotes: number = 0;
-    if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMemberDetails.current_step === 3) {
+    if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMemberDetails.current_step === HANGOUT_VOTING_STEP) {
       const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
         `DELETE FROM
           votes
@@ -524,7 +524,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      LIMIT ${HANGOUT_SUGGESTIONS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -543,12 +543,12 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 1) {
+    if (hangoutMemberDetails.current_step === HANGOUT_AVAILABILITY_STEP) {
       res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 4) {
+    if (hangoutMemberDetails.current_step === HANGOUT_CONCLUSION_STEP) {
       res.status(409).json({ success: false, message: 'Hangout already concluded.' });
       return;
     };
@@ -676,7 +676,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      LIMIT ${HANGOUT_SUGGESTIONS_LIMIT};`,
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
@@ -695,12 +695,12 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 1) {
+    if (hangoutMemberDetails.current_step === HANGOUT_AVAILABILITY_STEP) {
       res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 4) {
+    if (hangoutMemberDetails.current_step === HANGOUT_CONCLUSION_STEP) {
       res.status(409).json({ success: false, message: 'Hangout already concluded.' });
       return;
     };
@@ -715,7 +715,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
         suggestions
       WHERE
         hangout_member_id = ?
-      LIMIT ${suggestionValidation.suggestionsLimit};`,
+      LIMIT ${HANGOUT_SUGGESTIONS_LIMIT};`,
       [requestData.hangoutMemberId]
     );
 
@@ -858,12 +858,12 @@ suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) =
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 1) {
+    if (hangoutMemberDetails.current_step === HANGOUT_AVAILABILITY_STEP) {
       res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
       return;
     };
 
-    if (hangoutMemberDetails.current_step === 4) {
+    if (hangoutMemberDetails.current_step === HANGOUT_CONCLUSION_STEP) {
       res.status(409).json({ success: false, message: 'Hangout already concluded.' });
       return;
     };

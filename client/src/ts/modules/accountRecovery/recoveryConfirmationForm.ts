@@ -1,9 +1,9 @@
-import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { SendRecoveryEmailData, sendRecoveryEmailService } from "../services/accountServices";
+import { resendAccountRecoveryEmailService } from "../services/accountServices";
 import { RecoveryStage, recoveryState } from "./recoveryState";
-import { handleUserSignedIn, initRecoveryTimers } from "./recoveryUtils";
+import { handleRecoverySuspended, initRecoveryTimers } from "./recoveryUtils";
 
 const recoveryConfirmationFormElement: HTMLFormElement | null = document.querySelector('#recovery-confirmation-form');
 
@@ -12,11 +12,11 @@ export function recoveryConfirmationForm(): void {
 };
 
 function loadEventListeners(): void {
-  recoveryConfirmationFormElement?.addEventListener('submit', resendRecoveryEmail);
+  recoveryConfirmationFormElement?.addEventListener('submit', resendAccountRecoveryEmail);
   document.addEventListener('recoveryStarted', initRecoveryTimers);
 };
 
-async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
+async function resendAccountRecoveryEmail(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
 
@@ -35,15 +35,7 @@ async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
   };
 
   try {
-    const sendRecoveryEmailData: AxiosResponse<SendRecoveryEmailData> = await sendRecoveryEmailService({ email: recoveryState.recoveryEmail });
-    const expiryTimestamp: number = sendRecoveryEmailData.data.resData.expiryTimestamp;
-
-
-    // CONTINUE HEREEEEE ==========================
-    // double-check literally everything before moving forward
-    // Don't forget the cron jobs
-
-    recoveryState.expiryTimestamp = expiryTimestamp;
+    await resendAccountRecoveryEmailService({ email: recoveryState.recoveryEmail });
 
     popup('Recovery email resent.', 'success');
     LoadingModal.remove();
@@ -69,7 +61,7 @@ async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const errResData: unknown = axiosError.response.data.resData;
 
     if (status === 400 || status === 404) {
       popup('Something went wrong.', 'error');
@@ -81,9 +73,16 @@ async function resendRecoveryEmail(e: SubmitEvent): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 403 && errReason === 'signedIn') {
-      handleUserSignedIn();
-      return;
+    if (status === 403) {
+      if (!errResData || typeof errResData !== 'object') {
+        return;
+      };
+
+      if (!('expiryTimestamp' in errResData) || typeof errResData.expiryTimestamp !== 'number') {
+        return;
+      };
+
+      handleRecoverySuspended(errResData.expiryTimestamp);
     };
   };
 };

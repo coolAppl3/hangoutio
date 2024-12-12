@@ -78,7 +78,13 @@ export interface SendRecoveryEmailData {
   },
 };
 
-export async function sendRecoveryEmailService(requestBody: { email: string }): Promise<AxiosResponse<SendRecoveryEmailData>> {
+export async function startAccountRecoveryService(requestBody: { email: string }): Promise<AxiosResponse<SendRecoveryEmailData>> {
+  return axios.post(`${accountsApiUrl}/recovery/sendEmail`, requestBody);
+};
+
+// --- --- ---
+
+export async function resendAccountRecoveryEmailService(requestBody: { email: string }): Promise<AxiosResponse> {
   return axios.post(`${accountsApiUrl}/recovery/sendEmail`, requestBody);
 };
 
