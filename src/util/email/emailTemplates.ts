@@ -75,7 +75,7 @@ export function getVerificationEmailTemplate(verificationEmailConfig: Verificati
           click this
           <a
             target="_blank"
-            href="https://hangoutio.com/sign-up.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&verificationCode=${verificationCode}"
+            href="https://hangoutio.com/sign-up?id=${accountId}&expiryTimestamp=${expiryTimestamp}&verificationCode=${verificationCode}"
             >verification link</a
           >.
         </p>
@@ -164,7 +164,7 @@ export function getRecoveryEmailTemplate(recoveryEmailConfig: RecoveryEmailConfi
           To start the proceed with the recovery process, please click
           <a
             target="_blank"
-            href="https://hangoutio.com/account-recovery.html?id=${accountId}&expiryTimestamp=${expiryTimestamp}&recoveryToken=${recoveryToken}"
+            href="https://hangoutio.com/account-recovery?id=${accountId}&expiryTimestamp=${expiryTimestamp}&recoveryToken=${recoveryToken}"
             >this link</a
           >. Please note that the recovery link is only valid for an hour.
         </p>
@@ -419,7 +419,7 @@ export function getEmailUpdateTemplate(updateEmailConfig: UpdateEmailConfig): st
           To complete the process, please use the following verification code: <span class="font-bold">${verificationCode}</span>. Alternatively, you can click
           <a
             target="_blank"
-            href="https://hangoutio.com/updateEmail.html?verificationCode=${verificationCode}"
+            href="https://hangoutio.com/update-email?verificationCode=${verificationCode}"
             >this link</a
           >.
         </p>
