@@ -101,3 +101,11 @@ export function clearAllSignUpInputs(): void {
     input.value = '';
   };
 };
+
+export function handleSignedInUser(): void {
+  InfoModal.display({
+    title: `You're signed in.`,
+    description: 'You must sign out before proceeding.',
+    btnTitle: 'Okay',
+  }, { simple: true });
+};
