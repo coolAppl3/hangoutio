@@ -3,7 +3,7 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { dbPool } from '../db/db';
 import bcrypt from 'bcrypt';
 import * as userValidation from '../util/validation/userValidation';
-import { generateUniqueCode, generateUniqueToken } from '../util/tokenGenerator';
+import { generateRandomCode, generateRandomToken } from '../util/tokenGenerator';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { sendDeletionConfirmationEmail, sendDeletionWarningEmail, sendEmailUpdateEmail, sendEmailUpdateWarningEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
@@ -109,7 +109,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       return;
     };
 
-    const verificationCode: string = generateUniqueCode();
+    const verificationCode: string = generateRandomCode();
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
     const createdOnTimestamp: number = Date.now();
 
@@ -627,7 +627,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       return;
     };
 
-    const recoveryToken: string = generateUniqueToken();
+    const recoveryToken: string = generateRandomToken();
     const expiryTimestamp: number = Date.now() + ACCOUNT_RECOVERY_WINDOW;
 
     await dbPool.execute(
@@ -1023,7 +1023,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     };
 
     if (!accountDetails.expiry_timestamp) {
-      const confirmationCode: string = generateUniqueCode();
+      const confirmationCode: string = generateRandomCode();
 
       const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
 
@@ -1591,7 +1591,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    const newVerificationCode: string = generateUniqueCode();
+    const newVerificationCode: string = generateRandomCode();
     const expiryTimestamp: number = Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW;
 
     await connection.execute(
@@ -2241,12 +2241,12 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       return;
     };
 
-    interface alreadyFriends extends RowDataPacket { already_friends: 1 | null };
-    interface requestAlreadySent extends RowDataPacket { request_already_sent: 1 | null };
+    interface AlreadyFriends extends RowDataPacket { already_friends: 1 | null };
+    interface RequestAlreadySent extends RowDataPacket { request_already_sent: 1 | null };
 
     type FriendshipDetails = [
-      alreadyFriends[],
-      requestAlreadySent[],
+      AlreadyFriends[],
+      RequestAlreadySent[],
     ];
 
     const [friendshipRows] = await dbPool.query<FriendshipDetails>(

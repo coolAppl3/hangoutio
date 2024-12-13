@@ -11,7 +11,7 @@ export function generateAuthSessionId(): string {
   return sessionId;
 };
 
-export function generateUniqueCode(): string {
+export function generateRandomCode(): string {
   let verificationCode: string = '';
 
   while (verificationCode.length < 6) {
@@ -21,7 +21,7 @@ export function generateUniqueCode(): string {
   return verificationCode;
 };
 
-export function generateUniqueToken(): string {
+export function generateRandomToken(): string {
   let token: string = '';
 
   while (token.length < 32) {
