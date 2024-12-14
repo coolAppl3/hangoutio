@@ -48,7 +48,7 @@ app.use('/api/hangoutMembers', hangoutMembersRouter_1.hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlotsRouter_1.availabilitySlotsRouter);
 app.use('/api/suggestions', suggestionsRouter_1.suggestionsRouter);
 app.use('/api/votes', votesRouter_1.votesRouter);
-app.use('api/auth', authRouter_1.authRouter);
+app.use('/api/auth', authRouter_1.authRouter);
 app.use(htmlRouter_1.htmlRouter);
 app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use(fallbackMiddleware_1.fallbackMiddleware);

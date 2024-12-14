@@ -119,7 +119,7 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
             return;
         }
         ;
-        const verificationCode = (0, tokenGenerator_1.generateUniqueCode)();
+        const verificationCode = (0, tokenGenerator_1.generateRandomCode)();
         const hashedPassword = await bcrypt_1.default.hash(requestData.password, 10);
         const createdOnTimestamp = Date.now();
         const verificationExpiryTimestamp = createdOnTimestamp + constants_1.ACCOUNT_VERIFICATION_WINDOW;
@@ -268,7 +268,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidCode(requestData.verificationCode)) {
+    if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
         res.status(400).json({ success: false, message: 'Invalid verification code.', reason: 'verificationCode' });
         return;
     }
@@ -511,31 +511,32 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
                 return;
             }
             ;
-            res.status(403).json({
+            res.status(409).json({
                 success: false,
-                message: 'Ongoing recovery request detected.',
+                message: 'Ongoing recovery request found.',
                 reason: 'ongoingRequest',
                 resData: {
                     expiryTimestamp: accountDetails.expiry_timestamp,
+                    accountId: accountDetails.account_id,
                 },
             });
             return;
         }
         ;
-        const recoveryToken = (0, tokenGenerator_1.generateUniqueToken)();
+        const recoveryCode = (0, tokenGenerator_1.generateRandomCode)();
         const expiryTimestamp = Date.now() + constants_1.ACCOUNT_RECOVERY_WINDOW;
         await db_1.dbPool.execute(`INSERT INTO account_recovery (
           account_id,
-          recovery_token,
+          recovery_code,
           expiry_timestamp,
           recovery_emails_sent,
           failed_recovery_attempts
-        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]);
-        res.json({ success: true, resData: { expiryTimestamp } });
+        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountDetails.account_id, recoveryCode, expiryTimestamp, 1, 0]);
+        res.json({ success: true, resData: { accountId: accountDetails.account_id, expiryTimestamp } });
         await (0, emailServices_1.sendRecoveryEmail)({
             to: requestData.email,
             accountId: accountDetails.account_id,
-            recoveryToken,
+            recoveryCode: recoveryCode,
             expiryTimestamp,
             displayName: accountDetails.display_name,
         });
@@ -549,23 +550,23 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
 exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['email'];
+    const expectedKeys = ['accountId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
+    if (!Number.isInteger(requestData.accountId)) {
+        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'invalidAccountId' });
         return;
     }
     ;
     try {
         ;
         const [accountRows] = await db_1.dbPool.execute(`SELECT
-        accounts.account_id,
+        accounts.email,
         accounts.display_name,
-        account_recovery.recovery_token
+        account_recovery.recovery_code,
         account_recovery.expiry_timestamp,
         account_recovery.recovery_emails_sent,
         account_recovery.failed_recovery_attempts
@@ -574,14 +575,14 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
       LEFT JOIN
         account_recovery ON accounts.account_id = account_recovery.account_id
       WHERE
-        accounts.email = ?;`, [requestData.email]);
+        accounts.account_id = ?;`, [requestData.accountId]);
         if (accountRows.length === 0) {
             res.status(404).json({ success: false, message: 'Account not found.', reason: 'accountNotFound' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
-        if (!accountDetails.recovery_token) {
+        if (!accountDetails.recovery_code) {
             res.status(404).json({ success: false, message: 'Recovery request not found.', reason: 'requestNotFound' });
             return;
         }
@@ -607,7 +608,7 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
         recovery_emails_sent = recovery_emails_sent + 1
       WHERE
         account_id = ?
-      LIMIT 1;`, [accountDetails.user_id]);
+      LIMIT 1;`, [requestData.accountId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -615,9 +616,9 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
         ;
         res.json({ success: true, resData: {} });
         await (0, emailServices_1.sendRecoveryEmail)({
-            to: requestData.email,
+            to: accountDetails.email,
             accountId: accountDetails.user_id,
-            recoveryToken: accountDetails.recovery_token,
+            recoveryCode: accountDetails.recovery_code,
             expiryTimestamp: accountDetails.expiry_timestamp,
             displayName: accountDetails.display_name,
         });
@@ -631,7 +632,7 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
 exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
     ;
     const requestData = req.body;
-    const expectedKeys = ['accountId', 'recoveryToken', 'newPassword'];
+    const expectedKeys = ['accountId', 'recoveryCode', 'newPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ success: false, message: 'Invalid request data.' });
         return;
@@ -642,8 +643,8 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidUniqueToken(requestData.recoveryToken)) {
-        res.status(400).json({ success: false, message: 'Invalid recovery token.', reason: 'invalidRecoveryToken' });
+    if (!userValidation.isValidRandomCode(requestData.recoveryCode)) {
+        res.status(400).json({ success: false, message: 'Invalid recovery code.', reason: 'invalidRecoveryCode' });
         return;
     }
     ;
@@ -662,7 +663,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         ;
         const [recoveryRows] = await db_1.dbPool.execute(`SELECT
         recovery_id,
-        recovery_token,
+        recovery_code,
         failed_recovery_attempts,
         expiry_timestamp,
         (SELECT username FROM accounts WHERE account_id = :accountId) AS username
@@ -689,7 +690,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
             return;
         }
         ;
-        if (requestData.recoveryToken !== recoveryDetails.recovery_token) {
+        if (requestData.recoveryCode !== recoveryDetails.recovery_code) {
             await db_1.dbPool.execute(`UPDATE
           account_recovery
         SET
@@ -699,7 +700,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
             if (recoveryDetails.failed_recovery_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(401).json({
                     success: false,
-                    message: 'Incorrect recovery token.',
+                    message: 'Incorrect recovery code.',
                     reason: 'recoverySuspended',
                     requestData: {
                         expiryTimestamp: recoveryDetails.expiry_timestamp,
@@ -708,7 +709,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
                 return;
             }
             ;
-            res.status(401).json({ success: false, message: 'Incorrect recovery token.', reason: 'incorrectRecoveryToken' });
+            res.status(401).json({ success: false, message: 'Incorrect recovery code.', reason: 'incorrectRecoveryCode' });
             return;
         }
         ;
@@ -824,7 +825,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         }
         ;
         if (!accountDetails.expiry_timestamp) {
-            const confirmationCode = (0, tokenGenerator_1.generateUniqueCode)();
+            const confirmationCode = (0, tokenGenerator_1.generateRandomCode)();
             const expiryTimestamp = Date.now() + constants_1.ACCOUNT_DELETION_WINDOW;
             await db_1.dbPool.execute(`INSERT INTO account_deletion (
         account_id,
@@ -891,7 +892,7 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidCode(requestData.confirmationCode)) {
+    if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
         res.status(400).json({ success: false, message: 'Invalid confirmation code.', reason: 'invalidCode' });
         return;
     }
@@ -1258,7 +1259,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
             return;
         }
         ;
-        const newVerificationCode = (0, tokenGenerator_1.generateUniqueCode)();
+        const newVerificationCode = (0, tokenGenerator_1.generateRandomCode)();
         const expiryTimestamp = Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW;
         await connection.execute(`INSERT INTO email_update (
           account_id,
@@ -1408,7 +1409,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         return;
     }
     ;
-    if (!userValidation.isValidCode(requestData.verificationCode)) {
+    if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
         res.status(400).json({ success: false, message: 'Invalid verification code.' });
         return;
     }

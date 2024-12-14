@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.5] (2024-12-14)
+
+### Code Refactoring
+
+- Reworked the recovery process to use a 6-digit code instead of a token.
+- Renamed `generateUniqueCode()` and `generateUniqueToken()` to `generateRandomCode()` and `generateRandomToken()` respectively in `tokenGenerator.ts`.
+
+
+### Bug Fixes
+
+- Fixed request cookies not being properly returned in `getRequestCookie()` in `cookieUtils.ts`.
+- Fixed an if-statement typo in DELETE `hangoutMembers/leave`.
+
+
 ## [0.4.4] (2024-12-12)
 
 ### Code Refactoring

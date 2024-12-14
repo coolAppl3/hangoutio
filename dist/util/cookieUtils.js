@@ -16,7 +16,7 @@ exports.setResponseCookie = setResponseCookie;
 function getRequestCookie(req, cookieName) {
     const requestCookies = req.cookies;
     if (requestCookies[cookieName]) {
-        return requestCookies.cookieName;
+        return requestCookies[cookieName];
     }
     ;
     return null;
