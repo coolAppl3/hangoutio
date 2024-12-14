@@ -5,7 +5,7 @@ import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { isValidUniqueCode, isValidQueryString, isValidTimestamp, validateCode, isValidHangoutId } from "../global/validation";
+import { isValidCode, isValidQueryString, isValidTimestamp, validateCode, isValidHangoutId } from "../global/validation";
 import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, handleSignedInUser, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal } from "../global/ConfirmModal";
@@ -322,7 +322,7 @@ function getVerificationLinkDetails(url: URL): VerificationData | null {
     return null;
   };
 
-  if (!isValidUniqueCode(verificationCode)) {
+  if (!isValidCode(verificationCode)) {
     return null;
   };
 
