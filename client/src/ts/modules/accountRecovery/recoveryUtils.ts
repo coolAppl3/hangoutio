@@ -21,23 +21,15 @@ export function handleRecoveryExpired(): void {
   });
 };
 
-export function updateDisplayedForm(): void {
-  const accountRecoverySection: HTMLElement | null = document.querySelector('#account-recovery');
-
-  if (!accountRecoverySection) {
-    LoadingModal.display();
-    popup('Something went wrong.', 'error');
-    setTimeout(() => reloadWithoutQueryString());
-
-    return;
-  };
-
-  accountRecoverySection.className = recoveryState.currentStage;
-};
-
 export function reloadWithoutQueryString(): void {
   const hrefWithoutQueryString: string = window.location.href.split('?')[0];
   window.location.replace(hrefWithoutQueryString);
+};
+
+export function handleUnexpectedError(): void {
+  LoadingModal.display();
+  popup('Something went wrong.', 'error');
+  setTimeout(() => reloadWithoutQueryString(), 1000);
 };
 
 export function getMinutesTillRecoveryExpiry(expiryTimestamp: number): number {
@@ -55,43 +47,58 @@ export function getMinutesTillRecoveryExpiry(expiryTimestamp: number): number {
   return Math.ceil(timeTillRequestExpiry / minuteMilliseconds);
 };
 
-export function handleRecoverySuspended(expiryTimestamp: number): void {
-  const minutesTillRecoveryExpiry: number = getMinutesTillRecoveryExpiry(expiryTimestamp);
-  const minutesRemainingString: string = minutesTillRecoveryExpiry === 1 ? '1 minute' : `${minutesTillRecoveryExpiry} minutes`;
-
-  InfoModal.display({
-    title: 'Recovery suspended.',
-    description: `You can start the recovery process again in ${minutesRemainingString}.`,
-    btnTitle: 'Okay',
-  }, { simple: true });
-};
-
-export function initRecoveryTimers(): void {
-  const requestExpiryTimers: NodeListOf<HTMLSpanElement> = document.querySelectorAll('.request-expiry-timer');
-
-  for (const timer of requestExpiryTimers) {
-    timer.classList.add('displayed');
+export function handleRecoverySuspension(errResData: unknown): void {
+  if (typeof errResData !== 'object' || errResData === null) {
+    return;
   };
 
-  const intervalId: number = setInterval(() => updateExpiryTimers(requestExpiryTimers, intervalId), 1000);
-  updateExpiryTimers(requestExpiryTimers, intervalId);
-};
+  if (!('expiryTimestamp' in errResData) || typeof errResData.expiryTimestamp !== 'number') {
+    return;
+  };
 
-export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanElement>, intervalId: number): void {
-  if (!recoveryState.expiryTimestamp) {
-    for (const timer of requestExpiryTimers) {
-      timer.classList.remove('displayed');
+  const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.expiryTimestamp);
+  const minutesRemainingString: string = minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`;
+
+  const infoModal: HTMLDivElement = InfoModal.display({
+    title: 'Recovery request suspended.',
+    description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesRemainingString}.`,
+    btnTitle: 'Go to homepage',
+  });
+
+  infoModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
     };
 
+    if (e.target.id === 'info-modal-btn') {
+      window.location.href = 'home';
+    };
+  });
+};
+
+export function initRecoveryTimer(): void {
+  const requestExpiryTimer: HTMLSpanElement | null = document.querySelector('#recovery-expiry-timer');
+
+  if (!requestExpiryTimer) {
+    return;
+  };
+
+  requestExpiryTimer?.classList.add('displayed');
+
+  const intervalId: number = setInterval(() => updateExpiryTimer(requestExpiryTimer, intervalId), 1000);
+  updateExpiryTimer(requestExpiryTimer, intervalId);
+};
+
+export function updateExpiryTimer(requestExpiryTimer: HTMLSpanElement, intervalId: number): void {
+  if (!recoveryState.expiryTimestamp) {
+    requestExpiryTimer.classList.remove('displayed');
     clearInterval(intervalId);
+
     return;
   };
 
   const timerValue: string = getTimeTillRecoveryExpiry(recoveryState.expiryTimestamp);
-
-  for (const timer of requestExpiryTimers) {
-    timer.textContent = timerValue;
-  };
+  requestExpiryTimer.textContent = timerValue;
 
   if (timerValue === '00:00') {
     clearInterval(intervalId);
@@ -100,14 +107,14 @@ export function updateExpiryTimers(requestExpiryTimers: NodeListOf<HTMLSpanEleme
 };
 
 function getTimeTillRecoveryExpiry(expiryTimestamp: number): string {
-  const timeTillRequestExpiry: number = expiryTimestamp - Date.now();
+  const millisecondsTillExpiry: number = expiryTimestamp - Date.now();
 
-  if (timeTillRequestExpiry < 0) {
+  if (millisecondsTillExpiry < 0) {
     return '00:00';
   };
 
-  const minutesTillExpiry: number = Math.floor(timeTillRequestExpiry / (1000 * 60));
-  const secondsTillExpiry: number = Math.round((timeTillRequestExpiry / 1000) % 60);
+  const minutesTillExpiry: number = Math.floor(millisecondsTillExpiry / (1000 * 60));
+  const secondsTillExpiry: number = Math.floor((millisecondsTillExpiry / 1000) % 60);
 
   const minutesTillExpiryString: string = minutesTillExpiry < 10 ? `0${minutesTillExpiry}` : `${minutesTillExpiry}`;
   const secondsTillExpiryString: string = secondsTillExpiry < 10 ? `0${secondsTillExpiry}` : `${secondsTillExpiry}`;
@@ -123,4 +130,38 @@ export function handleSignedInUser(): void {
     description: 'You must sign out before proceeding.',
     btnTitle: 'Okay',
   }, { simple: true });
+};
+
+export function progressRecovery(recoveryCode?: string): void {
+  const accountRecoverySection: HTMLElement | null = document.querySelector('#account-recovery');
+
+  if (!accountRecoverySection) {
+    handleUnexpectedError();
+    return;
+  };
+
+  if (recoveryCode) {
+    const recoveryCodeInput: HTMLInputElement | null = document.querySelector('#recovery-code-input');
+    recoveryCodeInput ? recoveryCodeInput.value = recoveryCode : undefined;
+  };
+
+  recoveryState.inPasswordUpdateStage = true;
+
+  initRecoveryTimer();
+  disableRecoveryEmailInput();
+
+  accountRecoverySection.className = 'passwordUpdateForm';
+};
+
+
+
+function disableRecoveryEmailInput(): void {
+  const recoveryEmailInput: HTMLInputElement | null = document.querySelector('#recovery-email-input');
+
+  if (!recoveryEmailInput) {
+    return;
+  };
+
+  recoveryEmailInput.parentElement?.classList.add('disabled');
+  recoveryEmailInput.setAttribute('disabled', 'disabled');
 };

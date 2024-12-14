@@ -21,17 +21,6 @@ export function generateRandomCode(): string {
   return verificationCode;
 };
 
-export function generateRandomToken(): string {
-  let token: string = '';
-
-  while (token.length < 32) {
-    token += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
-  };
-
-  return token;
-};
-
-// non-account related
 export function generateHangoutId(timestamp: number): string {
   let hangoutId: string = 'h';
 

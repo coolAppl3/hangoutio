@@ -492,9 +492,9 @@
 
             <div class="h-line mb-2"></div>
 
-            <p class="font-medium text-title dark:text-title-dark mb-1">Enter your email address below to have a recovery link sent out.</p>
+            <p class="font-medium text-title dark:text-title-dark mb-1">Enter your email address below to receive an email with your recovery code.</p>
 
-            <p class="font-medium text-sm md:text-base text-description dark:text-description-dark">Recovery links are only valid for an hour.</p>
+            <p class="font-medium text-sm md:text-base text-description dark:text-description-dark">Recovery codes are only valid for an hour.</p>
           </div>
 
           <div class="form-group">
@@ -519,42 +519,6 @@
         </form>
 
         <form
-          id="recovery-confirmation-form"
-          class="bg-secondary dark:bg-secondary-dark w-[36rem] max-w-[36rem] py-3 px-2 rounded-sm shadow-simple overflow-hidden block"
-          tabindex="0"
-        >
-          <div>
-            <h3 class="text-2xl font-medium text-title text-center dark:text-title-dark">Recovery email sent</h3>
-
-            <div class="h-line mb-2"></div>
-
-            <p class="font-medium text-title dark:text-title-dark mb-1">Click the recovery link once you receive the email to continue.</p>
-
-            <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">
-              Haven't received an email? Make sure to check your junk and spam folder.
-            </p>
-
-            <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">
-              Also, keep in mind it could take up to 30 seconds for the email to reach you sometimes.
-            </p>
-
-            <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-2 hidden has-[.displayed]:block">
-              Request expires in:
-              <span class="request-expiry-timer text-title dark:text-title-dark font-bold"></span>
-            </p>
-
-            <p class="font-medium text-sm text-title dark:text-title-dark mb-2">Still didn't get one? Click the button below to resend it.</p>
-
-            <button
-              id="resend-recovery-email-btn"
-              class="btn bg-cta dark:bg-cta-dark w-full"
-            >
-              Resend recovery email
-            </button>
-          </div>
-        </form>
-
-        <form
           id="password-update-form"
           class="bg-secondary dark:bg-secondary-dark w-[36rem] max-w-[36rem] py-3 px-2 rounded-sm shadow-simple overflow-hidden"
         >
@@ -563,16 +527,32 @@
 
             <div class="h-line mb-2"></div>
 
-            <p class="font-medium text-title dark:text-title-dark mb-1">Valid recovery link found.</p>
-
             <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-1">
-              Update your account's password below to complete the recovery process.
+              Enter the recovery code you've received and update your password.
             </p>
 
             <p class="font-medium text-sm md:text-base text-description dark:text-description-dark hidden has-[.displayed]:block">
               Request expires in:
-              <span class="request-expiry-timer text-title dark:text-title-dark font-bold"></span>
+              <span
+                id="recovery-expiry-timer"
+                class="text-title dark:text-title-dark font-bold"
+              ></span>
             </p>
+          </div>
+
+          <div class="form-group">
+            <label for="recovery-code-input">Recovery code</label>
+            <input
+              type="text"
+              id="recovery-code-input"
+              autocomplete="one-time-code"
+              maxlength="6"
+              class="uppercase"
+            />
+            <span
+              class="error-span"
+              data-target="recovery-code-input"
+            ></span>
           </div>
 
           <div class="form-group form-group-password relative">
@@ -643,7 +623,15 @@
             ></span>
           </div>
 
-          <button class="btn bg-cta dark:bg-cta-dark w-full">Confirm</button>
+          <button class="btn bg-cta dark:bg-cta-dark w-full mb-1">Confirm</button>
+
+          <button
+            type="button"
+            class="font-medium text-sm md:text-base link block mx-auto"
+            id="resend-recovery-email-btn"
+          >
+            Resend recovery email
+          </button>
         </form>
       </div>
     </section>

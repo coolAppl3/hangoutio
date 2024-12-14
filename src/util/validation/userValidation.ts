@@ -52,20 +52,7 @@ export function isValidDisplayName(displayName: string): boolean {
   return regex.test(displayName);
 };
 
-export function isValidUniqueToken(token: string): boolean {
-  if (typeof token !== 'string') {
-    return false;
-  };
-
-  if (token.length !== 32) {
-    return false;
-  };
-
-  const regex: RegExp = /^[A-Za-z0-9]{32}$/;
-  return regex.test(token);
-};
-
-export function isValidCode(verificationCode: string): boolean {
+export function isValidRandomCode(verificationCode: string): boolean {
   if (typeof verificationCode !== 'string') {
     return false;
   };

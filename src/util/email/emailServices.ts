@@ -26,7 +26,7 @@ export async function sendVerificationEmail(verificationEmailConfig: Verificatio
 export interface RecoveryEmailConfig {
   to: string,
   accountId: number,
-  recoveryToken: string,
+  recoveryCode: string,
   expiryTimestamp: number,
   displayName: string,
 };
