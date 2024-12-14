@@ -60,7 +60,7 @@ app.use('/api/hangoutMembers', hangoutMembersRouter);
 app.use('/api/availabilitySlots', availabilitySlotsRouter);
 app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
-app.use('api/auth', authRouter);
+app.use('/api/auth', authRouter);
 
 // static files
 app.use(htmlRouter);
