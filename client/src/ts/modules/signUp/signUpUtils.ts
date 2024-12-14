@@ -74,7 +74,7 @@ function getTimeTillVerificationExpiry(verificationExpiryTimestamp: number): str
   };
 
   const minutesTillExpiry: number = Math.floor(timeTillRequestExpiry / (1000 * 60));
-  const secondsTillExpiry: number = Math.round((timeTillRequestExpiry / 1000) % 60);
+  const secondsTillExpiry: number = Math.floor((timeTillRequestExpiry / 1000) % 60);
 
   const minutesTillExpiryString: string = minutesTillExpiry < 10 ? `0${minutesTillExpiry}` : `${minutesTillExpiry}`;
   const secondsTillExpiryString: string = secondsTillExpiry < 10 ? `0${secondsTillExpiry}` : `${secondsTillExpiry}`;
