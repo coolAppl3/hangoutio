@@ -7,6 +7,6 @@ const authApiUrl: string = window.location.hostname === 'localhost'
   : `https://${window.location.hostname}/api/auth`;
 // 
 
-export async function signOUtService(): Promise<AxiosResponse> {
+export async function signOutService(): Promise<AxiosResponse> {
   return axios.post(`${authApiUrl}/signOut`);
 };
