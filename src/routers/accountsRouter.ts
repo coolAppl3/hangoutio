@@ -3,7 +3,7 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { dbPool } from '../db/db';
 import bcrypt from 'bcrypt';
 import * as userValidation from '../util/validation/userValidation';
-import { generateUniqueCode, generateUniqueToken } from '../util/tokenGenerator';
+import { generateRandomCode } from '../util/tokenGenerator';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { sendDeletionConfirmationEmail, sendDeletionWarningEmail, sendEmailUpdateEmail, sendEmailUpdateWarningEmail, sendRecoveryEmail, sendVerificationEmail } from '../util/email/emailServices';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
@@ -109,7 +109,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       return;
     };
 
-    const verificationCode: string = generateUniqueCode();
+    const verificationCode: string = generateRandomCode();
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
     const createdOnTimestamp: number = Date.now();
 
@@ -300,7 +300,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
     return;
   };
 
-  if (!userValidation.isValidCode(requestData.verificationCode)) {
+  if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
     res.status(400).json({ success: false, message: 'Invalid verification code.', reason: 'verificationCode' });
     return;
   };
@@ -615,38 +615,39 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
         return;
       };
 
-      res.status(403).json({
+      res.status(409).json({
         success: false,
-        message: 'Ongoing recovery request detected.',
+        message: 'Ongoing recovery request found.',
         reason: 'ongoingRequest',
         resData: {
           expiryTimestamp: accountDetails.expiry_timestamp,
+          accountId: accountDetails.account_id,
         },
       });
 
       return;
     };
 
-    const recoveryToken: string = generateUniqueToken();
+    const recoveryCode: string = generateRandomCode();
     const expiryTimestamp: number = Date.now() + ACCOUNT_RECOVERY_WINDOW;
 
     await dbPool.execute(
       `INSERT INTO account_recovery (
           account_id,
-          recovery_token,
+          recovery_code,
           expiry_timestamp,
           recovery_emails_sent,
           failed_recovery_attempts
         ) VALUES (${generatePlaceHolders(5)});`,
-      [accountDetails.account_id, recoveryToken, expiryTimestamp, 1, 0]
+      [accountDetails.account_id, recoveryCode, expiryTimestamp, 1, 0]
     );
 
-    res.json({ success: true, resData: { expiryTimestamp } });
+    res.json({ success: true, resData: { accountId: accountDetails.account_id, expiryTimestamp } });
 
     await sendRecoveryEmail({
       to: requestData.email,
       accountId: accountDetails.account_id,
-      recoveryToken,
+      recoveryCode: recoveryCode,
       expiryTimestamp,
       displayName: accountDetails.display_name,
     });
@@ -659,27 +660,27 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
 
 accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response) => {
   interface RequestData {
-    email: string,
+    accountId: number,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['email'];
+  const expectedKeys: string[] = ['accountId'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidEmail(requestData.email)) {
-    res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
+  if (!Number.isInteger(requestData.accountId)) {
+    res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'invalidAccountId' });
     return;
   };
 
   try {
     interface AccountDetails extends RowDataPacket {
-      account_id: string,
+      email: string,
       display_name: string,
-      recovery_token: string,
+      recovery_code: string,
       expiry_timestamp: number,
       recovery_emails_sent: number,
       failed_recovery_attempts: number,
@@ -687,9 +688,9 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        accounts.account_id,
+        accounts.email,
         accounts.display_name,
-        account_recovery.recovery_token
+        account_recovery.recovery_code,
         account_recovery.expiry_timestamp,
         account_recovery.recovery_emails_sent,
         account_recovery.failed_recovery_attempts
@@ -698,8 +699,8 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
       LEFT JOIN
         account_recovery ON accounts.account_id = account_recovery.account_id
       WHERE
-        accounts.email = ?;`,
-      [requestData.email]
+        accounts.account_id = ?;`,
+      [requestData.accountId]
     );
 
     if (accountRows.length === 0) {
@@ -709,7 +710,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
 
     const accountDetails: AccountDetails = accountRows[0];
 
-    if (!accountDetails.recovery_token) {
+    if (!accountDetails.recovery_code) {
       res.status(404).json({ success: false, message: 'Recovery request not found.', reason: 'requestNotFound' });
       return;
     };
@@ -738,7 +739,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
       WHERE
         account_id = ?
       LIMIT 1;`,
-      [accountDetails.user_id]
+      [requestData.accountId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -749,9 +750,9 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
     res.json({ success: true, resData: {} });
 
     await sendRecoveryEmail({
-      to: requestData.email,
+      to: accountDetails.email,
       accountId: accountDetails.user_id,
-      recoveryToken: accountDetails.recovery_token,
+      recoveryCode: accountDetails.recovery_code,
       expiryTimestamp: accountDetails.expiry_timestamp,
       displayName: accountDetails.display_name,
     });
@@ -765,13 +766,13 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
 accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Response) => {
   interface RequestData {
     accountId: number,
-    recoveryToken: string,
+    recoveryCode: string,
     newPassword: string,
   };
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['accountId', 'recoveryToken', 'newPassword'];
+  const expectedKeys: string[] = ['accountId', 'recoveryCode', 'newPassword'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
@@ -782,8 +783,8 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
     return;
   };
 
-  if (!userValidation.isValidUniqueToken(requestData.recoveryToken)) {
-    res.status(400).json({ success: false, message: 'Invalid recovery token.', reason: 'invalidRecoveryToken' });
+  if (!userValidation.isValidRandomCode(requestData.recoveryCode)) {
+    res.status(400).json({ success: false, message: 'Invalid recovery code.', reason: 'invalidRecoveryCode' });
     return;
   };
 
@@ -801,7 +802,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
   try {
     interface RecoveryDetails extends RowDataPacket {
       recovery_id: number,
-      recovery_token: string,
+      recovery_code: string,
       failed_recovery_attempts: number,
       expiry_timestamp: number,
       username: string,
@@ -810,7 +811,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
     const [recoveryRows] = await dbPool.execute<RecoveryDetails[]>(
       `SELECT
         recovery_id,
-        recovery_token,
+        recovery_code,
         failed_recovery_attempts,
         expiry_timestamp,
         (SELECT username FROM accounts WHERE account_id = :accountId) AS username
@@ -842,7 +843,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       return;
     };
 
-    if (requestData.recoveryToken !== recoveryDetails.recovery_token) {
+    if (requestData.recoveryCode !== recoveryDetails.recovery_code) {
       await dbPool.execute(
         `UPDATE
           account_recovery
@@ -856,7 +857,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
       if (recoveryDetails.failed_recovery_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT) {
         res.status(401).json({
           success: false,
-          message: 'Incorrect recovery token.',
+          message: 'Incorrect recovery code.',
           reason: 'recoverySuspended',
           requestData: {
             expiryTimestamp: recoveryDetails.expiry_timestamp,
@@ -866,7 +867,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         return;
       };
 
-      res.status(401).json({ success: false, message: 'Incorrect recovery token.', reason: 'incorrectRecoveryToken' });
+      res.status(401).json({ success: false, message: 'Incorrect recovery code.', reason: 'incorrectRecoveryCode' });
       return;
     };
 
@@ -1023,7 +1024,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     };
 
     if (!accountDetails.expiry_timestamp) {
-      const confirmationCode: string = generateUniqueCode();
+      const confirmationCode: string = generateRandomCode();
 
       const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
 
@@ -1106,7 +1107,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     return;
   };
 
-  if (!userValidation.isValidCode(requestData.confirmationCode)) {
+  if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
     res.status(400).json({ success: false, message: 'Invalid confirmation code.', reason: 'invalidCode' });
     return;
   };
@@ -1591,7 +1592,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    const newVerificationCode: string = generateUniqueCode();
+    const newVerificationCode: string = generateRandomCode();
     const expiryTimestamp: number = Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW;
 
     await connection.execute(
@@ -1788,7 +1789,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     return;
   };
 
-  if (!userValidation.isValidCode(requestData.verificationCode)) {
+  if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
     res.status(400).json({ success: false, message: 'Invalid verification code.' });
     return;
   };
@@ -2241,12 +2242,12 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       return;
     };
 
-    interface alreadyFriends extends RowDataPacket { already_friends: 1 | null };
-    interface requestAlreadySent extends RowDataPacket { request_already_sent: 1 | null };
+    interface AlreadyFriends extends RowDataPacket { already_friends: 1 | null };
+    interface RequestAlreadySent extends RowDataPacket { request_already_sent: 1 | null };
 
     type FriendshipDetails = [
-      alreadyFriends[],
-      requestAlreadySent[],
+      AlreadyFriends[],
+      RequestAlreadySent[],
     ];
 
     const [friendshipRows] = await dbPool.query<FriendshipDetails>(

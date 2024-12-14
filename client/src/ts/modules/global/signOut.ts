@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "../../../../node_modules/axios/index";
-import { signOUtService } from "../services/authServices";
+import { signOutService } from "../services/authServices";
 import Cookies from "./Cookies";
 import LoadingModal from "./LoadingModal";
 import popup from "./popup";
@@ -8,7 +8,7 @@ export async function signOut(): Promise<void> {
   LoadingModal.display();
 
   try {
-    await signOUtService();
+    await signOutService();
 
     removeRelevantCookies();
     document.dispatchEvent(new CustomEvent('signedOut'));
@@ -42,6 +42,7 @@ export async function signOut(): Promise<void> {
       LoadingModal.remove();
       popup('Not signed in.', 'error');
 
+      removeRelevantCookies();
       return;
     };
 

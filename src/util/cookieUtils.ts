@@ -18,7 +18,7 @@ export function getRequestCookie(req: Request, cookieName: AllowedCookieNames): 
   const requestCookies: Record<string, any> = req.cookies;
 
   if (requestCookies[cookieName]) {
-    return requestCookies.cookieName;
+    return requestCookies[cookieName];
   };
 
   return null;

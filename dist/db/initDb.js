@@ -67,7 +67,7 @@ async function createAccountRecoveryTable() {
         await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS account_recovery (
         recovery_id INT PRIMARY KEY AUTO_INCREMENT,
         account_id INT NOT NULL UNIQUE,
-        recovery_token VARCHAR(40) NOT NULL COLLATE utf8mb4_bin,
+        recovery_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
         expiry_timestamp BIGINT NOT NULL,
         recovery_emails_sent INT NOT NULL CHECK(recovery_emails_sent <= 3),
         failed_recovery_attempts INT NOT NULL CHECK(failed_recovery_attempts <= 3),

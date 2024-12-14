@@ -11,7 +11,7 @@ export function generateAuthSessionId(): string {
   return sessionId;
 };
 
-export function generateUniqueCode(): string {
+export function generateRandomCode(): string {
   let verificationCode: string = '';
 
   while (verificationCode.length < 6) {
@@ -21,17 +21,6 @@ export function generateUniqueCode(): string {
   return verificationCode;
 };
 
-export function generateUniqueToken(): string {
-  let token: string = '';
-
-  while (token.length < 32) {
-    token += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
-  };
-
-  return token;
-};
-
-// non-account related
 export function generateHangoutId(timestamp: number): string {
   let hangoutId: string = 'h';
 

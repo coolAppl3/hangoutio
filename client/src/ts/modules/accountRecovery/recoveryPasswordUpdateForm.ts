@@ -1,21 +1,23 @@
-import { RecoveryStage, recoveryState } from "./recoveryState";
+import { recoveryState } from "./recoveryState";
 import LoadingModal from "../global/LoadingModal";
-import { validateConfirmPassword, validateNewPassword } from "../global/validation";
-import { handleRecoverySuspended, getMinutesTillRecoveryExpiry, handleSignedInUser, reloadWithoutQueryString, } from "./recoveryUtils";
+import { validateCode, validateConfirmPassword, validateNewPassword } from "../global/validation";
+import { handleRecoverySuspension, handleSignedInUser, reloadWithoutQueryString, } from "./recoveryUtils";
 import revealPassword from "../global/revealPassword";
 import popup from "../global/popup";
 import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
-import { InfoModal } from "../global/InfoModal";
-import { RecoveryUpdatePasswordBody, RecoveryUpdatePasswordData, recoveryUpdatePasswordService } from "../services/accountServices";
+import { RecoveryUpdatePasswordBody, RecoveryUpdatePasswordData, recoveryUpdatePasswordService, resendAccountRecoveryEmailService } from "../services/accountServices";
 
 const passwordUpdateFormElement: HTMLFormElement | null = document.querySelector('#password-update-form');
 
 const newPasswordInput: HTMLInputElement | null = document.querySelector('#new-password-input');
 const confirmNewPasswordInput: HTMLInputElement | null = document.querySelector('#confirm-new-password-input');
+const recoveryCodeInput: HTMLInputElement | null = document.querySelector('#recovery-code-input');
 
 const newPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#new-password-input-reveal-btn');
 const confirmNewPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#confirm-new-password-input-reveal-btn');
+
+const resendRecoveryEmailBtn: HTMLButtonElement | null = document.querySelector('#resend-recovery-email-btn');
 
 export function recoveryPasswordUpdateForm(): void {
   loadEventListeners();
@@ -28,6 +30,7 @@ function init(): void {
 
 function loadEventListeners(): void {
   passwordUpdateFormElement?.addEventListener('submit', updateAccountPassword);
+  resendRecoveryEmailBtn?.addEventListener('click', resendAccountRecoveryEmail);
 
   newPasswordRevealBtn?.addEventListener('click', () => revealPassword(newPasswordRevealBtn));
   confirmNewPasswordRevealBtn?.addEventListener('click', () => revealPassword(confirmNewPasswordRevealBtn));
@@ -37,36 +40,36 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
 
-  if (recoveryState.currentStage !== RecoveryStage.updatePasswordForm) {
+  if (!recoveryState.inPasswordUpdateStage) {
     LoadingModal.remove();
     return;
   };
 
-  if (!recoveryState.recoveryAccountId || !recoveryState.expiryTimestamp || !recoveryState.recoveryToken) {
+  if (!recoveryState.accountId || !recoveryState.expiryTimestamp) {
     popup('Something went wrong.', 'error');
     setTimeout(() => reloadWithoutQueryString(), 1000);
 
     return;
   };
 
-  if (!newPasswordInput || !confirmNewPasswordInput) {
+  if (!recoveryCodeInput || !newPasswordInput || !confirmNewPasswordInput) {
     popup('Something went wrong.', 'error');
     setTimeout(() => window.location.reload(), 1000);
 
     return;
   };
 
+  const isValidRecoveryCode: boolean = validateCode(recoveryCodeInput);
   const isValidNewPassword: boolean = validateNewPassword(newPasswordInput);
-  if (!isValidNewPassword) {
-    popup('Invalid new password.', 'error');
-    LoadingModal.remove();
 
+  if (!isValidRecoveryCode || !isValidNewPassword) {
+    LoadingModal.remove();
     return;
   };
 
   const recoveryUpdatePasswordBody: RecoveryUpdatePasswordBody = {
-    accountId: recoveryState.recoveryAccountId,
-    recoveryToken: recoveryState.recoveryToken,
+    accountId: recoveryState.accountId,
+    recoveryCode: recoveryCodeInput.value.toUpperCase(),
     newPassword: newPasswordInput.value,
   };
 
@@ -103,6 +106,13 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
     const errResData: unknown = axiosError.response.data.resData;
 
+    if (status === 400 && errReason === 'invalidAccountId') {
+      popup('Something went wrong.', 'error');
+      setTimeout(() => reloadWithoutQueryString(), 1000);
+
+      return;
+    };
+
     LoadingModal.remove();
     popup(errMessage, 'error')
 
@@ -118,68 +128,111 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
       return;
     };
 
+    if (status === 401) {
+      if (errReason === 'recoverySuspended') {
+        handleRecoverySuspension(errResData);
+      };
+
+      ErrorSpan.display(recoveryCodeInput, errMessage);
+      return;
+    };
+
     if (status === 403) {
       if (errReason === 'signedIn') {
         handleSignedInUser();
         return;
       };
 
-      if (typeof errResData !== 'object' || errResData === null) {
-        return;
-      };
-
-      if (!('expiryTimestamp' in errResData) || typeof errResData.expiryTimestamp !== 'number') {
-        return;
-      };
-
-      const expiryTimestamp: number = errResData.expiryTimestamp;
-      recoveryState.expiryTimestamp = expiryTimestamp;
-
-      handleRecoverySuspended(recoveryState.expiryTimestamp);
-      return;
-    };
-
-    if (status === 401) {
       if (errReason === 'recoverySuspended') {
         handleRecoverySuspension(errResData);
-        return;
       };
 
-      handleIncorrectRecoveryLink(errMessage);
       return;
     };
 
     if (status === 400) {
-      if (errReason === 'invalidPassword') {
-        ErrorSpan.display(newPasswordInput, errMessage);
-        return;
+      const inputRecord: Record<string, HTMLInputElement | undefined> = {
+        invalidRecoveryCode: recoveryCodeInput,
+        invalidPassword: newPasswordInput,
       };
 
-      handleIncorrectRecoveryLink(errMessage);
+      const input: HTMLInputElement | undefined = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
+      };
     };
   };
 };
 
-function handleIncorrectRecoveryLink(errMessage: string): void {
-  const infoModal: HTMLDivElement = InfoModal.display({
-    title: errMessage,
-    description: 'Make sure to click the correct link in your recovery email.',
-    btnTitle: 'Okay',
-  });
+async function resendAccountRecoveryEmail(): Promise<void> {
+  LoadingModal.display();
 
-  infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+  if (!recoveryState.inPasswordUpdateStage) {
+    LoadingModal.remove();
+    return;
+  };
+
+  if (!recoveryState.accountId) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await resendAccountRecoveryEmailService({ accountId: recoveryState.accountId });
+
+    popup('Recovery email resent.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
       return;
     };
 
-    if (e.target.id === 'info-modal-btn') {
-      reloadWithoutQueryString();
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
+      return;
     };
-  });
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+    const errResData: unknown = axiosError.response.data.resData;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    popup(errMessage, 'error');
+    LoadingModal.remove();
+
+    if (status === 404) {
+      setTimeout(() => window.location.reload(), 1000);
+      return;
+    };
+
+    if (status === 403 && errReason === 'recoverySuspended') {
+      handleRecoverySuspension(errResData);
+    };
+  };
 };
 
-
 function setActiveValidation(): void {
+  recoveryCodeInput?.addEventListener('input', () => validateCode(recoveryCodeInput));
+
   newPasswordInput?.addEventListener('input', () => {
     validateNewPassword(newPasswordInput);
     confirmNewPasswordInput ? validateConfirmPassword(confirmNewPasswordInput, newPasswordInput) : undefined;
@@ -187,34 +240,5 @@ function setActiveValidation(): void {
 
   confirmNewPasswordInput?.addEventListener('input', () => {
     newPasswordInput ? validateConfirmPassword(confirmNewPasswordInput, newPasswordInput) : undefined;
-  });
-};
-
-function handleRecoverySuspension(errResData: unknown): void {
-  if (typeof errResData !== 'object' || errResData === null) {
-    return;
-  };
-
-  if (!('expiryTimestamp' in errResData) || typeof errResData.expiryTimestamp !== 'number') {
-    return;
-  };
-
-  const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.expiryTimestamp);
-  const minutesRemainingString: string = minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`;
-
-  const infoModal: HTMLDivElement = InfoModal.display({
-    title: 'Recovery request suspended.',
-    description: `Your recovery request has been suspended due to too many failed attempts.\nYou can start the process again in ${minutesRemainingString}.`,
-    btnTitle: 'Okay',
-  });
-
-  infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'info-modal-btn') {
-      reloadWithoutQueryString();
-    };
   });
 };

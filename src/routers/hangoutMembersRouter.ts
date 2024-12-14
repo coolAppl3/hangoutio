@@ -678,7 +678,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails[`${authSessionDetails.user_type}`] !== authSessionDetails.user_id) {
+    if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId', true);
 

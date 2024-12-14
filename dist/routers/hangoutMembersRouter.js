@@ -533,7 +533,7 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails[`${authSessionDetails.user_type}`] !== authSessionDetails.user_id) {
+        if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });

@@ -636,17 +636,9 @@
     }
   }
 
-  &.confirmationForm {
+  &.passwordUpdateForm {
     form {
-      &:not(:nth-child(2)) {
-        @apply hidden;
-      }
-    }
-  }
-
-  &.updatePasswordForm {
-    form {
-      &:not(:nth-child(3)) {
+      &:not(:last-child) {
         @apply hidden;
       }
     }

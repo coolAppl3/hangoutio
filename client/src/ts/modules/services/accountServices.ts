@@ -71,28 +71,29 @@ export async function verifyAccountService(requestBody: AccountVerificationBody)
 
 // --- --- ---
 
-export interface SendRecoveryEmailData {
+export interface StartAccountRecoveryData {
   success: true,
   resData: {
+    accountId: number,
     expiryTimestamp: number,
   },
 };
 
-export async function startAccountRecoveryService(requestBody: { email: string }): Promise<AxiosResponse<SendRecoveryEmailData>> {
-  return axios.post(`${accountsApiUrl}/recovery/sendEmail`, requestBody);
+export async function startAccountRecoveryService(requestBody: { email: string }): Promise<AxiosResponse<StartAccountRecoveryData>> {
+  return axios.post(`${accountsApiUrl}/recovery/start`, requestBody);
 };
 
 // --- --- ---
 
-export async function resendAccountRecoveryEmailService(requestBody: { email: string }): Promise<AxiosResponse> {
-  return axios.post(`${accountsApiUrl}/recovery/sendEmail`, requestBody);
+export async function resendAccountRecoveryEmailService(requestBody: { accountId: number }): Promise<AxiosResponse> {
+  return axios.post(`${accountsApiUrl}/recovery/resendEmail`, requestBody);
 };
 
 // --- --- ---
 
 export interface RecoveryUpdatePasswordBody {
   accountId: number,
-  recoveryToken: string,
+  recoveryCode: string,
   newPassword: string,
 };
 

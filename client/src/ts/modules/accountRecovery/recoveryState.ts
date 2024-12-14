@@ -1,29 +1,23 @@
-export enum RecoveryStage {
-  emailForm = 'emailForm',
-  confirmationForm = 'confirmationForm',
-  updatePasswordForm = 'updatePasswordForm',
-};
-
 interface RecoveryState {
-  currentStage: RecoveryStage,
+  inPasswordUpdateStage: boolean,
 
   recoveryEmailsSent: number,
   recoveryEmailsSentLimit: number,
 
-  recoveryAccountId: number | null,
+  accountId: number | null,
   expiryTimestamp: number | null,
-  recoveryToken: string | null,
+  recoveryCode: string | null,
   recoveryEmail: string | null,
 };
 
 export const recoveryState: RecoveryState = {
-  currentStage: RecoveryStage.emailForm,
+  inPasswordUpdateStage: false,
 
   recoveryEmailsSent: 0,
   recoveryEmailsSentLimit: 3,
 
-  recoveryAccountId: null,
+  accountId: null,
   expiryTimestamp: null,
-  recoveryToken: null,
+  recoveryCode: null,
   recoveryEmail: null,
 };
