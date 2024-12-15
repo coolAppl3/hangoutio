@@ -1541,7 +1541,7 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
       FROM
         auth_sessions
       WHERE
-        session_id = ?:`,
+        session_id = ?;`,
       [authSessionId]
     );
 
