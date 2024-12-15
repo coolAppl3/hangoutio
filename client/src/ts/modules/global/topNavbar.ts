@@ -2,6 +2,7 @@ import themeSwitcher from "./themeSwitcher"
 import { signOut } from "./signOut";
 import Cookies from "./Cookies";
 import { ConfirmModal } from "./ConfirmModal";
+import LoadingModal from "./LoadingModal";
 
 const topNavbarElement: HTMLElement | null = document.querySelector('.top-nav');
 const accountNavBtn: HTMLButtonElement | null = document.querySelector('#account-nav-container-btn');
@@ -86,7 +87,10 @@ function displaySignOutModal(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
+      confirmModal.remove();
       await signOut();
+
+      LoadingModal.display();
       setTimeout(() => window.location.reload(), 1000);
 
       return;
