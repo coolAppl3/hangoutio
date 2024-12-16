@@ -1,5 +1,6 @@
 import { ConfirmModal } from "./ConfirmModal";
 import Cookies from "./Cookies";
+import LoadingModal from "./LoadingModal";
 import { signOut } from "./signOut";
 
 const botNavbarElement: HTMLElement | null = document.querySelector('.bot-nav');
@@ -84,7 +85,10 @@ function displaySignOutModal(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
+      confirmModal.remove();
       await signOut();
+
+      LoadingModal.display();
       setTimeout(() => window.location.reload(), 1000);
 
       return;

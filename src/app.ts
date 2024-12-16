@@ -72,13 +72,34 @@ app.use(fallbackMiddleware);
 const server = http.createServer(app);
 
 server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) => {
+  socket.on('error', (err) => {
+    console.log(err)
+
+    socket.write(`HTTP/1.1 ${http.STATUS_CODES[500]}\r\n\r\n`);
+    socket.write('Internal server error\r\n');
+
+    socket.end();
+  });
+
+  const memoryUsageMegabytes: number = process.memoryUsage().rss / Math.pow(1024, 2);
+  const memoryThreshold: number = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500)
+
+  if (memoryUsageMegabytes >= memoryThreshold) {
+    socket.write(`HTTP/1.1 ${http.STATUS_CODES[509]}\r\n\r\n`);
+    socket.write('Temporarily unavailable\r\n');
+
+    socket.end();
+    return;
+  };
+
+
   const requestData: { hangoutId: string, hangoutMemberId: number } | null = await authenticateHandshake(req);
 
   if (!requestData) {
-    socket.write('HTTP/1.1 401 Unauthorized.\r\n\r\n');
-    socket.write('Invalid credentials.\r\n');
+    socket.write(`HTTP/1.1 ${http.STATUS_CODES[401]}\r\n\r\n`);
+    socket.write('Invalid credentials\r\n');
 
-    socket.destroy();
+    socket.end();
     return;
   };
 

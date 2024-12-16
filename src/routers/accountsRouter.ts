@@ -2043,7 +2043,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
       FROM
         auth_sessions
       WHERE
-        session_id = ?:`,
+        session_id = ?;`,
       [authSessionId]
     );
 

@@ -922,26 +922,15 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
     };
 
     const { newAvailabilityStep, newSuggestionsStep, newVotingStep }: RequestData = requestData;
+
     if (!hangoutValidation.isValidHangoutSteps(hangoutDetails.current_step, [newAvailabilityStep, newSuggestionsStep, newVotingStep])) {
       await connection.rollback();
-      res.status(400).json({ success: false, message: 'Invalid mew hangout steps.' });
+      res.status(400).json({ success: false, message: 'Invalid new hangout steps.' });
 
       return;
     };
 
-    interface NewSteps {
-      newAvailabilityStep: number,
-      newSuggestionsStep: number,
-      newVotingStep: number,
-    };
-
-    const newSteps: NewSteps = {
-      newAvailabilityStep,
-      newSuggestionsStep,
-      newVotingStep,
-    };
-
-    if (!hangoutValidation.isValidNewHangoutSteps(hangoutDetails, newSteps)) {
+    if (!hangoutValidation.isValidNewHangoutSteps(hangoutDetails, { newAvailabilityStep, newSuggestionsStep, newVotingStep })) {
       await connection.rollback();
       res.status(400).json({ success: false, message: 'Invalid new hangout steps.' });
 
@@ -980,7 +969,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
 
     const yearMilliseconds: number = 1000 * 60 * 60 * 24 * 365;
 
-    const [secondResultSetHeader] = await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `DELETE FROM
         availability_slots
       WHERE
@@ -989,7 +978,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
       [requestData.hangoutId, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]
     );
 
-    const [thirdResultSetheader] = await connection.execute<ResultSetHeader>(
+    await connection.execute(
       `DELETE FROM
         suggestions
       WHERE
@@ -997,9 +986,6 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
         (suggestion_start_timestamp < ? OR suggestion_start_timestamp > ?);`,
       [requestData.hangoutId, newConclusionTimestamp, (newConclusionTimestamp + yearMilliseconds)]
     );
-
-    const deletedAvailabilitySlots: number = secondResultSetHeader.affectedRows;
-    const deletedSuggestions: number = thirdResultSetheader.affectedRows;
 
     await connection.commit();
     res.json({
@@ -1010,12 +996,10 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
         newVotingStep,
         newNextStepTimestamp,
         newConclusionTimestamp,
-        deletedAvailabilitySlots,
-        deletedSuggestions,
       },
     });
 
-    const eventDescription: string = `Hangout steps have been updated and will now be concluded on ${getDateAndTimeString(newConclusionTimestamp)} as a result. ${deletedAvailabilitySlots || 'No'} availability slots and ${deletedSuggestions || 'no'} suggestions were deleted with this change.`;
+    const eventDescription: string = `Hangout stages have been updated. Hangout is now set to conclude on ${getDateAndTimeString(newConclusionTimestamp)}.`;
     await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
@@ -1541,7 +1525,7 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
       FROM
         auth_sessions
       WHERE
-        session_id = ?:`,
+        session_id = ?;`,
       [authSessionId]
     );
 

@@ -102,7 +102,7 @@ function isValidHangoutSteps(currentStep, hangoutSteps) {
     }
     ;
     for (let i = 0; i < hangoutSteps.length; i++) {
-        if (i < --currentStep) {
+        if (i < currentStep - 1) {
             continue;
         }
         ;
