@@ -54,11 +54,26 @@ app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use(fallbackMiddleware_1.fallbackMiddleware);
 const server = http_1.default.createServer(app);
 server.on('upgrade', async (req, socket, head) => {
+    socket.on('error', (err) => {
+        console.log(err);
+        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[500]}\r\n\r\n`);
+        socket.write('Internal server error\r\n');
+        socket.end();
+    });
+    const memoryUsageMegabytes = process.memoryUsage().rss / Math.pow(1024, 2);
+    const memoryThreshold = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500);
+    if (memoryUsageMegabytes >= memoryThreshold) {
+        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[509]}\r\n\r\n`);
+        socket.write('Temporarily unavailable\r\n');
+        socket.end();
+        return;
+    }
+    ;
     const requestData = await (0, hangoutWebSocketAuth_1.authenticateHandshake)(req);
     if (!requestData) {
-        socket.write('HTTP/1.1 401 Unauthorized.\r\n\r\n');
-        socket.write('Invalid credentials.\r\n');
-        socket.destroy();
+        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[401]}\r\n\r\n`);
+        socket.write('Invalid credentials\r\n');
+        socket.end();
         return;
     }
     ;

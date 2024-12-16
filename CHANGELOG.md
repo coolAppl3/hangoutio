@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.6] (2024-12-16)
+
+### Features
+
+- Implemented a memory threshold check for accepting websocket connections to protect against extreme traffic, despite how unlikely.
+
+
+### Code Refactoring
+
+- Simplified event message when stages are updated in PATCH hangouts/details/steps/update.
+
+
+### Bug Fixes
+
+- Fixed minor UI inconsistencies when signing out through `topNavbar.ts` or `botNavbar.ts`. 
+
+
 ## [0.4.5] (2024-12-14)
 
 ### Code Refactoring

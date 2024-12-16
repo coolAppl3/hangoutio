@@ -1598,7 +1598,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
       FROM
         auth_sessions
       WHERE
-        session_id = ?:`, [authSessionId]);
+        session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
