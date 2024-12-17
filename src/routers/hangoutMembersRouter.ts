@@ -11,7 +11,7 @@ import { getRequestCookie, removeRequestCookie, setResponseCookie } from "../uti
 import * as authUtils from '../auth/authUtils';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from "../auth/authSessions";
 import { decryptPassword } from "../util/encryptionUtils";
-import { HANGOUT_MEMBERS_LIMIT, ONGOING_HANGOUTS_LIMIT } from "../util/constants";
+import { MAX_HANGOUT_MEMBERS_LIMIT, MAX_ONGOING_HANGOUTS_LIMIT } from "../util/constants";
 
 export const hangoutMembersRouter: Router = express.Router();
 
@@ -128,11 +128,11 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
     const userDetails: UserDetails = userRows[0];
 
-    if (userDetails.joined_hangouts_counts >= ONGOING_HANGOUTS_LIMIT) {
+    if (userDetails.joined_hangouts_counts >= MAX_ONGOING_HANGOUTS_LIMIT) {
       await connection.rollback();
       res.status(409).json({
         success: false,
-        message: `You've reached the limit of ${ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
+        message: `You've reached the limit of ${MAX_ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
         reason: 'hangoutsLimitReached',
       });
 
@@ -492,7 +492,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${HANGOUT_MEMBERS_LIMIT};`,
+      LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT};`,
       [requestData.hangoutId]
     );
 
@@ -845,7 +845,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${HANGOUT_MEMBERS_LIMIT};`,
+      LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT};`,
       [requestData.hangoutId]
     );
 
@@ -883,34 +883,24 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
       return;
     };
 
-    const [firstResultSetHeader] = await connection.execute<ResultSetHeader>(
+    const [resultSetHeader] = await connection.query<ResultSetHeader>(
       `UPDATE
         hangout_members
       SET
         is_leader = ?
       WHERE
-        hangout_member_id = ?;`,
-      [false, requestData.hangoutMemberId]
-    );
-
-    if (firstResultSetHeader.affectedRows === 0) {
-      await connection.rollback();
-      res.status(500).json({ success: false, message: 'Internal server error.' });
-
-      return;
-    };
-
-    const [secondResultSetHeader] = await connection.execute<ResultSetHeader>(
-      `UPDATE
+        hangout_member_id = ?;
+      
+      UPDATE
         hangout_members
       SET
         is_leader = ?
       WHERE
         hangout_member_id = ?;`,
-      [true, requestData.newLeaderMemberId]
+      [false, hangoutMember.hangout_member_id, true, newHangoutLeader.hangout_member_id]
     );
 
-    if (secondResultSetHeader.affectedRows === 0) {
+    if (resultSetHeader.affectedRows !== 2) {
       await connection.rollback();
       res.status(500).json({ success: false, message: 'Internal server error.' });
 
@@ -920,7 +910,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
     await connection.commit();
     res.json({ success: true, resData: {} });
 
-    const eventDescription: string = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
+    const eventDescription: string = `${hangoutMember.display_name} transferred hangout leadership to ${newHangoutLeader.display_name}.`;
     await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
@@ -1033,7 +1023,7 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${HANGOUT_MEMBERS_LIMIT};`,
+      LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT};`,
       [requestData.hangoutId]
     );
 

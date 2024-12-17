@@ -116,10 +116,10 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
   const accountLeaderHangoutBody: CreateHangoutAsAccountBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
     hangoutPassword: hangoutFormState.hangoutPassword,
-    memberLimit: hangoutFormState.memberLimit,
-    availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
-    suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
-    votingStep: hangoutFormState.votingStep * dayMilliseconds,
+    membersLimit: hangoutFormState.membersLimit,
+    availabilityPeriod: hangoutFormState.availabilityPeriodDays * dayMilliseconds,
+    suggestionsPeriod: hangoutFormState.suggestionsPeriodDays * dayMilliseconds,
+    votingPeriod: hangoutFormState.votingPeriodDays * dayMilliseconds,
   };
 
   try {
@@ -236,10 +236,10 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
   const guestLeaderHangoutBody: CreateHangoutAsGuestBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
     hangoutPassword: hangoutFormState.hangoutPassword,
-    memberLimit: hangoutFormState.memberLimit,
-    availabilityStep: hangoutFormState.availabilityStep * dayMilliseconds,
-    suggestionsStep: hangoutFormState.suggestionsStep * dayMilliseconds,
-    votingStep: hangoutFormState.votingStep * dayMilliseconds,
+    membersLimit: hangoutFormState.membersLimit,
+    availabilityPeriod: hangoutFormState.availabilityPeriodDays * dayMilliseconds,
+    suggestionsPeriod: hangoutFormState.suggestionsPeriodDays * dayMilliseconds,
+    votingPeriod: hangoutFormState.votingPeriodDays * dayMilliseconds,
     displayName: guestDisplayNameInput.value,
     username: guestUsernameInput.value,
     password: guestPasswordInput.value,

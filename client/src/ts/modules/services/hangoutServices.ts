@@ -11,10 +11,10 @@ const hangoutsApiUrl: string = window.location.hostname === 'localhost'
 export interface CreateHangoutAsAccountBody {
   hangoutTitle: string,
   hangoutPassword: string | null,
-  memberLimit: number,
-  availabilityStep: number,
-  suggestionsStep: number,
-  votingStep: number,
+  membersLimit: number,
+  availabilityPeriod: number,
+  suggestionsPeriod: number,
+  votingPeriod: number,
 };
 
 export interface CreateHangoutAsAccountData {
@@ -33,10 +33,10 @@ export async function createHangoutAsAccountService(requestBody: CreateHangoutAs
 export interface CreateHangoutAsGuestBody {
   hangoutTitle: string,
   hangoutPassword: string | null,
-  memberLimit: number,
-  availabilityStep: number,
-  suggestionsStep: number,
-  votingStep: number,
+  membersLimit: number,
+  availabilityPeriod: number,
+  suggestionsPeriod: number,
+  votingPeriod: number,
   username: string,
   password: string,
   displayName: string,

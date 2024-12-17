@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.7] (2024-12-17)
+
+### Features
+
+- Reworked the `hangouts` table and associated logic throughout the app to reduce unnecessary complexity.
+- Removed hangout archiving functionality for now.
+  - This feature might be reimplemented in a future patch.
+
+
 ## [0.4.6] (2024-12-16)
 
 ### Features

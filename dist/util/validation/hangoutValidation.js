@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewHangoutSteps = exports.isValidHangoutSteps = exports.isValidHangoutStep = exports.isValidHangoutMemberLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = void 0;
+exports.isValidNewHangoutPeriods = exports.isValidHangoutPeriods = exports.isValidHangoutMembersLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = void 0;
 const constants_1 = require("../constants");
 function isValidHangoutId(hangoutId) {
     if (typeof hangoutId !== 'string') {
@@ -47,18 +47,18 @@ function isValidHangoutTitle(title) {
 }
 exports.isValidHangoutTitle = isValidHangoutTitle;
 ;
-function isValidHangoutMemberLimit(limit) {
+function isValidHangoutMembersLimit(limit) {
     if (!Number.isInteger(limit)) {
         return false;
     }
     ;
-    if (limit < 2 || limit > constants_1.HANGOUT_MEMBERS_LIMIT) {
+    if (limit < constants_1.MIN_HANGOUT_MEMBERS_LIMIT || limit > constants_1.MAX_HANGOUT_MEMBERS_LIMIT) {
         return false;
     }
     ;
     return true;
 }
-exports.isValidHangoutMemberLimit = isValidHangoutMemberLimit;
+exports.isValidHangoutMembersLimit = isValidHangoutMembersLimit;
 ;
 function isValidTimestamp(timestamp) {
     const timeStampLength = 13;
@@ -77,36 +77,59 @@ function isValidTimestamp(timestamp) {
     return true;
 }
 ;
-function isValidHangoutStep(hangoutStep) {
+function isValidHangoutPeriods(hangoutPeriods) {
+    if (hangoutPeriods.length !== 3) {
+        return false;
+    }
+    ;
+    for (let i = 0; i < hangoutPeriods.length; i++) {
+        if (!isValidHangoutPeriod(hangoutPeriods[i])) {
+            return false;
+        }
+        ;
+    }
+    ;
+    return true;
+}
+exports.isValidHangoutPeriods = isValidHangoutPeriods;
+;
+function isValidHangoutPeriod(hangoutStep) {
     if (!Number.isInteger(hangoutStep) || hangoutStep <= 0) {
         return false;
     }
     ;
-    const dayMilliseconds = 1000 * 60 * 60 * 24;
-    if (hangoutStep % dayMilliseconds !== 0) {
+    if (hangoutStep % constants_1.dayMilliseconds !== 0) {
         return false;
     }
     ;
-    const hangoutStepDays = hangoutStep / dayMilliseconds;
-    if (hangoutStepDays < 1 || hangoutStepDays > 7) {
+    const hangoutStepDays = hangoutStep / constants_1.dayMilliseconds;
+    if (hangoutStepDays < constants_1.MIN_HANGOUT_PERIOD_DAYS || hangoutStepDays > constants_1.MAX_HANGOUT_PERIOD_DAYS) {
         return false;
     }
     ;
     return true;
 }
-exports.isValidHangoutStep = isValidHangoutStep;
 ;
-function isValidHangoutSteps(currentStep, hangoutSteps) {
-    if (hangoutSteps.length === 0) {
+;
+function isValidNewHangoutPeriods(hangoutDetails, existingPeriods, newPeriods) {
+    if (hangoutDetails.currentStage === constants_1.HANGOUT_CONCLUSION_STAGE) {
         return false;
     }
     ;
-    for (let i = 0; i < hangoutSteps.length; i++) {
-        if (i < currentStep - 1) {
+    for (let i = 1; i <= 3; i++) {
+        if (i < hangoutDetails.currentStage) {
+            if (newPeriods[i] !== existingPeriods[i]) {
+                return false;
+            }
+            ;
             continue;
         }
         ;
-        if (!isValidHangoutStep(hangoutSteps[i])) {
+        if (!isValidHangoutPeriod(newPeriods[i])) {
+            return false;
+        }
+        ;
+        if (i === hangoutDetails.currentStage && newPeriods[i] <= hangoutDetails.stageControlTimestamp) {
             return false;
         }
         ;
@@ -114,71 +137,5 @@ function isValidHangoutSteps(currentStep, hangoutSteps) {
     ;
     return true;
 }
-exports.isValidHangoutSteps = isValidHangoutSteps;
-;
-;
-;
-function isValidNewHangoutSteps(hangoutDetails, newSteps) {
-    for (const stepKey in newSteps) {
-        if (!Number.isInteger(newSteps[stepKey])) {
-            return false;
-        }
-        ;
-    }
-    ;
-    if (noStepChange(hangoutDetails, newSteps)) {
-        return false;
-    }
-    ;
-    const currentTimestamp = Date.now();
-    if (hangoutDetails.current_step === 1) {
-        if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newAvailabilityStep) <= currentTimestamp) {
-            return false;
-        }
-        ;
-    }
-    ;
-    if (hangoutDetails.current_step === 2) {
-        if (newSteps.newAvailabilityStep !== hangoutDetails.availability_step) {
-            return false;
-        }
-        ;
-        if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newSuggestionsStep) <= currentTimestamp) {
-            return false;
-        }
-        ;
-    }
-    ;
-    if (hangoutDetails.current_step === 3) {
-        if (newSteps.newAvailabilityStep !== hangoutDetails.availability_step) {
-            return false;
-        }
-        ;
-        if (newSteps.newSuggestionsStep !== hangoutDetails.suggestions_step) {
-            return false;
-        }
-        ;
-        if (getStepEndTimestamp(hangoutDetails.current_step_timestamp, newSteps.newVotingStep) <= currentTimestamp) {
-            return false;
-        }
-        ;
-    }
-    ;
-    return true;
-}
-exports.isValidNewHangoutSteps = isValidNewHangoutSteps;
-;
-function noStepChange(hangoutDetails, newSteps) {
-    if (newSteps.newAvailabilityStep === hangoutDetails.availability_step &&
-        newSteps.newSuggestionsStep === hangoutDetails.suggestions_step &&
-        newSteps.newVotingStep === hangoutDetails.voting_step) {
-        return true;
-    }
-    ;
-    return false;
-}
-;
-function getStepEndTimestamp(currentStepTimestamp, stepLength) {
-    return currentStepTimestamp + stepLength;
-}
+exports.isValidNewHangoutPeriods = isValidNewHangoutPeriods;
 ;

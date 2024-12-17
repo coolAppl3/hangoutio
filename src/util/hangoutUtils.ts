@@ -1,63 +1,15 @@
 import { RowDataPacket } from "mysql2";
 
-export const hangoutStepsMap: Map<number, string> = new Map();
-hangoutStepsMap.set(1, 'availability_step');
-hangoutStepsMap.set(2, 'suggestions_step');
-hangoutStepsMap.set(3, 'voting_step');
-
-
-export function getConclusionTimestamp(
-  createdOnTimestamp: number,
-  availabilityStep: number,
-  suggestionsStep: number,
-  votingStep: number
-): number {
-  const conclusionTimestamp = createdOnTimestamp + availabilityStep + suggestionsStep + votingStep;
-  return conclusionTimestamp;
-};
-
-export function getNextStepTimestamp(
-  currentStep: number,
-  currentStepTimestamp: number,
-  availabilityStep: number,
-  suggestionsStep: number,
-  votingStep: number
-): number | null {
-  if (currentStep === 1) {
-    return currentStepTimestamp + availabilityStep;
-  };
-
-  if (currentStep === 2) {
-    return currentStepTimestamp + suggestionsStep;
-  };
-
-  if (currentStep === 3) {
-    return currentStepTimestamp + votingStep;
-  };
-
-  const weekMilliseconds: number = 1000 * 60 * 60 * 24 * 7;
-  return currentStepTimestamp + weekMilliseconds;
-};
-
-export function getCurrentStepName(currentStep: number): string {
-  const steps: string[] = ['availability', 'suggestions', 'voting'];
-  const currentStepName: string = steps[--currentStep];
-
-  return currentStepName;
-};
-
 // types
 export interface HangoutsDetails extends RowDataPacket {
   hangout_title: string,
-  member_limit: number,
-  availability_step: number,
-  suggestions_step: number,
-  voting_step: number,
-  current_step: number,
-  current_step_timestamp: number,
-  next_step_timestamp: number,
+  members_limit: number,
+  availability_period: number,
+  suggestions_period: number,
+  voting_period: number,
+  current_stage: number,
+  stage_control_timestamp: number,
   created_on_timestamp: number,
-  conclusion_timestamp: number,
   is_concluded: boolean,
 };
 

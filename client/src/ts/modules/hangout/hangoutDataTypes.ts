@@ -1,14 +1,12 @@
 export interface HangoutsDetails {
   hangout_title: string,
-  member_limit: number,
-  availability_step: number,
-  suggestions_step: number,
-  voting_step: number,
-  current_step: number,
-  current_step_timestamp: number,
-  next_step_timestamp: number,
+  members_limit: number,
+  availability_period: number,
+  suggestions_period: number,
+  voting_period: number,
+  current_stage: number,
+  stage_control_timestamp: number,
   created_on_timestamp: number,
-  conclusion_timestamp: number,
   is_concluded: boolean,
 };
 

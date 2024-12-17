@@ -114,9 +114,11 @@ exports.suggestionsRouter.post('/', async (req, res) => {
         await connection.beginTransaction();
         ;
         const [hangoutMemberRows] = await connection.execute(`SELECT
-        hangouts.current_step,
+        (
+          hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
+        ) AS conclusion_timestamp,
+        hangouts.current_stage,
         hangouts.is_concluded,
-        hangouts.conclusion_timestamp,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id
@@ -145,11 +147,11 @@ exports.suggestionsRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step !== constants_1.HANGOUT_SUGGESTIONS_STEP) {
+        if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_SUGGESTIONS_STAGE) {
             await connection.rollback();
             res.status(409).json({
                 success: false,
-                message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded.' : `Hangout isn't in the suggestions stage.`,
+                message: hangoutMemberDetails.is_concluded ? 'Hangout is already concluded.' : `Hangout isn't in the suggestions stage.`,
             });
             return;
         }
@@ -265,8 +267,10 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_step,
-        hangouts.conclusion_timestamp,
+        (
+          hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
+        ) AS conclusion_timestamp,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id,
@@ -297,13 +301,13 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_AVAILABILITY_STEP) {
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
             res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_CONCLUSION_STEP) {
-            res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
+            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
             return;
         }
         ;
@@ -334,7 +338,7 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
         }
         ;
         let deletedVotes = 0;
-        if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMemberDetails.current_step === constants_1.HANGOUT_VOTING_STEP) {
+        if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMemberDetails.current_stage === constants_1.HANGOUT_VOTING_STAGE) {
             const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
           votes
         WHERE
@@ -412,7 +416,7 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id
@@ -439,13 +443,13 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_AVAILABILITY_STEP) {
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
             res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_CONCLUSION_STEP) {
-            res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
+            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
             return;
         }
         ;
@@ -529,7 +533,7 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id
@@ -556,13 +560,13 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_AVAILABILITY_STEP) {
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
             res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_CONCLUSION_STEP) {
-            res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
+            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
             return;
         }
         ;
@@ -651,7 +655,7 @@ exports.suggestionsRouter.delete('/leader/delete', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader,
@@ -682,13 +686,13 @@ exports.suggestionsRouter.delete('/leader/delete', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_AVAILABILITY_STEP) {
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
             res.status(409).json({ success: false, message: `Hangout isn't in the suggestions stage.` });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step === constants_1.HANGOUT_CONCLUSION_STEP) {
-            res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
+            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
             return;
         }
         ;
