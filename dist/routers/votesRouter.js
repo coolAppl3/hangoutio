@@ -104,7 +104,7 @@ exports.votesRouter.post('/', async (req, res) => {
         await connection.beginTransaction();
         ;
         const [hangoutMemberRows] = await connection.execute(`SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -139,7 +139,7 @@ exports.votesRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step !== constants_1.HANGOUT_VOTING_STEP) {
+        if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_VOTING_STAGE) {
             await connection.rollback();
             res.status(409).json({
                 success: false,
@@ -282,7 +282,7 @@ exports.votesRouter.delete('/', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -310,7 +310,7 @@ exports.votesRouter.delete('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step !== constants_1.HANGOUT_VOTING_STEP) {
+        if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_VOTING_STAGE) {
             res.status(409).json({
                 success: false,
                 message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,
@@ -398,7 +398,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -426,7 +426,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_step !== constants_1.HANGOUT_VOTING_STEP) {
+        if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_VOTING_STAGE) {
             res.status(409).json({
                 success: false,
                 message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,

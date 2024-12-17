@@ -35,11 +35,11 @@ const authCronJobs_1 = require("./authCronJobs");
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
         (0, cleanHangoutClients_1.cleanHangoutClients)();
+        await hangoutCronJobs.progressHangouts();
+        await hangoutCronJobs.concludeNoSuggestionHangouts();
         await accountCronJobs.removeUnverifiedAccounts();
         await accountCronJobs.removeExpiredRecoveryRequests();
         await accountCronJobs.removeExpiredEmailUpdateRequests();
-        await hangoutCronJobs.progressHangouts();
-        await hangoutCronJobs.concludeNoSuggestionHangouts();
         await accountCronJobs.removeExpiredDeletionRequests();
     });
     node_cron_1.default.schedule('*/10 * * * *', async () => {
@@ -47,7 +47,6 @@ function initCronJobs() {
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
         await hangoutCronJobs.deleteNoMemberHangouts();
-        await hangoutCronJobs.archiveHangouts();
     });
     console.log('CRON jobs started.');
 }

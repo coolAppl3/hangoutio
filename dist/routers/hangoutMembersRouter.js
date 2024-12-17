@@ -122,11 +122,11 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
         }
         ;
         const userDetails = userRows[0];
-        if (userDetails.joined_hangouts_counts >= constants_1.ONGOING_HANGOUTS_LIMIT) {
+        if (userDetails.joined_hangouts_counts >= constants_1.MAX_ONGOING_HANGOUTS_LIMIT) {
             await connection.rollback();
             res.status(409).json({
                 success: false,
-                message: `You've reached the limit of ${constants_1.ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
+                message: `You've reached the limit of ${constants_1.MAX_ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
                 reason: 'hangoutsLimitReached',
             });
             return;
@@ -395,7 +395,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${constants_1.HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
+      LIMIT ${constants_1.MAX_HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -661,7 +661,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${constants_1.HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
+      LIMIT ${constants_1.MAX_HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });
@@ -690,25 +690,20 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
             return;
         }
         ;
-        const [firstResultSetHeader] = await connection.execute(`UPDATE
+        const [resultSetHeader] = await connection.query(`UPDATE
         hangout_members
       SET
         is_leader = ?
       WHERE
-        hangout_member_id = ?;`, [false, requestData.hangoutMemberId]);
-        if (firstResultSetHeader.affectedRows === 0) {
-            await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
-            return;
-        }
-        ;
-        const [secondResultSetHeader] = await connection.execute(`UPDATE
+        hangout_member_id = ?;
+      
+      UPDATE
         hangout_members
       SET
         is_leader = ?
       WHERE
-        hangout_member_id = ?;`, [true, requestData.newLeaderMemberId]);
-        if (secondResultSetHeader.affectedRows === 0) {
+        hangout_member_id = ?;`, [false, hangoutMember.hangout_member_id, true, newHangoutLeader.hangout_member_id]);
+        if (resultSetHeader.affectedRows !== 2) {
             await connection.rollback();
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -716,7 +711,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         ;
         await connection.commit();
         res.json({ success: true, resData: {} });
-        const eventDescription = `${hangoutMember.display_name} has appointed ${newHangoutLeader.display_name} new hangout leader.`;
+        const eventDescription = `${hangoutMember.display_name} transferred hangout leadership to ${newHangoutLeader.display_name}.`;
         await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
     }
     catch (err) {
@@ -799,7 +794,7 @@ exports.hangoutMembersRouter.patch('/claimLeadership', async (req, res) => {
         hangout_members
       WHERE
         hangout_id = ?
-      LIMIT ${constants_1.HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
+      LIMIT ${constants_1.MAX_HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
             res.status(404).json({ success: false, message: 'Hangout not found.' });
