@@ -4,12 +4,10 @@ interface GlobalHangoutState {
 
   hangoutTitle: string,
   hangoutPassword: string,
-  memberLimit: number,
+  membersLimit: number,
 
-  currentStep: string,
-  nextStep: string,
-  nextStepTimestamp: number,
-  conclusionTimestamp: number,
+  currentStage: string,
+  nextStage: string,
 
   webSocketConnected: boolean
 };

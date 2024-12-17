@@ -16,8 +16,6 @@ export async function initDb(): Promise<void> {
   await createSuggestionsTable();
   await createVotesTable();
   await createChatTable();
-  await createHangoutsArchiveTable();
-  await createHangoutMembersArchiveTable();
   await createAuthSessionsTable();
 
   console.log('Database initialized.')
@@ -164,15 +162,13 @@ async function createHangoutsTable(): Promise<void> {
         hangout_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
         hangout_title VARCHAR(40) NOT NULL,
         encrypted_password VARCHAR(255),
-        member_limit INT NOT NULL CHECK (member_limit BETWEEN 2 AND 20),
-        availability_step BIGINT NOT NULL,
-        suggestions_step BIGINT NOT NULL,
-        voting_step BIGINT NOT NULL,
-        current_step INT CHECK (current_step BETWEEN 1 AND 4),
-        current_step_timestamp BIGINT NOT NULL,
-        next_step_timestamp BIGINT NOT NULL,
+        members_limit INT NOT NULL CHECK (member_limit BETWEEN 2 AND 20),
+        availability_period BIGINT NOT NULL,
+        suggestions_period BIGINT NOT NULL,
+        voting_period BIGINT NOT NULL,
+        current_stage INT CHECK (current_stage BETWEEN 1 AND 4),
+        stage_control_timestamp BIGINT NOT NULL,
         created_on_timestamp BIGINT NOT NULL,
-        conclusion_timestamp BIGINT NOT NULL,
         is_concluded BOOLEAN NOT NULL
       );`
     );
@@ -312,45 +308,6 @@ async function createChatTable(): Promise<void> {
         message_timestamp BIGINT NOT NULL,
         FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE SET NULL,
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE
-      );`
-    );
-
-  } catch (err: unknown) {
-    console.log(err);
-  };
-};
-
-// archive
-
-async function createHangoutsArchiveTable(): Promise<void> {
-  try {
-    await dbPool.execute(
-      `CREATE TABLE IF NOT EXISTS hangouts_archive (
-        hangout_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
-        hangout_title VARCHAR(40) NOT NULL,
-        created_on_timestamp BIGINT NOT NULL,
-        conclusion_timestamp BIGINT NOT NULL,
-        total_members INT NOT NULL,
-        suggestion_title VARCHAR(60),
-        suggestion_description VARCHAR(600) 
-      );`
-    );
-
-  } catch (err: unknown) {
-    console.log(err);
-  };
-};
-
-async function createHangoutMembersArchiveTable(): Promise<void> {
-  try {
-    await dbPool.execute(
-      `CREATE TABLE IF NOT EXISTS hangout_members_archive (
-        hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
-        account_id INT,
-        display_name VARCHAR(40) NOT NULL,
-        is_leader BOOLEAN NOT NULL,
-        FOREIGN KEY (hangout_id) REFERENCES hangouts_archive(hangout_id) ON DELETE CASCADE,
-        UNIQUE (hangout_id, account_id)
       );`
     );
 

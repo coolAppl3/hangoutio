@@ -8,7 +8,7 @@ import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
-import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STEP } from "../util/constants";
+import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE } from "../util/constants";
 
 export const votesRouter: Router = express.Router();
 
@@ -99,7 +99,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     await connection.beginTransaction();
 
     interface HangoutMemberDetails extends RowDataPacket {
-      current_step: number,
+      current_stage: number,
       is_concluded: boolean,
       hangout_member_id: number,
       account_id: number | null,
@@ -111,7 +111,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await connection.execute<HangoutMemberDetails[]>(
       `SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -153,7 +153,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step !== HANGOUT_VOTING_STEP) {
+    if (hangoutMemberDetails.current_stage !== HANGOUT_VOTING_STAGE) {
       await connection.rollback();
       res.status(409).json({
         success: false,
@@ -346,7 +346,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     interface HangoutMemberDetails extends RowDataPacket {
-      current_step: number,
+      current_stage: number,
       is_concluded: boolean,
       hangout_member_id: number
       account_id: number | null,
@@ -356,7 +356,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -389,7 +389,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step !== HANGOUT_VOTING_STEP) {
+    if (hangoutMemberDetails.current_stage !== HANGOUT_VOTING_STAGE) {
       res.status(409).json({
         success: false,
         message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,
@@ -500,7 +500,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
     };
 
     interface HangoutMemberDetails extends RowDataPacket {
-      current_step: number,
+      current_stage: number,
       is_concluded: boolean,
       account_id: number | null,
       guest_id: number | null,
@@ -509,7 +509,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
-        hangouts.current_step,
+        hangouts.current_stage,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -542,7 +542,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_step !== HANGOUT_VOTING_STEP) {
+    if (hangoutMemberDetails.current_stage !== HANGOUT_VOTING_STAGE) {
       res.status(409).json({
         success: false,
         message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,

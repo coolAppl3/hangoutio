@@ -1,19 +1,19 @@
 interface HangoutFormState {
   hangoutTitle: string | null,
-  memberLimit: number,
+  membersLimit: number,
   isPasswordProtected: boolean,
   hangoutPassword: string | null,
-  availabilityStep: number,
-  suggestionsStep: number,
-  votingStep: number,
+  availabilityPeriodDays: number,
+  suggestionsPeriodDays: number,
+  votingPeriodDays: number,
 };
 
 export const hangoutFormState: HangoutFormState = {
   hangoutTitle: null,
-  memberLimit: 10,
+  membersLimit: 10,
   isPasswordProtected: false,
   hangoutPassword: null,
-  availabilityStep: 1,
-  suggestionsStep: 1,
-  votingStep: 1,
+  availabilityPeriodDays: 1,
+  suggestionsPeriodDays: 1,
+  votingPeriodDays: 1,
 };

@@ -9,11 +9,12 @@ export function initCronJobs(): void {
   cron.schedule('* * * * *', async () => {
     cleanHangoutClients();
 
+    await hangoutCronJobs.progressHangouts();
+    await hangoutCronJobs.concludeNoSuggestionHangouts();
+
     await accountCronJobs.removeUnverifiedAccounts();
     await accountCronJobs.removeExpiredRecoveryRequests();
     await accountCronJobs.removeExpiredEmailUpdateRequests();
-    await hangoutCronJobs.progressHangouts();
-    await hangoutCronJobs.concludeNoSuggestionHangouts();
     await accountCronJobs.removeExpiredDeletionRequests();
   });
 
@@ -25,7 +26,6 @@ export function initCronJobs(): void {
   // every hour
   cron.schedule('0 * * * *', async () => {
     await hangoutCronJobs.deleteNoMemberHangouts();
-    await hangoutCronJobs.archiveHangouts();
   });
 
   console.log('CRON jobs started.');

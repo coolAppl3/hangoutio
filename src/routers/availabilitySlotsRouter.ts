@@ -110,7 +110,9 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await connection.execute<HangoutMemberDetails[]>(
       `SELECT
-        hangouts.conclusion_timestamp,
+        (
+          hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
+        ) AS conclusion_timestamp,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -150,7 +152,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
 
       return;
     };
@@ -315,7 +317,9 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await connection.execute<HangoutMemberDetails[]>(
       `SELECT
-        hangouts.conclusion_timestamp,
+        (
+          hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
+        ) AS conclusion_timestamp,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -356,7 +360,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
 
       return;
     };
@@ -593,7 +597,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.is_concluded) {
-      res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
       return;
     };
 
@@ -745,7 +749,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     };
 
     if (hangoutMemberDetails.is_concluded) {
-      res.status(409).json({ success: false, message: 'Hangout already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
       return;
     };
 
