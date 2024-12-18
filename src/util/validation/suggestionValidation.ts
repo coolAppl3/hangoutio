@@ -45,7 +45,7 @@ export function isValidSuggestionTimeSlot(slotStart: number, slotEnd: number): b
 };
 
 export function isValidSuggestionSlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
-  const yearMilliseconds: number = dayMilliseconds * 365;
+  const halfYearMilliseconds: number = (dayMilliseconds * 365) / 2;
 
   if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
     return false;
@@ -55,7 +55,7 @@ export function isValidSuggestionSlotStart(hangoutConclusionTimestamp: number, s
     return false;
   };
 
-  if (slotStart - hangoutConclusionTimestamp > yearMilliseconds) {
+  if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
     return false;
   };
 
