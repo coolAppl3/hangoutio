@@ -14,7 +14,7 @@ export const ACCOUNT_EMAIL_UPDATE_WINDOW = dayMilliseconds;
 export const MAX_ONGOING_HANGOUTS_LIMIT = 12;
 
 export const MAX_HANGOUT_MEMBERS_LIMIT = 20;
-export const MIN_HANGOUT_MEMBERS_LIMIT = 20;
+export const MIN_HANGOUT_MEMBERS_LIMIT = 2;
 
 export const MIN_HANGOUT_PERIOD_DAYS = 1;
 export const MAX_HANGOUT_PERIOD_DAYS = 7;
