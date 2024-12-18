@@ -569,16 +569,39 @@ function displaySignedInStatus(): void {
   thirdStepFormContainer?.classList.add('disabled');
 
   const signOutBtn: HTMLButtonElement | null = document.querySelector('#already-signed-in-sign-out');
-  signOutBtn?.addEventListener('click', removeSignedInStatus);
+  signOutBtn?.addEventListener('click', handleUserSignOut);
 };
 
-async function removeSignedInStatus(): Promise<void> {
-  const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
-  thirdStepFormContainer?.classList.remove('disabled');
+function handleUserSignOut(): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Are you sure you want to sign out?',
+    description: null,
+    confirmBtnTitle: 'Sign out',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
 
-  hangoutThirdStepState.isSignedIn = false;
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
 
-  await signOut();
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
+      thirdStepFormContainer?.classList.remove('disabled');
+
+      hangoutThirdStepState.isSignedIn = false;
+      await signOut();
+
+      confirmModal.remove();
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      confirmModal.remove();
+    };
+  });
 };
 
 function handleOngoingHangoutsLimitReached(errMessage: string): void {
