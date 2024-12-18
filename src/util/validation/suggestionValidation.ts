@@ -1,16 +1,12 @@
 import { dayMilliseconds, hourMilliseconds } from "../constants";
+import { containsInvalidWhitespace } from "../globalUtils";
 
 export function isValidSuggestionTitle(title: string): boolean {
   if (typeof title !== 'string') {
     return false;
   };
 
-  if (title.trim() !== title) {
-    return false;
-  };
-
-  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
-  if (title !== doubleSpacesRemoved) {
+  if (containsInvalidWhitespace(title)) {
     return false;
   };
 

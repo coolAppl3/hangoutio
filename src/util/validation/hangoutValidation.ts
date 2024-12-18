@@ -1,4 +1,5 @@
 import { dayMilliseconds, HANGOUT_CONCLUSION_STAGE, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT, MIN_HANGOUT_PERIOD_DAYS } from "../constants";
+import { containsInvalidWhitespace } from "../globalUtils";
 
 export function isValidHangoutId(hangoutId: string): boolean { // will work till 2268 AD ;)
   if (typeof hangoutId !== 'string') {
@@ -30,12 +31,7 @@ export function isValidHangoutTitle(title: string): boolean {
     return false;
   };
 
-  if (title.trim() !== title) {
-    return false;
-  };
-
-  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
-  if (title !== doubleSpacesRemoved) {
+  if (containsInvalidWhitespace(title)) {
     return false;
   };
 
