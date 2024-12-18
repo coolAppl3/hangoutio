@@ -295,7 +295,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
     if (guestRows.length > 0) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Username already taken.', reason: 'guestUsernameTaken' });
+      res.status(409).json({ success: false, message: 'Username is already taken.', reason: 'guestUsernameTaken' });
 
       return;
     };
