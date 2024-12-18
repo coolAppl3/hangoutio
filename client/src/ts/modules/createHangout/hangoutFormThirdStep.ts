@@ -609,29 +609,3 @@ function handleHangoutsLimitReached(errMessage: string): void {
     };
   });
 };
-
-function handleAccountLocked(): void {
-  const confirmModal: HTMLDivElement = ConfirmModal.display({
-    title: 'Account locked.',
-    description: `Your account has been locked due to multiple failed sign in attempts.`,
-    confirmBtnTitle: 'Recover my account',
-    cancelBtnTitle: 'Go to homepage',
-    extraBtnTitle: null,
-    isDangerousAction: false,
-  });
-
-  confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = 'account-recovery';
-      return;
-    };
-
-    if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'home';
-    };
-  });
-};
