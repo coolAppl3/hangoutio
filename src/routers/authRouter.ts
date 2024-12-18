@@ -20,6 +20,11 @@ authRouter.post('/signOut', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });

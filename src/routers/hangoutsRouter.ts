@@ -190,6 +190,10 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     console.log(err);
     await connection?.rollback();
 
+    if (res.headersSent) {
+      return;
+    };
+
     if (!isSqlError(err)) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
       return;
@@ -359,6 +363,10 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
+
+    if (res.headersSent) {
+      return;
+    };
 
     if (!isSqlError(err)) {
       res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -537,6 +545,11 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -728,6 +741,10 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
+
+    if (res.headersSent) {
+      return;
+    };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
@@ -924,6 +941,9 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
 
     const newConclusionTimestamp: number = hangoutDetails.created_on_timestamp + requestData.newAvailabilityPeriod + requestData.newSuggestionsPeriod + requestData.newVotingPeriod;
 
+    await connection.commit();
+    res.json({ success: true, resData: { newConclusionTimestamp } });
+
     if (newConclusionTimestamp < previousConclusionTimestamp) {
       await connection.query(
         `DELETE FROM
@@ -941,9 +961,6 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
       );
     };
 
-    await connection.commit();
-    res.json({ success: true, resData: { newConclusionTimestamp } });
-
     const newConclusionDateAndTime: string = getDateAndTimeString(newConclusionTimestamp);
 
     await addHangoutEvent(requestData.hangoutId, `Hangout stages have been updated. The hangout will now be concluded on ${newConclusionDateAndTime} as a result.`);
@@ -951,6 +968,10 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
+
+    if (res.headersSent) {
+      return;
+    };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
@@ -1179,6 +1200,9 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
 
     const newConclusionTimestamp: number = updateHangoutRows[0].new_conclusion_timestamp;
 
+    await connection.commit();
+    res.json({ success: true, resData: {} });
+
     await connection.query(
       `DELETE FROM
         availability_slots
@@ -1194,9 +1218,6 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
       { newConclusionTimestamp, hangoutId: requestData.hangoutId }
     );
 
-    await connection.commit();
-    res.json({ success: true, resData: {} });
-
     const newConclusionDateAndTime: string = getDateAndTimeString(newConclusionTimestamp);
     const eventDescription: string = `Hangout has been manually progressed, and will now be concluded on ${newConclusionDateAndTime} as a result.`;
 
@@ -1205,6 +1226,10 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
+
+    if (res.headersSent) {
+      return;
+    };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
@@ -1343,6 +1368,11 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -1386,6 +1416,11 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -1613,6 +1648,11 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });

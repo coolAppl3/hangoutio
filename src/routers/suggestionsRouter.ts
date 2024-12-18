@@ -206,6 +206,10 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     console.log(err);
     await connection?.rollback();
 
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
@@ -405,9 +409,10 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
       return;
     };
 
-    let deletedVotes: number = 0;
+    res.json({ success: true, resData: {} });
+
     if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMemberDetails.current_stage === HANGOUT_VOTING_STAGE) {
-      const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      await dbPool.execute<ResultSetHeader>(
         `DELETE FROM
           votes
         WHERE
@@ -415,13 +420,15 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
         [requestData.suggestionId]
       );
 
-      deletedVotes = resultSetHeader.affectedRows;
     };
-
-    res.json({ success: true, resData: { deletedVotes } });
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -580,6 +587,11 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -732,6 +744,11 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -894,6 +911,11 @@ suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) =
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
