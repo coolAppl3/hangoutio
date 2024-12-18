@@ -9,7 +9,7 @@ export const dbPool: Pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 50,
   idleTimeout: minuteMilliseconds * 5,
-  queueLimit: 50,
+  queueLimit: 100,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   multipleStatements: true,
