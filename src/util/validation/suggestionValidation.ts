@@ -1,3 +1,5 @@
+import { dayMilliseconds, hourMilliseconds } from "../constants";
+
 export function isValidSuggestionTitle(title: string): boolean {
   if (typeof title !== 'string') {
     return false;
@@ -34,8 +36,6 @@ export function isValidSuggestionTimeSlot(slotStart: number, slotEnd: number): b
     return false;
   };
 
-  const hourMilliseconds: number = 1000 * 60 * 60;
-
   const slotLength: number = slotEnd - slotStart;
   if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
     return false;
@@ -45,8 +45,7 @@ export function isValidSuggestionTimeSlot(slotStart: number, slotEnd: number): b
 };
 
 export function isValidSuggestionSlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
-  const hourMilliseconds: number = 1000 * 60 * 60;
-  const yearMilliseconds: number = hourMilliseconds * 24 * 365;
+  const yearMilliseconds: number = dayMilliseconds * 365;
 
   if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
     return false;

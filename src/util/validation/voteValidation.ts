@@ -1,3 +1,5 @@
+import { hourMilliseconds } from "../constants";
+
 interface SuggestionTimeSlot {
   start: number,
   end: number,
@@ -23,8 +25,6 @@ export function isAvailableForSuggestion(suggestionTimeSlot: SuggestionTimeSlot,
 };
 
 function intersectsWithAvailabilitySlot(suggestionTimeSlot: SuggestionTimeSlot, availabilitySlot: AvailabilitySlot): boolean {
-  const hourMilliseconds: number = 1000 * 60 * 60;
-
   //     --- --- --- ---   | suggestion slot
   // --- --- --- ---       | availability slot
   // OR

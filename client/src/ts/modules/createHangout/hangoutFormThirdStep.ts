@@ -13,6 +13,7 @@ import { AccountSignInBody, accountSignInService } from "../services/accountServ
 import { CreateHangoutAsAccountBody, CreateHangoutAsAccountData, createHangoutAsAccountService, createHangoutAsGuestService, CreateHangoutAsGuestBody, CreateHangoutAsGuestData } from "../services/hangoutServices";
 import { displayFirstStepError, hangoutFormNavigationState } from "./hangoutFormNavigation";
 import { hangoutFormState } from "./hangoutFormState";
+import { dayMilliseconds } from "../global/clientConstants";
 
 interface HangoutThirdStepState {
   isSignedIn: boolean,
@@ -110,8 +111,6 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
 
     return;
   };
-
-  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const accountLeaderHangoutBody: CreateHangoutAsAccountBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
@@ -230,8 +229,6 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
     return;
   };
-
-  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const guestLeaderHangoutBody: CreateHangoutAsGuestBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
@@ -473,32 +470,33 @@ function switchToGuestForm(): void {
 };
 
 function clearAccountForm(): void {
-  if (accountEmailInput) {
-    ErrorSpan.hide(accountEmailInput);
-    accountEmailInput.value = '';
+  if (!accountEmailInput || !accountPasswordInput) {
+    return;
   };
 
-  if (accountPasswordInput) {
-    ErrorSpan.hide(accountPasswordInput);
-    accountPasswordInput.value = '';
-  };
+  ErrorSpan.hide(accountEmailInput);
+  accountEmailInput.value = '';
+
+  ErrorSpan.hide(accountPasswordInput);
+  accountPasswordInput.value = '';
 };
 
 function clearGuestForm(): void {
-  if (guestUsernameInput) {
-    ErrorSpan.hide(guestUsernameInput);
-    guestUsernameInput.value = '';
+  if (!guestDisplayNameInput || !guestUsernameInput || !guestPasswordInput || !guestConfirmPasswordInput) {
+    return;
   };
 
-  if (guestPasswordInput) {
-    ErrorSpan.hide(guestPasswordInput);
-    guestPasswordInput.value = '';
-  };
+  ErrorSpan.hide(guestDisplayNameInput);
+  guestDisplayNameInput.value = '';
 
-  if (guestDisplayNameInput) {
-    ErrorSpan.hide(guestDisplayNameInput);
-    guestDisplayNameInput.value = '';
-  };
+  ErrorSpan.hide(guestUsernameInput);
+  guestUsernameInput.value = '';
+
+  ErrorSpan.hide(guestPasswordInput);
+  guestPasswordInput.value = '';
+
+  ErrorSpan.hide(guestConfirmPasswordInput);
+  guestConfirmPasswordInput.value = '';
 };
 
 function updateSignInDurationPreferences(): void {

@@ -11,7 +11,7 @@ import { getRequestCookie, removeRequestCookie, setResponseCookie } from "../uti
 import * as authUtils from '../auth/authUtils';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from "../auth/authSessions";
 import { decryptPassword } from "../util/encryptionUtils";
-import { MAX_HANGOUT_MEMBERS_LIMIT, MAX_ONGOING_HANGOUTS_LIMIT } from "../util/constants";
+import { hourMilliseconds, MAX_HANGOUT_MEMBERS_LIMIT, MAX_ONGOING_HANGOUTS_LIMIT } from "../util/constants";
 
 export const hangoutMembersRouter: Router = express.Router();
 
@@ -372,7 +372,6 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       keepSignedIn: false,
     });
 
-    const hourMilliseconds: number = 1000 * 60 * 60;
     setResponseCookie(res, 'guestHangoutId', requestData.hangoutId, hourMilliseconds * 6, false);
 
     res.json({ success: true, resData: { authSessionCreated } });
