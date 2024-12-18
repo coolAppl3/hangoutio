@@ -241,7 +241,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
   };
 
   if (!hangoutValidation.isValidHangoutMembersLimit(requestData.membersLimit)) {
-    res.status(400).json({ success: false, message: 'Invalid members limit.', reason: 'invalidMembersLimit' });
+    res.status(400).json({ success: false, message: 'Invalid hangout members limit.', reason: 'invalidMembersLimit' });
     return;
   };
 
@@ -324,7 +324,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
         hashed_password,
         display_name,
         hangout_id
-      ) VALUES (${generatePlaceHolders(5)});`,
+      ) VALUES (${generatePlaceHolders(4)});`,
       [requestData.username, hashedGuestPassword, requestData.displayName, hangoutId]
     );
 
