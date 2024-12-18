@@ -258,6 +258,10 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     console.log(err);
     await connection?.rollback();
 
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
@@ -421,6 +425,11 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -574,6 +583,11 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });

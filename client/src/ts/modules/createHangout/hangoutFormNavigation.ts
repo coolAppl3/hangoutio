@@ -49,6 +49,9 @@ function moveBackwards(): void {
 
   const currentForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep}`);
 
+  const previousForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep - 1}`);
+  previousForm ? previousForm.style.height = 'auto' : undefined;
+
   hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep - 2} * (100% + 40px)))` : undefined;
   currentForm ? currentForm.style.display = 'none' : undefined;
 
@@ -70,10 +73,13 @@ function moveForwards(): void {
     };
   };
 
+  const currentForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep}`);
   const nextForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep + 1}`);
 
   nextForm ? nextForm.style.display = 'block' : undefined;
   hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep} * (100% + 40px)))` : undefined;
+
+  currentForm ? currentForm.style.height = '0px' : undefined;
 
   hangoutFormNavigationState.currentStep++;
 

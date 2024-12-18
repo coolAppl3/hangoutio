@@ -1587,7 +1587,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     if (emailRows.length > 0) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Email is already taken.', reason: 'emailTaken' });
+      res.status(409).json({ success: false, message: 'Email address is already taken.', reason: 'emailTaken' });
 
       return;
     };

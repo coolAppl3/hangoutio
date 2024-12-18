@@ -6,6 +6,7 @@ import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { isValidPassword, isValidUsername } from "../util/validation/userValidation";
 import { createAuthSession } from "../auth/authSessions";
 import { setResponseCookie } from "../util/cookieUtils";
+import { hourMilliseconds } from "../util/constants";
 
 export const guestsRouter: Router = express.Router();
 
@@ -82,7 +83,6 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
       return;
     };
 
-    const hourMilliseconds: number = 1000 * 60 * 60;
     const guestHangoutIdCookieMaxAge: number = requestData.keepSignedIn ? hourMilliseconds * 24 * 7 : hourMilliseconds * 6
 
     setResponseCookie(res, 'guestHangoutId', guestDetails.hangout_id, guestHangoutIdCookieMaxAge, false);
@@ -90,6 +90,11 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });

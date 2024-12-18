@@ -6,6 +6,7 @@ const tokenGenerator_1 = require("../util/tokenGenerator");
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const isSqlError_1 = require("../util/isSqlError");
 const cookieUtils_1 = require("../util/cookieUtils");
+const constants_1 = require("../util/constants");
 const authSessionLimit = 3;
 ;
 async function createAuthSession(res, sessionConfig, attemptCount = 1) {
@@ -14,9 +15,8 @@ async function createAuthSession(res, sessionConfig, attemptCount = 1) {
     }
     ;
     const newAuthSessionId = (0, tokenGenerator_1.generateAuthSessionId)();
-    const hourMilliseconds = 1000 * 60 * 60;
     const currentTimestamp = Date.now();
-    const maxAge = sessionConfig.keepSignedIn ? hourMilliseconds * 24 * 7 : hourMilliseconds * 6;
+    const maxAge = sessionConfig.keepSignedIn ? constants_1.hourMilliseconds * 24 * 7 : constants_1.hourMilliseconds * 6;
     const expiryTimestamp = currentTimestamp + maxAge;
     let connection;
     try {

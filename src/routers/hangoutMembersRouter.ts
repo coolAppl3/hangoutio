@@ -11,7 +11,7 @@ import { getRequestCookie, removeRequestCookie, setResponseCookie } from "../uti
 import * as authUtils from '../auth/authUtils';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from "../auth/authSessions";
 import { decryptPassword } from "../util/encryptionUtils";
-import { MAX_HANGOUT_MEMBERS_LIMIT, MAX_ONGOING_HANGOUTS_LIMIT } from "../util/constants";
+import { hourMilliseconds, MAX_HANGOUT_MEMBERS_LIMIT, MAX_ONGOING_HANGOUTS_LIMIT } from "../util/constants";
 
 export const hangoutMembersRouter: Router = express.Router();
 
@@ -213,6 +213,10 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     console.log(err);
     await connection?.rollback();
 
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
@@ -372,7 +376,6 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       keepSignedIn: false,
     });
 
-    const hourMilliseconds: number = 1000 * 60 * 60;
     setResponseCookie(res, 'guestHangoutId', requestData.hangoutId, hourMilliseconds * 6, false);
 
     res.json({ success: true, resData: { authSessionCreated } });
@@ -380,6 +383,10 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
+
+    if (res.headersSent) {
+      return;
+    };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
@@ -564,6 +571,11 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -731,6 +743,11 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
   };
 });
@@ -917,6 +934,10 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
     console.log(err);
     await connection?.rollback();
 
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ success: false, message: 'Internal server error.' });
 
   } finally {
@@ -1083,6 +1104,10 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
+
+    if (res.headersSent) {
+      return;
+    };
 
     res.status(500).json({ success: false, message: 'Internal server error.' });
 

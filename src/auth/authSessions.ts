@@ -5,6 +5,7 @@ import { generateAuthSessionId } from "../util/tokenGenerator";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { isSqlError } from "../util/isSqlError";
 import { setResponseCookie } from "../util/cookieUtils";
+import { hourMilliseconds } from "../util/constants";
 
 const authSessionLimit: number = 3;
 
@@ -20,8 +21,6 @@ export async function createAuthSession(res: Response, sessionConfig: CreateAuth
   };
 
   const newAuthSessionId: string = generateAuthSessionId();
-
-  const hourMilliseconds: number = 1000 * 60 * 60;
   const currentTimestamp: number = Date.now();
 
   const maxAge: number = sessionConfig.keepSignedIn ? hourMilliseconds * 24 * 7 : hourMilliseconds * 6;

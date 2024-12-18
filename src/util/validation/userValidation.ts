@@ -1,3 +1,5 @@
+import { containsInvalidWhitespace } from "../globalUtils";
+
 export function isValidEmail(email: string): boolean {
   if (typeof email !== 'string') {
     return false;
@@ -39,12 +41,7 @@ export function isValidDisplayName(displayName: string): boolean {
     return false;
   };
 
-  if (displayName.trim() !== displayName) {
-    return false;
-  };
-
-  const doubleSpacesRemoved: string = displayName.split(' ').filter((char: string) => char !== '').join(' ');
-  if (displayName !== doubleSpacesRemoved) {
+  if (containsInvalidWhitespace(displayName)) {
     return false;
   };
 

@@ -2,6 +2,7 @@ import { recoveryState } from "./recoveryState";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
+import { minuteMilliseconds } from "../global/clientConstants";
 
 export function handleRecoveryExpired(): void {
   const infoModal: HTMLDivElement = InfoModal.display({
@@ -33,7 +34,6 @@ export function handleUnexpectedError(): void {
 };
 
 export function getMinutesTillRecoveryExpiry(expiryTimestamp: number): number {
-  const minuteMilliseconds: number = 1000 * 60;
   const timeTillRequestExpiry: number = expiryTimestamp - Date.now();
 
   if (timeTillRequestExpiry <= 0) {

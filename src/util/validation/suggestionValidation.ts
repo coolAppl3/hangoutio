@@ -1,14 +1,12 @@
+import { dayMilliseconds, hourMilliseconds } from "../constants";
+import { containsInvalidWhitespace } from "../globalUtils";
+
 export function isValidSuggestionTitle(title: string): boolean {
   if (typeof title !== 'string') {
     return false;
   };
 
-  if (title.trim() !== title) {
-    return false;
-  };
-
-  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
-  if (title !== doubleSpacesRemoved) {
+  if (containsInvalidWhitespace(title)) {
     return false;
   };
 
@@ -34,8 +32,6 @@ export function isValidSuggestionTimeSlot(slotStart: number, slotEnd: number): b
     return false;
   };
 
-  const hourMilliseconds: number = 1000 * 60 * 60;
-
   const slotLength: number = slotEnd - slotStart;
   if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
     return false;
@@ -45,8 +41,7 @@ export function isValidSuggestionTimeSlot(slotStart: number, slotEnd: number): b
 };
 
 export function isValidSuggestionSlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
-  const hourMilliseconds: number = 1000 * 60 * 60;
-  const yearMilliseconds: number = hourMilliseconds * 24 * 365;
+  const halfYearMilliseconds: number = (dayMilliseconds * 365) / 2;
 
   if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
     return false;
@@ -56,7 +51,7 @@ export function isValidSuggestionSlotStart(hangoutConclusionTimestamp: number, s
     return false;
   };
 
-  if (slotStart - hangoutConclusionTimestamp > yearMilliseconds) {
+  if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
     return false;
   };
 

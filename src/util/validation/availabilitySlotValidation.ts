@@ -1,9 +1,9 @@
+import { dayMilliseconds, hourMilliseconds, minuteMilliseconds } from "../constants";
+
 export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boolean {
   if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
     return false;
   };
-
-  const hourMilliseconds: number = 1000 * 60 * 60;
 
   const slotLength: number = slotEnd - slotStart;
   if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
@@ -14,8 +14,7 @@ export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boo
 };
 
 export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
-  const hourMilliseconds: number = 1000 * 60 * 60;
-  const halfYearMilliseconds: number = hourMilliseconds * 24 * 183;
+  const halfYearMilliseconds: number = (dayMilliseconds * 365) / 2;
 
   if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
     return false;
@@ -87,13 +86,11 @@ function isWithinExistingSlot(slot: ExistingAvailabilitySlot, newSlotPart: numbe
 };
 
 function isCloserThanAMinute(slot: ExistingAvailabilitySlot, newSlotPart: number): boolean {
-  const minuteMillisecond: number = 1000 * 60;
-
-  if (Math.abs(newSlotPart - slot.slot_start_timestamp) < minuteMillisecond) {
+  if (Math.abs(newSlotPart - slot.slot_start_timestamp) < minuteMilliseconds) {
     return true;
   };
 
-  if (Math.abs(newSlotPart - slot.slot_end_timestamp) < minuteMillisecond) {
+  if (Math.abs(newSlotPart - slot.slot_end_timestamp) < minuteMilliseconds) {
     return true;
   };
 

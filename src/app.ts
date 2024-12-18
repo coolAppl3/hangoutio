@@ -62,6 +62,12 @@ app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
 app.use('/api/auth', authRouter);
 
+// CSP
+app.use((req, res, next) => {
+  res.set('Content-Security-Policy', "default-src 'self'; script-src 'self';");
+  next();
+});
+
 // static files
 app.use(htmlRouter);
 app.use(express.static(path.join(__dirname, '../public')));

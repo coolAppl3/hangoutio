@@ -13,6 +13,7 @@ import { AccountSignInBody, accountSignInService } from "../services/accountServ
 import { CreateHangoutAsAccountBody, CreateHangoutAsAccountData, createHangoutAsAccountService, createHangoutAsGuestService, CreateHangoutAsGuestBody, CreateHangoutAsGuestData } from "../services/hangoutServices";
 import { displayFirstStepError, hangoutFormNavigationState } from "./hangoutFormNavigation";
 import { hangoutFormState } from "./hangoutFormState";
+import { dayMilliseconds } from "../global/clientConstants";
 
 interface HangoutThirdStepState {
   isSignedIn: boolean,
@@ -111,8 +112,6 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     return;
   };
 
-  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
-
   const accountLeaderHangoutBody: CreateHangoutAsAccountBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
     hangoutPassword: hangoutFormState.hangoutPassword,
@@ -161,7 +160,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     LoadingModal.remove();
 
     if (status === 409 && errReason === 'hangoutsLimitReached') {
-      handleHangoutsLimitReached(errMessage);
+      handleOngoingHangoutsLimitReached(errMessage);
       return;
     };
 
@@ -230,8 +229,6 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
     return;
   };
-
-  const dayMilliseconds: number = 1000 * 60 * 60 * 24;
 
   const guestLeaderHangoutBody: CreateHangoutAsGuestBody = {
     hangoutTitle: hangoutFormState.hangoutTitle,
@@ -473,31 +470,28 @@ function switchToGuestForm(): void {
 };
 
 function clearAccountForm(): void {
-  if (accountEmailInput) {
-    ErrorSpan.hide(accountEmailInput);
-    accountEmailInput.value = '';
-  };
+  const inputArray: (HTMLInputElement | null)[] = [accountEmailInput, accountPasswordInput];
 
-  if (accountPasswordInput) {
-    ErrorSpan.hide(accountPasswordInput);
-    accountPasswordInput.value = '';
+  for (const input of inputArray) {
+    if (!input) {
+      continue;
+    };
+
+    ErrorSpan.hide(input);
+    input.value = '';
   };
 };
 
 function clearGuestForm(): void {
-  if (guestUsernameInput) {
-    ErrorSpan.hide(guestUsernameInput);
-    guestUsernameInput.value = '';
-  };
+  const inputArray: (HTMLInputElement | null)[] = [guestDisplayNameInput, guestUsernameInput, guestPasswordInput, guestConfirmPasswordInput];
 
-  if (guestPasswordInput) {
-    ErrorSpan.hide(guestPasswordInput);
-    guestPasswordInput.value = '';
-  };
+  for (const input of inputArray) {
+    if (!input) {
+      continue;
+    };
 
-  if (guestDisplayNameInput) {
-    ErrorSpan.hide(guestDisplayNameInput);
-    guestDisplayNameInput.value = '';
+    ErrorSpan.hide(input);
+    input.value = '';
   };
 };
 
@@ -565,14 +559,7 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      const referrerHref: string = document.referrer;
-
-      if (referrerHref === '' || referrerHref === window.location.href) {
-        window.location.href = 'home';
-        return;
-      };
-
-      window.location.href = referrerHref;
+      window.location.href = 'home';
     };
   });
 };
@@ -582,19 +569,42 @@ function displaySignedInStatus(): void {
   thirdStepFormContainer?.classList.add('disabled');
 
   const signOutBtn: HTMLButtonElement | null = document.querySelector('#already-signed-in-sign-out');
-  signOutBtn?.addEventListener('click', removeSignedInStatus);
+  signOutBtn?.addEventListener('click', handleUserSignOut);
 };
 
-async function removeSignedInStatus(): Promise<void> {
-  const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
-  thirdStepFormContainer?.classList.remove('disabled');
+function handleUserSignOut(): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Are you sure you want to sign out?',
+    description: null,
+    confirmBtnTitle: 'Sign out',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
 
-  hangoutThirdStepState.isSignedIn = false;
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) {
+      return;
+    };
 
-  await signOut();
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      const thirdStepFormContainer: HTMLDivElement | null = document.querySelector('#hangout-form-step-3-container');
+      thirdStepFormContainer?.classList.remove('disabled');
+
+      hangoutThirdStepState.isSignedIn = false;
+      await signOut();
+
+      confirmModal.remove();
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      confirmModal.remove();
+    };
+  });
 };
 
-function handleHangoutsLimitReached(errMessage: string): void {
+function handleOngoingHangoutsLimitReached(errMessage: string): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: errMessage,
     description: `To create or join a new hangout, wait for one of your current hangouts to conclude or leave one to make room.`,
@@ -608,32 +618,6 @@ function handleHangoutsLimitReached(errMessage: string): void {
 
     if (e.target.id === 'info-modal-btn') {
       window.location.href = 'account';
-    };
-  });
-};
-
-function handleAccountLocked(): void {
-  const confirmModal: HTMLDivElement = ConfirmModal.display({
-    title: 'Account locked.',
-    description: `Your account has been locked due to multiple failed sign in attempts.`,
-    confirmBtnTitle: 'Recover my account',
-    cancelBtnTitle: 'Go to homepage',
-    extraBtnTitle: null,
-    isDangerousAction: false,
-  });
-
-  confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
-      return;
-    };
-
-    if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = 'account-recovery';
-      return;
-    };
-
-    if (e.target.id === 'confirm-modal-cancel-btn') {
-      window.location.href = 'home';
     };
   });
 };

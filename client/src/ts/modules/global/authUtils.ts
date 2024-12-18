@@ -36,8 +36,6 @@ export function handleAuthSessionDestroyed(afterAuthRedirectHref: string): void 
   removeRelevantCookies();
   dispatchEvent(new CustomEvent('signedOut'));
 
-  Cookies.set('afterAuthRedirectHref', afterAuthRedirectHref);
-
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Invalid sign in credentials detected.',
     description: `You've been signed out as a result. Please sign back in to continue.`,
@@ -53,7 +51,9 @@ export function handleAuthSessionDestroyed(afterAuthRedirectHref: string): void 
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = 'home';
+      Cookies.set('afterAuthRedirectHref', afterAuthRedirectHref);
+      window.location.href = 'sign-in';
+
       return;
     };
 

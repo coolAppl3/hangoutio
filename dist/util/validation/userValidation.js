@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidRandomCode = exports.isValidDisplayName = exports.isValidUsername = exports.isValidPassword = exports.isValidNewPassword = exports.isValidEmail = void 0;
+const globalUtils_1 = require("../globalUtils");
 function isValidEmail(email) {
     if (typeof email !== 'string') {
         return false;
@@ -45,12 +46,7 @@ function isValidDisplayName(displayName) {
         return false;
     }
     ;
-    if (displayName.trim() !== displayName) {
-        return false;
-    }
-    ;
-    const doubleSpacesRemoved = displayName.split(' ').filter((char) => char !== '').join(' ');
-    if (displayName !== doubleSpacesRemoved) {
+    if ((0, globalUtils_1.containsInvalidWhitespace)(displayName)) {
         return false;
     }
     ;

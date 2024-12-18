@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.4.8] (2024-12-18)
+
+### Features
+
+- Increased database queue limit to 100.
+- Added confirmation logic to prevent the user from accidentally signing out in `hangoutFormThirdStep.ts`.
+- Added a Content Security Policy to protect against potential XSS attacks.
+
+
+### Code Refactoring
+
+- Added `clientConstants.ts` to act similarly to `constants.ts`, and imported its values where needed.
+  - Some tiny efficiency improvements were made alongside this change. 
+- Added a check for `res.headersSent` in the `catch` block for all routers.
+- Improved validation using `containsInvalidWhitespace()` in `globalUtils.ts`.
+
+
+### Bug Fixes
+
+- Fixed a typo in `constants.ts` where `MIN_HANGOUT_MEMBERS_LIMIT` is equal to 20 instead of 2.
+- Fixed a redirect bug with `handleAuthSessionDestroyed()` in `authUtils.ts`.
+- Fixed incorrect number of place holders being used in POST `hangouts/create/guestLeader`.
+- Fixed suggestions being allowed to start up to a year after the hangout conclusion, instead of only up to half a year.
+- Fixed step 3 in the hangout creation form being way too tall when a user is signed in.
+
+
 ## [0.4.7] (2024-12-17)
 
 ### Features

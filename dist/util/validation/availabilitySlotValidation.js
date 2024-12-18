@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.intersectsWithExistingSlots = exports.isValidAvailabilitySlotStart = exports.isValidAvailabilitySlot = void 0;
+const constants_1 = require("../constants");
 function isValidAvailabilitySlot(slotStart, slotEnd) {
     if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
         return false;
     }
     ;
-    const hourMilliseconds = 1000 * 60 * 60;
     const slotLength = slotEnd - slotStart;
-    if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
+    if (slotLength < constants_1.hourMilliseconds || slotLength > constants_1.hourMilliseconds * 24) {
         return false;
     }
     ;
@@ -17,8 +17,7 @@ function isValidAvailabilitySlot(slotStart, slotEnd) {
 exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
 ;
 function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
-    const hourMilliseconds = 1000 * 60 * 60;
-    const halfYearMilliseconds = hourMilliseconds * 24 * 183;
+    const halfYearMilliseconds = (constants_1.dayMilliseconds * 365) / 2;
     if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
         return false;
     }
@@ -83,12 +82,11 @@ function isWithinExistingSlot(slot, newSlotPart) {
 }
 ;
 function isCloserThanAMinute(slot, newSlotPart) {
-    const minuteMillisecond = 1000 * 60;
-    if (Math.abs(newSlotPart - slot.slot_start_timestamp) < minuteMillisecond) {
+    if (Math.abs(newSlotPart - slot.slot_start_timestamp) < constants_1.minuteMilliseconds) {
         return true;
     }
     ;
-    if (Math.abs(newSlotPart - slot.slot_end_timestamp) < minuteMillisecond) {
+    if (Math.abs(newSlotPart - slot.slot_end_timestamp) < constants_1.minuteMilliseconds) {
         return true;
     }
     ;
