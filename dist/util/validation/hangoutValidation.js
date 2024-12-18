@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidNewHangoutPeriods = exports.isValidHangoutPeriods = exports.isValidHangoutMembersLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = void 0;
 const constants_1 = require("../constants");
+const globalUtils_1 = require("../globalUtils");
 function isValidHangoutId(hangoutId) {
     if (typeof hangoutId !== 'string') {
         return false;
@@ -33,12 +34,7 @@ function isValidHangoutTitle(title) {
         return false;
     }
     ;
-    if (title.trim() !== title) {
-        return false;
-    }
-    ;
-    const doubleSpacesRemoved = title.split(' ').filter((char) => char !== '').join(' ');
-    if (title !== doubleSpacesRemoved) {
+    if ((0, globalUtils_1.containsInvalidWhitespace)(title)) {
         return false;
     }
     ;

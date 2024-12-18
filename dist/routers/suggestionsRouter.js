@@ -183,6 +183,10 @@ exports.suggestionsRouter.post('/', async (req, res) => {
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
@@ -337,19 +341,21 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
             return;
         }
         ;
-        let deletedVotes = 0;
+        res.json({ success: true, resData: {} });
         if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMemberDetails.current_stage === constants_1.HANGOUT_VOTING_STAGE) {
-            const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
+            await db_1.dbPool.execute(`DELETE FROM
           votes
         WHERE
           suggestion_id = ?;`, [requestData.suggestionId]);
-            deletedVotes = resultSetHeader.affectedRows;
         }
         ;
-        res.json({ success: true, resData: { deletedVotes } });
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -472,6 +478,10 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -589,6 +599,10 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -714,6 +728,10 @@ exports.suggestionsRouter.delete('/leader/delete', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;

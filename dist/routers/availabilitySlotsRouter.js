@@ -178,6 +178,10 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
@@ -373,6 +377,10 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
@@ -498,6 +506,10 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -610,6 +622,10 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;

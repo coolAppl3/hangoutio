@@ -1,17 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidSuggestionSlotStart = exports.isValidSuggestionTimeSlot = exports.isValidSuggestionDescription = exports.isValidSuggestionTitle = void 0;
+const constants_1 = require("../constants");
+const globalUtils_1 = require("../globalUtils");
 function isValidSuggestionTitle(title) {
     if (typeof title !== 'string') {
         return false;
     }
     ;
-    if (title.trim() !== title) {
-        return false;
-    }
-    ;
-    const doubleSpacesRemoved = title.split(' ').filter((char) => char !== '').join(' ');
-    if (title !== doubleSpacesRemoved) {
+    if ((0, globalUtils_1.containsInvalidWhitespace)(title)) {
         return false;
     }
     ;
@@ -39,9 +36,8 @@ function isValidSuggestionTimeSlot(slotStart, slotEnd) {
         return false;
     }
     ;
-    const hourMilliseconds = 1000 * 60 * 60;
     const slotLength = slotEnd - slotStart;
-    if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
+    if (slotLength < constants_1.hourMilliseconds || slotLength > constants_1.hourMilliseconds * 24) {
         return false;
     }
     ;
@@ -50,8 +46,7 @@ function isValidSuggestionTimeSlot(slotStart, slotEnd) {
 exports.isValidSuggestionTimeSlot = isValidSuggestionTimeSlot;
 ;
 function isValidSuggestionSlotStart(hangoutConclusionTimestamp, slotStart) {
-    const hourMilliseconds = 1000 * 60 * 60;
-    const yearMilliseconds = hourMilliseconds * 24 * 365;
+    const halfYearMilliseconds = (constants_1.dayMilliseconds * 365) / 2;
     if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
         return false;
     }
@@ -60,7 +55,7 @@ function isValidSuggestionSlotStart(hangoutConclusionTimestamp, slotStart) {
         return false;
     }
     ;
-    if (slotStart - hangoutConclusionTimestamp > yearMilliseconds) {
+    if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
         return false;
     }
     ;

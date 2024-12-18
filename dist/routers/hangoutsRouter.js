@@ -168,6 +168,10 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         if (!(0, isSqlError_1.isSqlError)(err)) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -206,7 +210,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     }
     ;
     if (!hangoutValidation.isValidHangoutMembersLimit(requestData.membersLimit)) {
-        res.status(400).json({ success: false, message: 'Invalid members limit.', reason: 'invalidMembersLimit' });
+        res.status(400).json({ success: false, message: 'Invalid hangout members limit.', reason: 'invalidMembersLimit' });
         return;
     }
     ;
@@ -250,7 +254,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
       LIMIT 1;`, [requestData.username]);
         if (guestRows.length > 0) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Username already taken.', reason: 'guestUsernameTaken' });
+            res.status(409).json({ success: false, message: 'Username is already taken.', reason: 'guestUsernameTaken' });
             return;
         }
         ;
@@ -276,7 +280,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         hashed_password,
         display_name,
         hangout_id
-      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [requestData.username, hashedGuestPassword, requestData.displayName, hangoutId]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.username, hashedGuestPassword, requestData.displayName, hangoutId]);
         const guestId = resultSetHeader.insertId;
         await connection.execute(`INSERT INTO hangout_members (
         hangout_id,
@@ -301,6 +305,10 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         if (!(0, isSqlError_1.isSqlError)(err)) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -438,6 +446,10 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -581,6 +593,10 @@ exports.hangoutsRouter.patch('/details/changeMembersLimit', async (req, res) => 
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
@@ -717,6 +733,8 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
         ;
         const previousConclusionTimestamp = hangoutDetails.created_on_timestamp + hangoutDetails.availability_period + hangoutDetails.suggestions_period + hangoutDetails.voting_period;
         const newConclusionTimestamp = hangoutDetails.created_on_timestamp + requestData.newAvailabilityPeriod + requestData.newSuggestionsPeriod + requestData.newVotingPeriod;
+        await connection.commit();
+        res.json({ success: true, resData: { newConclusionTimestamp } });
         if (newConclusionTimestamp < previousConclusionTimestamp) {
             await connection.query(`DELETE FROM
         availability_slots
@@ -731,14 +749,16 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
         hangout_id = :hangoutId;  `, { newConclusionTimestamp, hangoutId: requestData.hangoutId });
         }
         ;
-        await connection.commit();
-        res.json({ success: true, resData: { newConclusionTimestamp } });
         const newConclusionDateAndTime = (0, globalUtils_1.getDateAndTimeString)(newConclusionTimestamp);
         await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, `Hangout stages have been updated. The hangout will now be concluded on ${newConclusionDateAndTime} as a result.`);
     }
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
@@ -905,6 +925,8 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         }
         ;
         const newConclusionTimestamp = updateHangoutRows[0].new_conclusion_timestamp;
+        await connection.commit();
+        res.json({ success: true, resData: {} });
         await connection.query(`DELETE FROM
         availability_slots
       WHERE
@@ -916,8 +938,6 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
       WHERE
         suggestion_start_timestamp < :newConclusionTimestamp AND
         hangout_id = :hangoutId;`, { newConclusionTimestamp, hangoutId: requestData.hangoutId });
-        await connection.commit();
-        res.json({ success: true, resData: {} });
         const newConclusionDateAndTime = (0, globalUtils_1.getDateAndTimeString)(newConclusionTimestamp);
         const eventDescription = `Hangout has been manually progressed, and will now be concluded on ${newConclusionDateAndTime} as a result.`;
         await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
@@ -925,6 +945,10 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
     catch (err) {
         console.log(err);
         await connection?.rollback();
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     finally {
@@ -1028,6 +1052,10 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -1062,6 +1090,10 @@ exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
@@ -1244,6 +1276,10 @@ exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;

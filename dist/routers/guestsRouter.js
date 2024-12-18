@@ -11,6 +11,7 @@ const requestValidation_1 = require("../util/validation/requestValidation");
 const userValidation_1 = require("../util/validation/userValidation");
 const authSessions_1 = require("../auth/authSessions");
 const cookieUtils_1 = require("../util/cookieUtils");
+const constants_1 = require("../util/constants");
 exports.guestsRouter = express_1.default.Router();
 exports.guestsRouter.post('/signIn', async (req, res) => {
     ;
@@ -68,13 +69,16 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
             return;
         }
         ;
-        const hourMilliseconds = 1000 * 60 * 60;
-        const guestHangoutIdCookieMaxAge = requestData.keepSignedIn ? hourMilliseconds * 24 * 7 : hourMilliseconds * 6;
+        const guestHangoutIdCookieMaxAge = requestData.keepSignedIn ? constants_1.hourMilliseconds * 24 * 7 : constants_1.hourMilliseconds * 6;
         (0, cookieUtils_1.setResponseCookie)(res, 'guestHangoutId', guestDetails.hangout_id, guestHangoutIdCookieMaxAge, false);
         res.json({ success: true, resData: {} });
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ success: false, message: 'Internal server error.' });
     }
     ;
