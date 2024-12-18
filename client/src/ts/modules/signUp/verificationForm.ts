@@ -9,6 +9,7 @@ import { isValidCode, isValidQueryString, isValidTimestamp, validateCode, isVali
 import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, handleSignedInUser, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal } from "../global/ConfirmModal";
+import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
 
 
 const verificationFormElement: HTMLFormElement | null = document.querySelector('#verification-form');
@@ -171,7 +172,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 async function resendVerificationEmail(): Promise<void> {
   LoadingModal.display();
 
-  if (signUpState.verificationEmailsSent >= 3) {
+  if (signUpState.verificationEmailsSent >= EMAILS_SENT_LIMIT) {
     popup('Verification email limit reached.', 'error');
     LoadingModal.remove();
 

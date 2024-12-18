@@ -1,3 +1,5 @@
+import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
+
 interface RecoveryState {
   inPasswordUpdateStage: boolean,
 
@@ -14,7 +16,7 @@ export const recoveryState: RecoveryState = {
   inPasswordUpdateStage: false,
 
   recoveryEmailsSent: 0,
-  recoveryEmailsSentLimit: 3,
+  recoveryEmailsSentLimit: EMAILS_SENT_LIMIT,
 
   accountId: null,
   expiryTimestamp: null,

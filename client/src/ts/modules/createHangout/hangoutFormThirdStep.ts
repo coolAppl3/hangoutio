@@ -160,7 +160,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     LoadingModal.remove();
 
     if (status === 409 && errReason === 'hangoutsLimitReached') {
-      handleHangoutsLimitReached(errMessage);
+      handleOngoingHangoutsLimitReached(errMessage);
       return;
     };
 
@@ -470,33 +470,29 @@ function switchToGuestForm(): void {
 };
 
 function clearAccountForm(): void {
-  if (!accountEmailInput || !accountPasswordInput) {
-    return;
+  const inputArray: (HTMLInputElement | null)[] = [accountEmailInput, accountPasswordInput];
+
+  for (const input of inputArray) {
+    if (!input) {
+      continue;
+    };
+
+    ErrorSpan.hide(input);
+    input.value = '';
   };
-
-  ErrorSpan.hide(accountEmailInput);
-  accountEmailInput.value = '';
-
-  ErrorSpan.hide(accountPasswordInput);
-  accountPasswordInput.value = '';
 };
 
 function clearGuestForm(): void {
-  if (!guestDisplayNameInput || !guestUsernameInput || !guestPasswordInput || !guestConfirmPasswordInput) {
-    return;
+  const inputArray: (HTMLInputElement | null)[] = [guestDisplayNameInput, guestUsernameInput, guestPasswordInput, guestConfirmPasswordInput];
+
+  for (const input of inputArray) {
+    if (!input) {
+      continue;
+    };
+
+    ErrorSpan.hide(input);
+    input.value = '';
   };
-
-  ErrorSpan.hide(guestDisplayNameInput);
-  guestDisplayNameInput.value = '';
-
-  ErrorSpan.hide(guestUsernameInput);
-  guestUsernameInput.value = '';
-
-  ErrorSpan.hide(guestPasswordInput);
-  guestPasswordInput.value = '';
-
-  ErrorSpan.hide(guestConfirmPasswordInput);
-  guestConfirmPasswordInput.value = '';
 };
 
 function updateSignInDurationPreferences(): void {
@@ -563,14 +559,7 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      const referrerHref: string = document.referrer;
-
-      if (referrerHref === '' || referrerHref === window.location.href) {
-        window.location.href = 'home';
-        return;
-      };
-
-      window.location.href = referrerHref;
+      window.location.href = 'home';
     };
   });
 };
@@ -592,7 +581,7 @@ async function removeSignedInStatus(): Promise<void> {
   await signOut();
 };
 
-function handleHangoutsLimitReached(errMessage: string): void {
+function handleOngoingHangoutsLimitReached(errMessage: string): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: errMessage,
     description: `To create or join a new hangout, wait for one of your current hangouts to conclude or leave one to make room.`,
