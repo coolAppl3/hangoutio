@@ -41,16 +41,9 @@ function loadEventListeners(): void {
   confirmPasswordRevealBtn?.addEventListener('click', () => revealPassword(confirmPasswordRevealBtn));
 };
 
-async function signUp(e: SubmitEvent, attemptCount: number = 1): Promise<void> {
+async function signUp(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   LoadingModal.display();
-
-  if (attemptCount > 3) {
-    popup('Internal server error.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
 
   if (!emailInput || !displayNameInput || !usernameInput || !passwordInput) {
     popup('Something went wrong.', 'error');
