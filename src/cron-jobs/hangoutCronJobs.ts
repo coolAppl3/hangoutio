@@ -15,15 +15,16 @@ export async function progressHangouts(): Promise<void> {
           ELSE is_concluded
         END,
         current_stage = current_stage + 1,
-        stage_control_timestamp = ?
+        stage_control_timestamp = :currentTimestamp
       WHERE
-        stage_control_timestamp >= availability_period AND current_stage = ${HANGOUT_AVAILABILITY_STAGE}
+        (:currentTimestamp - stage_control_timestamp) >= availability_period AND current_stage = ${HANGOUT_AVAILABILITY_STAGE}
         OR
-        stage_control_timestamp >= suggestions_period AND current_stage = ${HANGOUT_SUGGESTIONS_STAGE}
+        (:currentTimestamp - stage_control_timestamp) >= suggestions_period AND current_stage = ${HANGOUT_SUGGESTIONS_STAGE}
         OR
-        stage_control_timestamp >= voting_period AND current_stage = ${HANGOUT_VOTING_STAGE}`,
-      [currentTimestamp]
+        (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${HANGOUT_VOTING_STAGE}`,
+      { currentTimestamp }
     );
+
   } catch (err: any) {
     console.log(`CRON JOB ERROR: ${progressHangouts.name}`);
     console.log(err);
