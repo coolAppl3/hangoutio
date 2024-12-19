@@ -1626,8 +1626,8 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
     const hangoutChats: hangoutUtils.HangoutChat[] = hangoutData[4];
 
     let decryptedHangoutPassword: string | null = null;
-    if (hangoutDetails.encrypted_password && requesterHangoutMemberDetails.is_leader) {
-      decryptedHangoutPassword = decryptPassword(hangoutDetails.encrypted_password);
+    if (hangoutInfo.encrypted_password && requesterHangoutMemberDetails.is_leader) {
+      decryptedHangoutPassword = decryptPassword(hangoutInfo.encrypted_password);
     };
 
     res.json({
