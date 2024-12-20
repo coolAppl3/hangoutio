@@ -1,6 +1,10 @@
 export function getDateAndTimeString(timestamp: number): string {
-  const date: Date = new Date(timestamp);
-  return `${getMonthName(date)} ${date.getDate()}, ${date.getFullYear()} - ${getTime(date)}`;
+  const dateObj: Date = new Date(timestamp);
+
+  const date: number = dateObj.getDate();
+  const ordinalSuffix: string = getOrdinalSuffix(date);
+
+  return `${getMonthName(dateObj)} ${date}${ordinalSuffix}, at ${getTime(dateObj)}`;
 };
 
 function getMonthName(date: Date): string {
@@ -8,8 +12,16 @@ function getMonthName(date: Date): string {
 };
 
 function getTime(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', { timeStyle: 'short' }).format(date);
+  return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(date);
 };
+
+function getOrdinalSuffix(date: number): string {
+  if (date % 10 === 1 && date % 100 !== 11) return 'st';
+  if (date % 10 === 2 && date % 100 !== 12) return 'nd';
+  if (date % 10 === 3 && date % 100 !== 13) return 'rd';
+
+  return 'th';
+}
 
 export function containsInvalidWhitespace(string: string): boolean {
   if (string.trim() !== string) {
