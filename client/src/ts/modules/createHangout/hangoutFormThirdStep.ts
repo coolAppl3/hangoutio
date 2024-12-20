@@ -69,9 +69,7 @@ async function submitHangout(e: SubmitEvent): Promise<void> {
   LoadingModal.display();
 
   if (hangoutFormNavigationState.currentStep !== 3) {
-    popup('Hangout form not completed.', 'error');
     LoadingModal.remove();
-
     return;
   };
 
