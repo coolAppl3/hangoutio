@@ -1425,7 +1425,7 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
   };
 });
 
-hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => {
+hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -1542,10 +1542,10 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
 
     type HangoutData = [
       hangoutUtils.HangoutsDetails[],
-      hangoutUtils.HangoutEvent[],
       hangoutUtils.HangoutMember[],
       hangoutUtils.HangoutMemberCountables[],
-      hangoutUtils.HangoutChat[],
+      hangoutUtils.HangoutMessage[],
+      hangoutUtils.HangoutEvent[],
     ];
 
     const [hangoutData] = await dbPool.query<HangoutData>(
@@ -1563,17 +1563,6 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
         hangouts
       WHERE
         hangout_id = :hangoutId;
-
-      SELECT
-        event_description,
-        event_timestamp
-      FROM
-        hangout_events
-      WHERE
-        hangout_id = :hangoutId
-      ORDER BY
-        event_timestamp DESC
-      LIMIT 2;
 
       SELECT
         hangout_member_id,
@@ -1598,7 +1587,7 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
       WHERE
         availability_slots.hangout_member_id = :hangoutMemberId
       LIMIT 1;
-
+      
       SELECT
         message_id,
         hangout_member_id,
@@ -1610,6 +1599,17 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
         hangout_id = :hangoutId
       ORDER BY
         message_timestamp DESC
+      LIMIT 2;
+      
+      SELECT
+        event_description,
+        event_timestamp
+      FROM
+        hangout_events
+      WHERE
+        hangout_id = :hangoutId
+      ORDER BY
+        event_timestamp DESC
       LIMIT 2;`,
       { hangoutId, hangoutMemberId: requesterHangoutMemberDetails.hangout_member_id }
     );
@@ -1620,10 +1620,10 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
     };
 
     const hangoutDetails: hangoutUtils.HangoutsDetails = hangoutData[0][0];
-    const hangoutEvents: hangoutUtils.HangoutEvent[] = hangoutData[1];
-    const hangoutMembers: hangoutUtils.HangoutMember[] = hangoutData[2];
-    const hangoutMemberCountables: hangoutUtils.HangoutMemberCountables = hangoutData[3][0];
-    const hangoutChats: hangoutUtils.HangoutChat[] = hangoutData[4];
+    const hangoutMembers: hangoutUtils.HangoutMember[] = hangoutData[1];
+    const hangoutMemberCountables: hangoutUtils.HangoutMemberCountables = hangoutData[2][0];
+    const latestHangoutChats: hangoutUtils.HangoutMessage[] = hangoutData[3];
+    const latestHangoutEvents: hangoutUtils.HangoutEvent[] = hangoutData[4];
 
     let decryptedHangoutPassword: string | null = null;
     if (hangoutInfo.encrypted_password && requesterHangoutMemberDetails.is_leader) {
@@ -1639,10 +1639,10 @@ hangoutsRouter.get('/details/dashboard', async (req: Request, res: Response) => 
         decryptedHangoutPassword,
 
         hangoutDetails,
-        hangoutEvents,
         hangoutMembers,
         hangoutMemberCountables,
-        hangoutChats,
+        latestHangoutChats,
+        latestHangoutEvents,
       },
     });
 
