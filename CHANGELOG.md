@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.9] (2024-12-22)
+
+### Features
+
+- Added a few more constants to `clientConstants.ts`.
+- Implemented hangout dashboard logic.
+
+
+### Code Refactoring
+
+- Renamed GET `hangouts/dashboard` to GET `hangouts/initial`, and made a few tiny refactors.
+
+
+### Bug Fixes
+
+- Fixed a bug with how the value of `decryptedHangoutPassword` was determined in GET `hangouts/details/dashboard`.
+- Fixed a bug with the condition in `progressHangouts()` in `hangoutCronJobs.ts`.
+
+
 ## [0.4.8] (2024-12-18)
 
 ### Features

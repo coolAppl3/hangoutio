@@ -1098,7 +1098,7 @@ exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
     }
     ;
 });
-exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
+exports.hangoutsRouter.get('/details/initial', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
         res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -1198,17 +1198,6 @@ exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
         hangout_id = :hangoutId;
 
       SELECT
-        event_description,
-        event_timestamp
-      FROM
-        hangout_events
-      WHERE
-        hangout_id = :hangoutId
-      ORDER BY
-        event_timestamp DESC
-      LIMIT 2;
-
-      SELECT
         hangout_member_id,
         user_type,
         display_name,
@@ -1231,7 +1220,7 @@ exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
       WHERE
         availability_slots.hangout_member_id = :hangoutMemberId
       LIMIT 1;
-
+      
       SELECT
         message_id,
         hangout_member_id,
@@ -1243,6 +1232,17 @@ exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
         hangout_id = :hangoutId
       ORDER BY
         message_timestamp DESC
+      LIMIT 2;
+      
+      SELECT
+        event_description,
+        event_timestamp
+      FROM
+        hangout_events
+      WHERE
+        hangout_id = :hangoutId
+      ORDER BY
+        event_timestamp DESC
       LIMIT 2;`, { hangoutId, hangoutMemberId: requesterHangoutMemberDetails.hangout_member_id });
         if (hangoutData.length !== 5) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -1250,13 +1250,13 @@ exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
         }
         ;
         const hangoutDetails = hangoutData[0][0];
-        const hangoutEvents = hangoutData[1];
-        const hangoutMembers = hangoutData[2];
-        const hangoutMemberCountables = hangoutData[3][0];
-        const hangoutChats = hangoutData[4];
+        const hangoutMembers = hangoutData[1];
+        const hangoutMemberCountables = hangoutData[2][0];
+        const latestHangoutChats = hangoutData[3];
+        const latestHangoutEvents = hangoutData[4];
         let decryptedHangoutPassword = null;
-        if (hangoutDetails.encrypted_password && requesterHangoutMemberDetails.is_leader) {
-            decryptedHangoutPassword = (0, encryptionUtils_1.decryptPassword)(hangoutDetails.encrypted_password);
+        if (hangoutInfo.encrypted_password && requesterHangoutMemberDetails.is_leader) {
+            decryptedHangoutPassword = (0, encryptionUtils_1.decryptPassword)(hangoutInfo.encrypted_password);
         }
         ;
         res.json({
@@ -1267,10 +1267,10 @@ exports.hangoutsRouter.get('/details/dashboard', async (req, res) => {
                 isPasswordProtected,
                 decryptedHangoutPassword,
                 hangoutDetails,
-                hangoutEvents,
                 hangoutMembers,
                 hangoutMemberCountables,
-                hangoutChats,
+                latestHangoutChats,
+                latestHangoutEvents,
             },
         });
     }
