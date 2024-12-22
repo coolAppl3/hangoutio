@@ -760,9 +760,7 @@
                     <h3
                       id="hangout-title"
                       class="text-xl font-medium text-title dark:text-title-dark mr-1"
-                    >
-                      Some hangout title
-                    </h3>
+                    ></h3>
                     <button
                       type="button"
                       id="edit-hangout-title-btn"
@@ -795,44 +793,40 @@
 
                   <!-- summary -->
                   <div class="grid grid-cols-3 gap-2 sm:grid-cols-2 xs:grid-cols-1">
-                    <div class="flex flex-col justify-center items-start">
+                    <div class="flex flex-col justify-start items-start">
                       <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Current stage</span>
                       <span
-                        id="dashboard-current-step"
+                        id="dashboard-current-stage"
                         class="text-sm md:text-base font-medium text-title dark:text-title-dark w-full"
-                        >Availability</span
-                      >
+                      ></span>
                     </div>
 
-                    <div class="flex flex-col justify-center items-start">
+                    <div class="flex flex-col justify-start items-start">
                       <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Time remaining</span>
                       <span
-                        id="dashboard-next-step-time"
+                        id="dashboard-next-stage-time"
                         class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                        >3 days and 26 minutes</span
-                      >
+                      ></span>
                     </div>
 
-                    <div class="flex flex-col justify-center items-start">
+                    <div class="flex flex-col justify-start items-start">
                       <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Next stage</span>
                       <span
                         id="dashboard-next-stage"
                         class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                        >Suggestions</span
-                      >
+                      ></span>
                     </div>
 
-                    <div class="flex flex-col justify-center items-start">
+                    <div class="flex flex-col justify-start items-start">
                       <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Hangout conclusion</span>
                       <span
                         id="dashboard-conclusion-time"
                         class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                        >September 24, at 15:00</span
-                      >
+                      ></span>
                     </div>
 
-                    <div class="flex flex-col justify-center items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Member limit</span>
+                    <div class="flex flex-col justify-start items-start">
+                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Members limit</span>
                       <span
                         id="dashboard-member-limit"
                         class="text-sm md:text-base font-medium text-title dark:text-title-dark"
@@ -840,18 +834,23 @@
                       >
                     </div>
 
-                    <div class="flex flex-col justify-center items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Hangout password</span>
+                    <div class="flex flex-col justify-start items-start">
+                      <span
+                        class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]"
+                        id="dashboard-hangout-password-state"
+                        >Password protected</span
+                      >
                       <div class="flex justify-between items-center">
                         <span
-                          id="dashboard-hangout-password"
+                          id="dashboard-hangout-password-value"
                           class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                          >*************</span
+                          >No</span
                         >
 
                         <button
+                          id="dashboard-hangout-password-btn"
                           type="button"
-                          class="svg w-2 h-2 ml-[1.8rem] group mt-[-5px]"
+                          class="svg w-2 h-2 ml-[1.8rem] group mt-[-5px] hidden"
                           aria-label="Copy hangout password"
                           title="Copy"
                         >
@@ -881,6 +880,7 @@
                     type="button"
                     data-goTo="members"
                     class="btn mt-2 bg-secondary-dark dark:bg-primary text-title-dark dark:text-title hidden xl:block sm:w-full"
+                    id="dashboard-view-members-btn"
                   >
                     View hangout members
                   </button>
@@ -888,13 +888,13 @@
 
                 <div class="h-line my-2"></div>
 
-                <!-- description -->
-                <div>
+                <!-- stage description -->
+                <div
+                  id="hangout-stage-description"
+                  data-hangoutStage="1"
+                >
                   <!-- availability -->
-                  <div
-                    id="dashboard-availability-description"
-                    class=""
-                  >
+                  <div id="dashboard-availability-description">
                     <p class="text-base font-medium text-title dark:text-title-dark mb-[4px] md:mb-1">
                       Add your availability slots and let everyone know when you're free.
                     </p>
@@ -910,7 +910,6 @@
                           id="dashboard-slots-added"
                           class="text-sm md:text-base font-medium text-title dark:text-title-dark"
                         >
-                          2 slots
                         </span>
                       </div>
 
@@ -919,8 +918,7 @@
                         <span
                           id="dashboard-slots-remaining"
                           class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                          >8 slots</span
-                        >
+                        ></span>
                       </div>
                     </div>
 
@@ -929,16 +927,13 @@
                       class="btn bg-cta dark:bg-cta-dark text-title sm:w-full"
                       data-goTo="availability"
                     >
-                      Go to availability
+                      View availability slots
                     </button>
                   </div>
 
                   <!-- suggestions -->
-                  <div
-                    id="dashboard-suggestions-description"
-                    class="hidden"
-                  >
-                    <p class="text-base font-medium text-title dark:text-title-dark mb-2">Add your hangout suggestions.</p>
+                  <div id="dashboard-suggestions-description">
+                    <p class="text-base font-medium text-title dark:text-title-dark mb-2">Add your suggestions.</p>
 
                     <div class="grid grid-cols-3 gap-2 mb-2 md:grid-cols-2">
                       <div class="flex flex-col justify-center items-start">
@@ -947,7 +942,6 @@
                           id="dashboard-suggestions-added"
                           class="text-sm md:text-base font-medium text-title dark:text-title-dark"
                         >
-                          2 slots
                         </span>
                       </div>
 
@@ -956,25 +950,21 @@
                         <span
                           id="dashboard-suggestions-remaining"
                           class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                          >8 slots</span
-                        >
+                        ></span>
                       </div>
                     </div>
 
                     <button
                       type="button"
                       class="btn bg-cta dark:bg-cta-dark text-title md:w-full"
-                      data-goTo="suggestions"
+                      data-goto="suggestions"
                     >
-                      Go to suggestions
+                      View suggestions
                     </button>
                   </div>
 
                   <!-- votes -->
-                  <div
-                    id="dashboard-votes-description"
-                    class="hidden"
-                  >
+                  <div id="dashboard-votes-description">
                     <p class="text-base font-medium text-title dark:text-title-dark mb-2">Vote for the suggestions you like best.</p>
 
                     <div class="grid grid-cols-3 gap-2 mb-2 md:grid-cols-2">
@@ -984,7 +974,6 @@
                           id="dashboard-votes-added"
                           class="text-sm md:text-base font-medium text-title dark:text-title-dark"
                         >
-                          2 votes
                         </span>
                       </div>
 
@@ -993,26 +982,22 @@
                         <span
                           id="dashboard-votes-remaining"
                           class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                          >1 vote</span
-                        >
+                        ></span>
                       </div>
                     </div>
 
                     <button
                       type="button"
                       class="btn bg-cta dark:bg-cta-dark text-title md:w-full"
-                      data-goTo="votes"
+                      data-goto="suggestions"
                     >
-                      Go to votes
+                      View suggestions
                     </button>
                   </div>
 
                   <!-- conclusion -->
-                  <div
-                    id="dashboard-conclusion-description"
-                    class="hidden"
-                  >
-                    <p class="text-md font-medium text-title dark:text-title-dark mb-2">Hangout planning has been concluded! Huzzah!</p>
+                  <div id="dashboard-conclusion-description">
+                    <p class="text-md font-medium text-title dark:text-title-dark mb-2">Hangout has been concluded! Huzzah!</p>
 
                     <div class="grid grid-cols-3 gap-2 mb-2 md:grid-cols-2">
                       <div class="flex flex-col justify-center items-start md:col-span-2">
@@ -1068,13 +1053,13 @@
                     <!-- no chats -->
                     <div
                       id="dashboard-chat-empty"
-                      class="bg-primary dark:bg-primary-dark p-2 rounded-sm flex-col justify-center items-center hidden"
+                      class="bg-primary dark:bg-primary-dark p-2 rounded-sm flex-col justify-center items-center"
                     >
-                      <p class="text-sm md:text-base font-medium text-center text-description dark:text-description-dark mb-1">No messages found.</p>
+                      <p class="text-sm md:text-base font-medium text-center text-description dark:text-description-dark mb-2">No messages found.</p>
 
                       <button
                         type="button"
-                        class="btn bg-secondary-dark dark:bg-primary text-title-dark dark:text-title w-1/2 sm:w-full"
+                        class="btn bg-secondary-dark dark:bg-primary text-title-dark dark:text-title w-1/2 sm:w-full mx-auto"
                       >
                         Start chatting
                       </button>
@@ -1082,34 +1067,8 @@
 
                     <div
                       id="dashboard-chat-container"
-                      class=""
+                      class="hidden"
                     >
-                      <div
-                        id="dashboard-chat-container-inner"
-                        class="mb-2"
-                      >
-                        <div class="message">
-                          <span class="message-by">Sara Smith</span>
-                          <div class="message-content">
-                            <p>Hey guys, how about we hangout later this November?</p>
-                            <p>
-                              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Necessitatibus asperiores a facilis! Laboriosam sunt soluta saepe
-                              cupiditate suscipit enim et?
-                            </p>
-                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Inventore earum est voluptatum.</p>
-                          </div>
-                          <span class="message-timestamp">October 31st, 12:55</span>
-                        </div>
-
-                        <div class="message">
-                          <span class="message-by">John Doe</span>
-                          <div class="message-content">
-                            <p>Sounds good! What about the 18th?</p>
-                          </div>
-                          <span class="message-timestamp">19:13</span>
-                        </div>
-                      </div>
-
                       <div>
                         <div class="h-line max-w-[50%] sm:max-w-[70%] mx-auto mb-1"></div>
                         <button
@@ -1117,7 +1076,7 @@
                           class="block text-sm font-medium link text-center w-fit mx-auto"
                           data-goTo="chat"
                         >
-                          View more
+                          Go to chat
                         </button>
                       </div>
                     </div>
@@ -1126,21 +1085,13 @@
 
                 <!-- latest-events -->
                 <div class="dashboard-grid-content-extra-events">
-                  <h4 class="text-md font-medium text-title dark:text-title-dark mb-1">Latest events</h4>
+                  <h4 class="text-md font-medium text-title dark:text-title-dark mb-2">Latest events</h4>
 
                   <div
                     id="dashboard-events"
                     class="mb-1"
                   >
-                    <p class="event-item">
-                      <span class="timestamp">November 19th, 19:02</span>
-                      <span class="description">Voting stage duration has been increased from 2 to 4 days.</span>
-                    </p>
-
-                    <p class="event-item">
-                      <span class="timestamp">November 19th, 21:38</span>
-                      <span class="description">Sarah Smith has joined.</span>
-                    </p>
+                    <div id="dashboard-events-container"></div>
                   </div>
 
                   <p
@@ -1161,96 +1112,20 @@
                   <span
                     id="dashboard-current-members"
                     class="text-description dark:text-description-dark"
-                    >3</span
+                    >1</span
                   >
                   out of
                   <span
-                    id="dashboard-member-limit"
+                    id="dashboard-members-limit"
                     class="text-description dark:text-description-dark"
-                    >15</span
-                  >
+                  ></span>
                   spots taken
                 </p>
 
                 <div class="h-line mt-2 mb-1"></div>
               </div>
 
-              <div id="dashboard-members-container">
-                <div class="member-item">
-                  <p class="display-name">John Doe</p>
-                  <button
-                    type="button"
-                    aria-label="View hangout member"
-                    class="view-hangout-member-btn"
-                    title="View member"
-                  >
-                    <svg
-                      width="600"
-                      height="600"
-                      viewBox="0 0 600 600"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M424 184C424 253.036 368.036 309 299 309C229.964 309 174 253.036 174 184C174 114.964 229.964 59 299 59C368.036 59 424 114.964 424 184Z"
-                      />
-                      <path
-                        d="M52 540.5C40.9543 540.5 31.8899 531.518 33.0313 520.531C43.015 424.43 124.257 349.5 223 349.5H376C474.743 349.5 555.985 424.43 565.969 520.531C567.11 531.518 558.046 540.5 547 540.5H52Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="member-item">
-                  <p class="display-name">John Doe</p>
-                  <button
-                    type="button"
-                    aria-label="View hangout member"
-                    class="view-hangout-member-btn"
-                    title="View member"
-                  >
-                    <svg
-                      width="600"
-                      height="600"
-                      viewBox="0 0 600 600"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M424 184C424 253.036 368.036 309 299 309C229.964 309 174 253.036 174 184C174 114.964 229.964 59 299 59C368.036 59 424 114.964 424 184Z"
-                      />
-                      <path
-                        d="M52 540.5C40.9543 540.5 31.8899 531.518 33.0313 520.531C43.015 424.43 124.257 349.5 223 349.5H376C474.743 349.5 555.985 424.43 565.969 520.531C567.11 531.518 558.046 540.5 547 540.5H52Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="member-item">
-                  <p class="display-name">John Doe</p>
-                  <button
-                    type="button"
-                    aria-label="View hangout member"
-                    class="view-hangout-member-btn"
-                    title="View member"
-                  >
-                    <svg
-                      width="600"
-                      height="600"
-                      viewBox="0 0 600 600"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M424 184C424 253.036 368.036 309 299 309C229.964 309 174 253.036 174 184C174 114.964 229.964 59 299 59C368.036 59 424 114.964 424 184Z"
-                      />
-                      <path
-                        d="M52 540.5C40.9543 540.5 31.8899 531.518 33.0313 520.531C43.015 424.43 124.257 349.5 223 349.5H376C474.743 349.5 555.985 424.43 565.969 520.531C567.11 531.518 558.046 540.5 547 540.5H52Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+              <div id="dashboard-members"></div>
             </div>
           </div>
         </div>

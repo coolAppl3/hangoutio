@@ -1,15 +1,23 @@
+import { HangoutMember, HangoutsDetails } from "./hangoutDataTypes";
+
 interface GlobalHangoutState {
-  hangoutId: string,
-  hangoutMemberId: number,
+  webSocketConnected: boolean,
 
-  hangoutTitle: string,
-  hangoutPassword: string,
-  membersLimit: number,
+  data: null | {
+    hangoutId: string,
+    hangoutMemberId: number,
+    hangoutMembers: HangoutMember[],
 
-  currentStage: string,
-  nextStage: string,
+    isLeader: boolean,
+    isPasswordProtected: boolean,
+    decryptedHangoutPassword: string | null,
 
-  webSocketConnected: boolean
+    availabilitySlotsCount: number,
+    suggestionsCount: number,
+    votesCount: number,
+
+    hangoutDetails: HangoutsDetails,
+  },
 };
 
-export const globalHangoutState: GlobalHangoutState | null = null;
+export const globalHangoutState: GlobalHangoutState = { webSocketConnected: false, data: null };

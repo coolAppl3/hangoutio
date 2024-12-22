@@ -25,7 +25,7 @@ function loadEventListeners(): void {
   hangoutPhoneNavMenu?.addEventListener('click', handlePhoneNavMenuEvents);
 };
 
-function navigateHangoutSections(e: MouseEvent): void {
+export function navigateHangoutSections(e: MouseEvent): void {
   if (!(e.target instanceof HTMLElement)) {
     return;
   };
