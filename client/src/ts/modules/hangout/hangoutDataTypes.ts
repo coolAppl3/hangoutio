@@ -28,7 +28,7 @@ export interface HangoutMemberCountables {
   votes_count: number,
 };
 
-export interface HangoutChat {
+export interface HangoutMessage {
   message_id: number,
   hangout_member_id: number,
   message_content: string,

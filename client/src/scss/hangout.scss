@@ -883,17 +883,48 @@
 
   &-content {
 
+    #hangout-stage-description {
+      &>div {
+        @apply hidden;
+      }
+
+      &[data-hangoutStage="1"] {
+        &>div:nth-child(1) {
+          @apply block;
+        }
+      }
+
+      &[data-hangoutStage="2"] {
+        &>div:nth-child(2) {
+          @apply block;
+        }
+      }
+
+      &[data-hangoutStage="3"] {
+        &>div:nth-child(3) {
+          @apply block;
+        }
+      }
+
+      &[data-hangoutStage="4"] {
+        &>div:nth-child(4) {
+          @apply block;
+        }
+      }
+    }
+
     &-extra {
 
       &-chat {
         #dashboard-chat {
 
           &-container-inner {
+            @apply mb-1;
 
             .message {
-              @apply p-2 mb-2 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-primary dark:bg-primary-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
+              @apply p-2 mb-1 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-primary dark:bg-primary-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
 
-              &-by {
+              &-sent-by {
                 @apply text-xs md:text-sm font-bold leading-[1] text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
               }
 
@@ -905,10 +936,9 @@
                 }
               }
 
-              &-timestamp {
+              &-sent-on {
                 @apply text-xs md:text-sm leading-[1] text-description dark:text-description-dark self-end ml-1;
               }
-
 
             }
           }
@@ -919,16 +949,15 @@
 
         #dashboard-events {
 
-          p.event-item {
-            @apply mb-1 flex flex-col justify-between items-start p-2 rounded-sm bg-primary dark:bg-primary-dark;
+          &-container {
+            .event-item {
+              @apply mb-1 flex flex-col justify-between items-start p-2 rounded-sm bg-primary dark:bg-primary-dark;
 
-            span {
-
-              &.timestamp {
+              span.created-on {
                 @apply text-xs md:text-sm font-bold text-title dark:text-title-dark mb-1;
               }
 
-              &.description {
+              p.description {
                 @apply text-sm md:text-base font-medium text-description dark:text-description-dark;
               }
             }
@@ -940,25 +969,32 @@
 
   &-members {
 
-    #dashboard-members-container {
+    #dashboard-members {
 
-      .member-item {
-        @apply p-1 mb-1 flex justify-between items-center max-w-full overflow-hidden bg-primary dark:bg-primary-dark rounded-sm;
+      .dashboard-members-container {
 
-        p.display-name {
-          @apply text-sm font-bold text-description dark:text-description-dark max-w-[84%] text-ellipsis whitespace-nowrap overflow-hidden;
-        }
+        button.member-item {
+          @apply w-full p-1 mb-1 flex justify-between items-center overflow-hidden bg-primary dark:bg-primary-dark rounded-sm transition-[filter] hover:brightness-75;
 
-        button.view-hangout-member-btn {
-          @apply svg w-[1.8rem] h-[1.8rem] transition-transform after:absolute;
+          &.leader {
 
-          svg path {
-            @apply fill-description dark:fill-description-dark;
+            .leader-icon {
+              @apply svg w-[1.8rem] h-[1.8rem];
+
+              svg path {
+                @apply fill-title dark:fill-title-dark;
+              }
+            }
           }
 
-          &:hover svg path {
-            @apply fill-cta dark:fill-cta-dark;
+          &.user {
+            @apply mb-3 relative after:absolute after:top-[-1rem] after:left-[-1rem] after:w-2 after:h-2 after:bg-cta dark:after:bg-cta-dark after:rotate-[-45deg];
           }
+
+          p.display-name {
+            @apply text-sm font-bold text-description dark:text-description-dark max-w-[84%] text-ellipsis whitespace-nowrap overflow-hidden;
+          }
+
         }
       }
     }

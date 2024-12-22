@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
-import { HangoutChat, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutDataTypes";
+import { HangoutMessage, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutDataTypes";
 
 axios.defaults.withCredentials = true;
 
@@ -69,22 +69,25 @@ export async function getHangoutExistsService(hangoutId: string): Promise<AxiosR
 
 // --- --- ---
 
-export interface HangoutDashboardData {
-  success: true,
-  resData: {
-    hangoutMemberId: number,
-    isLeader: boolean,
-    isPasswordProtected: boolean,
-    decryptedPassword: string | null,
+export interface InitialHangoutData {
+  hangoutMemberId: number,
+  isLeader: boolean,
+  isPasswordProtected: boolean,
+  decryptedHangoutPassword: string | null,
 
-    hangoutDetails: HangoutsDetails,
-    hangoutEvents: HangoutEvent[],
-    hangoutMembers: HangoutMember[],
-    hangoutMemberCountables: HangoutMemberCountables,
-    hangoutChats: HangoutChat[],
-  },
+  hangoutDetails: HangoutsDetails,
+  hangoutMembers: HangoutMember[],
+  hangoutMemberCountables: HangoutMemberCountables,
+
+  latestHangoutChats: HangoutMessage[],
+  latestHangoutEvents: HangoutEvent[],
 };
 
-export async function getHangoutDashboardDataService(hangoutId: string): Promise<AxiosResponse<HangoutDashboardData>> {
-  return axios.get(`${hangoutsApiUrl}/details/dashboard?hangoutId=${hangoutId}`);
+export interface InitialHangoutDataResponse {
+  success: true,
+  resData: InitialHangoutData,
+};
+
+export async function getInitialHangoutData(hangoutId: string): Promise<AxiosResponse<InitialHangoutDataResponse>> {
+  return axios.get(`${hangoutsApiUrl}/details/initial?hangoutId=${hangoutId}`);
 };
