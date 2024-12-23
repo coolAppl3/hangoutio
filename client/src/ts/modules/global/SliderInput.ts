@@ -99,7 +99,9 @@ export default class SliderInput {
       xCoordinates = e.clientX;
 
     } else {
-      e instanceof TouchEvent ? e.preventDefault() : undefined;
+      if (e instanceof TouchEvent) {
+        e.preventDefault();
+      };
 
       const touch = e.touches[0];
       xCoordinates = touch.clientX;
@@ -192,7 +194,10 @@ export default class SliderInput {
 
   private adjustSliderWidth(): void {
     const newWidth: number = this.sliderValue * (100 / this.sliderMaxValue);
-    this.sliderThumb instanceof HTMLDivElement ? this.sliderThumb.style.width = `${newWidth}%` : undefined;
+    if (this.sliderThumb instanceof HTMLDivElement) {
+      this.sliderThumb.style.width = `${newWidth}%`;
+    };
+
     this.actualInput?.setAttribute('value', `${this.sliderValue}`);
     this.updateSliderTextValue();
   };
