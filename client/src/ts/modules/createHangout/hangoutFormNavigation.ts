@@ -50,10 +50,10 @@ function moveBackwards(): void {
   const currentForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep}`);
 
   const previousForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep - 1}`);
-  previousForm ? previousForm.style.height = 'auto' : undefined;
+  previousForm && (previousForm.style.height = 'auto');
 
-  hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep - 2} * (100% + 40px)))` : undefined;
-  currentForm ? currentForm.style.display = 'none' : undefined;
+  hangoutForm && (hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep - 2} * (100% + 40px)))`);
+  currentForm && (currentForm.style.display = 'none');
 
   hangoutFormNavigationState.currentStep--;
 
@@ -76,10 +76,10 @@ function moveForwards(): void {
   const currentForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep}`);
   const nextForm: HTMLElement | null = document.querySelector(`#hangout-form-step-${hangoutFormNavigationState.currentStep + 1}`);
 
-  nextForm ? nextForm.style.display = 'block' : undefined;
-  hangoutForm ? hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep} * (100% + 40px)))` : undefined;
+  nextForm && (nextForm.style.display = 'block');
+  hangoutForm && (hangoutForm.style.transform = `translateX(calc(-${hangoutFormNavigationState.currentStep} * (100% + 40px)))`);
 
-  currentForm ? currentForm.style.height = '0px' : undefined;
+  currentForm && (currentForm.style.height = '0px');
 
   hangoutFormNavigationState.currentStep++;
 
@@ -112,9 +112,9 @@ function displayNavButtons(): void {
 
 function updateProgressBar(): void {
   const newWidth: string = ((hangoutFormNavigationState.currentStep / 3) * 100).toFixed(2);
-  progressBarThumb ? progressBarThumb.style.width = `${newWidth}%` : undefined;
+  progressBarThumb && (progressBarThumb.style.width = `${newWidth}%`);
 
-  progressNumber ? progressNumber.innerText = `${hangoutFormNavigationState.currentStep}` : undefined;
+  progressNumber && (progressNumber.innerText = `${hangoutFormNavigationState.currentStep}`);
 };
 
 function triggerDOMRectUpdateEvent(): void {
@@ -126,5 +126,5 @@ export function displayFirstStepError(errMessage: string, inputType: 'title' | '
   moveBackwards();
 
   const input: HTMLInputElement | null = document.querySelector(`#hangout-${inputType}-input`);
-  input ? ErrorSpan.display(input, errMessage) : undefined;
+  input && ErrorSpan.display(input, errMessage);
 };

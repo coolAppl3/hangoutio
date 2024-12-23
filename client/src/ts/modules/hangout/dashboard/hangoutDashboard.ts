@@ -147,19 +147,19 @@ function populateMainDashboardContent(): void {
   const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
 
   const hangoutTitle: HTMLHeadingElement | null = document.querySelector('#hangout-title');
-  hangoutTitle ? hangoutTitle.textContent = hangoutDetails.hangout_title : undefined;
+  hangoutTitle && (hangoutTitle.textContent = hangoutDetails.hangout_title);
 
   const currentStage: HTMLSpanElement | null = document.querySelector('#dashboard-current-stage');
-  currentStage ? currentStage.textContent = getHangoutStageTitle(hangoutDetails.current_stage) : undefined;
+  currentStage && (currentStage.textContent = getHangoutStageTitle(hangoutDetails.current_stage));
 
   const nextStage: HTMLSpanElement | null = document.querySelector('#dashboard-next-stage');
-  nextStage ? nextStage.textContent = getNextHangoutStageTitle(hangoutDetails.current_stage) : undefined;
+  nextStage && (nextStage.textContent = getNextHangoutStageTitle(hangoutDetails.current_stage));
 
   const hangoutConclusion: HTMLSpanElement | null = document.querySelector('#dashboard-conclusion-time');
-  hangoutConclusion ? hangoutConclusion.textContent = getHangoutConclusionDate() : undefined;
+  hangoutConclusion && (hangoutConclusion.textContent = getHangoutConclusionDate());
 
   const memberLimit: HTMLSpanElement | null = document.querySelector('#dashboard-member-limit');
-  memberLimit ? memberLimit.textContent = `${hangoutDetails.members_limit} members` : undefined;
+  memberLimit && (memberLimit.textContent = `${hangoutDetails.members_limit} members`);
 
   const dashboardViewMembersBtn: HTMLButtonElement | null = document.querySelector('#dashboard-view-members-btn');
   dashboardViewMembersBtn?.addEventListener('click', navigateHangoutSections);
@@ -184,7 +184,7 @@ function displayHangoutPassword(): void {
   };
 
   if (!isLeader) {
-    isPasswordProtected ? hangoutPasswordValue.textContent = 'Yes' : undefined;
+    isPasswordProtected && (hangoutPasswordValue.textContent = 'Yes');
     return;
   };
 
@@ -269,10 +269,10 @@ function populateMembersSection(): void {
   const { hangoutDetails, hangoutMembers } = globalHangoutState.data;
 
   const currentMembers: HTMLSpanElement | null = document.querySelector('#dashboard-current-members');
-  currentMembers ? currentMembers.textContent = `${hangoutMembers.length}` : undefined;
+  currentMembers && (currentMembers.textContent = `${hangoutMembers.length}`);
 
   const membersLimit: HTMLSpanElement | null = document.querySelector('#dashboard-members-limit');
-  membersLimit ? membersLimit.textContent = `${hangoutDetails.members_limit}` : undefined;
+  membersLimit && (membersLimit.textContent = `${hangoutDetails.members_limit}`);
 
   listHangoutMembers();
 };

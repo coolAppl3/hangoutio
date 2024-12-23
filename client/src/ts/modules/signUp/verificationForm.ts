@@ -295,7 +295,7 @@ function verificationLinkDetected(): boolean {
   signUpState.verificationExpiryTimestamp = +verificationExpiryTimestamp;
 
   switchToVerificationStage();
-  verificationCodeInput ? verificationCodeInput.value = verificationCode : undefined;
+  verificationCodeInput && (verificationCodeInput.value = verificationCode);
 
   return true;
 };

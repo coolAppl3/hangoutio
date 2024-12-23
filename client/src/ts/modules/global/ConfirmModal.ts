@@ -10,7 +10,7 @@ export interface ConfirmModalConfig {
 export class ConfirmModal {
   public static display(config: ConfirmModalConfig): HTMLDivElement {
     const existingConfirmModal: HTMLDivElement | null = document.querySelector('#confirm-modal');
-    existingConfirmModal ? existingConfirmModal.remove() : undefined;
+    existingConfirmModal?.remove();
 
     const newConfirmModal: HTMLDivElement = this.createConfirmModal(config);
     document.body.appendChild(newConfirmModal);
@@ -36,7 +36,7 @@ export class ConfirmModal {
     const confirmModal: HTMLDivElement = document.createElement('div');
     confirmModal.id = 'confirm-modal';
     confirmModal.setAttribute('tabindex', '0');
-    config.description ? confirmModal.className = 'has-description' : undefined;
+    config.description && (confirmModal.className = 'has-description');
 
     const confirmModalContainer: HTMLDivElement = document.createElement('div');
     confirmModalContainer.id = 'confirm-modal-container';
@@ -88,7 +88,7 @@ export class ConfirmModal {
 
     btnContainer.appendChild(this.createBtnElement('confirm-btn', config.confirmBtnTitle, config.isDangerousAction));
     btnContainer.appendChild(this.createBtnElement('cancel-btn', config.cancelBtnTitle));
-    config.extraBtnTitle ? btnContainer.appendChild(this.createBtnElement('other-btn', config.extraBtnTitle)) : undefined;
+    config.extraBtnTitle && btnContainer.appendChild(this.createBtnElement('other-btn', config.extraBtnTitle));
 
     return btnContainer;
   };
@@ -99,7 +99,7 @@ export class ConfirmModal {
     btnElement.setAttribute('type', 'button');
     btnElement.appendChild(document.createTextNode(title));
 
-    isDangerousAction ? btnElement.className = 'danger' : undefined;
+    isDangerousAction && (btnElement.className = 'danger');
 
     return btnElement;
   };

@@ -142,7 +142,7 @@ export function progressRecovery(recoveryCode?: string): void {
 
   if (recoveryCode) {
     const recoveryCodeInput: HTMLInputElement | null = document.querySelector('#recovery-code-input');
-    recoveryCodeInput ? recoveryCodeInput.value = recoveryCode : undefined;
+    recoveryCodeInput && (recoveryCodeInput.value = recoveryCode);
   };
 
   recoveryState.inPasswordUpdateStage = true;

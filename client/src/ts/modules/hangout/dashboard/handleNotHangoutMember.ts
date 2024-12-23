@@ -142,7 +142,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
       };
 
       if (errReason === 'hangoutPassword') {
-        joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
+        joinHangoutPasswordInput && ErrorSpan.display(joinHangoutPasswordInput, errMessage);
       };
 
       return;
@@ -183,7 +183,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
       };
 
       if (errReason === 'invalidHangoutPassword') {
-        joinHangoutPasswordInput ? ErrorSpan.display(joinHangoutPasswordInput, errMessage) : undefined;
+        joinHangoutPasswordInput && ErrorSpan.display(joinHangoutPasswordInput, errMessage);
       };
 
       return;

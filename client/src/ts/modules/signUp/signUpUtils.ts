@@ -89,7 +89,7 @@ export function switchToVerificationStage(): void {
   signUpSection?.classList.add('verification-step');
 
   const verificationCodeInput: HTMLInputElement | null = document.querySelector('#verification-code-input');
-  verificationCodeInput ? verificationCodeInput.value = '' : undefined;
+  verificationCodeInput && (verificationCodeInput.value = '');
 
   initVerificationTimer();
 };
