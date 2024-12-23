@@ -23,16 +23,7 @@ const hangoutDashboardState: HangoutDashboardState = {
 };
 
 export async function hangoutDashboard(): Promise<void> {
-  await init();
-  loadEventListeners();
-};
-
-async function init(): Promise<void> {
-  await getHangoutDashboardData();
-};
-
-function loadEventListeners(): void {
-
+  await getHangoutDashboardData();;
 };
 
 export async function getHangoutDashboardData(): Promise<void> {
