@@ -180,11 +180,11 @@ function setActiveValidation(): void {
 
   passwordInput?.addEventListener('input', () => {
     validateNewPassword(passwordInput);
-    confirmPasswordInput ? validateConfirmPassword(confirmPasswordInput, passwordInput) : undefined;
+    confirmPasswordInput && validateConfirmPassword(confirmPasswordInput, passwordInput);
   });
 
   confirmPasswordInput?.addEventListener('input', () => {
-    passwordInput ? validateConfirmPassword(confirmPasswordInput, passwordInput) : undefined;
+    passwordInput && validateConfirmPassword(confirmPasswordInput, passwordInput);
   });
 };
 

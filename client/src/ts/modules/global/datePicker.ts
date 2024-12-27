@@ -67,10 +67,10 @@ function updateDates(): void {
   const navbarHeader: HTMLParagraphElement | null = document.querySelector('#date-picker-navbar-header');
 
   const navbarHeaderMonth: Element | null | undefined = navbarHeader?.firstElementChild;
-  navbarHeaderMonth ? navbarHeaderMonth.textContent = `${datePickerState.monthName} ` : undefined;
+  navbarHeaderMonth && (navbarHeaderMonth.textContent = `${datePickerState.monthName} `);
 
   const navbarHeaderYearElement: Element | null | undefined = navbarHeader?.lastElementChild;
-  navbarHeaderYearElement ? navbarHeaderYearElement.textContent = `${datePickerState.year}` : undefined;
+  navbarHeaderYearElement && (navbarHeaderYearElement.textContent = `${datePickerState.year}`);
 
   insertDateButtons(monthFirstDate, monthDays);
 };
@@ -200,10 +200,10 @@ function initDatePicker(): void {
   const navbarHeader: HTMLParagraphElement | null = document.querySelector('#date-picker-navbar-header');
 
   const navbarHeaderMonthElement: Element | null | undefined = navbarHeader?.firstElementChild;
-  navbarHeaderMonthElement ? navbarHeaderMonthElement.textContent = `${datePickerState.initialMonthName} ` : undefined;
+  navbarHeaderMonthElement && (navbarHeaderMonthElement.textContent = `${datePickerState.initialMonthName} `);
 
   const navbarHeaderYear: Element | null | undefined = navbarHeader?.lastElementChild;
-  navbarHeaderYear ? navbarHeaderYear.textContent = `${datePickerState.initialYear}` : undefined;
+  navbarHeaderYear && (navbarHeaderYear.textContent = `${datePickerState.initialYear}`);
 
   insertDateButtons(initialMonthFirstDay, initialMonthDays);
   render();
@@ -217,7 +217,7 @@ function highlightInitialDate(): void {
   const initialDate: HTMLButtonElement | null = document.querySelector(`[data-date-value="${datePickerState.initialDate}"]`);
   initialDate?.setAttribute('data-initial', 'true');
 
-  initialDate ? disablePastDates(initialDate) : undefined;
+  initialDate && disablePastDates(initialDate);
 };
 
 function highlightSelectedDate(btn: HTMLButtonElement): void {
@@ -233,7 +233,7 @@ function highlightSelectedDateIfVisible(): void {
   };
 
   const selectedBtn: HTMLButtonElement | null = document.querySelector(`[data-date-value="${datePickerState.selectedDate}"]`);
-  selectedBtn ? selectedBtn.id = 'date-picker-selected-date' : undefined;
+  selectedBtn && (selectedBtn.id = 'date-picker-selected-date');
 };
 
 function disablePastDates(initialDate: HTMLElement): void {
@@ -359,7 +359,7 @@ function displaySelectedDateText(): void {
   const dateText: string = `${datePickerState.monthName} ${datePickerState.selectedDate}, ${datePickerState.selectedYear}`;
   const selectedDateText: HTMLSpanElement | null = document.querySelector('#selected-date-text');
 
-  selectedDateText ? selectedDateText.textContent = dateText : undefined;
+  selectedDateText && (selectedDateText.textContent = dateText);
 };
 
 function resetGlobalState(): void {
@@ -390,7 +390,7 @@ function resetUIState(): void {
 
   setTimeout(() => {
     datePickerSelectedDate?.removeAttribute('id');
-    selectedDateText ? selectedDateText.textContent = 'None' : undefined;
+    selectedDateText && (selectedDateText.textContent = 'None');
   }, 100);
 
   render();

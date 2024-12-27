@@ -11,7 +11,7 @@ interface InfoModalOptions {
 export class InfoModal {
   public static display(infoModalConfig: InfoModalConfig, options?: InfoModalOptions): HTMLDivElement {
     const existingInfoModal: HTMLDivElement | null = document.querySelector('#info-modal');
-    existingInfoModal ? existingInfoModal.remove() : undefined;
+    existingInfoModal?.remove();
 
     const newInfoModal: HTMLDivElement = this.createInfoModal(infoModalConfig);
     document.body.appendChild(newInfoModal);
@@ -57,7 +57,7 @@ export class InfoModal {
     const infoModal: HTMLDivElement = document.createElement('div');
     infoModal.id = 'info-modal';
     infoModal.setAttribute('tabindex', '0');
-    config.description ? infoModal.className = 'has-description' : undefined;
+    config.description && (infoModal.className = 'has-description');
 
     const infoModalContainer: HTMLDivElement = document.createElement('div');
     infoModalContainer.id = 'info-modal-container';

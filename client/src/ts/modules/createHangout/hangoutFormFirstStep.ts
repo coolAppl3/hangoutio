@@ -39,8 +39,8 @@ function toggleHangoutPassword(): void {
     hangoutPasswordInput?.parentElement?.classList.add('disabled');
     hangoutPasswordInput?.setAttribute('disabled', '');
 
-    hangoutPasswordInput ? hangoutPasswordInput.value = '' : undefined;
-    hangoutPasswordInput ? ErrorSpan.hide(hangoutPasswordInput) : undefined;
+    hangoutPasswordInput && (hangoutPasswordInput.value = '');
+    hangoutPasswordInput && ErrorSpan.hide(hangoutPasswordInput);
   };
 };
 

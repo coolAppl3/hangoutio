@@ -7,7 +7,7 @@ import { isValidHangoutId } from "../../global/validation";
 import { getInitialHangoutData, InitialHangoutData, InitialHangoutDataResponse } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutDataTypes";
-import { navigateHangoutSections } from "../hangoutNav";
+import { directlyNavigationHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { handleIrrecoverableError } from "../hangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, hideLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent } from "./hangoutDashboardUtils";
@@ -23,16 +23,8 @@ const hangoutDashboardState: HangoutDashboardState = {
 };
 
 export async function hangoutDashboard(): Promise<void> {
-  await init();
-  loadEventListeners();
-};
-
-async function init(): Promise<void> {
   await getHangoutDashboardData();
-};
-
-function loadEventListeners(): void {
-
+  detectLatestSection();
 };
 
 export async function getHangoutDashboardData(): Promise<void> {
@@ -146,20 +138,20 @@ function populateMainDashboardContent(): void {
 
   const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
 
-  const hangoutTitle: HTMLHeadingElement | null = document.querySelector('#hangout-title');
-  hangoutTitle ? hangoutTitle.textContent = hangoutDetails.hangout_title : undefined;
+  const hangoutTitleHeading: HTMLHeadingElement | null = document.querySelector('#hangout-title');
+  hangoutTitleHeading && (hangoutTitleHeading.textContent = hangoutDetails.hangout_title);
 
-  const currentStage: HTMLSpanElement | null = document.querySelector('#dashboard-current-stage');
-  currentStage ? currentStage.textContent = getHangoutStageTitle(hangoutDetails.current_stage) : undefined;
+  const currentStageSpan: HTMLSpanElement | null = document.querySelector('#dashboard-current-stage');
+  currentStageSpan && (currentStageSpan.textContent = getHangoutStageTitle(hangoutDetails.current_stage));
 
-  const nextStage: HTMLSpanElement | null = document.querySelector('#dashboard-next-stage');
-  nextStage ? nextStage.textContent = getNextHangoutStageTitle(hangoutDetails.current_stage) : undefined;
+  const nextStageSpan: HTMLSpanElement | null = document.querySelector('#dashboard-next-stage');
+  nextStageSpan && (nextStageSpan.textContent = getNextHangoutStageTitle(hangoutDetails.current_stage));
 
-  const hangoutConclusion: HTMLSpanElement | null = document.querySelector('#dashboard-conclusion-time');
-  hangoutConclusion ? hangoutConclusion.textContent = getHangoutConclusionDate() : undefined;
+  const hangoutConclusionSpan: HTMLSpanElement | null = document.querySelector('#dashboard-conclusion-time');
+  hangoutConclusionSpan && (hangoutConclusionSpan.textContent = getHangoutConclusionDate());
 
-  const memberLimit: HTMLSpanElement | null = document.querySelector('#dashboard-member-limit');
-  memberLimit ? memberLimit.textContent = `${hangoutDetails.members_limit} members` : undefined;
+  const memberLimitSpan: HTMLSpanElement | null = document.querySelector('#dashboard-member-limit');
+  memberLimitSpan && (memberLimitSpan.textContent = `${hangoutDetails.members_limit} members`);
 
   const dashboardViewMembersBtn: HTMLButtonElement | null = document.querySelector('#dashboard-view-members-btn');
   dashboardViewMembersBtn?.addEventListener('click', navigateHangoutSections);
@@ -175,24 +167,24 @@ function displayHangoutPassword(): void {
 
   const { isLeader, isPasswordProtected, decryptedHangoutPassword } = globalHangoutState.data;
 
-  const hangoutPasswordState: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-state');
-  const hangoutPasswordValue: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-value');
+  const hangoutPasswordStateSpan: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-state');
+  const hangoutPasswordValueSpan: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-value');
   const hangoutPasswordBtn: HTMLInputElement | null = document.querySelector('#dashboard-hangout-password-btn');
 
-  if (!hangoutPasswordState || !hangoutPasswordValue || !hangoutPasswordBtn) {
+  if (!hangoutPasswordStateSpan || !hangoutPasswordValueSpan || !hangoutPasswordBtn) {
     return;
   };
 
   if (!isLeader) {
-    isPasswordProtected ? hangoutPasswordValue.textContent = 'Yes' : undefined;
+    isPasswordProtected && (hangoutPasswordValueSpan.textContent = 'Yes');
     return;
   };
 
-  hangoutPasswordState.textContent = 'Hangout password';
+  hangoutPasswordStateSpan.textContent = 'Hangout password';
 
   if (isPasswordProtected) {
     hangoutPasswordBtn.classList.remove('hidden');
-    hangoutPasswordValue.textContent = '*************';
+    hangoutPasswordValueSpan.textContent = '*************';
 
     hangoutPasswordBtn.addEventListener('click', async () => {
       if (!decryptedHangoutPassword) {
@@ -206,7 +198,7 @@ function displayHangoutPassword(): void {
     return;
   };
 
-  hangoutPasswordValue.textContent = 'None';
+  hangoutPasswordValueSpan.textContent = 'None';
 };
 
 function populateHangoutStageDescriptions(): void {
@@ -216,10 +208,10 @@ function populateHangoutStageDescriptions(): void {
 
   const { hangoutDetails, availabilitySlotsCount, suggestionsCount, votesCount } = globalHangoutState.data;
 
-  const hangoutStageDescription: HTMLDivElement | null = document.querySelector('#hangout-stage-description');
-  hangoutStageDescription?.setAttribute('data-hangoutStage', `${hangoutDetails.current_stage}`);
+  const hangoutStageDescriptionElement: HTMLDivElement | null = document.querySelector('#hangout-stage-description');
+  hangoutStageDescriptionElement?.setAttribute('data-hangoutStage', `${hangoutDetails.current_stage}`);
 
-  hangoutStageDescription?.addEventListener('click', (e: MouseEvent) => {
+  hangoutStageDescriptionElement?.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof HTMLElement)) {
       return;
     };
@@ -229,34 +221,34 @@ function populateHangoutStageDescriptions(): void {
     };
   });
 
-  const slotsAdded: HTMLSpanElement | null = document.querySelector('#dashboard-slots-added');
-  const slotsRemaining: HTMLSpanElement | null = document.querySelector('#dashboard-slots-remaining');
+  const slotsAddedSpan: HTMLSpanElement | null = document.querySelector('#dashboard-slots-added');
+  const slotsRemainingSpan: HTMLSpanElement | null = document.querySelector('#dashboard-slots-remaining');
 
-  if (slotsAdded && slotsRemaining) {
-    slotsAdded.textContent = availabilitySlotsCount === 1 ? '1 slot' : `${availabilitySlotsCount} slots`;
+  if (slotsAddedSpan && slotsRemainingSpan) {
+    slotsAddedSpan.textContent = availabilitySlotsCount === 1 ? '1 slot' : `${availabilitySlotsCount} slots`;
 
     const slotsRemainingCount: number = HANGOUT_AVAILABILITY_SLOTS_LIMIT - availabilitySlotsCount;
-    slotsRemaining.textContent = slotsRemainingCount === 1 ? '1 slot' : `${slotsRemainingCount} slots`;
+    slotsRemainingSpan.textContent = slotsRemainingCount === 1 ? '1 slot' : `${slotsRemainingCount} slots`;
   };
 
-  const suggestionsAdded: HTMLSpanElement | null = document.querySelector('#dashboard-suggestions-added');
-  const suggestionsRemaining: HTMLSpanElement | null = document.querySelector('#dashboard-suggestions-remaining');
+  const suggestionsAddedSpan: HTMLSpanElement | null = document.querySelector('#dashboard-suggestions-added');
+  const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#dashboard-suggestions-remaining');
 
-  if (suggestionsAdded && suggestionsRemaining) {
-    suggestionsAdded.textContent = suggestionsCount === 1 ? '1 suggestion' : `${availabilitySlotsCount} suggestions`;
+  if (suggestionsAddedSpan && suggestionsRemainingSpan) {
+    suggestionsAddedSpan.textContent = suggestionsCount === 1 ? '1 suggestion' : `${suggestionsCount} suggestions`;
 
-    const suggestionsRemainingCount: number = HANGOUT_SUGGESTIONS_LIMIT - availabilitySlotsCount;
-    suggestionsRemaining.textContent = suggestionsRemainingCount === 1 ? '1 suggestion' : `${suggestionsRemainingCount} suggestions`;
+    const suggestionsRemainingCount: number = HANGOUT_SUGGESTIONS_LIMIT - suggestionsCount;
+    suggestionsRemainingSpan.textContent = suggestionsRemainingCount === 1 ? '1 suggestion' : `${suggestionsRemainingCount} suggestions`;
   };
 
-  const votesAdded: HTMLSpanElement | null = document.querySelector('#dashboard-votes-added');
-  const votesRemaining: HTMLSpanElement | null = document.querySelector('#dashboard-votes-remaining');
+  const votesAddedSpan: HTMLSpanElement | null = document.querySelector('#dashboard-votes-added');
+  const votesRemainingSpan: HTMLSpanElement | null = document.querySelector('#dashboard-votes-remaining');
 
-  if (votesAdded && votesRemaining) {
-    votesAdded.textContent = votesCount === 1 ? '1 vote' : `${availabilitySlotsCount} votes`;
+  if (votesAddedSpan && votesRemainingSpan) {
+    votesAddedSpan.textContent = votesCount === 1 ? '1 vote' : `${votesCount} votes`;
 
-    const votesRemainingCount: number = HANGOUT_SUGGESTIONS_LIMIT - availabilitySlotsCount;
-    votesRemaining.textContent = votesRemainingCount === 1 ? '1 vote' : `${votesRemainingCount} votes`;
+    const votesRemainingCount: number = HANGOUT_SUGGESTIONS_LIMIT - votesCount;
+    votesRemainingSpan.textContent = votesRemainingCount === 1 ? '1 vote' : `${votesRemainingCount} votes`;
   };
 
 };
@@ -268,11 +260,11 @@ function populateMembersSection(): void {
 
   const { hangoutDetails, hangoutMembers } = globalHangoutState.data;
 
-  const currentMembers: HTMLSpanElement | null = document.querySelector('#dashboard-current-members');
-  currentMembers ? currentMembers.textContent = `${hangoutMembers.length}` : undefined;
+  const currentMembersSpan: HTMLSpanElement | null = document.querySelector('#dashboard-current-members');
+  currentMembersSpan && (currentMembersSpan.textContent = `${hangoutMembers.length}`);
 
-  const membersLimit: HTMLSpanElement | null = document.querySelector('#dashboard-members-limit');
-  membersLimit ? membersLimit.textContent = `${hangoutDetails.members_limit}` : undefined;
+  const membersLimitSpan: HTMLSpanElement | null = document.querySelector('#dashboard-members-limit');
+  membersLimitSpan && (membersLimitSpan.textContent = `${hangoutDetails.members_limit}`);
 
   listHangoutMembers();
 };
@@ -283,22 +275,22 @@ function listHangoutMembers(): void {
   };
 
   const hangoutMembers: HangoutMember[] = globalHangoutState.data.hangoutMembers;
-  const dashboardMembers: HTMLDivElement | null = document.querySelector('#dashboard-members');
+  const dashboardMembersElement: HTMLDivElement | null = document.querySelector('#dashboard-members');
 
-  if (!dashboardMembers) {
+  if (!dashboardMembersElement) {
     return;
   };
 
-  const membersContainer: HTMLDivElement = document.createElement('div');
-  membersContainer.className = 'dashboard-members-container';
+  const dashboardMembersContainer: HTMLDivElement = document.createElement('div');
+  dashboardMembersContainer.className = 'dashboard-members-container';
 
   pushUserAndLeaderToFront(hangoutMembers);
 
   for (const member of hangoutMembers) {
-    membersContainer.appendChild(createHangoutMemberElement(member));
+    dashboardMembersContainer.appendChild(createHangoutMemberElement(member));
   };
 
-  dashboardMembers.appendChild(membersContainer);
+  dashboardMembersElement.appendChild(dashboardMembersContainer);
 };
 
 function pushUserAndLeaderToFront(hangoutMembers: HangoutMember[]): void {
@@ -331,9 +323,9 @@ function displayLatestMessages(): void {
   };
 
   const dashboardChatContainer: HTMLDivElement | null = document.querySelector('#dashboard-chat-container');
-  const dashboardChatEmpty: HTMLDivElement | null = document.querySelector('#dashboard-chat-empty');
+  const dashboardChatEmptyElement: HTMLDivElement | null = document.querySelector('#dashboard-chat-empty');
 
-  if (!dashboardChatContainer || !dashboardChatEmpty) {
+  if (!dashboardChatContainer || !dashboardChatEmptyElement) {
     return;
   };
 
@@ -347,7 +339,7 @@ function displayLatestMessages(): void {
   dashboardChatContainer.insertAdjacentElement('afterbegin', dashboardChatContainerInner);
 
   dashboardChatContainer.classList.remove('hidden');
-  dashboardChatEmpty.classList.add('hidden');
+  dashboardChatEmptyElement.classList.add('hidden');
 };
 
 function displayLatestEvents(): void {
@@ -361,4 +353,14 @@ function displayLatestEvents(): void {
   for (const event of hangoutDashboardState.latestHangoutEvents) {
     dashboardEventsContainer.appendChild(createDashboardEvent(event));
   };
+};
+
+function detectLatestSection(): void {
+  const latestHangoutSection: string | null = sessionStorage.getItem('latestHangoutSection');
+
+  if (!latestHangoutSection) {
+    return;
+  };
+
+  setTimeout(() => directlyNavigationHangoutSections(latestHangoutSection), 0);
 };

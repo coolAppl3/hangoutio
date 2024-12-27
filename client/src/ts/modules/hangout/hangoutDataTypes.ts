@@ -34,3 +34,10 @@ export interface HangoutMessage {
   message_content: string,
   message_timestamp: number,
 };
+
+export interface AvailabilitySlot {
+  availability_slot_id: number,
+  hangout_member_id: number,
+  slot_start_timestamp: number,
+  slot_end_timestamp: number,
+};

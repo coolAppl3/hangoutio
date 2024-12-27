@@ -235,10 +235,10 @@ function setActiveValidation(): void {
 
   newPasswordInput?.addEventListener('input', () => {
     validateNewPassword(newPasswordInput);
-    confirmNewPasswordInput ? validateConfirmPassword(confirmNewPasswordInput, newPasswordInput) : undefined;
+    confirmNewPasswordInput && validateConfirmPassword(confirmNewPasswordInput, newPasswordInput);
   });
 
   confirmNewPasswordInput?.addEventListener('input', () => {
-    newPasswordInput ? validateConfirmPassword(confirmNewPasswordInput, newPasswordInput) : undefined;
+    newPasswordInput && validateConfirmPassword(confirmNewPasswordInput, newPasswordInput);
   });
 };

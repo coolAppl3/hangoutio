@@ -3,7 +3,7 @@ export default class ErrorSpan {
     ErrorSpan.hide(input);
 
     const span: HTMLSpanElement | null = document.querySelector(`[data-target="${input.id}"]`);
-    span ? span.textContent = message : undefined;
+    span && (span.textContent = message);
 
     const inputFormGroup: HTMLElement | null = input.parentElement;
     inputFormGroup?.classList.add('error');
@@ -19,6 +19,6 @@ export default class ErrorSpan {
     inputFormGroup?.classList.remove('error');
 
     const span: HTMLSpanElement | null = document.querySelector(`[data-target="${input.id}"]`);
-    span ? span.textContent = '' : undefined;
+    span && (span.textContent = '');
   };
 };

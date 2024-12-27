@@ -50,7 +50,7 @@ function enableAccountNavBtn(): void {
   accountContainerLinks?.classList.add('expanded');
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      accountContainerLinks ? accountContainerLinks.style.opacity = '1' : undefined;
+      accountContainerLinks && (accountContainerLinks.style.opacity = '1');
     });
   });
 };

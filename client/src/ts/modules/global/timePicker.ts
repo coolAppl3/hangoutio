@@ -279,7 +279,7 @@ function resetUIState(): void {
 
 function displaySelectedDate(selectedDate: string): void {
   const selectedDateSpan: HTMLSpanElement | null = document.querySelector('#time-picker-selected-date');
-  selectedDateSpan ? selectedDateSpan.textContent = selectedDate : undefined;
+  selectedDateSpan && (selectedDateSpan.textContent = selectedDate);
 };
 
 function displaySelectedSlots(slots: TimeSlot[]): void {
@@ -350,12 +350,12 @@ function handleAddSlotBtnState(): void {
   const addSlotBtn: HTMLButtonElement | null = document.querySelector('#time-picker-input-add');
 
   if (timePickerState.slots.length === timePickerState.maxTimeSlots) {
-    addSlotBtn ? disableElement(addSlotBtn) : undefined;
+    addSlotBtn && disableElement(addSlotBtn);
     addSlotBtn?.setAttribute('title', `Can't add more than 3 slots.`);
     return;
   };
 
-  addSlotBtn ? enableElement(addSlotBtn) : undefined;
+  addSlotBtn && enableElement(addSlotBtn);
   addSlotBtn?.removeAttribute('title');
 };
 
@@ -363,11 +363,11 @@ function handleConfirmBtnState(): void {
   const confirmBtn: HTMLButtonElement | null = document.querySelector('#time-picker-confirm');
 
   if (timePickerState.slots.length === 0) {
-    confirmBtn ? disableElement(confirmBtn) : undefined;
+    confirmBtn && disableElement(confirmBtn);
     return;
   };
 
-  confirmBtn ? enableElement(confirmBtn) : undefined;
+  confirmBtn && enableElement(confirmBtn);
 };
 
 function disableElement(element: HTMLElement): void {
@@ -384,8 +384,8 @@ function clearInputs(): void {
   const fromInput: HTMLInputElement | null = document.querySelector('#time-picker-from');
   const toInput: HTMLInputElement | null = document.querySelector('#time-picker-to');
 
-  fromInput ? fromInput.value = '' : undefined;
-  toInput ? toInput.value = '' : undefined;
+  fromInput && (fromInput.value = '');
+  toInput && (toInput.value = '');
 
   if (timePickerState.slots.length !== timePickerState.maxTimeSlots) {
     fromInput?.focus();

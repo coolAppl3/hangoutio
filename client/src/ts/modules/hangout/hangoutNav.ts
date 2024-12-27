@@ -45,10 +45,40 @@ export function navigateHangoutSections(e: MouseEvent): void {
   window.scrollTo({ top: 0 });
 
   hangoutNavState.selectedSection = navigateTo;
+  sessionStorage.setItem('latestHangoutSection', navigateTo);
 
   hangoutDesktopNav?.setAttribute('data-selected', navigateTo);
   hangoutPhoneNav?.setAttribute('data-selected', navigateTo);
   hidePhoneNavMenu();
+
+  if (navigateTo === 'dashboard') {
+    return;
+  };
+
+  document.dispatchEvent(new CustomEvent(`loadSection-${navigateTo}`));
+};
+
+export function directlyNavigationHangoutSections(navigateTo: string): void {
+  if (navigateTo === hangoutNavState.selectedSection) {
+    return;
+  };
+
+  document.querySelector(`#${navigateTo}-section`)?.classList.remove('hidden');
+  document.querySelector(`#${hangoutNavState.selectedSection}-section`)?.classList.add('hidden');
+  window.scrollTo({ top: 0 });
+
+  hangoutNavState.selectedSection = navigateTo;
+  sessionStorage.setItem('latestHangoutSection', navigateTo);
+
+  hangoutDesktopNav?.setAttribute('data-selected', navigateTo);
+  hangoutPhoneNav?.setAttribute('data-selected', navigateTo);
+  hidePhoneNavMenu();
+
+  if (navigateTo === 'dashboard') {
+    return;
+  };
+
+  document.dispatchEvent(new CustomEvent(`loadSection-${navigateTo}`));
 };
 
 function displayPhoneNavMenu(): void {

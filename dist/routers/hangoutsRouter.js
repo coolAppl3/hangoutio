@@ -164,6 +164,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutId, 'account', authSessionDetails.user_id, null, accountDetails.display_name, true]);
         await connection.commit();
         res.status(201).json({ success: true, resData: { hangoutId } });
+        await (0, addHangoutEvent_1.addHangoutEvent)(hangoutId, `${accountDetails.display_name} created the hangout.`, currentTimestamp);
     }
     catch (err) {
         console.log(err);
@@ -301,6 +302,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         }
         ;
         res.status(201).json({ success: true, resData: { authSessionCreated, hangoutId } });
+        await (0, addHangoutEvent_1.addHangoutEvent)(hangoutId, `${requestData.displayName} created the hangout.`, currentTimestamp);
     }
     catch (err) {
         console.log(err);

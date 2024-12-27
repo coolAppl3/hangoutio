@@ -186,6 +186,8 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     await connection.commit();
     res.status(201).json({ success: true, resData: { hangoutId } });
 
+    await addHangoutEvent(hangoutId, `${accountDetails.display_name} created the hangout.`, currentTimestamp);
+
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
@@ -359,6 +361,8 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     };
 
     res.status(201).json({ success: true, resData: { authSessionCreated, hangoutId } });
+
+    await addHangoutEvent(hangoutId, `${requestData.displayName} created the hangout.`, currentTimestamp);
 
   } catch (err: unknown) {
     console.log(err);

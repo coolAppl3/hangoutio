@@ -1006,6 +1006,13 @@
 
   .availability {
 
+    #availability-calendar-header {
+
+      button.disabled {
+        @apply invisible;
+      }
+    }
+
     &-calendar {
 
       &-days {
@@ -1017,27 +1024,35 @@
 
       #availability-calendar-dates {
 
-        .date-item {
-          @apply block w-full h-full py-3 sm:py-2 text-center text-sm font-bold text-title dark:text-title-dark bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 cursor-pointer overflow-hidden relative;
+        &-container {
+          @apply grid grid-cols-7 place-items-center;
 
-          &.empty {
-            @apply hover:brightness-100 cursor-default;
-          }
+          .date-cell {
+            @apply block w-full h-full py-3 sm:py-2 text-center text-sm font-bold text-title dark:text-title-dark bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 cursor-pointer overflow-hidden relative;
 
-          &.self-a {
-            @apply before:absolute before:top-[-1rem] before:right-[-1rem] before:w-2 before:h-2 before:rotate-45 before:bg-cta dark:before:bg-cta-dark;
-          }
+            &.empty {
+              @apply hover:brightness-100 cursor-default;
+            }
 
-          &.low-a {
-            @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-1 after:h-1 after:rounded-[50%] after:bg-success/30;
-          }
+            &.forbidden {
+              @apply text-title/50 dark:text-title-dark/50 hover:brightness-100 cursor-default;
+            }
 
-          &.medium-a {
-            @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-[1.2rem] after:h-[1.2rem] after:rounded-[50%] after:bg-success/60;
-          }
+            &.self-availability {
+              @apply before:absolute before:top-[-1rem] before:right-[-1rem] before:w-2 before:h-2 before:rotate-45 before:bg-cta dark:before:bg-cta-dark;
+            }
 
-          &.high-a {
-            @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-[1.4rem] after:h-[1.4rem] after:rounded-[50%] after:bg-success;
+            &.low-availability {
+              @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-1 after:h-1 after:rounded-[50%] after:bg-success/30;
+            }
+
+            &.medium-availability {
+              @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-[1.2rem] after:h-[1.2rem] after:rounded-[50%] after:bg-success/60;
+            }
+
+            &.high-availability {
+              @apply after:absolute after:bottom-1 after:right-1 md:after:bottom-[3px] md:after:right-[3px] after:w-[1.4rem] after:h-[1.4rem] after:rounded-[50%] after:bg-success;
+            }
           }
         }
       }

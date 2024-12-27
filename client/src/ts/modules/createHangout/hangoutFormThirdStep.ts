@@ -513,11 +513,11 @@ function setActiveInputValidation(): void {
 
   guestPasswordInput?.addEventListener('input', () => {
     validateNewPassword(guestPasswordInput);
-    guestConfirmPasswordInput ? validateConfirmPassword(guestConfirmPasswordInput, guestPasswordInput) : undefined;
+    guestConfirmPasswordInput && validateConfirmPassword(guestConfirmPasswordInput, guestPasswordInput);
   });
 
   guestConfirmPasswordInput?.addEventListener('input', () => {
-    guestPasswordInput ? validateConfirmPassword(guestConfirmPasswordInput, guestPasswordInput) : undefined;
+    guestPasswordInput && validateConfirmPassword(guestConfirmPasswordInput, guestPasswordInput);
   });
 };
 
