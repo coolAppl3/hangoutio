@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.10] (2024-12-27)
+
+### Features
+
+- Added an optional `specificTimestamp` parameter in `addHangoutEvent()`.
+- Added a hangout event announcing the creation of the hangout in POST `hangouts/create/accountLeader` and POST `hangouts/create/guestLeader`.
+- Implemented hangout dashboard calendar.
+- Added GET `availabilitySlots/`.
+
+
+### Code Refactoring
+
+- Refactored out a number of statements using a ternary operators in favor of a logical AND (&&) approach for better readability and convenience.
+
+
+### Bug Fixes
+
+- Fixed the hangout navbar dropdown menu clipping under some elements by adjusting its z-index.
+
+
 ## [0.4.9] (2024-12-22)
 
 ### Features
