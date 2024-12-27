@@ -1148,7 +1148,7 @@
               <button
                 type="button"
                 id="availability-calendar-backwards-btn"
-                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75"
+                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75 mr-auto relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-5 disabled"
               >
                 <div class="svg w-2 h-2">
                   <svg
@@ -1169,23 +1169,21 @@
                 </div>
               </button>
 
-              <p class="text-md sm:text-base font-bold mx-2 xs:mx-1 min-w-fit">
+              <p class="text-md sm:text-base font-bold mx-2 xs:mx-1 w-full text-center">
                 <span
                   id="availability-calendar-month"
                   class="text-title dark:text-title-dark"
-                  >September</span
-                >
+                ></span>
                 <span
                   id="availability-calendar-year"
                   class="text-title dark:text-title-dark"
-                  >2024</span
-                >
+                ></span>
               </p>
 
               <button
                 type="button"
                 id="availability-calendar-forwards-btn"
-                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75"
+                class="px-5 py-[1.4rem] sm:px-3 xs:px-2 3xs:px-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75 ml-auto relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-5"
               >
                 <div class="svg w-2 h-2">
                   <svg
@@ -1219,210 +1217,15 @@
 
             <div
               id="availability-calendar-dates"
-              class="availability-calendar-days grid grid-cols-7 place-items-center mb-2"
-            >
-              <span class="date-item empty"></span>
-              <button
-                type="button"
-                class="date-item self-a"
-              >
-                1
-              </button>
-              <button
-                type="button"
-                class="date-item low-a"
-              >
-                2
-              </button>
-              <button
-                type="button"
-                class="date-item medium-a"
-              >
-                3
-              </button>
-              <button
-                type="button"
-                class="date-item high-a"
-              >
-                4
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                5
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                6
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                7
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                8
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                9
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                10
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                11
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                12
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                13
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                14
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                15
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                16
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                17
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                18
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                19
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                20
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                21
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                22
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                23
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                24
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                25
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                26
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                27
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                28
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                29
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                30
-              </button>
-              <button
-                type="button"
-                class="date-item"
-              >
-                31
-              </button>
-              <span class="date-item empty"></span>
-              <span class="date-item empty"></span>
-              <span class="date-item empty"></span>
-            </div>
+              class="mb-2"
+            ></div>
 
             <div class="availability-calendar-description grid grid-cols-2 md:grid-cols-1 gap-2">
               <div class="w-full">
                 <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Click on any of the dates above to interact with them.</h3>
 
-                <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-1">
-                  You can add, adjust, or remove your own availability slots, as well as view when other members are available.
-                </p>
-
                 <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-                  Keep scrolling if you'd like to see only your availability slots.
+                  You can add, adjust, or remove your own availability slots, as well as view when other members are available.
                 </p>
 
                 <button

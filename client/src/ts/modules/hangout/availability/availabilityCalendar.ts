@@ -1,5 +1,7 @@
 import { dayMilliseconds } from "../../global/clientConstants";
 import popup from "../../global/popup";
+import { globalHangoutState } from "../globalHangoutState";
+import { hangoutAvailabilityState } from "./hangoutAvailability";
 
 interface AvailabilityCalendarState {
   isActive: boolean,
@@ -86,6 +88,80 @@ function updateCalendar(): void {
 
   availabilityCalendarDates.firstElementChild?.remove();
   availabilityCalendarDates.appendChild(availabilityCalendarDatesContainer);
+
+  displayAvailabilityMarkers();
+};
+
+function displayAvailabilityMarkers(): void {
+  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
+    return;
+  };
+
+  if (!availabilityCalendarState.data) {
+    return;
+  };
+
+  const { currentYear, currentMonth } = availabilityCalendarState.data;
+
+  const smallestRelevantTimestamp: number = new Date(currentYear, currentMonth, 1).getTime();
+  const largestRelevantTimestamp: number = new Date(currentYear, currentMonth, getMonthNumberOfDays(currentMonth, currentYear), 23, 59).getTime();
+
+  const uniqueSlots: { memberId: number, date: number }[] = [];
+  const monthSpecificSlotsMap: Map<number, number> = new Map();
+
+  for (const slot of hangoutAvailabilityState.availabilitySlots) {
+    if (slot.slot_start_timestamp < smallestRelevantTimestamp || slot.slot_start_timestamp > largestRelevantTimestamp) {
+      continue;
+    };
+
+    const date: number = new Date(slot.slot_start_timestamp).getDate();
+
+    if (uniqueSlots.some((uniqueSlot) => uniqueSlot.memberId === slot.hangout_member_id && uniqueSlot.date === date)) {
+      continue;
+    };
+
+    uniqueSlots.push({ memberId: slot.hangout_member_id, date });
+
+    const dateCount: number | undefined = monthSpecificSlotsMap.get(date);
+    monthSpecificSlotsMap.set(date, dateCount ? (dateCount + 1) : 1);
+  };
+
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { hangoutMemberId, hangoutMembers } = globalHangoutState.data;
+
+  const calendarCells: NodeListOf<HTMLButtonElement> = document.querySelectorAll('button.date-cell');
+
+  for (const cell of calendarCells) {
+    const date: string | null = cell.getAttribute('data-value');
+    if (!date) {
+      continue;
+    };
+
+    const slotsCount: number | undefined = monthSpecificSlotsMap.get(+date);
+    if (!slotsCount) {
+      continue;
+    };
+
+    const availabilityPercentage: number = slotsCount / hangoutMembers.length;
+    let className: string = '';
+
+    if (availabilityPercentage < 0.3) {
+      className = 'low-availability';
+    } else if (availabilityPercentage >= 0.3 && availabilityPercentage <= 0.6) {
+      className = 'medium-availability';
+    } else {
+      className = 'high-availability';
+    };
+
+    cell.classList.add(className);
+
+    if (uniqueSlots.some((slot) => slot.memberId === hangoutMemberId)) {
+      cell.classList.add('self-availability');
+    };
+  };
 };
 
 function navigateCalendar(e: MouseEvent): void {
@@ -223,6 +299,7 @@ function createCalendarCell(date: number, forbidden: boolean = false): HTMLButto
   const dateCell: HTMLButtonElement = document.createElement('button');
   dateCell.className = 'date-cell';
   dateCell.setAttribute('type', 'button');
+  dateCell.setAttribute('data-value', `${date}`);
   dateCell.appendChild(document.createTextNode(`${date}`));
 
   if (forbidden) {
