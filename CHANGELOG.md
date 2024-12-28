@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.11] (2024-12-28)
+
+### Features
+
+- Implemented render logic for availability slot cards.
+
+
+### Code Refactoring
+
+- Renamed `hangoutUtils.ts` to `globalHangoutUtils.ts`.
+- Removed `hangoutDataTypes.ts` in favor of `hangoutTypes.d.ts`.
+
+
 ## [0.4.10] (2024-12-27)
 
 ### Features
