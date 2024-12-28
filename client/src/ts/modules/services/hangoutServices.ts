@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
-import { HangoutMessage, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutDataTypes";
+import { HangoutMessage, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutTypes";
 
 axios.defaults.withCredentials = true;
 

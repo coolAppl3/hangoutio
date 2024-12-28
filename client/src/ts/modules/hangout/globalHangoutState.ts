@@ -1,4 +1,4 @@
-import { HangoutMember, HangoutsDetails } from "./hangoutDataTypes";
+import { HangoutMember, HangoutsDetails } from "./hangoutTypes";
 
 interface GlobalHangoutState {
   webSocketConnected: boolean,

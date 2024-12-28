@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
-import { AvailabilitySlot } from "../hangout/hangoutDataTypes";
+import { AvailabilitySlot } from "../hangout/hangoutTypes";
 
 axios.defaults.withCredentials = true;
 
