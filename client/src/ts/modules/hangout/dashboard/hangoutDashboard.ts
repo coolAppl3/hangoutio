@@ -6,9 +6,9 @@ import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getInitialHangoutData, InitialHangoutData, InitialHangoutDataResponse } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
-import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutDataTypes";
+import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
 import { directlyNavigationHangoutSections, navigateHangoutSections } from "../hangoutNav";
-import { handleIrrecoverableError } from "../hangoutUtils";
+import { handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, hideLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent } from "./hangoutDashboardUtils";
 

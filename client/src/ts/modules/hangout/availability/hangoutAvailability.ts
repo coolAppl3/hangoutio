@@ -1,19 +1,20 @@
-import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutAvailabilitySlotsServices } from "../../services/availabilitySlotsServices";
 import { globalHangoutState } from "../globalHangoutState";
-import { AvailabilitySlot, HangoutsDetails } from "../hangoutDataTypes";
+import { AvailabilitySlot } from "../hangoutTypes";
 import { initAvailabilityCalendar } from "./availabilityCalendar";
+import { createAvailabilitySlotElement } from "./availabilityUtils";
 
 interface HangoutAvailabilityState {
-  loaded: boolean,
+  isLoaded: boolean,
   availabilitySlots: AvailabilitySlot[],
 };
 
 export const hangoutAvailabilityState: HangoutAvailabilityState = {
-  loaded: false,
+  isLoaded: false,
   availabilitySlots: [],
 };
 
@@ -26,11 +27,20 @@ async function init(): Promise<void> {
     return;
   };
 
+  await getHangoutAvailabilitySlots();
+  render();
+};
+
+function render(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
   const { created_on_timestamp, availability_period, suggestions_period, voting_period } = globalHangoutState.data.hangoutDetails;
   const hangoutConclusionTimestamp: number = created_on_timestamp + availability_period + suggestions_period + voting_period;
 
-  await getHangoutAvailabilitySlots();
   initAvailabilityCalendar(hangoutConclusionTimestamp);
+  displayPersonalAvailabilitySlots();
 };
 
 function loadEventListeners(): void {
@@ -38,6 +48,10 @@ function loadEventListeners(): void {
 };
 
 async function getHangoutAvailabilitySlots(): Promise<void> {
+  if (hangoutAvailabilityState.isLoaded) {
+    return;
+  };
+
   LoadingModal.display();
 
   if (!globalHangoutState.data) {
@@ -52,6 +66,8 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
     const availabilitySlots: AvailabilitySlot[] = (await getHangoutAvailabilitySlotsServices(hangoutId, hangoutMemberId)).data.availabilitySlots;
 
     hangoutAvailabilityState.availabilitySlots = availabilitySlots;
+    hangoutAvailabilityState.isLoaded = true;
+
     LoadingModal.remove();
 
   } catch (err: unknown) {
@@ -89,4 +105,30 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
       }, 1000);
     };
   };
+};
+
+function displayPersonalAvailabilitySlots(): void {
+  const availabilitySlotsElement: HTMLDivElement | null = document.querySelector('#availability-slots');
+  const availabilitySlotsContainer: HTMLDivElement | null = document.querySelector('#availability-slots-container');
+
+  if (!availabilitySlotsElement || !availabilitySlotsContainer) {
+    popup('Failed to load your availability slots.', 'error');
+    return;
+  };
+
+  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
+    availabilitySlotsElement.classList.add('empty');
+    return;
+  };
+
+  const innerContainer: HTMLDivElement = document.createElement('div');
+
+  for (const slot of hangoutAvailabilityState.availabilitySlots) {
+    innerContainer.appendChild(createAvailabilitySlotElement(slot));
+  };
+
+  availabilitySlotsContainer.firstElementChild?.remove();
+  availabilitySlotsContainer.appendChild(innerContainer);
+
+  availabilitySlotsElement.classList.remove('empty');
 };
