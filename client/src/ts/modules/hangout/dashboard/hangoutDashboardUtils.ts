@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
-import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, minuteMilliseconds } from "../../global/clientConstants";
+import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_VOTING_STAGE, minuteMilliseconds } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
 import { InfoModal } from "../../global/InfoModal";
@@ -7,7 +7,8 @@ import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getHangoutExistsService, HangoutExistsData } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
-import { HangoutMessage, HangoutMember, HangoutEvent } from "../hangoutDataTypes";
+import { getDateAndTimeString, getDayName, getTime } from "../globalHangoutUtils";
+import { HangoutMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 
 export function handleInvalidHangoutId(): void {
@@ -384,32 +385,3 @@ export async function copyToClipboard(text: string): Promise<void> {
     popup('Failed to copy to clipboard.', 'error');
   };
 };
-
-export function getDateAndTimeString(timestamp: number): string {
-  const dateObj: Date = new Date(timestamp);
-
-  const date: number = dateObj.getDate();
-  const ordinalSuffix: string = getOrdinalSuffix(date);
-
-  return `${getMonthName(dateObj)} ${date}${ordinalSuffix}, at ${getTime(dateObj)}`;
-};
-
-function getMonthName(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', { month: 'long' }).format(date);
-};
-
-function getDayName(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(date);
-};
-
-function getTime(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(date);
-};
-
-function getOrdinalSuffix(date: number): string {
-  if (date % 10 === 1 && date % 100 !== 11) return 'st';
-  if (date % 10 === 2 && date % 100 !== 12) return 'nd';
-  if (date % 10 === 3 && date % 100 !== 13) return 'rd';
-
-  return 'th';
-}
