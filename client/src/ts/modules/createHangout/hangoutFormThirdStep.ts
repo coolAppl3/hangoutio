@@ -124,7 +124,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     const hangoutId: string = accountLeaderHangoutData.data.resData.hangoutId;
 
     popup('Hangout successfully created.', 'success');
-    setTimeout(() => window.location.href = `hangout?hangoutId=${hangoutId}`, 1000);
+    setTimeout(() => window.location.href = `hangout?id=${hangoutId}`, 1000);
 
   } catch (err: unknown) {
     console.log(err)
@@ -245,7 +245,7 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
     const { authSessionCreated, hangoutId } = guestLeaderHangoutData.data.resData;
 
     popup('Hangout successfully created.', 'success');
-    const redirectHref: string = authSessionCreated ? `hangout?hangoutId=${hangoutId}` : 'sign-in';
+    const redirectHref: string = authSessionCreated ? `hangout?id=${hangoutId}` : 'sign-in';
 
     setTimeout(() => window.location.replace(redirectHref), 1000);
 
