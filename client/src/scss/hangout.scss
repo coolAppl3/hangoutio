@@ -1059,51 +1059,70 @@
 
     }
 
-    &-slots {
+    #availability-slots {
+
+      &.empty {
+
+        &>p {
+          @apply block;
+        }
+
+        #availability-slots-container,
+        .btn-container {
+          @apply hidden;
+        }
+      }
 
       #availability-slots-container {
-        @apply grid grid-cols-2 gap-2 md:grid-cols-1;
 
-        .slot {
-          @apply grid grid-cols-2 gap-2 xs:grid-cols-1 bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple;
+        &>div {
+          @apply grid grid-cols-2 gap-2 md:grid-cols-1;
 
-          .slot-info {
+          .slot {
+            @apply grid grid-cols-2 gap-2 xs:grid-cols-1 bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple;
 
-            span {
-              @apply block text-sm md:last:text-base font-medium text-description dark:text-description-dark last:text-title dark:last:text-title-dark first:mb-[4px];
+            .slot-info {
+
+              span {
+                @apply block text-sm md:last:text-base font-medium text-description dark:text-description-dark last:text-title dark:last:text-title-dark first:mb-[4px];
+              }
             }
-          }
 
-          &-btn-container {
-            @apply flex justify-start items-center;
+            &-btn-container {
+              @apply flex justify-start items-center;
 
-            button {
-              @apply w-full px-2 py-1 first:mr-1 bg-primary dark:bg-primary-dark grid place-items-center rounded-sm transition-[filter] hover:brightness-75;
+              button {
+                @apply w-full px-2 py-1 first:mr-1 bg-primary dark:bg-primary-dark grid place-items-center rounded-sm transition-[filter] hover:brightness-75;
 
-              &.delete-btn {
+                &.delete-btn {
 
-                svg {
-                  @apply svg w-2 h-2;
+                  svg {
+                    @apply svg w-2 h-2;
 
-                  path {
-                    @apply fill-danger dark:fill-danger-dark;
+                    path {
+                      @apply fill-danger dark:fill-danger-dark;
+                    }
                   }
                 }
-              }
 
-              &.edit-btn {
+                &.edit-btn {
 
-                svg {
-                  @apply svg w-2 h-2;
+                  svg {
+                    @apply svg w-2 h-2;
 
-                  path {
-                    @apply fill-edit;
+                    path {
+                      @apply fill-edit;
+                    }
                   }
                 }
               }
             }
           }
         }
+      }
+
+      &>p {
+        @apply hidden;
       }
     }
   }
