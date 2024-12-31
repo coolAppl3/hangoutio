@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.13] (2024-12-31)
+
+### Features
+
+- Centered top navbar links to the middle of the viewport instead of relatively to its siblings to avoid unnatural alignment.
+
+
+### Code Refactoring
+
+- Removed `__temp-data.html`, which contained date picker and time picker HTML, as they're no longer needed.
+- Refactored the availability calendar title to just use a paragraph element instead of two span elements.
+- Disabled hovering on date-cell elements on screens smaller than 830px in `hangout.html`.
+
+
 ## [0.4.12] (2024-12-31)
 
 ### Features
