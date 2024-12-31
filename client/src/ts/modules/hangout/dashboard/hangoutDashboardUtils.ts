@@ -44,7 +44,7 @@ function handleEmptyHangoutGuestRequest(): void {
     return;
   };
 
-  window.location.href = `${window.location.origin}/hangout?hangoutId=${guestHangoutId}`;
+  window.location.href = `${window.location.origin}/hangout?id=${guestHangoutId}`;
 };
 
 export function handleHangoutNotFound(): void {

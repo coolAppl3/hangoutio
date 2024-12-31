@@ -29,7 +29,7 @@ export async function hangoutDashboard(): Promise<void> {
 
 export async function getHangoutDashboardData(): Promise<void> {
   const url = new URL(window.location.href);
-  const hangoutId: string | null = url.searchParams.get('hangoutId');
+  const hangoutId: string | null = url.searchParams.get('id');
 
   if (!hangoutId || !isValidHangoutId(hangoutId)) {
     handleInvalidHangoutId();

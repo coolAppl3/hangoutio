@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.12] (2024-12-31)
+
+### Features
+
+- Added `dateTimePicker.ts` to handle the function of both `datePicker.ts` and `timePicker.ts`.
+
+
+### Code Refactoring
+
+- Refactored `availabilityCalendar.ts` to avoid too much code duplication and align with `dateTimePicker.ts`.
+- Removed `datePicker.ts`, `timePicker.ts`, and their styling as they're no longer needed.
+- Removed `form-group-date-picker` and `form-group-time-picker` styling in all scss files.
+- Refactored hangoutId query parameter into just id for hangout URLs.
+
+
 ## [0.4.11] (2024-12-28)
 
 ### Features

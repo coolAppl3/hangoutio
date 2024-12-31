@@ -1,5 +1,17 @@
+import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString, getTotalTimeString } from "../globalHangoutUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
+
+export function calculateHangoutConclusionTimestamp(): number | null {
+  if (!globalHangoutState.data) {
+    return null;
+  };
+
+  const { created_on_timestamp, availability_period, suggestions_period, voting_period } = globalHangoutState.data.hangoutDetails;
+  const hangoutConclusionTimestamp: number = created_on_timestamp + availability_period + suggestions_period + voting_period;
+
+  return hangoutConclusionTimestamp;
+};
 
 export function createAvailabilitySlotElement(slot: AvailabilitySlot): HTMLDivElement {
   const availabilitySlotElement: HTMLDivElement = document.createElement('div');

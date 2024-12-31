@@ -208,44 +208,6 @@
     }
   }
 
-  &.form-group-date-picker {
-    @apply relative;
-
-    .date-picker-icon {
-      @apply absolute right-1 bottom-[11px] cursor-pointer;
-    }
-
-    input,
-    textarea {
-      @apply pr-4 cursor-pointer relative;
-    }
-
-    .svg {
-      @apply z-0;
-    }
-  }
-
-  &.form-group-time-picker {
-    @apply relative mb-1;
-
-    .time-picker-input-icon {
-      @apply absolute right-1 bottom-[11px] cursor-pointer;
-    }
-
-    input,
-    textarea {
-      @apply pr-4 cursor-pointer relative;
-
-      &.disabled {
-        @apply opacity-25 cursor-default hover:brightness-100;
-      }
-    }
-
-    .svg {
-      @apply z-0;
-    }
-  }
-
   &.disabled {
 
     input,
@@ -334,189 +296,114 @@
   }
 }
 
-// date picker
-#date-picker-modal {
-  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[15] hidden;
+#date-time-picker {
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[15] justify-center items-center outline-none hidden;
 
-  &.displayed {
-    @apply flex justify-center items-center;
+  &[data-stage="time"] {
+    #date-picker {
+      @apply hidden;
+    }
+
+    #time-picker {
+      @apply block;
+    }
   }
 
-  #date-picker {
-    @apply w-[30rem] max-w-[30rem] p-1 bg-secondary dark:bg-secondary-dark rounded-md;
+  &.revealed {
+
+    #date-time-picker-container {
+      transform: translate3d(0, 0, 0) !important;
+      opacity: 1 !important;
+    }
+  }
+
+  &-container {
+    @apply w-[36rem] max-w-[36rem] py-3 px-2 mx-2 rounded-sm bg-secondary dark:bg-secondary-dark shadow-simple overflow-y-auto mt-6 md:mt-0;
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
-    transition: transform 150ms, opacity 150ms;
+    transition: opacity 150ms, transform 150ms;
+    max-height: calc(100svh - 8rem);
 
-    &.in-position {
-      transform: translate3d(0, 0, 0);
-      opacity: 1;
+    @media(max-width: 830px) {
+      max-height: calc(100svh - 16rem);
     }
 
-    &-navbar {
-      @apply flex justify-center items-center pb-1 mb-2 border-b-1 border-b-light-gray dark:border-b-light-black;
+    #date-picker {
 
-      * {
-        @apply text-title dark:text-title-dark
-      }
+      &-header {
+        @apply flex justify-between items-center overflow-hidden;
 
-      button {
-        @apply w-3 h-3 flex justify-center items-center hover:bg-light-gray dark:hover:bg-light-black relative after:absolute after:top-0 after:left-0 after:h-full after:w-full after:z-3;
-
-        &.hidden {
-          @apply invisible;
+        &-title {
+          @apply font-bold mx-auto w-full text-center text-title dark:text-title-dark;
         }
-      }
 
-      #date-picker-navbar-header {
-
-        span {
-          @apply text-title dark:text-title-dark font-medium;
-        }
-      }
-    }
-
-    &-days {
-      @apply grid grid-cols-7 place-items-center mb-1;
-
-      p {
-        @apply text-sm font-medium text-title dark:text-title-dark select-none;
-      }
-    }
-
-    &-dates {
-
-      &-container {
-        @apply grid grid-cols-7 place-items-center;
-
-        .date-picker-date-btn {
-          @apply w-full h-full p-1 flex justify-center items-center text-sm text-center font-bold text-description dark:text-description-dark border-1 border-transparent hover:bg-light-gray dark:hover:bg-light-black select-none;
+        button {
+          @apply p-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-5;
 
           &.disabled {
-            @apply opacity-50 hover:bg-transparent dark:hover:bg-transparent cursor-default;
-          }
-
-          &#date-picker-selected-date {
-            @apply bg-cta dark:bg-cta-dark text-dark border-cta dark:border-cta-dark;
-          }
-
-          &[data-initial] {
-            @apply border-1 border-description border-light-gray dark:border-light-black;
+            @apply invisible;
           }
         }
       }
-    }
 
-    &-btn-container {
-      @apply flex justify-between items-center pt-1 border-t-1 border-t-light-gray dark:border-t-light-black;
+      &-days {
+        @apply grid grid-cols-7 place-items-center border-b-1 border-light-gray dark:border-light-black;
 
-      #date-picker-close {
-        @apply btn w-full mr-1 bg-description dark:bg-description-dark text-light dark:text-dark;
-      }
-
-      #date-picker-confirm {
-        @apply btn w-full bg-cta dark:bg-cta-dark;
-
-        &.disabled {
-          @apply opacity-25 cursor-default hover:brightness-100;
+        span {
+          @apply block w-full h-full py-2 text-center text-sm font-medium text-description dark:text-description-dark;
         }
       }
-    }
-  }
-}
 
-// time picker
-#time-picker-modal {
-  @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[15] hidden;
+      &-dates {
+        @apply mb-1;
 
-  &.displayed {
-    @apply flex justify-center items-center;
-  }
+        &-container {
+          @apply grid grid-cols-7 place-items-center;
 
-  #time-picker {
-    @apply w-[30rem] max-w-[30rem] py-3 px-2 bg-secondary dark:bg-secondary-dark rounded-md;
-    transform: translate3d(0, 3rem, 0);
-    opacity: 0;
-    transition: transform 150ms, opacity 150ms;
+          .date-cell {
+            @apply block w-full h-full py-2 text-center text-sm font-bold text-title dark:text-title-dark bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 md:hover:brightness-100 cursor-pointer overflow-hidden relative;
 
-    &.in-position {
-      transform: translate3d(0, 0, 0);
-      opacity: 1;
-    }
-
-    &-header {
-      @apply mb-2;
-
-      p {
-        @apply text-sm font-medium text-description dark:text-description-dark;
-
-        &:first-child {
-          @apply mb-[4px] font-bold;
-
-          span {
-            @apply text-sm font-bold text-description dark:text-description-dark;
-          }
-        }
-      }
-    }
-
-    &-slots {
-      @apply mb-2;
-
-      p {
-        @apply mb-1 text-sm font-bold text-description dark:text-description-dark;
-      }
-
-
-      &-container {
-        @apply grid grid-cols-1 gap-1;
-
-        .no-slots {
-          @apply text-xs leading-[1] font-bold text-description dark:text-description-dark brightness-150;
-        }
-
-        .selected-time-slots-item {
-          @apply relative text-xs leading-[1] font-medium text-description dark:text-description-dark p-[6px] border-1 border-light-gray dark:border-light-black rounded cursor-pointer before:absolute after:absolute;
-
-          &::before {
-            @apply right-[9px] top-[7px] h-1 w-[2px] rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
-          }
-
-          &::after {
-            @apply right-[9px] top-[7px] h-1 w-[2px] -rotate-45 bg-description dark:bg-description-dark rounded-[20px] transition-colors;
-          }
-
-          &:hover {
-            @apply border-danger dark:border-danger-dark;
-
-            &::before {
-              @apply bg-danger dark:bg-danger-dark;
+            &.empty {
+              @apply hover:brightness-100 cursor-default;
             }
 
-            &::after {
-              @apply bg-danger dark:bg-danger-dark;
+            &.forbidden {
+              @apply text-title/50 dark:text-title-dark/50 hover:brightness-100 cursor-default;
+            }
+          }
+        }
+      }
+
+      &-description {
+        @apply text-description dark:text-description-dark font-medium mb-1;
+      }
+    }
+
+    #time-picker {
+      @apply hidden;
+
+      &-header {
+        @apply mb-2;
+
+        &>p {
+          @apply font-medium;
+
+          &:first-child {
+            @apply mb-1 text-title dark:text-title-dark;
+          }
+
+          &:last-child {
+            @apply text-description dark:text-description-dark text-sm md:text-base;
+
+            span#time-picker-selected-date {
+              @apply text-title dark:text-title-dark;
             }
           }
         }
       }
     }
-
-    &-btn-container {
-      @apply flex justify-between items-center pt-1 border-t-1 border-t-light-gray dark:border-t-light-black;
-
-      #time-picker-close {
-        @apply btn w-full mr-1 bg-description dark:bg-description-dark text-light dark:text-dark;
-      }
-
-      #time-picker-confirm {
-        @apply btn w-full bg-cta dark:bg-cta-dark;
-
-        &.disabled {
-          @apply opacity-25 cursor-default hover:brightness-100;
-        }
-      }
-    }
   }
+
 }
 
 // loading modal

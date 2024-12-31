@@ -440,7 +440,7 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      window.location.href = `hangout?hangoutId=${hangoutId}`;
+      window.location.href = `hangout?id=${hangoutId}`;
       return;
     };
 
