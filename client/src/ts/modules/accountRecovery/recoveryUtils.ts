@@ -113,7 +113,7 @@ function getTimeTillRecoveryExpiry(expiryTimestamp: number): string {
     return '00:00';
   };
 
-  const minutesTillExpiry: number = Math.floor(millisecondsTillExpiry / (1000 * 60));
+  const minutesTillExpiry: number = Math.floor(millisecondsTillExpiry / minuteMilliseconds);
   const secondsTillExpiry: number = Math.floor((millisecondsTillExpiry / 1000) % 60);
 
   const minutesTillExpiryString: string = minutesTillExpiry < 10 ? `0${minutesTillExpiry}` : `${minutesTillExpiry}`;
