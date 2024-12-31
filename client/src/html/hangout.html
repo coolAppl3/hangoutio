@@ -2620,6 +2620,191 @@
       </div>
     </section>
 
+    <!-- date-time picker -->
+    <div
+      id="date-time-picker"
+      data-stage="date"
+    >
+      <div id="date-time-picker-container">
+        <!-- date picker -->
+        <div id="date-picker">
+          <!-- date picker header -->
+          <div id="date-picker-header">
+            <button
+              type="button"
+              id="date-picker-backwards-btn"
+              class="disabled"
+            >
+              <div class="svg w-2 h-2">
+                <svg
+                  width="600"
+                  height="600"
+                  viewBox="0 0 600 600"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M400 100L200 300L400 500"
+                    stroke-width="90"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="stroke-title dark:stroke-title-dark"
+                  ></path>
+                </svg>
+              </div>
+            </button>
+
+            <p id="date-picker-header-title">September 2024</p>
+
+            <button
+              type="button"
+              id="date-picker-forwards-btn"
+            >
+              <div class="svg w-2 h-2">
+                <svg
+                  width="600"
+                  height="600"
+                  viewBox="0 0 600 600"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M200 500L400 300L200 100"
+                    stroke-width="90"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="stroke-title dark:stroke-title-dark"
+                  ></path>
+                </svg>
+              </div>
+            </button>
+          </div>
+
+          <!-- days -->
+          <div id="date-picker-days">
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+            <span>Sun</span>
+          </div>
+
+          <!-- dates -->
+          <div id="date-picker-dates"></div>
+
+          <p id="date-picker-description">Choose a date to continue</p>
+
+          <button
+            type="button"
+            class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title w-full"
+            id="date-picker-cancel-btn"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <!-- time picker -->
+        <div id="time-picker">
+          <!-- header -->
+          <div id="time-picker-header">
+            <p>Choose when you'd like the time slot to start and end.</p>
+            <p>Selected date: <span id="time-picker-selected-date"></span></p>
+          </div>
+
+          <!-- form -->
+          <form id="time-picker-form">
+            <div class="form-group">
+              <label for="time-picker-slot-start">Slot start</label>
+              <input
+                type="text"
+                id="time-picker-slot-start"
+                name="time-picker-slot-start"
+                maxlength="5"
+                placeholder="HH:MM"
+                autocomplete="bday-year"
+              />
+              <span
+                class="error-span"
+                data-target="time-picker-slot-start"
+              ></span>
+            </div>
+
+            <div class="form-group">
+              <label for="time-picker-slot-end">Slot end</label>
+              <input
+                type="text"
+                id="time-picker-slot-end"
+                name="time-picker-slot-end"
+                maxlength="5"
+                placeholder="HH:MM"
+                autocomplete="bday-year"
+              />
+              <span
+                class="error-span"
+                data-target="time-picker-slot-end"
+              ></span>
+            </div>
+
+            <div class="flex justify-start items-center mb-2">
+              <button
+                id="extend-slot-end-btn"
+                class="checkbox-btn mr-1"
+                type="button"
+                aria-label="Allow slot to end on the following day"
+              >
+                <div class="svg w-2 h-2">
+                  <svg
+                    width="601"
+                    height="601"
+                    viewBox="0 0 601 601"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                      class="fill-dark dark:fill-cta-dark"
+                    />
+                    <path
+                      d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                      class="fill-dark dark:fill-cta-dark"
+                    />
+                  </svg>
+                </div>
+              </button>
+              <p class="text-sm font-medium text-title dark:text-title-dark">Allow to end on the following day</p>
+            </div>
+
+            <div id="time-picker-btn-container">
+              <button
+                type="submit"
+                class="btn bg-cta dark:bg-cta-dark text-title w-full mb-1"
+              >
+                Confirm
+              </button>
+
+              <button
+                type="button"
+                id="time-picker-change-date-btn"
+                class="btn bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark border-1 border-title dark:border-title-dark w-full mb-2"
+              >
+                Change date
+              </button>
+
+              <button
+                type="button"
+                id="time-picker-cancel-btn"
+                class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title w-full"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- footer -->
     <footer class="footer py-6 md:pb-[12rem] bg-dark border-t-2 border-light-black">
       <div class="container">
