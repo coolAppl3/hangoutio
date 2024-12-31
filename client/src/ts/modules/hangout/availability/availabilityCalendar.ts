@@ -70,11 +70,8 @@ function updateCalendar(): void {
   const numberOfDays: number = getMonthNumberOfDays(currentYear, currentMonth);
   const monthName: string = new Intl.DateTimeFormat('en-GB', { month: 'long' }).format(dateObj);
 
-  const availabilityCalendarMonth: HTMLSpanElement | null = document.querySelector('#availability-calendar-month');
-  availabilityCalendarMonth && (availabilityCalendarMonth.textContent = monthName);
-
-  const availabilityCalendarYear: HTMLSpanElement | null = document.querySelector('#availability-calendar-year');
-  availabilityCalendarYear && (availabilityCalendarYear.textContent = `${currentYear}`);
+  const availabilityCalendarTitle: HTMLParagraphElement | null = document.querySelector('#availability-calendar-title');
+  availabilityCalendarTitle && (availabilityCalendarTitle.textContent = `${monthName} ${currentYear}`);
 
   const availabilityCalendarDates: HTMLDivElement | null = document.querySelector('#availability-calendar-dates');
 
