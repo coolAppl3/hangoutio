@@ -6,7 +6,7 @@ import { hangoutAvailabilityState } from "./hangoutAvailability";
 import { calculateHangoutConclusionTimestamp } from "./availabilityUtils";
 
 interface AvailabilityCalendarState {
-  isActive: boolean,
+  hasBeenInitiated: boolean,
   data: null | {
     conclusionTimestamp: number,
     conclusionDate: number,
@@ -20,12 +20,12 @@ interface AvailabilityCalendarState {
 };
 
 let availabilityCalendarState: AvailabilityCalendarState = {
-  isActive: false,
+  hasBeenInitiated: false,
   data: null,
 };
 
 export function initAvailabilityCalendar(): void {
-  if (availabilityCalendarState.isActive) {
+  if (availabilityCalendarState.hasBeenInitiated) {
     return;
   };
 
@@ -39,7 +39,7 @@ export function initAvailabilityCalendar(): void {
   const dateObj: Date = new Date(hangoutConclusionTimestamp);
 
   availabilityCalendarState = {
-    isActive: true,
+    hasBeenInitiated: true,
     data: {
       conclusionTimestamp: hangoutConclusionTimestamp,
       conclusionDate: dateObj.getDate(),
@@ -77,7 +77,7 @@ function updateCalendar(): void {
 
   if (!availabilityCalendarDates) {
     availabilityCalendarState = {
-      isActive: false,
+      hasBeenInitiated: false,
       data: null,
     };
 
