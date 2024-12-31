@@ -1,7 +1,9 @@
 import { dayMilliseconds } from "../../global/clientConstants";
 import popup from "../../global/popup";
 import { globalHangoutState } from "../globalHangoutState";
+import { createCalendarCell, generateAndAppendEmptyCalendarCells, getMonthNumberOfDays } from "../dateTimePicker";
 import { hangoutAvailabilityState } from "./hangoutAvailability";
+import { calculateHangoutConclusionTimestamp } from "./availabilityUtils";
 
 interface AvailabilityCalendarState {
   isActive: boolean,
@@ -22,8 +24,15 @@ let availabilityCalendarState: AvailabilityCalendarState = {
   data: null,
 };
 
-export function initAvailabilityCalendar(hangoutConclusionTimestamp: number): void {
+export function initAvailabilityCalendar(): void {
   if (availabilityCalendarState.isActive) {
+    return;
+  };
+
+  const hangoutConclusionTimestamp: number | null = calculateHangoutConclusionTimestamp();
+
+  if (!hangoutConclusionTimestamp) {
+    popup('Something went wrong.', 'error');
     return;
   };
 
@@ -55,12 +64,11 @@ function updateCalendar(): void {
   };
 
   const { currentMonth, currentYear } = availabilityCalendarState.data;
+  const dateObj: Date = new Date(currentYear, currentMonth, 1);
 
-  const tempDateObj: Date = new Date(currentYear, currentMonth, 1);
-
-  const firstDayOfMonth: number = tempDateObj.getDay();
-  const numberOfDays: number = getMonthNumberOfDays(currentMonth, currentYear);
-  const monthName: string = new Intl.DateTimeFormat('en-GB', { month: 'long' }).format(tempDateObj);
+  const firstDayOfMonth: number = dateObj.getDay();
+  const numberOfDays: number = getMonthNumberOfDays(currentYear, currentMonth);
+  const monthName: string = new Intl.DateTimeFormat('en-GB', { month: 'long' }).format(dateObj);
 
   const availabilityCalendarMonth: HTMLSpanElement | null = document.querySelector('#availability-calendar-month');
   availabilityCalendarMonth && (availabilityCalendarMonth.textContent = monthName);
@@ -104,7 +112,7 @@ function displayAvailabilityMarkers(): void {
   const { currentYear, currentMonth } = availabilityCalendarState.data;
 
   const smallestRelevantTimestamp: number = new Date(currentYear, currentMonth, 1).getTime();
-  const largestRelevantTimestamp: number = new Date(currentYear, currentMonth, getMonthNumberOfDays(currentMonth, currentYear), 23, 59).getTime();
+  const largestRelevantTimestamp: number = new Date(currentYear, currentMonth, getMonthNumberOfDays(currentYear, currentMonth), 23, 59).getTime();
 
   const uniqueSlots: { memberId: number, date: number }[] = [];
   const monthSpecificSlotsMap: Map<number, number> = new Map();
@@ -252,27 +260,6 @@ function enableCalendarNavigationBtn(direction: 'forwards' | 'backwards'): void 
   navigationBtn && navigationBtn.classList.remove('disabled');
 };
 
-function generateAndAppendEmptyCalendarCells(container: HTMLDivElement, firstDayOfMonth: number): void {
-  if (firstDayOfMonth === 0) {
-    for (let i = 0; i < 6; i++) {
-      container.appendChild(createEmptyCalendarCell());
-    };
-
-    return;
-  };
-
-  for (let i = 0; i < firstDayOfMonth - 1; i++) {
-    container.appendChild(createEmptyCalendarCell());
-  };
-};
-
-function createEmptyCalendarCell(): HTMLSpanElement {
-  const emptyCell: HTMLSpanElement = document.createElement('span');
-  emptyCell.className = 'date-item empty';
-
-  return emptyCell;
-};
-
 function generateAndAppendCalendarCells(container: HTMLDivElement, numberOfDays: number): void {
   if (!availabilityCalendarState.data) {
     return;
@@ -282,7 +269,6 @@ function generateAndAppendCalendarCells(container: HTMLDivElement, numberOfDays:
 
   const monthLimitReached: boolean = new Date(initialYear, initialMonth + 6).getMonth() === currentMonth;
   const furthestPossibleDate: number | null = monthLimitReached ? new Date(initialYear, initialMonth + 6, conclusionDate).getDate() : null;
-
   const isFirstAvailableMonth: boolean = currentMonth === initialMonth;
 
   for (let i = 1; i <= numberOfDays; i++) {
@@ -293,46 +279,4 @@ function generateAndAppendCalendarCells(container: HTMLDivElement, numberOfDays:
 
     container.appendChild(createCalendarCell(i));
   };
-};
-
-function createCalendarCell(date: number, forbidden: boolean = false): HTMLButtonElement {
-  const dateCell: HTMLButtonElement = document.createElement('button');
-  dateCell.className = 'date-cell';
-  dateCell.setAttribute('type', 'button');
-  dateCell.setAttribute('data-value', `${date}`);
-  dateCell.appendChild(document.createTextNode(`${date}`));
-
-  if (forbidden) {
-    dateCell.classList.add('forbidden');
-  };
-
-  return dateCell;
-};
-
-
-function getMonthNumberOfDays(month: number, year: number): number {
-  if (month === 1) {
-    return getFebNumberOfDays(year);
-  };
-
-  const shortMonths: number[] = [3, 5, 8, 10];
-
-  const isShortMonth: boolean = shortMonths.includes(month);
-  if (isShortMonth) {
-    return 30;
-  };
-
-  return 31;
-};
-
-function getFebNumberOfDays(year: number): number {
-  const isDivisibleByFour: boolean = year % 4 === 0;
-  const isDivisibleByHundred: boolean = year % 100 === 0;
-  const isDivisibleByFourHundred: boolean = year % 400 === 0;
-
-  if (isDivisibleByFour && (!isDivisibleByHundred || isDivisibleByFourHundred)) {
-    return 29;
-  };
-
-  return 28;
 };

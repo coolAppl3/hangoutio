@@ -3,6 +3,7 @@ import { handleAuthSessionExpired } from "../../global/authUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutAvailabilitySlotsServices } from "../../services/availabilitySlotsServices";
+import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { AvailabilitySlot } from "../hangoutTypes";
 import { initAvailabilityCalendar } from "./availabilityCalendar";
@@ -18,6 +19,8 @@ export const hangoutAvailabilityState: HangoutAvailabilityState = {
   availabilitySlots: [],
 };
 
+const addAvailabilityBtn: HTMLButtonElement | null = document.querySelector('#add-availability-btn');
+
 export function hangoutAvailability(): void {
   loadEventListeners();
 };
@@ -32,19 +35,22 @@ async function init(): Promise<void> {
 };
 
 function render(): void {
-  if (!globalHangoutState.data) {
-    return;
-  };
-
-  const { created_on_timestamp, availability_period, suggestions_period, voting_period } = globalHangoutState.data.hangoutDetails;
-  const hangoutConclusionTimestamp: number = created_on_timestamp + availability_period + suggestions_period + voting_period;
-
-  initAvailabilityCalendar(hangoutConclusionTimestamp);
+  initAvailabilityCalendar();
   displayPersonalAvailabilitySlots();
 };
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-availability', init);
+
+  addAvailabilityBtn?.addEventListener('click', () => displayDateTimePicker('availabilitySlot'));
+  document.addEventListener('dateTimePicker-availabilitySlot-selected', async (e: Event) => {
+    if (!isValidDateTimePickerEvent(e)) {
+      return;
+    };
+
+    const dateTimePickerData: DateTimePickerData = e.detail;
+    await addHangoutAvailabilitySlot(dateTimePickerData);
+  });
 };
 
 async function getHangoutAvailabilitySlots(): Promise<void> {
@@ -105,6 +111,10 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
       }, 1000);
     };
   };
+};
+
+async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData): Promise<void> {
+  // TODO: implement
 };
 
 function displayPersonalAvailabilitySlots(): void {
