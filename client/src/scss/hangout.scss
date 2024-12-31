@@ -915,7 +915,7 @@
           @apply grid grid-cols-7 place-items-center;
 
           .date-cell {
-            @apply block w-full h-full py-3 sm:py-2 text-center text-sm font-bold text-title dark:text-title-dark bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 cursor-pointer overflow-hidden relative;
+            @apply block w-full h-full py-3 sm:py-2 text-center text-sm font-bold text-title dark:text-title-dark bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 md:hover:brightness-100 cursor-pointer overflow-hidden relative;
 
             &.empty {
               @apply hover:brightness-100 cursor-default;
