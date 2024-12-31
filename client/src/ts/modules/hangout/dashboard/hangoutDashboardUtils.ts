@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
-import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_VOTING_STAGE, minuteMilliseconds } from "../../global/clientConstants";
+import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
 import { InfoModal } from "../../global/InfoModal";
@@ -239,9 +239,9 @@ function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: nu
     return;
   };
 
-  const daysTillNextStage: number = Math.floor(millisecondsTillNextStage / (1000 * 60 * 60 * 24));
-  const hoursTillNextStage: number = Math.floor((millisecondsTillNextStage / (1000 * 60 * 60)) % 24);
-  const minutesTillNextStage: number = Math.floor((millisecondsTillNextStage / (1000 * 60)) % 60);
+  const daysTillNextStage: number = Math.floor(millisecondsTillNextStage / dayMilliseconds);
+  const hoursTillNextStage: number = Math.floor((millisecondsTillNextStage / hourMilliseconds) % 24);
+  const minutesTillNextStage: number = Math.floor((millisecondsTillNextStage / minuteMilliseconds) % 60);
 
   const daysTillNextStageString: string = daysTillNextStage < 1 ? '' : `${daysTillNextStage}D:`;
   const hoursTillNextStageString: string = hoursTillNextStage < 1 ? '' : `${hoursTillNextStage}H:`;

@@ -1,6 +1,7 @@
 import { signUpState } from "./signUpState";
 import Cookies from "../global/Cookies";
 import { InfoModal } from "../global/InfoModal";
+import { minuteMilliseconds } from "../global/clientConstants";
 
 export function displayVerificationExpiryInfoModal(): void {
   const infoModal: HTMLDivElement = InfoModal.display({
@@ -73,7 +74,7 @@ function getTimeTillVerificationExpiry(verificationExpiryTimestamp: number): str
     return '00:00';
   };
 
-  const minutesTillExpiry: number = Math.floor(timeTillRequestExpiry / (1000 * 60));
+  const minutesTillExpiry: number = Math.floor(timeTillRequestExpiry / minuteMilliseconds);
   const secondsTillExpiry: number = Math.floor((timeTillRequestExpiry / 1000) % 60);
 
   const minutesTillExpiryString: string = minutesTillExpiry < 10 ? `0${minutesTillExpiry}` : `${minutesTillExpiry}`;

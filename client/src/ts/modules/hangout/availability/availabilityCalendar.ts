@@ -6,7 +6,7 @@ import { hangoutAvailabilityState } from "./hangoutAvailability";
 import { calculateHangoutConclusionTimestamp } from "./availabilityUtils";
 
 interface AvailabilityCalendarState {
-  isActive: boolean,
+  hasBeenInitiated: boolean,
   data: null | {
     conclusionTimestamp: number,
     conclusionDate: number,
@@ -20,12 +20,12 @@ interface AvailabilityCalendarState {
 };
 
 let availabilityCalendarState: AvailabilityCalendarState = {
-  isActive: false,
+  hasBeenInitiated: false,
   data: null,
 };
 
 export function initAvailabilityCalendar(): void {
-  if (availabilityCalendarState.isActive) {
+  if (availabilityCalendarState.hasBeenInitiated) {
     return;
   };
 
@@ -39,7 +39,7 @@ export function initAvailabilityCalendar(): void {
   const dateObj: Date = new Date(hangoutConclusionTimestamp);
 
   availabilityCalendarState = {
-    isActive: true,
+    hasBeenInitiated: true,
     data: {
       conclusionTimestamp: hangoutConclusionTimestamp,
       conclusionDate: dateObj.getDate(),
@@ -70,17 +70,14 @@ function updateCalendar(): void {
   const numberOfDays: number = getMonthNumberOfDays(currentYear, currentMonth);
   const monthName: string = new Intl.DateTimeFormat('en-GB', { month: 'long' }).format(dateObj);
 
-  const availabilityCalendarMonth: HTMLSpanElement | null = document.querySelector('#availability-calendar-month');
-  availabilityCalendarMonth && (availabilityCalendarMonth.textContent = monthName);
-
-  const availabilityCalendarYear: HTMLSpanElement | null = document.querySelector('#availability-calendar-year');
-  availabilityCalendarYear && (availabilityCalendarYear.textContent = `${currentYear}`);
+  const availabilityCalendarTitle: HTMLParagraphElement | null = document.querySelector('#availability-calendar-title');
+  availabilityCalendarTitle && (availabilityCalendarTitle.textContent = `${monthName} ${currentYear}`);
 
   const availabilityCalendarDates: HTMLDivElement | null = document.querySelector('#availability-calendar-dates');
 
   if (!availabilityCalendarDates) {
     availabilityCalendarState = {
-      isActive: false,
+      hasBeenInitiated: false,
       data: null,
     };
 
