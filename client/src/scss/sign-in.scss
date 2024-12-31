@@ -208,44 +208,6 @@
     }
   }
 
-  &.form-group-date-picker {
-    @apply relative;
-
-    .date-picker-icon {
-      @apply absolute right-1 bottom-[11px] cursor-pointer;
-    }
-
-    input,
-    textarea {
-      @apply pr-4 cursor-pointer relative;
-    }
-
-    .svg {
-      @apply z-0;
-    }
-  }
-
-  &.form-group-time-picker {
-    @apply relative mb-1;
-
-    .time-picker-input-icon {
-      @apply absolute right-1 bottom-[11px] cursor-pointer;
-    }
-
-    input,
-    textarea {
-      @apply pr-4 cursor-pointer relative;
-
-      &.disabled {
-        @apply opacity-25 cursor-default hover:brightness-100;
-      }
-    }
-
-    .svg {
-      @apply z-0;
-    }
-  }
-
   &.disabled {
 
     input,
