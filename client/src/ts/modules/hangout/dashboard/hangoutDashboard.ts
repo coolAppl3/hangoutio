@@ -63,7 +63,7 @@ export async function getHangoutDashboardData(): Promise<void> {
     };
 
     hangoutDashboardState.latestHangoutMessages = initialHangoutData.latestHangoutChats.reverse();
-    hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents.reverse();
+    hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents;
 
     populateDashboard();
 

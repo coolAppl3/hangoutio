@@ -243,12 +243,7 @@ function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: nu
   const hoursTillNextStage: number = Math.floor((millisecondsTillNextStage / hourMilliseconds) % 24);
   const minutesTillNextStage: number = Math.floor((millisecondsTillNextStage / minuteMilliseconds) % 60);
 
-  const daysTillNextStageString: string = daysTillNextStage < 1 ? '' : `${daysTillNextStage}D:`;
-  const hoursTillNextStageString: string = hoursTillNextStage < 1 ? '' : `${hoursTillNextStage}H:`;
-  const minutesTillNextStageString: string = `${minutesTillNextStage}M`;
-
-
-  const timeTillNextStageString: string = daysTillNextStageString + hoursTillNextStageString + minutesTillNextStageString;
+  const timeTillNextStageString: string = `${daysTillNextStage}D:${hoursTillNextStage}H:${minutesTillNextStage}M`;
   nextStageTimeSpan.textContent = timeTillNextStageString;
 };
 

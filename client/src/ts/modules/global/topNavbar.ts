@@ -75,7 +75,7 @@ function displaySignOutModal(): void {
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Are you sure you want to sign out of your account?',
     description: null,
-    confirmBtnTitle: 'Sign out.',
+    confirmBtnTitle: 'Sign out',
     cancelBtnTitle: 'Cancel',
     extraBtnTitle: null,
     isDangerousAction: true,

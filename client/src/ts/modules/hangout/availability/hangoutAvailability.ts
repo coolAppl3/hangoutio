@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
+import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutAvailabilitySlotsServices } from "../../services/availabilitySlotsServices";
@@ -37,6 +38,7 @@ async function init(): Promise<void> {
 function render(): void {
   initAvailabilityCalendar();
   displayPersonalAvailabilitySlots();
+  updateSlotsRemaining();
 };
 
 function loadEventListeners(): void {
@@ -118,16 +120,15 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 };
 
 function displayPersonalAvailabilitySlots(): void {
+  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
+    return;
+  };
+
   const availabilitySlotsElement: HTMLDivElement | null = document.querySelector('#availability-slots');
   const availabilitySlotsContainer: HTMLDivElement | null = document.querySelector('#availability-slots-container');
 
   if (!availabilitySlotsElement || !availabilitySlotsContainer) {
     popup('Failed to load your availability slots.', 'error');
-    return;
-  };
-
-  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
-    availabilitySlotsElement.classList.add('empty');
     return;
   };
 
@@ -140,5 +141,17 @@ function displayPersonalAvailabilitySlots(): void {
   availabilitySlotsContainer.firstElementChild?.remove();
   availabilitySlotsContainer.appendChild(innerContainer);
 
-  availabilitySlotsElement.classList.remove('empty');
+  availabilitySlotsElement.classList.remove('hidden');
+};
+
+function updateSlotsRemaining(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const availabilitySlotsCount: number = globalHangoutState.data.availabilitySlotsCount;
+  const slotsRemaining: number = HANGOUT_AVAILABILITY_SLOTS_LIMIT - availabilitySlotsCount;
+
+  const slotsRemainingSpan: HTMLSpanElement | null = document.querySelector('#availability-section-slots-remaining');
+  slotsRemainingSpan && (slotsRemainingSpan.textContent = `${slotsRemaining}.`);
 };

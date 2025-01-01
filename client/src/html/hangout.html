@@ -115,7 +115,7 @@
           </div>
 
           <!-- links container -->
-          <ul class="links-container flex justify-center items-center mx-auto md:hidden mx-a absolute top-0 left-0 right-0 bottom-0">
+          <ul class="links-container flex justify-center items-center mx-auto md:hidden mx-a absolute top-0 left-0 right-0 bottom-0 z-0">
             <li class="group">
               <a
                 href="home"
@@ -1216,10 +1216,22 @@
 
             <div class="availability-calendar-description grid grid-cols-2 md:grid-cols-1 gap-2">
               <div class="w-full">
-                <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Click on any of the dates above to interact with them.</h3>
+                <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Availability calendar</h3>
 
-                <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-                  You can add, adjust, or remove your own availability slots, as well as view when other members are available.
+                <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-1">
+                  Create your own availability slots and see when others are available. Click on a specific date for further details.
+                </p>
+
+                <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-1">
+                  Your personal availability slots will also be visible in their own section below.
+                </p>
+
+                <p class="w-full text-sm md:text-base font-bold text-description dark:text-description-dark mb-2">
+                  Remaining availability slots:
+                  <span
+                    id="availability-section-slots-remaining"
+                    class="text-title dark:text-title-dark"
+                  ></span>
                 </p>
 
                 <button
@@ -1259,7 +1271,7 @@
           <!-- slots -->
           <div
             id="availability-slots"
-            class="empty"
+            class="hidden"
           >
             <h3 class="w-full text-lg text-center font-medium text-title dark:text-title-dark mb-2">My availability slots</h3>
 
@@ -1277,8 +1289,6 @@
                 Clear all slots
               </button>
             </div>
-
-            <p class="w-full text-center font-medium text-description dark:text-description-dark">No slots added yet.</p>
           </div>
         </div>
       </div>
