@@ -351,7 +351,7 @@ function slotStartsBeforeHangoutConclusion(startTimestamp: number): boolean {
 
   if (startTimestamp - hangoutConclusionTimestamp < dayMilliseconds && slotStartDateObj.getDate() === conclusionDateObj.getDate()) {
     const minimumTimeString: string = getTime(conclusionDateObj);
-    timePickerSlotStartInput && ErrorSpan.display(timePickerSlotStartInput, `Time slot must start after ${minimumTimeString} if added for the hangout conclusion date.`);
+    timePickerSlotStartInput && ErrorSpan.display(timePickerSlotStartInput, `Time slot must start after ${minimumTimeString} if added on the hangout conclusion date.`);
 
     return true;
   };
