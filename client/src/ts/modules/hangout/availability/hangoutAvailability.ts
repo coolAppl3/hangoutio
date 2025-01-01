@@ -3,7 +3,7 @@ import { handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { getHangoutAvailabilitySlotsServices } from "../../services/availabilitySlotsServices";
+import { getHangoutAvailabilitySlotsService } from "../../services/availabilitySlotsServices";
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { AvailabilitySlot } from "../hangoutTypes";
@@ -71,7 +71,7 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
 
   try {
     const { hangoutId, hangoutMemberId } = globalHangoutState.data;
-    const availabilitySlots: AvailabilitySlot[] = (await getHangoutAvailabilitySlotsServices(hangoutId, hangoutMemberId)).data.availabilitySlots;
+    const availabilitySlots: AvailabilitySlot[] = (await getHangoutAvailabilitySlotsService(hangoutId, hangoutMemberId)).data.availabilitySlots;
 
     hangoutAvailabilityState.availabilitySlots = availabilitySlots;
     hangoutAvailabilityState.isLoaded = true;

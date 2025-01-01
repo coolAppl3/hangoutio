@@ -8,10 +8,10 @@ const availabilitySlotsApiUrl: string = window.location.hostname === 'localhost'
   : `https://${window.location.hostname}/api/availabilitySlots`;
 //
 
-interface HangoutAvailabilitySlotsData {
+interface GetHangoutAvailabilitySlotsData {
   availabilitySlots: AvailabilitySlot[],
 };
 
-export async function getHangoutAvailabilitySlotsServices(hangoutId: string, hangoutMemberId: number): Promise<AxiosResponse<HangoutAvailabilitySlotsData>> {
+export async function getHangoutAvailabilitySlotsService(hangoutId: string, hangoutMemberId: number): Promise<AxiosResponse<GetHangoutAvailabilitySlotsData>> {
   return axios.get(`${availabilitySlotsApiUrl}?hangoutId=${hangoutId}&hangoutMemberId=${hangoutMemberId}`);
 };
