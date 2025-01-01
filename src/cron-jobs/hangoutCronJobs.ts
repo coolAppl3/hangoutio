@@ -62,6 +62,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       `UPDATE
         hangouts
       SET
+        voting_period = (${currentTimestamp} - created_on_timestamp - availability_period - suggestions_period),
         current_stage = ${HANGOUT_CONCLUSION_STAGE},
         stage_control_timestamp = ?,
         is_concluded = ?
