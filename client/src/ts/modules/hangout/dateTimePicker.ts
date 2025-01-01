@@ -185,7 +185,7 @@ function submitDateAndTime(e: SubmitEvent): void {
     detail: { purpose, startTimestamp, endTimestamp },
   }));
 
-  if (purpose) {
+  if (purpose === 'suggestionSlot') {
     closeDateTimePicker();
     LoadingModal.remove();
   };
