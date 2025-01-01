@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.14] (2025-01-01)
+
+### Features
+
+- Reworked `updateNextStageTimer()` in `hangoutDashboardUtils.ts` to still display days and hours in the time remaining counter, even if only minutes are remaining.
+- Reworked the user's personal availability slots section in `hangout.html` to only show up if they've added any slots.
+- Added span to display remaining slots in the availability calendar section in `hangout.html`.
+
+
+### Bug Fixes
+
+- Fixed `concludeNoSuggestionHangouts() `in `hangoutCronJobs.ts` not updating the value of voting_period in the database, leading to the conclusion date being incorrectly calculated.
+- Fixed the recent changes to the links container in the top navbar covering the logo's link.
+- Fixed the sign out confirm modal's sign out button having a period at the end in `topNavbar.ts`.
+- Fixed latest hangout events in the dashboard not showing the latest event at the top.
+
+
 ## [0.4.13] (2024-12-31)
 
 ### Features

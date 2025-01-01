@@ -52,6 +52,7 @@ async function concludeNoSuggestionHangouts() {
         const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
         hangouts
       SET
+        voting_period = (${currentTimestamp} - created_on_timestamp - availability_period - suggestions_period),
         current_stage = ${constants_1.HANGOUT_CONCLUSION_STAGE},
         stage_control_timestamp = ?,
         is_concluded = ?
