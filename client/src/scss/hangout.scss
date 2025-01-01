@@ -948,18 +948,6 @@
 
     #availability-slots {
 
-      &.empty {
-
-        &>p {
-          @apply block;
-        }
-
-        #availability-slots-container,
-        .btn-container {
-          @apply hidden;
-        }
-      }
-
       #availability-slots-container {
 
         &>div {

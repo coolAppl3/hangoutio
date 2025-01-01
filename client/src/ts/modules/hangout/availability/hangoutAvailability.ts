@@ -118,16 +118,15 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 };
 
 function displayPersonalAvailabilitySlots(): void {
+  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
+    return;
+  };
+
   const availabilitySlotsElement: HTMLDivElement | null = document.querySelector('#availability-slots');
   const availabilitySlotsContainer: HTMLDivElement | null = document.querySelector('#availability-slots-container');
 
   if (!availabilitySlotsElement || !availabilitySlotsContainer) {
     popup('Failed to load your availability slots.', 'error');
-    return;
-  };
-
-  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
-    availabilitySlotsElement.classList.add('empty');
     return;
   };
 
@@ -140,5 +139,5 @@ function displayPersonalAvailabilitySlots(): void {
   availabilitySlotsContainer.firstElementChild?.remove();
   availabilitySlotsContainer.appendChild(innerContainer);
 
-  availabilitySlotsElement.classList.remove('empty');
+  availabilitySlotsElement.classList.remove('hidden');
 };

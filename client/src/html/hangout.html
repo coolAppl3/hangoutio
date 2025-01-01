@@ -1216,10 +1216,14 @@
 
             <div class="availability-calendar-description grid grid-cols-2 md:grid-cols-1 gap-2">
               <div class="w-full">
-                <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Click on any of the dates above to interact with them.</h3>
+                <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Availability calendar</h3>
+
+                <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-1">
+                  Create your own availability slots and see when others are available. Click on a specific date for further details.
+                </p>
 
                 <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-                  You can add, adjust, or remove your own availability slots, as well as view when other members are available.
+                  Your personal availability slots will also be visible in their own section below.
                 </p>
 
                 <button
@@ -1259,7 +1263,7 @@
           <!-- slots -->
           <div
             id="availability-slots"
-            class="empty"
+            class="hidden"
           >
             <h3 class="w-full text-lg text-center font-medium text-title dark:text-title-dark mb-2">My availability slots</h3>
 
@@ -1277,8 +1281,6 @@
                 Clear all slots
               </button>
             </div>
-
-            <p class="w-full text-center font-medium text-description dark:text-description-dark">No slots added yet.</p>
           </div>
         </div>
       </div>
