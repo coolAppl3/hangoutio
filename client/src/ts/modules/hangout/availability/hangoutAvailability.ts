@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
+import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutAvailabilitySlotsServices } from "../../services/availabilitySlotsServices";
@@ -37,6 +38,7 @@ async function init(): Promise<void> {
 function render(): void {
   initAvailabilityCalendar();
   displayPersonalAvailabilitySlots();
+  updateSlotsRemaining();
 };
 
 function loadEventListeners(): void {
@@ -140,4 +142,16 @@ function displayPersonalAvailabilitySlots(): void {
   availabilitySlotsContainer.appendChild(innerContainer);
 
   availabilitySlotsElement.classList.remove('hidden');
+};
+
+function updateSlotsRemaining(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const availabilitySlotsCount: number = globalHangoutState.data.availabilitySlotsCount;
+  const slotsRemaining: number = HANGOUT_AVAILABILITY_SLOTS_LIMIT - availabilitySlotsCount;
+
+  const slotsRemainingSpan: HTMLSpanElement | null = document.querySelector('#availability-section-slots-remaining');
+  slotsRemainingSpan && (slotsRemainingSpan.textContent = `${slotsRemaining}.`);
 };
