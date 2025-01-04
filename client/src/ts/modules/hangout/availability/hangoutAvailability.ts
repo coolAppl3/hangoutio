@@ -51,7 +51,7 @@ function loadEventListeners(): void {
 
   addAvailabilityBtn?.addEventListener('click', () => {
     if (globalHangoutState.data?.hangoutDetails.is_concluded) {
-      popup(`Can't add slots after hangout conclusion.`, 'error');
+      popup(`Can't add availability slots after hangout conclusion.`, 'error');
       LoadingModal.remove();
 
       return;
@@ -145,18 +145,9 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
   const { startTimestamp, endTimestamp } = dateTimePickerData;
 
   const newSlotTimestamps: NewAvailabilitySlotTimestamps = { slotStartTimestamp: startTimestamp, slotEndTimestamp: endTimestamp };
-  const overlappedSlotId: number | null = overlapsWithExistingAvailabilitySlots(hangoutAvailabilityState.availabilitySlots, newSlotTimestamps);
+  const overlappedSlot: AvailabilitySlot | null = overlapsWithExistingAvailabilitySlots(hangoutAvailabilityState.availabilitySlots, newSlotTimestamps);
 
-  if (overlappedSlotId) {
-    const overlappedSlot: AvailabilitySlot | undefined = hangoutAvailabilityState.availabilitySlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === overlappedSlotId);
-
-    if (!overlappedSlot) {
-      popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
-      return;
-    };
-
+  if (overlappedSlot) {
     const slotStartString: string = getDateAndTimeString(overlappedSlot.slot_start_timestamp);
     const slotEndString: string = getDateAndTimeString(overlappedSlot.slot_end_timestamp);
 
@@ -250,22 +241,22 @@ interface NewAvailabilitySlotTimestamps {
   slotEndTimestamp: number,
 };
 
-function overlapsWithExistingAvailabilitySlots(existingSlots: AvailabilitySlot[], newSlotTimestamps: NewAvailabilitySlotTimestamps): number | null {
+function overlapsWithExistingAvailabilitySlots(existingSlots: AvailabilitySlot[], newSlotTimestamps: NewAvailabilitySlotTimestamps): AvailabilitySlot | null {
   if (existingSlots.length === 0) {
     return null;
   };
 
   for (const existingSlot of existingSlots) {
     if (existingSlot.slot_start_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_start_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot.availability_slot_id;
+      return existingSlot;
     };
 
     if (existingSlot.slot_end_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot.availability_slot_id;
+      return existingSlot;
     };
 
     if (existingSlot.slot_start_timestamp <= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp >= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot.availability_slot_id;
+      return existingSlot;
     };
   };
 
