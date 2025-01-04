@@ -52,13 +52,13 @@ export function initAvailabilityCalendar(): void {
     },
   };
 
-  updateCalendar();
+  updateAvailabilityCalendar();
 
   const availabilityCalendarHeader: HTMLDivElement | null = document.querySelector('#availability-calendar-header');
   availabilityCalendarHeader?.addEventListener('click', navigateCalendar);
 };
 
-function updateCalendar(): void {
+export function updateAvailabilityCalendar(): void {
   if (!availabilityCalendarState.data) {
     return;
   };
@@ -202,7 +202,7 @@ function navigateBackwards(): void {
     (initialMonth === 11) && disableCalendarNavigationBtn('backwards');
     enableCalendarNavigationBtn('forwards');
 
-    updateCalendar();
+    updateAvailabilityCalendar();
     return;
   };
 
@@ -211,7 +211,7 @@ function navigateBackwards(): void {
   (currentMonth - 1 === initialMonth) && disableCalendarNavigationBtn('backwards');
   enableCalendarNavigationBtn('forwards');
 
-  updateCalendar();
+  updateAvailabilityCalendar();
 };
 
 function navigateForwards(): void {
@@ -235,7 +235,7 @@ function navigateForwards(): void {
     (currentMonthTimestamp + (dayMilliseconds * 30) >= furthestPossibleTimestamp) && disableCalendarNavigationBtn('forwards');
     enableCalendarNavigationBtn('backwards');
 
-    updateCalendar();
+    updateAvailabilityCalendar();
     return;
   };
 
@@ -244,7 +244,7 @@ function navigateForwards(): void {
   (currentMonthTimestamp + (dayMilliseconds * 31) >= furthestPossibleTimestamp) && disableCalendarNavigationBtn('forwards');
   enableCalendarNavigationBtn('backwards');
 
-  updateCalendar();
+  updateAvailabilityCalendar();
 };
 
 function disableCalendarNavigationBtn(direction: 'forwards' | 'backwards'): void {
