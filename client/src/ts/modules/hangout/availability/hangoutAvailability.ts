@@ -51,7 +51,7 @@ function loadEventListeners(): void {
 
   addAvailabilityBtn?.addEventListener('click', () => {
     if (globalHangoutState.data?.hangoutDetails.is_concluded) {
-      popup(`Can't add availability slots after hangout conclusion.`, 'error');
+      popup(`Hangout has already been concluded.`, 'error');
       LoadingModal.remove();
 
       return;
@@ -208,6 +208,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
+    const errResData: unknown = axiosError.response.data.resData;
 
     if (status === 400 && (errReason === 'hangoutId' || errReason === 'hangoutMemberId')) {
       popup('Something went wrong', 'error');
@@ -216,7 +217,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 
     popup(errMessage, 'error');
 
-    if (status === 400) {
+    if (status === 401) {
       if (errReason === 'authSessionExpired') {
         handleAuthSessionExpired(window.location.href);
         return;
@@ -229,6 +230,11 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
       return;
     };
 
+    if (status === 409 && errReason === 'slotOverlap') {
+      handleSlotOverlap(errResData);
+      return;
+    };
+
     if (status === 404) {
       LoadingModal.display();
       setTimeout(() => window.location.reload(), 1000);
@@ -236,31 +242,19 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
   };
 };
 
-interface NewAvailabilitySlotTimestamps {
-  slotStartTimestamp: number,
-  slotEndTimestamp: number,
+async function handleAvailabilitySlotsContainerClicks(e: MouseEvent): Promise<void> {
+  if (!(e.target instanceof HTMLElement)) {
+    return;
+  };
+
+  if (e.target.classList.contains('delete-btn')) {
+    await deleteAvailabilitySlot();
+    return;
+  };
 };
 
-function overlapsWithExistingAvailabilitySlots(existingSlots: AvailabilitySlot[], newSlotTimestamps: NewAvailabilitySlotTimestamps): AvailabilitySlot | null {
-  if (existingSlots.length === 0) {
-    return null;
-  };
-
-  for (const existingSlot of existingSlots) {
-    if (existingSlot.slot_start_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_start_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot;
-    };
-
-    if (existingSlot.slot_end_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot;
-    };
-
-    if (existingSlot.slot_start_timestamp <= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp >= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot;
-    };
-  };
-
-  return null;
+async function deleteAvailabilitySlot(): Promise<void> {
+  // TODO: continue implementation
 };
 
 function displayPersonalAvailabilitySlots(): void {
@@ -299,17 +293,62 @@ function updateSlotsRemaining(): void {
   slotsRemainingSpan && (slotsRemainingSpan.textContent = `${slotsRemaining}.`);
 };
 
-async function handleAvailabilitySlotsContainerClicks(e: MouseEvent): Promise<void> {
-  if (!(e.target instanceof HTMLElement)) {
-    return;
-  };
-
-  if (e.target.classList.contains('delete-btn')) {
-    await deleteAvailabilitySlot();
-    return;
-  };
+interface NewAvailabilitySlotTimestamps {
+  slotStartTimestamp: number,
+  slotEndTimestamp: number,
 };
 
-async function deleteAvailabilitySlot(): Promise<void> {
-  // TODO: continue implementation
+function overlapsWithExistingAvailabilitySlots(existingSlots: AvailabilitySlot[], newSlotTimestamps: NewAvailabilitySlotTimestamps): AvailabilitySlot | null {
+  if (existingSlots.length === 0) {
+    return null;
+  };
+
+  for (const existingSlot of existingSlots) {
+    if (existingSlot.slot_start_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_start_timestamp <= newSlotTimestamps.slotEndTimestamp) {
+      return existingSlot;
+    };
+
+    if (existingSlot.slot_end_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp <= newSlotTimestamps.slotEndTimestamp) {
+      return existingSlot;
+    };
+
+    if (existingSlot.slot_start_timestamp <= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp >= newSlotTimestamps.slotEndTimestamp) {
+      return existingSlot;
+    };
+  };
+
+  return null;
+};
+
+function handleSlotOverlap(errResData: unknown): void {
+  if (typeof errResData !== 'object' || errResData === null) {
+    return;
+  };
+
+  if (!('overlappedSlotId' in errResData) || typeof errResData.overlappedSlotId !== 'number') {
+    return;
+  };
+
+  const overlappedSlotId: number = errResData.overlappedSlotId;
+
+  if (!Number.isInteger(overlappedSlotId)) {
+    return;
+  };
+
+  const overlappedSlot: AvailabilitySlot | undefined = hangoutAvailabilityState.availabilitySlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === overlappedSlotId);
+
+  if (!overlappedSlot) {
+    return;
+  };
+
+  const slotStartString: string = getDateAndTimeString(overlappedSlot.slot_start_timestamp);
+  const slotEndString: string = getDateAndTimeString(overlappedSlot.slot_end_timestamp);
+
+  InfoModal.display({
+    title: 'Overlap detected.',
+    description: `New availability slot overlaps with the following slot:\n${slotStartString} - ${slotEndString}.`,
+    btnTitle: 'Okay',
+  }, { simple: true });
+
+  displayTimePickerError('Slot overlap detected.');
 };
