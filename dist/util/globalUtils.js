@@ -5,7 +5,7 @@ function getDateAndTimeString(timestamp) {
     const dateObj = new Date(timestamp);
     const date = dateObj.getDate();
     const ordinalSuffix = getOrdinalSuffix(date);
-    return `${getMonthName(dateObj)} ${date}${ordinalSuffix}, at ${getTime(dateObj)}`;
+    return `${getMonthName(dateObj)} ${date}${ordinalSuffix}, ${getTime(dateObj)}`;
 }
 exports.getDateAndTimeString = getDateAndTimeString;
 ;

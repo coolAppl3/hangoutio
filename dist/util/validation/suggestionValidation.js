@@ -46,16 +46,13 @@ function isValidSuggestionTimeSlot(slotStart, slotEnd) {
 exports.isValidSuggestionTimeSlot = isValidSuggestionTimeSlot;
 ;
 function isValidSuggestionSlotStart(hangoutConclusionTimestamp, slotStart) {
-    const halfYearMilliseconds = (constants_1.dayMilliseconds * 365) / 2;
-    if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
-        return false;
-    }
-    ;
+    const dateObj = new Date(hangoutConclusionTimestamp);
+    const furthestPossibleTimestamp = dateObj.setMonth(dateObj.getMonth() + 6);
     if (slotStart < hangoutConclusionTimestamp) {
         return false;
     }
     ;
-    if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
+    if (slotStart - hangoutConclusionTimestamp > furthestPossibleTimestamp) {
         return false;
     }
     ;
