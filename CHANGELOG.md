@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.15] (2025-01-04)
+
+### Features
+
+- Added `addHangoutAvailabilitySlotService()` in `availabilitySlotsServices.ts`.
+- Hangout availability section almost fully implemented in `hangout.html`.
+
+
+### Code Refactoring
+
+- Removed `hangoutUtils.ts` in favour of `hangoutTypes.d.ts`.
+- Updated POST `availabilitySlots/` and PATCH `availabilitySlots/` to reflect the changes to how slot overlap is detected.
+
+
 ## [0.4.14] (2025-01-01)
 
 ### Features

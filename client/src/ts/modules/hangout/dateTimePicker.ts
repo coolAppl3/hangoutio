@@ -185,7 +185,7 @@ function submitDateAndTime(e: SubmitEvent): void {
     detail: { purpose, startTimestamp, endTimestamp },
   }));
 
-  if (purpose) {
+  if (purpose === 'suggestionSlot') {
     closeDateTimePicker();
     LoadingModal.remove();
   };
@@ -361,7 +361,7 @@ function slotStartsBeforeHangoutConclusion(startTimestamp: number): boolean {
 
 function validateTimeSlotInput(input: HTMLInputElement): boolean {
   if (!isValidTimeSlotString(input.value)) {
-    ErrorSpan.display(input, 'Invalid 24-hour time format.');
+    ErrorSpan.display(input, 'Invalid 24-hour time format (HH:MM).');
     return false;
   };
 
@@ -618,4 +618,13 @@ export function isValidDateTimePickerEvent(event: unknown): event is DateTimePic
   };
 
   return true;
+};
+
+export function displayTimePickerError(message: string, inputIdEnding: 'start' | 'end' = 'end'): void {
+  if (!dateTimePickerState.isActive) {
+    return;
+  };
+
+  const input: HTMLInputElement | null = document.querySelector(`#time-picker-slot-${inputIdEnding}`);
+  input && ErrorSpan.display(input, message);
 };

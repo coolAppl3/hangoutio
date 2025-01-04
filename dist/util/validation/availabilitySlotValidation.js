@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.intersectsWithExistingSlots = exports.isValidAvailabilitySlotStart = exports.isValidAvailabilitySlot = void 0;
+exports.overlapsWithExistingAvailabilitySlots = exports.isValidAvailabilitySlotStart = exports.isValidAvailabilitySlot = void 0;
 const constants_1 = require("../constants");
 function isValidAvailabilitySlot(slotStart, slotEnd) {
     if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
@@ -17,16 +17,13 @@ function isValidAvailabilitySlot(slotStart, slotEnd) {
 exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
 ;
 function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
-    const halfYearMilliseconds = (constants_1.dayMilliseconds * 365) / 2;
-    if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
-        return false;
-    }
-    ;
+    const dateObj = new Date(hangoutConclusionTimestamp);
+    const furthestPossibleTimestamp = dateObj.setMonth(dateObj.getMonth() + 6);
     if (slotStart < hangoutConclusionTimestamp) {
         return false;
     }
     ;
-    if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
+    if (slotStart - hangoutConclusionTimestamp > furthestPossibleTimestamp) {
         return false;
     }
     ;
@@ -52,44 +49,27 @@ function isValidTimestamp(timestamp) {
 }
 ;
 ;
-;
-function intersectsWithExistingSlots(existingSlots, newSlot) {
+function overlapsWithExistingAvailabilitySlots(existingSlots, newSlotTimestamps) {
     if (existingSlots.length === 0) {
-        return false;
+        return null;
     }
     ;
-    for (const slot of existingSlots) {
-        if (isWithinExistingSlot(slot, newSlot.slotStartTimestamp) || isWithinExistingSlot(slot, newSlot.slotEndTimestamp)) {
-            return true;
+    for (const existingSlot of existingSlots) {
+        if (existingSlot.slot_start_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_start_timestamp <= newSlotTimestamps.slotEndTimestamp) {
+            return existingSlot.availability_slot_id;
         }
         ;
-        if (isCloserThanAMinute(slot, newSlot.slotStartTimestamp) || isCloserThanAMinute(slot, newSlot.slotEndTimestamp)) {
-            return true;
+        if (existingSlot.slot_end_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp <= newSlotTimestamps.slotEndTimestamp) {
+            return existingSlot.availability_slot_id;
+        }
+        ;
+        if (existingSlot.slot_start_timestamp <= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp >= newSlotTimestamps.slotEndTimestamp) {
+            return existingSlot.availability_slot_id;
         }
         ;
     }
     ;
-    return false;
+    return null;
 }
-exports.intersectsWithExistingSlots = intersectsWithExistingSlots;
-;
-function isWithinExistingSlot(slot, newSlotPart) {
-    if (newSlotPart >= slot.slot_start_timestamp && newSlotPart <= slot.slot_end_timestamp) {
-        return true;
-    }
-    ;
-    return false;
-}
-;
-function isCloserThanAMinute(slot, newSlotPart) {
-    if (Math.abs(newSlotPart - slot.slot_start_timestamp) < constants_1.minuteMilliseconds) {
-        return true;
-    }
-    ;
-    if (Math.abs(newSlotPart - slot.slot_end_timestamp) < constants_1.minuteMilliseconds) {
-        return true;
-    }
-    ;
-    return false;
-}
+exports.overlapsWithExistingAvailabilitySlots = overlapsWithExistingAvailabilitySlots;
 ;
