@@ -1,4 +1,5 @@
-import { dayMilliseconds, hourMilliseconds, minuteMilliseconds } from "../constants";
+import { hourMilliseconds } from "../constants";
+import { AvailabilitySlot } from "../hangoutTypes";
 
 export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boolean {
   if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
@@ -14,17 +15,14 @@ export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boo
 };
 
 export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
-  const halfYearMilliseconds: number = (dayMilliseconds * 365) / 2;
-
-  if (!isValidTimestamp(hangoutConclusionTimestamp) || !isValidTimestamp(slotStart)) {
-    return false;
-  };
+  const dateObj: Date = new Date(hangoutConclusionTimestamp);
+  const furthestPossibleTimestamp: number = dateObj.setMonth(dateObj.getMonth() + 6);
 
   if (slotStart < hangoutConclusionTimestamp) {
     return false;
   };
 
-  if (slotStart - hangoutConclusionTimestamp > halfYearMilliseconds) {
+  if (slotStart - hangoutConclusionTimestamp > furthestPossibleTimestamp) {
     return false;
   };
 
@@ -49,50 +47,29 @@ function isValidTimestamp(timestamp: number): boolean {
   return true;
 };
 
-interface ExistingAvailabilitySlot {
-  slot_start_timestamp: number,
-  slot_end_timestamp: number,
-};
-
-interface NewAvailabilitySlot {
+interface NewAvailabilitySlotTimestamps {
   slotStartTimestamp: number,
   slotEndTimestamp: number,
 };
 
-export function intersectsWithExistingSlots(existingSlots: ExistingAvailabilitySlot[], newSlot: NewAvailabilitySlot): boolean {
+export function overlapsWithExistingAvailabilitySlots(existingSlots: AvailabilitySlot[], newSlotTimestamps: NewAvailabilitySlotTimestamps): number | null {
   if (existingSlots.length === 0) {
-    return false;
+    return null;
   };
 
-  for (const slot of existingSlots) {
-    if (isWithinExistingSlot(slot, newSlot.slotStartTimestamp) || isWithinExistingSlot(slot, newSlot.slotEndTimestamp)) {
-      return true;
+  for (const existingSlot of existingSlots) {
+    if (existingSlot.slot_start_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_start_timestamp <= newSlotTimestamps.slotEndTimestamp) {
+      return existingSlot.availability_slot_id;
     };
 
-    if (isCloserThanAMinute(slot, newSlot.slotStartTimestamp) || isCloserThanAMinute(slot, newSlot.slotEndTimestamp)) {
-      return true;
+    if (existingSlot.slot_end_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp <= newSlotTimestamps.slotEndTimestamp) {
+      return existingSlot.availability_slot_id;
+    };
+
+    if (existingSlot.slot_start_timestamp <= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp >= newSlotTimestamps.slotEndTimestamp) {
+      return existingSlot.availability_slot_id;
     };
   };
 
-  return false;
-};
-
-function isWithinExistingSlot(slot: ExistingAvailabilitySlot, newSlotPart: number): boolean {
-  if (newSlotPart >= slot.slot_start_timestamp && newSlotPart <= slot.slot_end_timestamp) {
-    return true;
-  };
-
-  return false;
-};
-
-function isCloserThanAMinute(slot: ExistingAvailabilitySlot, newSlotPart: number): boolean {
-  if (Math.abs(newSlotPart - slot.slot_start_timestamp) < minuteMilliseconds) {
-    return true;
-  };
-
-  if (Math.abs(newSlotPart - slot.slot_end_timestamp) < minuteMilliseconds) {
-    return true;
-  };
-
-  return false;
+  return null;
 };
