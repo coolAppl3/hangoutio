@@ -9,6 +9,7 @@ import { getRequestCookie, removeRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
 import { destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, MAX_HANGOUT_MEMBERS_LIMIT } from '../util/constants';
+import { AvailabilitySlot } from '../util/hangoutTypes';
 
 export const availabilitySlotsRouter: Router = express.Router();
 
@@ -43,12 +44,12 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
     return;
   };
 
@@ -104,6 +105,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
       is_concluded: boolean,
       account_id: number | null,
       guest_id: number | null,
+      availability_slot_id: number,
       slot_start_timestamp: number,
       slot_end_timestamp: number,
     };
@@ -116,6 +118,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
+        availability_slots.availability_slot_id,
         availability_slots.slot_start_timestamp,
         availability_slots.slot_end_timestamp
       FROM
@@ -159,31 +162,48 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
       await connection.rollback();
-      res.status(400).json({ success: false, message: 'Invalid availability slot.' });
+      res.status(409).json({ success: false, message: 'Invalid availability slot start.' });
 
       return;
     };
 
-    interface ExistingAvailabilitySlot {
-      slot_start_timestamp: number,
-      slot_end_timestamp: number,
-    };
-
-    const existingAvailabilitySlots: ExistingAvailabilitySlot[] = hangoutMemberRows.map((member: HangoutMemberDetails) => ({
+    const existingAvailabilitySlots: AvailabilitySlot[] = hangoutMemberRows.map((member: HangoutMemberDetails) => ({
+      availability_slot_id: member.availability_slot_id,
+      hangout_member_id: requestData.hangoutMemberId,
       slot_start_timestamp: member.slot_start_timestamp,
       slot_end_timestamp: member.slot_end_timestamp,
     }));
 
     if (existingAvailabilitySlots.length >= HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Availability slots limit reached.' });
+      res.status(409).json({ success: false, message: `Availability slots limit of ${HANGOUT_AVAILABILITY_SLOTS_LIMIT} reached.` });
 
       return;
     };
 
-    if (availabilitySlotValidation.intersectsWithExistingSlots(existingAvailabilitySlots, requestData)) {
+    const { slotStartTimestamp, slotEndTimestamp } = requestData;
+    const overlappedSlotId: number | null = availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(existingAvailabilitySlots, { slotStartTimestamp, slotEndTimestamp });
+
+    if (overlappedSlotId) {
+      const overlappedSlot: AvailabilitySlot | undefined = existingAvailabilitySlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === overlappedSlotId);
+
+      if (!overlappedSlot) {
+        await connection.rollback();
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+
+        return;
+      };
+
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Availability slot intersection detected.' });
+      res.status(409).json({
+        success: false,
+        message: 'Overlap detected.',
+        reason: 'slotOverlap',
+        resData: {
+          overlappedSlotStartTimestamp: overlappedSlot.slot_start_timestamp,
+          overlappedSlotEndTimestamp: overlappedSlot.slot_end_timestamp,
+        },
+      });
 
       return;
     };
@@ -383,19 +403,14 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface ExistingAvailabilitySlot {
-      availability_slot_id: number,
-      slot_start_timestamp: number,
-      slot_end_timestamp: number,
-    };
-
-    const existingAvailabilitySlots: ExistingAvailabilitySlot[] = hangoutMemberRows.map((member: HangoutMemberDetails) => ({
+    const requesterMemberSlots: AvailabilitySlot[] = hangoutMemberRows.map((member: HangoutMemberDetails) => ({
       availability_slot_id: member.availability_slot_id,
+      hangout_member_id: requestData.hangoutMemberId,
       slot_start_timestamp: member.slot_start_timestamp,
       slot_end_timestamp: member.slot_end_timestamp,
     }));
 
-    const slotToUpdate: ExistingAvailabilitySlot | undefined = existingAvailabilitySlots.find((slot: ExistingAvailabilitySlot) => slot.availability_slot_id === requestData.availabilitySlotId);
+    const slotToUpdate: AvailabilitySlot | undefined = requesterMemberSlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === requestData.availabilitySlotId);
     if (!slotToUpdate) {
       await connection.rollback();
       res.status(404).json({ success: false, message: 'Availability slot not found.' });
@@ -408,39 +423,41 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
       slotToUpdate.slot_end_timestamp === requestData.slotEndTimestamp
     ) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'New availability slot is identical to existing slot.' });
+      res.status(409).json({ success: false, message: `New availability slot is identical to the one you're trying to change.` });
 
       return;
     };
 
-    const filteredExistingSlots: ExistingAvailabilitySlot[] = existingAvailabilitySlots.filter((slot: ExistingAvailabilitySlot) => slot.availability_slot_id !== requestData.availabilitySlotId);
+    const filteredExistingSlots: AvailabilitySlot[] = requesterMemberSlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== requestData.availabilitySlotId);
 
-    if (filteredExistingSlots.length === 0) {
-      const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-        `UPDATE
-          availability_slots
-        SET
-          slot_start_timestamp = ?,
-          slot_end_timestamp = ?
-        WHERE
-          availability_slot_id = ?;`,
-        [requestData.slotStartTimestamp, requestData.slotEndTimestamp, requestData.availabilitySlotId]
-      );
+    const { slotStartTimestamp, slotEndTimestamp } = requestData;
+    const overlappedSlotId: number | null = availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(filteredExistingSlots, { slotStartTimestamp, slotEndTimestamp });
 
-      if (resultSetHeader.affectedRows === 0) {
+    if (overlappedSlotId) {
+      const overlappedSlot: AvailabilitySlot | undefined = filteredExistingSlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === overlappedSlotId);
+
+      if (!overlappedSlot) {
         await connection.rollback();
         res.status(500).json({ success: false, message: 'Internal server error.' });
 
         return;
       };
 
-      await connection.commit();
-      res.json({ success: true, resData: {} });
+      await connection.rollback();
+      res.status(409).json({
+        success: false,
+        message: 'Overlap detected.',
+        reason: 'slotOverlap',
+        resData: {
+          overlappedSlotStartTimestamp: overlappedSlot.slot_start_timestamp,
+          overlappedSlotEndTimestamp: overlappedSlot.slot_end_timestamp,
+        },
+      });
 
       return;
     };
 
-    if (availabilitySlotValidation.intersectsWithExistingSlots(filteredExistingSlots, requestData)) {
+    if (availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(filteredExistingSlots, requestData)) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Availability slot intersection detected.' });
 
