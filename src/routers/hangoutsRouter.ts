@@ -3,7 +3,6 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import express, { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import * as hangoutValidation from '../util/validation/hangoutValidation';
-import * as hangoutUtils from '../util/hangoutUtils';
 import { undefinedValuesDetected } from '../util/validation/requestValidation';
 import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import { isValidDisplayName, isValidNewPassword, isValidUsername } from '../util/validation/userValidation';
@@ -16,6 +15,7 @@ import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie, setResponseCookie } from '../util/cookieUtils';
 import { createAuthSession, destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, MAX_ONGOING_HANGOUTS_LIMIT } from '../util/constants';
+import { HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutMessage, HangoutsDetails } from '../util/hangoutTypes';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -1545,11 +1545,11 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
     };
 
     type HangoutData = [
-      hangoutUtils.HangoutsDetails[],
-      hangoutUtils.HangoutMember[],
-      hangoutUtils.HangoutMemberCountables[],
-      hangoutUtils.HangoutMessage[],
-      hangoutUtils.HangoutEvent[],
+      HangoutsDetails[],
+      HangoutMember[],
+      HangoutMemberCountables[],
+      HangoutMessage[],
+      HangoutEvent[],
     ];
 
     const [hangoutData] = await dbPool.query<HangoutData>(
@@ -1623,11 +1623,11 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
       return;
     };
 
-    const hangoutDetails: hangoutUtils.HangoutsDetails = hangoutData[0][0];
-    const hangoutMembers: hangoutUtils.HangoutMember[] = hangoutData[1];
-    const hangoutMemberCountables: hangoutUtils.HangoutMemberCountables = hangoutData[2][0];
-    const latestHangoutChats: hangoutUtils.HangoutMessage[] = hangoutData[3];
-    const latestHangoutEvents: hangoutUtils.HangoutEvent[] = hangoutData[4];
+    const hangoutDetails: HangoutsDetails = hangoutData[0][0];
+    const hangoutMembers: HangoutMember[] = hangoutData[1];
+    const hangoutMemberCountables: HangoutMemberCountables = hangoutData[2][0];
+    const latestHangoutChats: HangoutMessage[] = hangoutData[3];
+    const latestHangoutEvents: HangoutEvent[] = hangoutData[4];
 
     let decryptedHangoutPassword: string | null = null;
     if (hangoutInfo.encrypted_password && requesterHangoutMemberDetails.is_leader) {
