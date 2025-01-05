@@ -470,12 +470,6 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
 });
 
 availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
-  interface RequestData {
-    hangoutId: string,
-    hangoutMemberId: number,
-    availabilitySlotId: number,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -490,25 +484,26 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const hangoutId = req.query.hangoutId;
+  const hangoutMemberId = req.query.hangoutMemberId;
+  const availabilitySlotId = req.query.availabilitySlotId;
 
-  const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId', 'availabilitySlotId'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
-    res.status(400).json({ success: false, message: 'Invalid request data.' });
+  if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof availabilitySlotId !== 'number') {
+    res.status(400).json({ success: false, message: 'Something went wrong.' });
     return;
   };
 
-  if (!isValidHangoutId(requestData.hangoutId)) {
+  if (!isValidHangoutId(hangoutId)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberId)) {
+  if (!Number.isInteger(+hangoutMemberId)) {
     res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.availabilitySlotId)) {
+  if (!Number.isInteger(+availabilitySlotId)) {
     res.status(400).json({ success: false, message: 'Invalid availability slot ID.' });
     return;
   };
@@ -572,7 +567,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
       LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
-      [requestData.hangoutId, requestData.hangoutMemberId]
+      [hangoutId, +hangoutMemberId]
     );
 
     if (hangoutMemberRows.length === 0) {
@@ -600,7 +595,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const slotFound: boolean = hangoutMemberRows.find((member: HangoutMemberDetails) => member.availability_slot_id === requestData.availabilitySlotId) !== undefined;
+    const slotFound: boolean = hangoutMemberRows.find((member: HangoutMemberDetails) => member.availability_slot_id === +availabilitySlotId) !== undefined;
     if (!slotFound) {
       res.status(404).json({ success: false, message: 'Availability slot not found.' });
       return;
@@ -611,7 +606,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
         availability_slots
       WHERE
         availability_slot_id = ?;`,
-      [requestData.availabilitySlotId]
+      [+availabilitySlotId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -633,11 +628,6 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
 });
 
 availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => {
-  interface RequestData {
-    hangoutId: string,
-    hangoutMemberId: number,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -652,20 +642,20 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const hangoutId = req.query.hangoutId;
+  const hangoutMemberId = req.query.hangoutMemberId;
 
-  const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
-    res.status(400).json({ success: false, message: 'Invalid request data.' });
+  if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string') {
+    res.status(400).json({ success: false, message: 'Something went wrong.' });
     return;
   };
 
-  if (!isValidHangoutId(requestData.hangoutId)) {
+  if (!isValidHangoutId(hangoutId)) {
     res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberId)) {
+  if (!Number.isInteger(+hangoutMemberId)) {
     res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
@@ -729,7 +719,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
       LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
-      [requestData.hangoutId, requestData.hangoutMemberId]
+      [hangoutId, +hangoutMemberId]
     );
 
     if (hangoutMemberRows.length === 0) {
@@ -763,7 +753,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
       WHERE
         hangout_member_id = ?
       LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
-      [requestData.hangoutMemberId]
+      [+hangoutMemberId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
