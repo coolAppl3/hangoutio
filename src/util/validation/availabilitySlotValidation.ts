@@ -15,12 +15,12 @@ export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boo
 };
 
 export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number, slotStart: number): boolean {
-  const dateObj: Date = new Date(hangoutConclusionTimestamp);
-  const furthestPossibleTimestamp: number = dateObj.setMonth(dateObj.getMonth() + 6);
-
   if (slotStart < hangoutConclusionTimestamp) {
     return false;
   };
+
+  const dateObj: Date = new Date(hangoutConclusionTimestamp);
+  const furthestPossibleTimestamp: number = dateObj.setMonth(dateObj.getMonth() + 6);
 
   if (slotStart - hangoutConclusionTimestamp > furthestPossibleTimestamp) {
     return false;
@@ -52,22 +52,22 @@ interface NewAvailabilitySlotTimestamps {
   slotEndTimestamp: number,
 };
 
-export function overlapsWithExistingAvailabilitySlots(existingSlots: AvailabilitySlot[], newSlotTimestamps: NewAvailabilitySlotTimestamps): number | null {
+export function overlapsWithExistingAvailabilitySlots(existingSlots: AvailabilitySlot[], newSlotTimestamps: NewAvailabilitySlotTimestamps): AvailabilitySlot | null {
   if (existingSlots.length === 0) {
     return null;
   };
 
   for (const existingSlot of existingSlots) {
     if (existingSlot.slot_start_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_start_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot.availability_slot_id;
+      return existingSlot;
     };
 
     if (existingSlot.slot_end_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot.availability_slot_id;
+      return existingSlot;
     };
 
     if (existingSlot.slot_start_timestamp <= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp >= newSlotTimestamps.slotEndTimestamp) {
-      return existingSlot.availability_slot_id;
+      return existingSlot;
     };
   };
 

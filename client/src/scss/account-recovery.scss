@@ -259,7 +259,7 @@
   @apply fixed top-8 left-0 right-0 text-sm md:text-base font-bold z-[35] flex justify-center items-center mx-2 px-2;
 
   span {
-    @apply py-1 px-[1.4rem] w-fit max-w-[32rem] rounded shadow-simple-sm;
+    @apply py-1 px-[1.4rem] w-fit max-w-[32rem] rounded shadow-simple-sm text-center;
 
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
