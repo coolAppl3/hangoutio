@@ -140,7 +140,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         ;
         if (hangoutMemberDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
             return;
         }
         ;
@@ -163,23 +163,15 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         }
         ;
         const { slotStartTimestamp, slotEndTimestamp } = requestData;
-        const overlappedSlotId = availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(existingAvailabilitySlots, { slotStartTimestamp, slotEndTimestamp });
-        if (overlappedSlotId) {
-            const overlappedSlot = existingAvailabilitySlots.find((slot) => slot.availability_slot_id === overlappedSlotId);
-            if (!overlappedSlot) {
-                await connection.rollback();
-                res.status(500).json({ success: false, message: 'Internal server error.' });
-                return;
-            }
-            ;
+        const overlappedSlot = availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(existingAvailabilitySlots, { slotStartTimestamp, slotEndTimestamp });
+        if (overlappedSlot) {
             await connection.rollback();
             res.status(409).json({
                 success: false,
                 message: 'Overlap detected.',
                 reason: 'slotOverlap',
                 resData: {
-                    overlappedSlotStartTimestamp: overlappedSlot.slot_start_timestamp,
-                    overlappedSlotEndTimestamp: overlappedSlot.slot_end_timestamp,
+                    overlappedSlotId: overlappedSlot.availability_slot_id,
                 },
             });
             return;
@@ -315,69 +307,51 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         ;
         if (hangoutMemberDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+            res.status(409).json({ success: false, message: `Can't add availability slots after hangout conclusion.`, reason: 'hangoutConcluded' });
+            return;
+        }
+        ;
+        let existingAvailabilitySlots = hangoutMemberRows.map((slot) => ({
+            availability_slot_id: slot.availability_slot_id,
+            hangout_member_id: requestData.hangoutMemberId,
+            slot_start_timestamp: slot.slot_start_timestamp,
+            slot_end_timestamp: slot.slot_end_timestamp,
+        }));
+        const slotToEdit = existingAvailabilitySlots.find((slot) => slot.availability_slot_id === requestData.availabilitySlotId);
+        if (!slotToEdit) {
+            await connection.rollback();
+            res.status(404).json({ success: false, message: 'Availability slot not found.' });
+            return;
+        }
+        ;
+        if (slotToEdit.slot_start_timestamp === requestData.slotStartTimestamp &&
+            slotToEdit.slot_end_timestamp === requestData.slotEndTimestamp) {
+            await connection.rollback();
+            res.status(409).json({ success: false, message: 'Slot already starts and ends at this time.', reason: 'slotsIdentical' });
             return;
         }
         ;
         if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
             await connection.rollback();
-            res.status(400).json({ success: false, message: 'Invalid availability slot.' });
+            res.status(409).json({ success: false, message: 'Invalid slot start.', reason: 'invalidStart' });
             return;
         }
         ;
-        if (!hangoutMemberDetails.availability_slot_id) {
-            await connection.rollback();
-            res.status(404).json({ success: false, message: 'Availability slot not found.' });
-            return;
-        }
-        ;
-        const requesterMemberSlots = hangoutMemberRows.map((member) => ({
-            availability_slot_id: member.availability_slot_id,
-            hangout_member_id: requestData.hangoutMemberId,
-            slot_start_timestamp: member.slot_start_timestamp,
-            slot_end_timestamp: member.slot_end_timestamp,
-        }));
-        const slotToUpdate = requesterMemberSlots.find((slot) => slot.availability_slot_id === requestData.availabilitySlotId);
-        if (!slotToUpdate) {
-            await connection.rollback();
-            res.status(404).json({ success: false, message: 'Availability slot not found.' });
-            return;
-        }
-        ;
-        if (slotToUpdate.slot_start_timestamp === requestData.slotStartTimestamp &&
-            slotToUpdate.slot_end_timestamp === requestData.slotEndTimestamp) {
-            await connection.rollback();
-            res.status(409).json({ success: false, message: `New availability slot is identical to the one you're trying to change.` });
-            return;
-        }
-        ;
-        const filteredExistingSlots = requesterMemberSlots.filter((slot) => slot.availability_slot_id !== requestData.availabilitySlotId);
-        const { slotStartTimestamp, slotEndTimestamp } = requestData;
-        const overlappedSlotId = availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(filteredExistingSlots, { slotStartTimestamp, slotEndTimestamp });
-        if (overlappedSlotId) {
-            const overlappedSlot = filteredExistingSlots.find((slot) => slot.availability_slot_id === overlappedSlotId);
-            if (!overlappedSlot) {
-                await connection.rollback();
-                res.status(500).json({ success: false, message: 'Internal server error.' });
-                return;
-            }
-            ;
+        existingAvailabilitySlots = existingAvailabilitySlots.filter((slot) => slot.availability_slot_id !== requestData.availabilitySlotId);
+        const overlappedSlot = availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(existingAvailabilitySlots, {
+            slotStartTimestamp: requestData.slotStartTimestamp,
+            slotEndTimestamp: requestData.slotEndTimestamp,
+        });
+        if (overlappedSlot) {
             await connection.rollback();
             res.status(409).json({
                 success: false,
                 message: 'Overlap detected.',
                 reason: 'slotOverlap',
                 resData: {
-                    overlappedSlotStartTimestamp: overlappedSlot.slot_start_timestamp,
-                    overlappedSlotEndTimestamp: overlappedSlot.slot_end_timestamp,
+                    overlappedSlotId: overlappedSlot.availability_slot_id,
                 },
             });
-            return;
-        }
-        ;
-        if (availabilitySlotValidation.overlapsWithExistingAvailabilitySlots(filteredExistingSlots, requestData)) {
-            await connection.rollback();
-            res.status(409).json({ success: false, message: 'Availability slot intersection detected.' });
             return;
         }
         ;
@@ -412,7 +386,6 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
     ;
 });
 exports.availabilitySlotsRouter.delete('/', async (req, res) => {
-    ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
         res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -425,24 +398,25 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
         return;
     }
     ;
-    const requestData = req.body;
-    const expectedKeys = ['hangoutId', 'hangoutMemberId', 'availabilitySlotId'];
-    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+    const hangoutId = req.query.hangoutId;
+    const hangoutMemberId = req.query.hangoutMemberId;
+    const availabilitySlotId = req.query.availabilitySlotId;
+    if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof availabilitySlotId !== 'number') {
+        res.status(400).json({ success: false, message: 'Something went wrong.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberId)) {
+    if (!Number.isInteger(+hangoutMemberId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.availabilitySlotId)) {
+    if (!Number.isInteger(+availabilitySlotId)) {
         res.status(400).json({ success: false, message: 'Invalid availability slot ID.' });
         return;
     }
@@ -486,7 +460,7 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [hangoutId, +hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -510,7 +484,7 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
             return;
         }
         ;
-        const slotFound = hangoutMemberRows.find((member) => member.availability_slot_id === requestData.availabilitySlotId) !== undefined;
+        const slotFound = hangoutMemberRows.find((member) => member.availability_slot_id === +availabilitySlotId) !== undefined;
         if (!slotFound) {
             res.status(404).json({ success: false, message: 'Availability slot not found.' });
             return;
@@ -519,7 +493,7 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         availability_slots
       WHERE
-        availability_slot_id = ?;`, [requestData.availabilitySlotId]);
+        availability_slot_id = ?;`, [+availabilitySlotId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;
@@ -538,7 +512,6 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
     ;
 });
 exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
-    ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
         res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -551,19 +524,19 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         return;
     }
     ;
-    const requestData = req.body;
-    const expectedKeys = ['hangoutId', 'hangoutMemberId'];
-    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+    const hangoutId = req.query.hangoutId;
+    const hangoutMemberId = req.query.hangoutMemberId;
+    if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string') {
+        res.status(400).json({ success: false, message: 'Something went wrong.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberId)) {
+    if (!Number.isInteger(+hangoutMemberId)) {
         res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
         return;
     }
@@ -607,7 +580,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [hangoutId, +hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ success: false, message: 'Hangout not found.' });
             return;
@@ -635,7 +608,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         availability_slots
       WHERE
         hangout_member_id = ?
-      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutMemberId]);
+      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [+hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ success: false, message: 'Internal server error.' });
             return;

@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.16] (2025-01-04)
+
+### Features
+
+- Added `editHangoutAvailabilitySlotService()`, `deleteHangoutAvailabilitySlotService()`, and `clearHangoutAvailabilitySlotService()` in `availabilitySlotsService.ts`.
+
+
+### Code Refactoring
+
+- Centered the text in popup messages displayed using `popup()`.
+
+
+### Bug Fixes
+
+- Fixed a few bugs with the recent changes to POST `availabilitySlots/` and PATCH `availabilitySlots/`.
+- Fixed DELETE `availabilitySlots/` and DELETE `availabilitySlots/clear` using a request body.
+
+
 ## [0.4.15] (2025-01-04)
 
 ### Features

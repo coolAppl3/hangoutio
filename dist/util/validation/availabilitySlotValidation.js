@@ -17,12 +17,12 @@ function isValidAvailabilitySlot(slotStart, slotEnd) {
 exports.isValidAvailabilitySlot = isValidAvailabilitySlot;
 ;
 function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
-    const dateObj = new Date(hangoutConclusionTimestamp);
-    const furthestPossibleTimestamp = dateObj.setMonth(dateObj.getMonth() + 6);
     if (slotStart < hangoutConclusionTimestamp) {
         return false;
     }
     ;
+    const dateObj = new Date(hangoutConclusionTimestamp);
+    const furthestPossibleTimestamp = dateObj.setMonth(dateObj.getMonth() + 6);
     if (slotStart - hangoutConclusionTimestamp > furthestPossibleTimestamp) {
         return false;
     }
@@ -56,15 +56,15 @@ function overlapsWithExistingAvailabilitySlots(existingSlots, newSlotTimestamps)
     ;
     for (const existingSlot of existingSlots) {
         if (existingSlot.slot_start_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_start_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-            return existingSlot.availability_slot_id;
+            return existingSlot;
         }
         ;
         if (existingSlot.slot_end_timestamp >= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp <= newSlotTimestamps.slotEndTimestamp) {
-            return existingSlot.availability_slot_id;
+            return existingSlot;
         }
         ;
         if (existingSlot.slot_start_timestamp <= newSlotTimestamps.slotStartTimestamp && existingSlot.slot_end_timestamp >= newSlotTimestamps.slotEndTimestamp) {
-            return existingSlot.availability_slot_id;
+            return existingSlot;
         }
         ;
     }
