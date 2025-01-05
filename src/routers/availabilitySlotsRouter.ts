@@ -155,7 +155,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
 
       return;
     };
@@ -191,8 +191,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
         message: 'Overlap detected.',
         reason: 'slotOverlap',
         resData: {
-          overlappedSlotStartTimestamp: overlappedSlot.slot_start_timestamp,
-          overlappedSlotEndTimestamp: overlappedSlot.slot_end_timestamp,
+          overlappedSlotId: overlappedSlot.availability_slot_id,
         },
       });
 
@@ -427,8 +426,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
         message: 'Overlap detected.',
         reason: 'slotOverlap',
         resData: {
-          overlappedSlotStartTimestamp: overlappedSlot.slot_start_timestamp,
-          overlappedSlotEndTimestamp: overlappedSlot.slot_end_timestamp,
+          overlappedSlotId: overlappedSlot.availability_slot_id,
         },
       });
 
