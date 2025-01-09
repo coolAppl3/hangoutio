@@ -65,7 +65,7 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      confirmModal.remove();
+      ConfirmModal.remove();
       await joinHangoutAsAccount();
 
       return;

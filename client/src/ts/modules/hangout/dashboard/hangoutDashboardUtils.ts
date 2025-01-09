@@ -155,7 +155,7 @@ export async function handleNotSignedIn(hangoutId: string): Promise<void> {
     };
 
     if (e.target.id === 'confirm-modal-other-btn') {
-      confirmModal.remove();
+      ConfirmModal.remove();
       initHangoutGuestSignUp(hangoutId, isPasswordProtected);
     };
   });

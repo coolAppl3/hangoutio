@@ -87,7 +87,7 @@ function displaySignOutModal(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      confirmModal.remove();
+      ConfirmModal.remove();
       await signOut();
 
       LoadingModal.display();

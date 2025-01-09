@@ -592,12 +592,12 @@ function handleUserSignOut(): void {
       hangoutThirdStepState.isSignedIn = false;
       await signOut();
 
-      confirmModal.remove();
+      ConfirmModal.remove();
       return;
     };
 
     if (e.target.id === 'confirm-modal-cancel-btn') {
-      confirmModal.remove();
+      ConfirmModal.remove();
     };
   });
 };
