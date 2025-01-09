@@ -4,7 +4,7 @@ import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { AddHangoutAvailabilitySlotBody, addHangoutAvailabilitySlotService, getHangoutAvailabilitySlotsService } from "../../services/availabilitySlotsServices";
+import { AddHangoutAvailabilitySlotBody, addHangoutAvailabilitySlotService, DeleteHangoutAvailabilitySlotBody, deleteHangoutAvailabilitySlotService, getHangoutAvailabilitySlotsService } from "../../services/availabilitySlotsServices";
 import { closeDateTimePicker, DateTimePickerData, displayDateTimePicker, displayTimePickerError, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../globalHangoutUtils";
@@ -247,25 +247,142 @@ async function handleAvailabilitySlotsContainerClicks(e: MouseEvent): Promise<vo
     return;
   };
 
-  if (e.target.classList.contains('delete-btn')) {
-    await deleteAvailabilitySlot();
+  const availabilitySlotId: number | null = getAvailabilitySlotElementId(e);
+
+  if (!availabilitySlotId) {
     return;
+  };
+
+  if (e.target.classList.contains('delete-btn')) {
+    await deleteAvailabilitySlot(availabilitySlotId);
   };
 };
 
-async function deleteAvailabilitySlot(): Promise<void> {
-  // TODO: continue implementation
+async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId } = globalHangoutState.data;
+  const deleteHangoutAvailabilitySlotBody: DeleteHangoutAvailabilitySlotBody = {
+    hangoutId,
+    hangoutMemberId,
+    availabilitySlotId,
+  };
+
+  try {
+    await deleteHangoutAvailabilitySlotService(deleteHangoutAvailabilitySlotBody);
+
+    const availabilitySlotIndex: number = hangoutAvailabilityState.availabilitySlots.findIndex((slot: AvailabilitySlot) => slot.availability_slot_id === availabilitySlotId);
+    (availabilitySlotIndex !== -1) && hangoutAvailabilityState.availabilitySlots.splice(availabilitySlotIndex, 1);
+
+    popup('Availability slot deleted.', 'success');
+    LoadingModal.remove();
+
+    render();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      if (errReason === 'slotNotFound') {
+        const availabilitySlotIndex: number = hangoutAvailabilityState.availabilitySlots.findIndex((slot: AvailabilitySlot) => slot.availability_slot_id === availabilitySlotId);
+        (availabilitySlotIndex !== -1) && hangoutAvailabilityState.availabilitySlots.splice(availabilitySlotIndex, 1);
+
+        render();
+        return;
+      };
+
+      if (errReason === 'hangoutNotFound') {
+        setTimeout(() => window.location.reload(), 1000);
+      };
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(window.location.href);
+        return;
+      };
+
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed(window.location.href);
+      };
+    };
+  };
+};
+
+function getAvailabilitySlotElementId(e: MouseEvent): number | null {
+  if (!(e.target instanceof HTMLElement)) {
+    return null;
+  };
+
+
+  if (e.target.nodeName !== 'BUTTON') {
+    return null;
+  };
+
+  const availabilitySlotElement: Element | null = e.target.closest('.slot');
+
+  if (!(availabilitySlotElement instanceof HTMLDivElement)) {
+    return null;
+  };
+
+  const availabilitySlotIdAttribute: string | null = availabilitySlotElement.getAttribute('data-slotId');
+
+  if (!availabilitySlotIdAttribute) {
+    return null;
+  };
+
+  const availabilitySlotId: number = +availabilitySlotIdAttribute;
+
+  if (!Number.isInteger(availabilitySlotId)) {
+    return null;
+  };
+
+  return availabilitySlotId;
 };
 
 function displayPersonalAvailabilitySlots(): void {
-  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
-    return;
-  };
-
   const availabilitySlotsElement: HTMLDivElement | null = document.querySelector('#availability-slots');
 
   if (!availabilitySlotsElement || !availabilitySlotsContainer) {
     popup('Failed to load your availability slots.', 'error');
+    return;
+  };
+
+  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
+    availabilitySlotsElement.classList.add('hidden');
     return;
   };
 
