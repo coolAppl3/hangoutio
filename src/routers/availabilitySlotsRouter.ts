@@ -671,7 +671,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
         auth_sessions
       WHERe
         session_id = ?;`,
-      { authSessionId }
+      [authSessionId]
     );
 
     if (authSessionRows.length === 0) {
