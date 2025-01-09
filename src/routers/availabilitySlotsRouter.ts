@@ -162,7 +162,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Invalid availability slot start.' });
+      res.status(409).json({ success: false, message: 'Invalid availability slot start date and time.', reason: 'invalidStart' });
 
       return;
     };
