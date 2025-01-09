@@ -488,8 +488,8 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
   const hangoutMemberId = req.query.hangoutMemberId;
   const availabilitySlotId = req.query.availabilitySlotId;
 
-  if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof availabilitySlotId !== 'number') {
-    res.status(400).json({ success: false, message: 'Something went wrong.' });
+  if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof availabilitySlotId !== 'string') {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
@@ -571,7 +571,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
     );
 
     if (hangoutMemberRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Hangout not found.' });
+      res.status(404).json({ success: false, message: 'Hangout not found.', reason: 'hangoutNotFound' });
       return;
     };
 
@@ -590,14 +590,9 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (!hangoutMemberDetails.availability_slot_id) {
-      res.status(404).json({ success: false, message: 'Availability slot not found.' });
-      return;
-    };
-
     const slotFound: boolean = hangoutMemberRows.find((member: HangoutMemberDetails) => member.availability_slot_id === +availabilitySlotId) !== undefined;
     if (!slotFound) {
-      res.status(404).json({ success: false, message: 'Availability slot not found.' });
+      res.status(404).json({ success: false, message: 'Availability slot not found.', reason: 'slotNotFound' });
       return;
     };
 
@@ -646,7 +641,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
   const hangoutMemberId = req.query.hangoutMemberId;
 
   if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string') {
-    res.status(400).json({ success: false, message: 'Something went wrong.' });
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
@@ -793,17 +788,17 @@ availabilitySlotsRouter.get('/', async (req: Request, res: Response) => {
   const hangoutMemberId = req.query.hangoutMemberId;
 
   if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string') {
-    res.status(400).json({ success: false, message: 'Something went wrong.' });
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
     return;
   };
 
   if (!isValidHangoutId(hangoutId)) {
-    res.status(400).json({ success: false, message: 'Something went wrong.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(+hangoutMemberId)) {
-    res.status(400).json({ success: false, message: 'Something went wrong.' });
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
     return;
   };
 

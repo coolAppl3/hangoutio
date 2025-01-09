@@ -967,7 +967,7 @@
               @apply flex justify-start items-center;
 
               button {
-                @apply w-full px-2 py-1 first:mr-1 bg-primary dark:bg-primary-dark grid place-items-center rounded-sm transition-[filter] hover:brightness-75;
+                @apply w-full px-2 py-1 first:mr-1 bg-primary dark:bg-primary-dark grid place-items-center rounded-sm transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1;
 
                 &.delete-btn {
 

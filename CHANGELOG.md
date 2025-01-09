@@ -1,6 +1,13 @@
 # Changelog
 
-## [0.4.16] (2025-01-04)
+## [0.4.17] (2025-01-09)
+
+### Features
+
+- Implemented the ability to delete availability slots in `hangout.html`.
+
+
+## [0.4.16] (2025-01-05)
 
 ### Features
 
