@@ -52,10 +52,20 @@ function loadEventListeners(): void {
   availabilitySlotsContainer?.addEventListener('click', handleAvailabilitySlotsContainerClicks);
 
   addAvailabilityBtn?.addEventListener('click', () => {
-    if (globalHangoutState.data?.hangoutDetails.is_concluded) {
-      popup(`Hangout has already been concluded.`, 'error');
-      LoadingModal.remove();
+    if (!globalHangoutState.data) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
 
+    const { hangoutDetails, availabilitySlotsCount } = globalHangoutState.data;
+
+    if (hangoutDetails.is_concluded) {
+      popup(`Hangout has already been concluded.`, 'error');
+      return;
+    };
+
+    if (availabilitySlotsCount >= HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
+      popup(`Availability slot limit of ${HANGOUT_AVAILABILITY_SLOTS_LIMIT} already reached.`, 'error');
       return;
     };
 
