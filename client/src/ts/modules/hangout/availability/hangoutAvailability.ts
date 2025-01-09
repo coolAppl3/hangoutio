@@ -276,8 +276,16 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
       return;
     };
 
-    if (status === 409 && errReason === 'slotOverlap') {
-      handleSlotOverlap(errResData);
+    if (status === 409) {
+      if (errReason === 'slotOverlap') {
+        handleSlotOverlap(errResData);
+        return;
+      };
+
+      if (errReason === 'invalidStart') {
+        displayTimePickerError(errMessage, 'start');
+      };
+
       return;
     };
 
