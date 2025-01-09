@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.18] (2025-01-10)
+
+### Features
+
+- Implemented the ability for the user to clear all their availability slots in `hangout.html`.
+- Implemented the ability to edit availability slots in `hangout.html`.
+
+
+### Bug Fixes
+
+- Fixed `ConfirmModal.remove()`being incorrectly called in a few modules.
+- Fixed deleting an availability slot not updating the remaining availability slots count.
+- Fixed a typo in DELETE `availabilitySlots/clear`.
+- Fixed there not being any checks as to whether the user reached the availability slot limit before sending a request to the server in `hangoutAvailability.ts`.
+
+
 ## [0.4.17] (2025-01-09)
 
 ### Features
