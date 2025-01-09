@@ -11,6 +11,7 @@ interface DateTimePickerState {
 
   data: null | {
     purpose: 'availabilitySlot' | 'suggestionSlot',
+    existingSlotId: number | null,
 
     conclusionTimestamp: number,
     conclusionDate: number,
@@ -34,7 +35,7 @@ let dateTimePickerState: DateTimePickerState = {
   data: null,
 };
 
-export function displayDateTimePicker(purpose: 'availabilitySlot' | 'suggestionSlot'): void {
+export function displayDateTimePicker(purpose: 'availabilitySlot' | 'suggestionSlot', existingSlotId: number | null = null): void {
   const hangoutConclusionTimestamp: number | null = calculateHangoutConclusionTimestamp();
   const dateTimePicker: HTMLDivElement | null = document.querySelector('#date-time-picker');
 
@@ -57,6 +58,7 @@ export function displayDateTimePicker(purpose: 'availabilitySlot' | 'suggestionS
 
     data: {
       purpose,
+      existingSlotId,
 
       conclusionTimestamp: hangoutConclusionTimestamp,
       conclusionDate,
@@ -128,7 +130,7 @@ function submitDateAndTime(e: SubmitEvent): void {
     return;
   };
 
-  const { currentStage, currentYear, currentMonth, selectedDate, timeSlotExtended, purpose } = dateTimePickerState.data;
+  const { currentStage, currentYear, currentMonth, selectedDate, timeSlotExtended, purpose, existingSlotId } = dateTimePickerState.data;
 
   if (currentStage !== 'time' || !selectedDate) {
     popup('Must provide a date first.', 'error');
@@ -182,7 +184,7 @@ function submitDateAndTime(e: SubmitEvent): void {
   };
 
   document.dispatchEvent(new CustomEvent<DateTimePickerData>(`dateTimePicker-selection`, {
-    detail: { purpose, startTimestamp, endTimestamp },
+    detail: { purpose, existingSlotId, startTimestamp, endTimestamp },
   }));
 
   if (purpose === 'suggestionSlot') {
@@ -590,6 +592,7 @@ export interface DateTimePickerEvent extends CustomEvent {
 
 export interface DateTimePickerData {
   purpose: 'availabilitySlot' | 'suggestionSlot',
+  existingSlotId: number | null,
   startTimestamp: number,
   endTimestamp: number,
 };
@@ -620,11 +623,11 @@ export function isValidDateTimePickerEvent(event: unknown): event is DateTimePic
   return true;
 };
 
-export function displayTimePickerError(message: string, inputIdEnding: 'start' | 'end' = 'end'): void {
+export function displayTimePickerError(message: string, inputElementIdEnding: 'start' | 'end' = 'end'): void {
   if (!dateTimePickerState.isActive) {
     return;
   };
 
-  const input: HTMLInputElement | null = document.querySelector(`#time-picker-slot-${inputIdEnding}`);
+  const input: HTMLInputElement | null = document.querySelector(`#time-picker-slot-${inputElementIdEnding}`);
   input && ErrorSpan.display(input, message);
 };
