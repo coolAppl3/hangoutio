@@ -1,10 +1,11 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
+import { ConfirmModal } from "../../global/ConfirmModal";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { AddHangoutAvailabilitySlotBody, addHangoutAvailabilitySlotService, DeleteHangoutAvailabilitySlotBody, deleteHangoutAvailabilitySlotService, getHangoutAvailabilitySlotsService } from "../../services/availabilitySlotsServices";
+import { AddHangoutAvailabilitySlotBody, addHangoutAvailabilitySlotService, ClearHangoutAvailabilitySlotBody, clearHangoutAvailabilitySlotService, DeleteHangoutAvailabilitySlotBody, deleteHangoutAvailabilitySlotService, EditHangoutAvailabilitySlotBody, editHangoutAvailabilitySlotService, getHangoutAvailabilitySlotsService } from "../../services/availabilitySlotsServices";
 import { closeDateTimePicker, DateTimePickerData, displayDateTimePicker, displayTimePickerError, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../globalHangoutUtils";
@@ -24,6 +25,7 @@ export const hangoutAvailabilityState: HangoutAvailabilityState = {
 
 const addAvailabilityBtn: HTMLButtonElement | null = document.querySelector('#add-availability-btn');
 const availabilitySlotsContainer: HTMLDivElement | null = document.querySelector('#availability-slots-container');
+const clearAvailabilitySlotsBtn: HTMLButtonElement | null = document.querySelector('#clear-availability-slots-btn');
 
 export function hangoutAvailability(): void {
   loadEventListeners();
@@ -50,14 +52,52 @@ function loadEventListeners(): void {
   availabilitySlotsContainer?.addEventListener('click', handleAvailabilitySlotsContainerClicks);
 
   addAvailabilityBtn?.addEventListener('click', () => {
-    if (globalHangoutState.data?.hangoutDetails.is_concluded) {
-      popup(`Hangout has already been concluded.`, 'error');
-      LoadingModal.remove();
+    if (!globalHangoutState.data) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
 
+    const { hangoutDetails, availabilitySlotsCount } = globalHangoutState.data;
+
+    if (hangoutDetails.is_concluded) {
+      popup(`Hangout has already been concluded.`, 'error');
+      return;
+    };
+
+    if (availabilitySlotsCount >= HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
+      popup(`Availability slot limit of ${HANGOUT_AVAILABILITY_SLOTS_LIMIT} already reached.`, 'error');
       return;
     };
 
     displayDateTimePicker('availabilitySlot');
+  });
+
+  clearAvailabilitySlotsBtn?.addEventListener('click', () => {
+    const confirmModal: HTMLDivElement = ConfirmModal.display({
+      title: 'Are you sure you want to clear all your availability slots?',
+      description: null,
+      confirmBtnTitle: 'Clear all slots',
+      cancelBtnTitle: 'Cancel',
+      extraBtnTitle: null,
+      isDangerousAction: true,
+    });
+
+    confirmModal.addEventListener('click', async (e: MouseEvent) => {
+      if (!(e.target instanceof HTMLElement)) {
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-confirm-btn') {
+        ConfirmModal.remove();
+        await clearAvailabilitySlots();
+
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-cancel-btn') {
+        ConfirmModal.remove();
+      };
+    });
   });
 
   document.addEventListener('dateTimePicker-selection', async (e: Event) => {
@@ -69,7 +109,13 @@ function loadEventListeners(): void {
     };
 
     const dateTimePickerData: DateTimePickerData = e.detail;
-    await addHangoutAvailabilitySlot(dateTimePickerData);
+
+    if (!dateTimePickerData.existingSlotId) {
+      await addHangoutAvailabilitySlot(dateTimePickerData);
+      return;
+    };
+
+    await editHangoutAvailabilitySlot(dateTimePickerData);
   });
 };
 
@@ -211,7 +257,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
     const errResData: unknown = axiosError.response.data.resData;
 
     if (status === 400 && (errReason === 'hangoutId' || errReason === 'hangoutMemberId')) {
-      popup('Something went wrong', 'error');
+      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -230,8 +276,16 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
       return;
     };
 
-    if (status === 409 && errReason === 'slotOverlap') {
-      handleSlotOverlap(errResData);
+    if (status === 409) {
+      if (errReason === 'slotOverlap') {
+        handleSlotOverlap(errResData);
+        return;
+      };
+
+      if (errReason === 'invalidStart') {
+        displayTimePickerError(errMessage, 'start');
+      };
+
       return;
     };
 
@@ -253,8 +307,135 @@ async function handleAvailabilitySlotsContainerClicks(e: MouseEvent): Promise<vo
     return;
   };
 
+  if (e.target.classList.contains('edit-btn')) {
+    displayDateTimePicker('availabilitySlot', availabilitySlotId);
+    return;
+  };
+
   if (e.target.classList.contains('delete-btn')) {
     await deleteAvailabilitySlot(availabilitySlotId);
+  };
+};
+
+async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData): Promise<void> {
+  if (!globalHangoutState.data || !dateTimePickerData.existingSlotId) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, hangoutDetails } = globalHangoutState.data;
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'success');
+    LoadingModal.remove();
+
+    closeDateTimePicker();
+    return;
+  };
+
+  const editHangoutAvailabilitySlotBody: EditHangoutAvailabilitySlotBody = {
+    hangoutId,
+    hangoutMemberId,
+    availabilitySlotId: dateTimePickerData.existingSlotId,
+    slotStartTimestamp: dateTimePickerData.startTimestamp,
+    slotEndTimestamp: dateTimePickerData.endTimestamp,
+  };
+
+  try {
+    await editHangoutAvailabilitySlotService(editHangoutAvailabilitySlotBody);
+
+    const existingSlot: AvailabilitySlot | undefined = hangoutAvailabilityState.availabilitySlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === dateTimePickerData.existingSlotId);
+
+    if (existingSlot) {
+      existingSlot.slot_start_timestamp = dateTimePickerData.startTimestamp;
+      existingSlot.slot_end_timestamp = dateTimePickerData.endTimestamp;
+    };
+
+    popup('Availability slot updated.', 'success');
+    LoadingModal.remove();
+
+    closeDateTimePicker();
+    render();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+    const errResData: unknown = axiosError.response.data.resData;
+
+    if (status === 400) {
+      if (errReason === 'invalidSlot') {
+        popup(errMessage, 'error');
+        return;
+      };
+
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 409) {
+      if (errReason === 'hangoutConcluded') {
+        closeDateTimePicker();
+        return;
+      };
+
+      if (errReason === 'slotOverlap') {
+        handleSlotOverlap(errResData);
+        return;
+      };
+
+      if (errReason === 'invalidStart' || errReason === 'slotIdentical') {
+        displayTimePickerError(errMessage, 'start');
+      };
+
+      return;
+    };
+
+    if (status === 404) {
+      if (errReason === 'hangoutNotFound') {
+        setTimeout(() => window.location.reload(), 1000);
+        return;
+      };
+
+      if (errReason === 'slotNotFound') {
+        const availabilitySlotIndex: number = hangoutAvailabilityState.availabilitySlots.findIndex((slot: AvailabilitySlot) => slot.availability_slot_id === dateTimePickerData.existingSlotId);
+        (availabilitySlotIndex !== -1) && hangoutAvailabilityState.availabilitySlots.splice(availabilitySlotIndex, 1);
+
+        render();
+      };
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(window.location.href);
+        return;
+      };
+
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed(window.location.href);
+      };
+    };
   };
 };
 
@@ -279,7 +460,9 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
     await deleteHangoutAvailabilitySlotService(deleteHangoutAvailabilitySlotBody);
 
     const availabilitySlotIndex: number = hangoutAvailabilityState.availabilitySlots.findIndex((slot: AvailabilitySlot) => slot.availability_slot_id === availabilitySlotId);
+
     (availabilitySlotIndex !== -1) && hangoutAvailabilityState.availabilitySlots.splice(availabilitySlotIndex, 1);
+    globalHangoutState.data.availabilitySlotsCount--;
 
     popup('Availability slot deleted.', 'success');
     LoadingModal.remove();
@@ -314,16 +497,96 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
     popup(errMessage, 'error');
 
     if (status === 404) {
+      if (errReason === 'hangoutNotFound') {
+        setTimeout(() => window.location.reload(), 1000);
+        return;
+      };
+
       if (errReason === 'slotNotFound') {
         const availabilitySlotIndex: number = hangoutAvailabilityState.availabilitySlots.findIndex((slot: AvailabilitySlot) => slot.availability_slot_id === availabilitySlotId);
         (availabilitySlotIndex !== -1) && hangoutAvailabilityState.availabilitySlots.splice(availabilitySlotIndex, 1);
 
         render();
+      };
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(window.location.href);
         return;
       };
 
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed(window.location.href);
+      };
+    };
+  };
+};
+
+async function clearAvailabilitySlots(): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId } = globalHangoutState.data;
+  const clearHangoutAvailabilitySlotBody: ClearHangoutAvailabilitySlotBody = { hangoutId, hangoutMemberId };
+
+  try {
+    await clearHangoutAvailabilitySlotService(clearHangoutAvailabilitySlotBody);
+
+    globalHangoutState.data.availabilitySlotsCount = 0;
+    hangoutAvailabilityState.availabilitySlots.length = 0;
+
+    popup('Availability slots cleared.', 'success');
+    LoadingModal.remove();
+
+    render();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
       if (errReason === 'hangoutNotFound') {
         setTimeout(() => window.location.reload(), 1000);
+        return;
+      };
+
+      if (errReason === 'noSlotsFound') {
+        hangoutAvailabilityState.availabilitySlots.length = 0;
+        globalHangoutState.data.availabilitySlotsCount = 10;
+
+        render();
       };
 
       return;

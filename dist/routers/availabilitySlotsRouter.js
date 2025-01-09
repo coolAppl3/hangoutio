@@ -146,7 +146,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         ;
         if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Invalid availability slot start.' });
+            res.status(409).json({ success: false, message: 'Invalid availability slot start date and time.', reason: 'invalidStart' });
             return;
         }
         ;
@@ -237,7 +237,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
     }
     ;
     if (!availabilitySlotValidation.isValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
-        res.status(400).json({ success: false, message: 'Invalid availability slot.' });
+        res.status(400).json({ success: false, message: 'Invalid availability slot.', reason: 'invalidSlot' });
         return;
     }
     ;
@@ -292,7 +292,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
-            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            res.status(404).json({ success: false, message: 'Hangout not found.', reason: 'hangoutNotFound' });
             return;
         }
         ;
@@ -307,7 +307,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         ;
         if (hangoutMemberDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: `Can't add availability slots after hangout conclusion.`, reason: 'hangoutConcluded' });
+            res.status(409).json({ success: false, message: `Hangout has already been concluded.`, reason: 'hangoutConcluded' });
             return;
         }
         ;
@@ -320,14 +320,14 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         const slotToEdit = existingAvailabilitySlots.find((slot) => slot.availability_slot_id === requestData.availabilitySlotId);
         if (!slotToEdit) {
             await connection.rollback();
-            res.status(404).json({ success: false, message: 'Availability slot not found.' });
+            res.status(404).json({ success: false, message: 'Availability slot not found.', reason: 'slotNotFound' });
             return;
         }
         ;
         if (slotToEdit.slot_start_timestamp === requestData.slotStartTimestamp &&
             slotToEdit.slot_end_timestamp === requestData.slotEndTimestamp) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Slot already starts and ends at this time.', reason: 'slotsIdentical' });
+            res.status(409).json({ success: false, message: 'Slot already starts and ends at this date and time.', reason: 'slotsIdentical' });
             return;
         }
         ;
@@ -356,7 +356,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         }
         ;
         const [resultSetHeader] = await connection.execute(`UPDATE
-        availability_slot
+        availability_slots
       SET
         slot_start_timestamp = ?,
         slot_end_timestamp = ?
@@ -545,7 +545,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
       FROM
         auth_sessions
       WHERe
-        session_id = ?;`, { authSessionId });
+        session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
             res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -577,7 +577,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         hangout_members.hangout_member_id = ?
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [hangoutId, +hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            res.status(404).json({ success: false, message: 'Hangout not found.', reason: 'hangoutNotFound' });
             return;
         }
         ;
@@ -595,7 +595,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         }
         ;
         if (!hangoutMemberDetails.availability_slot_id) {
-            res.status(404).json({ success: false, message: 'No slots found.' });
+            res.status(404).json({ success: false, message: 'No slots found.', reason: 'noSlotsFound' });
             return;
         }
         ;
