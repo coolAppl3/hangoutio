@@ -718,7 +718,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     );
 
     if (hangoutMemberRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Hangout not found.' });
+      res.status(404).json({ success: false, message: 'Hangout not found.', reason: 'hangoutNotFound' });
       return;
     };
 
@@ -738,7 +738,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     };
 
     if (!hangoutMemberDetails.availability_slot_id) {
-      res.status(404).json({ success: false, message: 'No slots found.' });
+      res.status(404).json({ success: false, message: 'No slots found.', reason: 'noSlotsFound' });
       return;
     };
 
