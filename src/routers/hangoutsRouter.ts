@@ -700,7 +700,7 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout is concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
 
       return;
     };
@@ -906,7 +906,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
 
       return;
     };
@@ -1132,7 +1132,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
 
       return;
     };
