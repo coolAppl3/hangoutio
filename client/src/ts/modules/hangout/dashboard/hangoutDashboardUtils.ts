@@ -214,11 +214,13 @@ export function initiateNextStageTimer(): void {
 
 function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: number): void {
   if (!nextStageTimeSpan) {
+    clearInterval(intervalId);
     return;
   };
 
   if (!globalHangoutState.data) {
     nextStageTimeSpan.textContent = 'Failed to load';
+    clearInterval(intervalId);
     return;
   };
 
@@ -226,6 +228,8 @@ function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: nu
 
   if (current_stage === HANGOUT_CONCLUSION_STAGE) {
     nextStageTimeSpan.textContent = 'None';
+    clearInterval(intervalId);
+
     return;
   };
 
