@@ -7,7 +7,7 @@ import { isValidHangoutId } from "../../global/validation";
 import { getInitialHangoutData, InitialHangoutData, InitialHangoutDataResponse } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
-import { directlyNavigationHangoutSections, navigateHangoutSections } from "../hangoutNav";
+import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, hideLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent } from "./hangoutDashboardUtils";
@@ -24,7 +24,9 @@ const hangoutDashboardState: HangoutDashboardState = {
 
 export async function hangoutDashboard(): Promise<void> {
   await getHangoutDashboardData();
+
   detectLatestSection();
+  loadEventListeners();
 };
 
 export async function getHangoutDashboardData(): Promise<void> {
@@ -63,9 +65,9 @@ export async function getHangoutDashboardData(): Promise<void> {
     };
 
     hangoutDashboardState.latestHangoutMessages = initialHangoutData.latestHangoutChats.reverse();
-    hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents;
+    hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents.reverse();
 
-    populateDashboard();
+    renderDashboardSection();
 
     removeGuestSignUpSection();
     hideLoadingSkeleton();
@@ -122,7 +124,11 @@ export async function getHangoutDashboardData(): Promise<void> {
   };
 };
 
-function populateDashboard(): void {
+function loadEventListeners(): void {
+  document.addEventListener('loadSection-dashboard', renderDashboardSection);
+};
+
+function renderDashboardSection(): void {
   populateMainDashboardContent();
   populateHangoutStageDescriptions();
   displayLatestMessages();
@@ -250,7 +256,6 @@ function populateHangoutStageDescriptions(): void {
     const votesRemainingCount: number = HANGOUT_SUGGESTIONS_LIMIT - votesCount;
     votesRemainingSpan.textContent = votesRemainingCount === 1 ? '1 vote' : `${votesRemainingCount} votes`;
   };
-
 };
 
 function populateMembersSection(): void {
@@ -290,6 +295,7 @@ function listHangoutMembers(): void {
     dashboardMembersContainer.appendChild(createHangoutMemberElement(member));
   };
 
+  dashboardMembersElement.firstElementChild?.remove();
   dashboardMembersElement.appendChild(dashboardMembersContainer);
 };
 
@@ -336,6 +342,7 @@ function displayLatestMessages(): void {
     dashboardChatContainerInner.appendChild(createDashboardMessage(message));
   };
 
+  dashboardChatContainer.firstElementChild?.remove();
   dashboardChatContainer.insertAdjacentElement('afterbegin', dashboardChatContainerInner);
 
   dashboardChatContainer.classList.remove('hidden');
@@ -343,16 +350,22 @@ function displayLatestMessages(): void {
 };
 
 function displayLatestEvents(): void {
-  const dashboardEventsContainer: HTMLDivElement | null = document.querySelector('#dashboard-events-container');
+  const dashboardEventsElement: HTMLDivElement | null = document.querySelector('#dashboard-events');
 
-  if (!dashboardEventsContainer) {
+  if (!dashboardEventsElement) {
     popup('Failed to load hangout events.', 'error');
     return;
   };
 
+  const dashboardEventsContainer: HTMLDivElement = document.createElement('div');
+  dashboardEventsContainer.id = 'dashboard-events-container';
+
   for (const event of hangoutDashboardState.latestHangoutEvents) {
     dashboardEventsContainer.appendChild(createDashboardEvent(event));
   };
+
+  dashboardEventsElement.firstElementChild?.remove();
+  dashboardEventsElement.appendChild(dashboardEventsContainer);
 };
 
 function detectLatestSection(): void {
@@ -362,5 +375,5 @@ function detectLatestSection(): void {
     return;
   };
 
-  setTimeout(() => directlyNavigationHangoutSections(latestHangoutSection), 0);
+  setTimeout(() => directlyNavigateHangoutSections(latestHangoutSection), 0);
 };
