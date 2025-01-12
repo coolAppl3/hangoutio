@@ -1,17 +1,25 @@
+import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { hangoutWebSocketRouter } from "./hangoutWebSocketRouter";
 
-export function initHangoutWebSocket(hangoutMemberId: number): void {
+export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string): void {
   const webSocketServerURL: string = window.location.hostname === 'localhost'
     ? 'ws://localhost:5000'
     : 'wss://www.hangoutio.com';
-  const socket: WebSocket = new WebSocket(`${webSocketServerURL}?hangoutMemberId=${hangoutMemberId}`);
 
-  socket.addEventListener('open', () => {
+  const hangoutWebSocket: WebSocket = new WebSocket(`${webSocketServerURL}?hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
+
+  hangoutWebSocket.addEventListener('open', () => {
+    globalHangoutState.hangoutWebSocket = hangoutWebSocket;
+    globalHangoutState.webSocketConnected = true;
+
+    window.addEventListener('beforeunload', () => {
+      globalHangoutState.hangoutWebSocket?.close();
+    });
+
     console.log('Websocket connection established.');
-    // TODO: update global hangout state to confirm a ws connection is established
   });
 
-  socket.addEventListener('message', (e: MessageEvent) => {
+  hangoutWebSocket.addEventListener('message', (e: MessageEvent) => {
     if (!e.data) {
       return;
     };
@@ -21,15 +29,15 @@ export function initHangoutWebSocket(hangoutMemberId: number): void {
       return;
     };
 
-    hangoutWebSocketRouter(messageContent, socket);
+    hangoutWebSocketRouter(messageContent, hangoutWebSocket);
   });
 
-  socket.addEventListener('close', (event) => {
+  hangoutWebSocket.addEventListener('close', (event) => {
     console.log(`Websocket connection closed with code: ${event.code}`);
     // TODO: update global hangout state, and implement reconnection logic
   });
 
-  socket.addEventListener('error', (err) => {
+  hangoutWebSocket.addEventListener('error', (err) => {
     console.log(err);
     // TODO: update global hangout state, and implement reconnection logic if necessary
   });
