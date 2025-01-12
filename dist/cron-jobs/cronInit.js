@@ -30,11 +30,11 @@ exports.initCronJobs = void 0;
 const node_cron_1 = __importDefault(require("node-cron"));
 const accountCronJobs = __importStar(require("./accountCronJobs"));
 const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
-const cleanHangoutClients_1 = require("../webSockets/hangout/cleanHangoutClients");
 const authCronJobs_1 = require("./authCronJobs");
+const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
-        (0, cleanHangoutClients_1.cleanHangoutClients)();
+        (0, hangoutWebSocketServer_1.clearExpiredHangoutWebSockets)();
         await hangoutCronJobs.progressHangouts();
         await hangoutCronJobs.concludeNoSuggestionHangouts();
         await accountCronJobs.removeUnverifiedAccounts();

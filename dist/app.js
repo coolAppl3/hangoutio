@@ -59,7 +59,7 @@ app.use(fallbackMiddleware_1.fallbackMiddleware);
 const server = http_1.default.createServer(app);
 server.on('upgrade', async (req, socket, head) => {
     socket.on('error', (err) => {
-        console.log(err);
+        console.log(err, err.stack);
         socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[500]}\r\n\r\n`);
         socket.write('Internal server error\r\n');
         socket.end();
@@ -73,8 +73,8 @@ server.on('upgrade', async (req, socket, head) => {
         return;
     }
     ;
-    const requestData = await (0, hangoutWebSocketAuth_1.authenticateHandshake)(req);
-    if (!requestData) {
+    const webSocketDetails = await (0, hangoutWebSocketAuth_1.authenticateHandshake)(req);
+    if (!webSocketDetails) {
         socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[401]}\r\n\r\n`);
         socket.write('Invalid credentials\r\n');
         socket.end();
@@ -83,7 +83,11 @@ server.on('upgrade', async (req, socket, head) => {
     ;
     hangoutWebSocketServer_1.wss.handleUpgrade(req, socket, head, (ws) => {
         hangoutWebSocketServer_1.wss.emit('connection', ws, req);
-        (0, hangoutWebSocketServer_1.insertIntoHangoutClients)(requestData.hangoutId, requestData.hangoutMemberId, ws);
+        hangoutWebSocketServer_1.hangoutClients.set(webSocketDetails.hangoutMemberId, {
+            ws,
+            hangoutId: webSocketDetails.hangoutId,
+            createdOn: Date.now(),
+        });
     });
 });
 async function initServer() {
