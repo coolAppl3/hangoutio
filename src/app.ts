@@ -3,7 +3,7 @@ dotenv.config();
 import path from 'path';
 import cors from 'cors';
 import http, { IncomingMessage } from 'http';
-import { insertIntoHangoutClients, wss } from './webSockets/hangout/hangoutWebSocketServer';
+import { hangoutClients, wss } from './webSockets/hangout/hangoutWebSocketServer';
 import { Socket } from 'net';
 import { WebSocket } from 'ws';
 import express, { Application } from 'express';
@@ -98,10 +98,9 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
     return;
   };
 
+  const hangoutMemberId: number | null = await authenticateHandshake(req);
 
-  const requestData: { hangoutId: string, hangoutMemberId: number } | null = await authenticateHandshake(req);
-
-  if (!requestData) {
+  if (!hangoutMemberId) {
     socket.write(`HTTP/1.1 ${http.STATUS_CODES[401]}\r\n\r\n`);
     socket.write('Invalid credentials\r\n');
 
@@ -111,7 +110,7 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
 
   wss.handleUpgrade(req, socket, head, (ws: WebSocket) => {
     wss.emit('connection', ws, req);
-    insertIntoHangoutClients(requestData.hangoutId, requestData.hangoutMemberId, ws);
+    hangoutClients.set(hangoutMemberId, { ws, createdOn: Date.now() });
   });
 });
 

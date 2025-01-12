@@ -1,11 +1,10 @@
 import { IncomingMessage } from "http";
-import { isValidHangoutId } from "../../util/validation/hangoutValidation";
 import { dbPool } from "../../db/db";
 import { RowDataPacket } from "mysql2";
 import { isValidAuthSessionDetails, isValidAuthSessionId } from "../../auth/authUtils";
 import { destroyAuthSession } from "../../auth/authSessions";
 
-export async function authenticateHandshake(req: IncomingMessage): Promise<{ hangoutId: string, hangoutMemberId: number } | null> {
+export async function authenticateHandshake(req: IncomingMessage): Promise<number | null> {
   const cookieHeader: string | undefined = req.headers.cookie;
 
   if (!cookieHeader) {
@@ -17,18 +16,11 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
 
   for (const cookie of cookieHeaderArr) {
     const [cookieName, cookieValue] = cookie.split('=');
-    console.log(cookieName, cookieValue)
 
-    if (cookieName !== 'authSessionId') {
-      continue;
+    if (cookieName === 'authSessionId' && isValidAuthSessionId(cookieValue)) {
+      authSessionId = cookieValue;
+      break;
     };
-
-    if (!isValidAuthSessionId(cookieValue)) {
-      continue;
-    };
-
-    authSessionId = cookieValue;
-    break;
   };
 
   if (!authSessionId) {
@@ -42,24 +34,19 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
   const url = new URL(req.url, `https://${req.headers.host}`);
 
   const hangoutMemberId: string | null = url.searchParams.get('hangoutMemberId');
-  const hangoutId: string | null = url.searchParams.get('hangoutId');
 
-  if (!hangoutMemberId || !hangoutId) {
+  if (!hangoutMemberId || !Number.isInteger(+hangoutMemberId)) {
     return null;
   };
 
-  if (!Number.isInteger(+hangoutMemberId) || !isValidHangoutId(hangoutId)) {
+  if (!(await isValidUserData(authSessionId, +hangoutMemberId))) {
     return null;
   };
 
-  if (!(await isValidUserData(authSessionId, +hangoutMemberId, hangoutId))) {
-    return null;
-  };
-
-  return { hangoutId, hangoutMemberId: +hangoutMemberId };
+  return +hangoutMemberId;
 };
 
-async function isValidUserData(authSessionId: string, hangoutMemberId: number, hangoutId: string): Promise<Boolean> {
+async function isValidUserData(authSessionId: string, hangoutMemberId: number): Promise<Boolean> {
   try {
     interface AuthSessionDetails extends RowDataPacket {
       user_id: number,
@@ -98,7 +85,6 @@ async function isValidUserData(authSessionId: string, hangoutMemberId: number, h
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
-        hangout_id,
         account_id,
         guest_id
       FROM
@@ -115,10 +101,6 @@ async function isValidUserData(authSessionId: string, hangoutMemberId: number, h
     const hangoutMemberDetails: HangoutMemberDetails = hangoutMemberRows[0];
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
-      return false;
-    };
-
-    if (hangoutMemberDetails.hangout_id !== hangoutId) {
       return false;
     };
 

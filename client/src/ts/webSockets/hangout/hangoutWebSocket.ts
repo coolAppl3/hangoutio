@@ -1,10 +1,10 @@
 import { hangoutWebSocketRouter } from "./hangoutWebSocketRouter";
 
-export function initHangoutWebSocket(hangoutId: string, hangoutMemberId: number): void {
+export function initHangoutWebSocket(hangoutMemberId: number): void {
   const webSocketServerURL: string = window.location.hostname === 'localhost'
     ? 'ws://localhost:5000'
     : 'wss://www.hangoutio.com';
-  const socket: WebSocket = new WebSocket(`${webSocketServerURL}?hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
+  const socket: WebSocket = new WebSocket(`${webSocketServerURL}?hangoutMemberId=${hangoutMemberId}`);
 
   socket.addEventListener('open', () => {
     console.log('Websocket connection established.');
