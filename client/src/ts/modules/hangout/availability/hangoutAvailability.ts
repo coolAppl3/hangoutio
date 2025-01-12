@@ -38,10 +38,10 @@ async function init(): Promise<void> {
 
   await getHangoutAvailabilitySlots();
   initAvailabilityCalendar();
-  render();
+  renderAvailabilitySection();
 };
 
-function render(): void {
+function renderAvailabilitySection(): void {
   displayPersonalAvailabilitySlots();
   updateSlotsRemaining();
   updateAvailabilityCalendar();
@@ -229,7 +229,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
     hangoutAvailabilityState.availabilitySlots.push(newAvailabilitySlot);
     globalHangoutState.data.availabilitySlotsCount++;
 
-    render();
+    renderAvailabilitySection();
     closeDateTimePicker();
 
     popup('Availability slot added.', 'success');
@@ -357,7 +357,7 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
     LoadingModal.remove();
 
     closeDateTimePicker();
-    render();
+    renderAvailabilitySection();
 
   } catch (err: unknown) {
     console.log(err);
@@ -420,7 +420,7 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
         const availabilitySlotIndex: number = hangoutAvailabilityState.availabilitySlots.findIndex((slot: AvailabilitySlot) => slot.availability_slot_id === dateTimePickerData.existingSlotId);
         (availabilitySlotIndex !== -1) && hangoutAvailabilityState.availabilitySlots.splice(availabilitySlotIndex, 1);
 
-        render();
+        renderAvailabilitySection();
       };
 
       return;
@@ -467,7 +467,7 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
     popup('Availability slot deleted.', 'success');
     LoadingModal.remove();
 
-    render();
+    renderAvailabilitySection();
 
   } catch (err: unknown) {
     console.log(err);
@@ -506,7 +506,7 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
         const availabilitySlotIndex: number = hangoutAvailabilityState.availabilitySlots.findIndex((slot: AvailabilitySlot) => slot.availability_slot_id === availabilitySlotId);
         (availabilitySlotIndex !== -1) && hangoutAvailabilityState.availabilitySlots.splice(availabilitySlotIndex, 1);
 
-        render();
+        renderAvailabilitySection();
       };
 
       return;
@@ -547,7 +547,7 @@ async function clearAvailabilitySlots(): Promise<void> {
     popup('Availability slots cleared.', 'success');
     LoadingModal.remove();
 
-    render();
+    renderAvailabilitySection();
 
   } catch (err: unknown) {
     console.log(err);
@@ -586,7 +586,7 @@ async function clearAvailabilitySlots(): Promise<void> {
         hangoutAvailabilityState.availabilitySlots.length = 0;
         globalHangoutState.data.availabilitySlotsCount = 10;
 
-        render();
+        renderAvailabilitySection();
       };
 
       return;
