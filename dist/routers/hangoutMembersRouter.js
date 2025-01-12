@@ -135,7 +135,7 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
         ;
         const [hangoutRows] = await connection.execute(`SELECT
         encrypted_password,
-        member_limit,
+        members_limit,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId AND account_id = :userId) AS already_joined
       FROM
@@ -165,7 +165,7 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
             ;
         }
         ;
-        const isFull = hangoutDetails.member_count === hangoutDetails.member_limit;
+        const isFull = hangoutDetails.member_count === hangoutDetails.members_limit;
         if (isFull) {
             await connection.rollback();
             res.status(409).json({ success: false, message: 'Hangout full.', reason: 'hangoutFull' });
@@ -244,7 +244,7 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
         ;
         const [hangoutRows] = await connection.execute(`SELECT
         encrypted_password,
-        member_limit,
+        members_limit,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count
       FROM
         hangouts
@@ -267,7 +267,7 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
             ;
         }
         ;
-        const isFull = hangoutDetails.member_count === hangoutDetails.member_limit;
+        const isFull = hangoutDetails.member_count === hangoutDetails.members_limit;
         if (isFull) {
             await connection.rollback();
             res.status(409).json({ success: false, message: 'Hangout is full.', reason: 'hangoutFull' });

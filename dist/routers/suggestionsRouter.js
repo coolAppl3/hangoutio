@@ -151,7 +151,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
             await connection.rollback();
             res.status(409).json({
                 success: false,
-                message: hangoutMemberDetails.is_concluded ? 'Hangout is already concluded.' : `Hangout isn't in the suggestions stage.`,
+                message: hangoutMemberDetails.is_concluded ? 'Hangout has already been concluded.' : `Hangout isn't in the suggestions stage.`,
             });
             return;
         }
@@ -311,7 +311,7 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
         }
         ;
         if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
             return;
         }
         ;
@@ -455,7 +455,7 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         }
         ;
         if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
             return;
         }
         ;
@@ -576,7 +576,7 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
         }
         ;
         if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
             return;
         }
         ;
@@ -706,7 +706,7 @@ exports.suggestionsRouter.delete('/leader/delete', async (req, res) => {
         }
         ;
         if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
             return;
         }
         ;

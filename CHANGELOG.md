@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.19] (2025-01-12)
+
+### Code Refactoring
+
+- Unified messages about hangouts being concluded to "Hangout has already been concluded".
+- Miscellaneous improvements in a few modules.
+
+
+### Bug Fixes
+
+- Fixed incorrect references to `member_limit` instead of `members_limit` when querying the `hangouts` table in some modules.
+
+
 ## [0.4.18] (2025-01-10)
 
 ### Features
