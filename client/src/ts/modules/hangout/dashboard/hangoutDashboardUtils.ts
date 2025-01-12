@@ -208,7 +208,7 @@ export function initiateNextStageTimer(): void {
     return;
   };
 
-  const intervalId: number = setInterval(() => updateNextStageTimer(nextStageTimeSpan, intervalId), minuteMilliseconds);
+  const intervalId: number = setInterval(() => updateNextStageTimer(nextStageTimeSpan, intervalId), minuteMilliseconds / 2);
   updateNextStageTimer(nextStageTimeSpan, intervalId);
 };
 
