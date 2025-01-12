@@ -1,5 +1,6 @@
 import WebSocket, { WebSocketServer, RawData } from "ws";
 import { hangoutWebSocketServerRouter } from "./hangoutWebSocketRouter";
+import { hourMilliseconds } from "../../util/constants";
 
 export const wss: WebSocketServer = new WebSocket.Server({
   noServer: true,
@@ -11,8 +12,6 @@ export const wss: WebSocketServer = new WebSocket.Server({
 console.log('Hangout websocket server started.');
 
 wss.on('connection', (ws: WebSocket) => {
-  console.log('Client connected.');
-
   ws.on('message', (data: RawData) => {
     if (!Buffer.isBuffer(data)) {
       ws.send(JSON.stringify({ success: false, message: 'Invalid buffer received.', reason: 'notBuffer' }));
@@ -35,21 +34,34 @@ wss.on('connection', (ws: WebSocket) => {
 
     if (ws.readyState !== 2 && ws.readyState !== 3) {
       ws.close();
-      // TODO: remove from the hangoutClients map
     };
   });
 
-  ws.on('close', () => {
-    console.log('Client disconnected.');
-  });
+  ws.on('close', () => { });
 });
 
 interface WebSocketClientData {
   ws: WebSocket,
+  hangoutId: string,
   createdOn: number,
 };
 
 export const hangoutClients: Map<number, WebSocketClientData> = new Map();
+
+export function clearExpiredHangoutWebSockets(): void {
+  for (const [hangoutMemberId, webSocketClientData] of hangoutClients) {
+    if (webSocketClientData.createdOn + (hourMilliseconds * 6) < Date.now()) {
+      webSocketClientData.ws.close();
+      hangoutClients.delete(hangoutMemberId);
+
+      continue;
+    };
+
+    if (webSocketClientData.ws.readyState === 2 || webSocketClientData.ws.readyState === 3) {
+      hangoutClients.delete(hangoutMemberId);
+    };
+  };
+};
 
 function parseJsonString(message: string): unknown | null {
   try {
