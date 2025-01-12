@@ -88,7 +88,7 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
   });
 
   const memoryUsageMegabytes: number = process.memoryUsage().rss / Math.pow(1024, 2);
-  const memoryThreshold: number = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500)
+  const memoryThreshold: number = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500);
 
   if (memoryUsageMegabytes >= memoryThreshold) {
     socket.write(`HTTP/1.1 ${http.STATUS_CODES[509]}\r\n\r\n`);
