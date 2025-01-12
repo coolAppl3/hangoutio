@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.20] (2025-01-12)
+
+### Code Refactoring
+
+- Renamed `hangoutWebsocketServerRouter.ts` to `hangoutWebSocketRouter.ts`.
+- Improved websocket logic on both the frond and back ends and implemented its initialization on the front end.
+
+
+### Bug Fixes
+
+- Fixed websockets being incorrectly stored in a set within the client's map, which failed to take into account how objects are referenced, and could've resulted in a memory leak.
+
+
 ## [0.4.19] (2025-01-12)
 
 ### Code Refactoring

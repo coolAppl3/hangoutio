@@ -3,9 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insertIntoHangoutClients = exports.hangoutClients = exports.wss = void 0;
+exports.clearExpiredHangoutWebSockets = exports.hangoutClients = exports.wss = void 0;
 const ws_1 = __importDefault(require("ws"));
-const hangoutWebsocketServerRouter_1 = require("./hangoutWebsocketServerRouter");
+const hangoutWebSocketRouter_1 = require("./hangoutWebSocketRouter");
+const constants_1 = require("../../util/constants");
 exports.wss = new ws_1.default.Server({
     noServer: true,
     maxPayload: 1700,
@@ -14,7 +15,6 @@ exports.wss = new ws_1.default.Server({
 });
 console.log('Hangout websocket server started.');
 exports.wss.on('connection', (ws) => {
-    console.log('Client connected.');
     ws.on('message', (data) => {
         if (!Buffer.isBuffer(data)) {
             ws.send(JSON.stringify({ success: false, message: 'Invalid buffer received.', reason: 'notBuffer' }));
@@ -28,7 +28,7 @@ exports.wss.on('connection', (ws) => {
             return;
         }
         ;
-        (0, hangoutWebsocketServerRouter_1.hangoutWebSocketServerRouter)(messageContent, ws);
+        (0, hangoutWebSocketRouter_1.hangoutWebSocketServerRouter)(messageContent, ws);
     });
     ws.on('error', (err) => {
         console.log(err);
@@ -37,21 +37,26 @@ exports.wss.on('connection', (ws) => {
         }
         ;
     });
-    ws.on('close', () => {
-        console.log('Client disconnected.');
-    });
+    ws.on('close', () => { });
 });
+;
 exports.hangoutClients = new Map();
-function insertIntoHangoutClients(hangoutId, hangoutMemberId, ws) {
-    if (!exports.hangoutClients.has(hangoutId)) {
-        exports.hangoutClients.set(hangoutId, new Set());
-        exports.hangoutClients.get(hangoutId)?.add({ ws, hangoutMemberId });
-        return;
+function clearExpiredHangoutWebSockets() {
+    for (const [hangoutMemberId, webSocketClientData] of exports.hangoutClients) {
+        if (webSocketClientData.createdOn + (constants_1.hourMilliseconds * 6) < Date.now()) {
+            webSocketClientData.ws.close();
+            exports.hangoutClients.delete(hangoutMemberId);
+            continue;
+        }
+        ;
+        if (webSocketClientData.ws.readyState === 2 || webSocketClientData.ws.readyState === 3) {
+            exports.hangoutClients.delete(hangoutMemberId);
+        }
+        ;
     }
     ;
-    exports.hangoutClients.get(hangoutId)?.add({ ws, hangoutMemberId });
 }
-exports.insertIntoHangoutClients = insertIntoHangoutClients;
+exports.clearExpiredHangoutWebSockets = clearExpiredHangoutWebSockets;
 ;
 function parseJsonString(message) {
     try {

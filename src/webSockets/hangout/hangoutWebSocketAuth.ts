@@ -1,11 +1,11 @@
 import { IncomingMessage } from "http";
-import { isValidHangoutId } from "../../util/validation/hangoutValidation";
 import { dbPool } from "../../db/db";
 import { RowDataPacket } from "mysql2";
 import { isValidAuthSessionDetails, isValidAuthSessionId } from "../../auth/authUtils";
 import { destroyAuthSession } from "../../auth/authSessions";
+import { isValidHangoutId } from "../../util/validation/hangoutValidation";
 
-export async function authenticateHandshake(req: IncomingMessage): Promise<{ hangoutId: string, hangoutMemberId: number } | null> {
+export async function authenticateHandshake(req: IncomingMessage): Promise<{ hangoutMemberId: number, hangoutId: string } | null> {
   const cookieHeader: string | undefined = req.headers.cookie;
 
   if (!cookieHeader) {
@@ -17,18 +17,11 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
 
   for (const cookie of cookieHeaderArr) {
     const [cookieName, cookieValue] = cookie.split('=');
-    console.log(cookieName, cookieValue)
 
-    if (cookieName !== 'authSessionId') {
-      continue;
+    if (cookieName === 'authSessionId' && isValidAuthSessionId(cookieValue)) {
+      authSessionId = cookieValue;
+      break;
     };
-
-    if (!isValidAuthSessionId(cookieValue)) {
-      continue;
-    };
-
-    authSessionId = cookieValue;
-    break;
   };
 
   if (!authSessionId) {
@@ -44,11 +37,11 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
   const hangoutMemberId: string | null = url.searchParams.get('hangoutMemberId');
   const hangoutId: string | null = url.searchParams.get('hangoutId');
 
-  if (!hangoutMemberId || !hangoutId) {
+  if (!hangoutMemberId || !Number.isInteger(+hangoutMemberId)) {
     return null;
   };
 
-  if (!Number.isInteger(+hangoutMemberId) || !isValidHangoutId(hangoutId)) {
+  if (!hangoutId || !isValidHangoutId(hangoutId)) {
     return null;
   };
 
@@ -56,7 +49,7 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
     return null;
   };
 
-  return { hangoutId, hangoutMemberId: +hangoutMemberId };
+  return { hangoutMemberId: +hangoutMemberId, hangoutId };
 };
 
 async function isValidUserData(authSessionId: string, hangoutMemberId: number, hangoutId: string): Promise<Boolean> {
@@ -106,6 +99,7 @@ async function isValidUserData(authSessionId: string, hangoutMemberId: number, h
       WHERE
         hangout_member_id = ?;`,
       [hangoutMemberId]
+
     );
 
     if (hangoutMemberRows.length === 0) {

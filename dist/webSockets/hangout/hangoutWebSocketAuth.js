@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authenticateHandshake = void 0;
-const hangoutValidation_1 = require("../../util/validation/hangoutValidation");
 const db_1 = require("../../db/db");
 const authUtils_1 = require("../../auth/authUtils");
 const authSessions_1 = require("../../auth/authSessions");
+const hangoutValidation_1 = require("../../util/validation/hangoutValidation");
 async function authenticateHandshake(req) {
     const cookieHeader = req.headers.cookie;
     if (!cookieHeader) {
@@ -15,17 +15,11 @@ async function authenticateHandshake(req) {
     let authSessionId = null;
     for (const cookie of cookieHeaderArr) {
         const [cookieName, cookieValue] = cookie.split('=');
-        console.log(cookieName, cookieValue);
-        if (cookieName !== 'authSessionId') {
-            continue;
+        if (cookieName === 'authSessionId' && (0, authUtils_1.isValidAuthSessionId)(cookieValue)) {
+            authSessionId = cookieValue;
+            break;
         }
         ;
-        if (!(0, authUtils_1.isValidAuthSessionId)(cookieValue)) {
-            continue;
-        }
-        ;
-        authSessionId = cookieValue;
-        break;
     }
     ;
     if (!authSessionId) {
@@ -39,11 +33,11 @@ async function authenticateHandshake(req) {
     const url = new URL(req.url, `https://${req.headers.host}`);
     const hangoutMemberId = url.searchParams.get('hangoutMemberId');
     const hangoutId = url.searchParams.get('hangoutId');
-    if (!hangoutMemberId || !hangoutId) {
+    if (!hangoutMemberId || !Number.isInteger(+hangoutMemberId)) {
         return null;
     }
     ;
-    if (!Number.isInteger(+hangoutMemberId) || !(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
+    if (!hangoutId || !(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
         return null;
     }
     ;
@@ -51,7 +45,7 @@ async function authenticateHandshake(req) {
         return null;
     }
     ;
-    return { hangoutId, hangoutMemberId: +hangoutMemberId };
+    return { hangoutMemberId: +hangoutMemberId, hangoutId };
 }
 exports.authenticateHandshake = authenticateHandshake;
 ;

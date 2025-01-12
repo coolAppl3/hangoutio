@@ -3,7 +3,7 @@ dotenv.config();
 import path from 'path';
 import cors from 'cors';
 import http, { IncomingMessage } from 'http';
-import { insertIntoHangoutClients, wss } from './webSockets/hangout/hangoutWebSocketServer';
+import { hangoutClients, wss } from './webSockets/hangout/hangoutWebSocketServer';
 import { Socket } from 'net';
 import { WebSocket } from 'ws';
 import express, { Application } from 'express';
@@ -79,7 +79,7 @@ const server = http.createServer(app);
 
 server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) => {
   socket.on('error', (err) => {
-    console.log(err)
+    console.log(err, err.stack)
 
     socket.write(`HTTP/1.1 ${http.STATUS_CODES[500]}\r\n\r\n`);
     socket.write('Internal server error\r\n');
@@ -88,7 +88,7 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
   });
 
   const memoryUsageMegabytes: number = process.memoryUsage().rss / Math.pow(1024, 2);
-  const memoryThreshold: number = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500)
+  const memoryThreshold: number = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500);
 
   if (memoryUsageMegabytes >= memoryThreshold) {
     socket.write(`HTTP/1.1 ${http.STATUS_CODES[509]}\r\n\r\n`);
@@ -98,10 +98,9 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
     return;
   };
 
+  const webSocketDetails: { hangoutMemberId: number, hangoutId: string } | null = await authenticateHandshake(req);
 
-  const requestData: { hangoutId: string, hangoutMemberId: number } | null = await authenticateHandshake(req);
-
-  if (!requestData) {
+  if (!webSocketDetails) {
     socket.write(`HTTP/1.1 ${http.STATUS_CODES[401]}\r\n\r\n`);
     socket.write('Invalid credentials\r\n');
 
@@ -111,7 +110,11 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
 
   wss.handleUpgrade(req, socket, head, (ws: WebSocket) => {
     wss.emit('connection', ws, req);
-    insertIntoHangoutClients(requestData.hangoutId, requestData.hangoutMemberId, ws);
+    hangoutClients.set(webSocketDetails.hangoutMemberId, {
+      ws,
+      hangoutId: webSocketDetails.hangoutId,
+      createdOn: Date.now(),
+    });
   });
 });
 
