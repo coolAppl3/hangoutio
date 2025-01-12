@@ -141,7 +141,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
     interface HangoutDetails extends RowDataPacket {
       encrypted_password: string | null,
-      member_limit: number,
+      members_limit: number,
       member_count: number,
       already_joined: boolean,
     };
@@ -149,7 +149,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     const [hangoutRows] = await connection.execute<HangoutDetails[]>(
       `SELECT
         encrypted_password,
-        member_limit,
+        members_limit,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId AND account_id = :userId) AS already_joined
       FROM
@@ -186,7 +186,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       };
     };
 
-    const isFull: boolean = hangoutDetails.member_count === hangoutDetails.member_limit;
+    const isFull: boolean = hangoutDetails.member_count === hangoutDetails.members_limit;
     if (isFull) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Hangout full.', reason: 'hangoutFull' });
@@ -280,14 +280,14 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
     interface HangoutDetails extends RowDataPacket {
       encrypted_password: string | null,
-      member_limit: number,
+      members_limit: number,
       member_count: number,
     };
 
     const [hangoutRows] = await connection.execute<HangoutDetails[]>(
       `SELECT
         encrypted_password,
-        member_limit,
+        members_limit,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count
       FROM
         hangouts
@@ -316,7 +316,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       };
     };
 
-    const isFull: boolean = hangoutDetails.member_count === hangoutDetails.member_limit;
+    const isFull: boolean = hangoutDetails.member_count === hangoutDetails.members_limit;
     if (isFull) {
       await connection.rollback();
       res.status(409).json({ success: false, message: 'Hangout is full.', reason: 'hangoutFull' });

@@ -58,7 +58,7 @@ export function navigateHangoutSections(e: MouseEvent): void {
   document.dispatchEvent(new CustomEvent(`loadSection-${navigateTo}`));
 };
 
-export function directlyNavigationHangoutSections(navigateTo: string): void {
+export function directlyNavigateHangoutSections(navigateTo: string): void {
   if (navigateTo === hangoutNavState.selectedSection) {
     return;
   };

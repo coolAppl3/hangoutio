@@ -156,7 +156,7 @@ async function createHangoutsTable() {
         hangout_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
         hangout_title VARCHAR(40) NOT NULL,
         encrypted_password VARCHAR(255),
-        members_limit INT NOT NULL CHECK (member_limit BETWEEN 2 AND 20),
+        members_limit INT NOT NULL CHECK (members_limit BETWEEN 2 AND 20),
         availability_period BIGINT NOT NULL,
         suggestions_period BIGINT NOT NULL,
         voting_period BIGINT NOT NULL,

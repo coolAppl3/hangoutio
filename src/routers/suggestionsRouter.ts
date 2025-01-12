@@ -166,7 +166,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
       await connection.rollback();
       res.status(409).json({
         success: false,
-        message: hangoutMemberDetails.is_concluded ? 'Hangout is already concluded.' : `Hangout isn't in the suggestions stage.`,
+        message: hangoutMemberDetails.is_concluded ? 'Hangout has already been concluded.' : `Hangout isn't in the suggestions stage.`,
       });
 
       return;
@@ -375,7 +375,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
       return;
     };
 
@@ -560,7 +560,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
       return;
     };
 
@@ -717,7 +717,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
       return;
     };
 
@@ -885,7 +885,7 @@ suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) =
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
       return;
     };
 

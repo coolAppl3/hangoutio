@@ -655,7 +655,7 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
 
     const [hangoutRows] = await connection.execute<HangoutDetails[]>(
       `SELECT
-        hangouts.member_limit,
+        hangouts.members_limit,
         hangouts.is_concluded,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -700,12 +700,12 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout is concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
 
       return;
     };
 
-    if (hangoutDetails.member_limit === requestData.newMembersLimit) {
+    if (hangoutDetails.members_limit === requestData.newMembersLimit) {
       await connection.rollback();
       res.status(409).json({ success: false, message: `Hangout already has this members limit.` });
 
@@ -723,7 +723,7 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
       `UPDATE
         hangouts
       SET
-        member_limit = ?
+        members_limit = ?
       WHERE
         hangout_id = ?;`,
       [requestData.newMembersLimit, requestData.hangoutId]
@@ -906,7 +906,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
 
       return;
     };
@@ -1132,7 +1132,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ success: false, message: 'Hangout is already concluded.' });
+      res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
 
       return;
     };
