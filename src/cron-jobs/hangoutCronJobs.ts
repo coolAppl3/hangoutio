@@ -68,13 +68,15 @@ export async function progressHangouts(): Promise<void> {
       data: { currentTimestamp },
     };
 
-    hangoutMemberRows
-      .map((member: HangoutMemberDetails) => member.hangout_member_id)
-      .forEach((id) => {
-        const ws: WebSocket | undefined = hangoutClients.get(id)?.ws;
-        ws && ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
-      });
-    //
+    for (const member of hangoutMemberRows) {
+      const ws: WebSocket | undefined = hangoutClients.get(member.hangout_member_id)?.ws;
+
+      if (!ws) {
+        continue;
+      };
+
+      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
+    };
 
   } catch (err: any) {
     console.log(`CRON JOB ERROR: ${progressHangouts.name}`);
@@ -143,13 +145,15 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       data: { currentTimestamp },
     };
 
-    hangoutMemberRows
-      .map((member: HangoutMemberDetails) => member.hangout_member_id)
-      .forEach((id) => {
-        const ws: WebSocket | undefined = hangoutClients.get(id)?.ws;
-        ws && ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
-      });
-    //
+    for (const member of hangoutMemberRows) {
+      const ws: WebSocket | undefined = hangoutClients.get(member.hangout_member_id)?.ws;
+
+      if (!ws) {
+        continue;
+      };
+
+      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
+    };
 
     const eventDescription: string = 'Hangout reached the voting stage without any suggestions and was therefore automatically concluded.';
     let hangoutEventRowValuesString: string = '';
