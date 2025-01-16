@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.21] (2025-01-16)
+
+### Features
+
+- Implemented general error handling and fallback logic in `hangoutWebSocket.ts`.
+- Implemented websocket logic for updating the hangout dashboard next stage timer and stage descriptions.
+
+
 ## [0.4.20] (2025-01-12)
 
 ### Code Refactoring
