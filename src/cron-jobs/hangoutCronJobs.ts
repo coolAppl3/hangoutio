@@ -64,8 +64,8 @@ export async function progressHangouts(): Promise<void> {
 
     const webSocketData = {
       type: 'hangoutStageUpdate',
-      reason: 'hangoutProgressed',
-      data: { currentTimestamp },
+      reason: 'hangoutAutoProgressed',
+      data: { newStageControlTimestamp: currentTimestamp },
     };
 
     for (const member of hangoutMemberRows) {
@@ -142,7 +142,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
     const webSocketData = {
       type: 'hangoutStageUpdate',
       reason: 'noSuggestionConclusion',
-      data: { currentTimestamp },
+      data: { newStageControlTimestamp: currentTimestamp },
     };
 
     for (const member of hangoutMemberRows) {
