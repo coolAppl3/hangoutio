@@ -201,10 +201,15 @@ export function getNextHangoutStageTitle(currentStage: number): string {
   return getHangoutStageTitle(currentStage + 1);
 };
 
-export function initiateNextStageTimer(): void {
+export function initiateNextStageTimer(disable: boolean = false): void {
   const nextStageTimeSpan: HTMLSpanElement | null = document.querySelector('#dashboard-next-stage-time');
 
   if (!nextStageTimeSpan) {
+    return;
+  };
+
+  if (disable) {
+    nextStageTimeSpan.textContent = 'None';
     return;
   };
 

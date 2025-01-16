@@ -1,7 +1,20 @@
+import { InfoModal } from "../../modules/global/InfoModal";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { hangoutWebSocketRouter } from "./hangoutWebSocketRouter";
 
-export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string): void {
+export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string, reconnectionAttempts: number = 0): void {
+  if (reconnectionAttempts >= 2) {
+    globalHangoutState.hangoutWebSocket = null;
+    globalHangoutState.webSocketConnected = false;
+
+    InfoModal.display({
+      title: 'Server connection issues.',
+      description: `Live server connection has been lost, and we couldn't reconnect you.\nThis may result in some hangout updates not being visible without a page reload.`,
+      btnTitle: 'Okay',
+    }, { simple: true });
+    return;
+  };
+
   const webSocketServerURL: string = window.location.hostname === 'localhost'
     ? 'ws://localhost:5000'
     : 'wss://www.hangoutio.com';
@@ -14,9 +27,10 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string)
 
     window.addEventListener('beforeunload', () => {
       globalHangoutState.hangoutWebSocket?.close();
-    });
 
-    console.log('Websocket connection established.');
+      globalHangoutState.hangoutWebSocket = null;
+      globalHangoutState.webSocketConnected = false;
+    });
   });
 
   hangoutWebSocket.addEventListener('message', (e: MessageEvent) => {
@@ -24,22 +38,31 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string)
       return;
     };
 
-    const messageContent: unknown | null = parseJsonString(e.data);
-    if (messageContent === null) {
+    const WebSocketData: unknown | null = parseJsonString(e.data);
+    if (WebSocketData === null) {
       return;
     };
 
-    hangoutWebSocketRouter(messageContent, hangoutWebSocket);
+    console.log(WebSocketData);
+
+    hangoutWebSocketRouter(WebSocketData, hangoutWebSocket);
   });
 
   hangoutWebSocket.addEventListener('close', (event) => {
+    if (event.code === 1000) {
+      return;
+    };
+
     console.log(`Websocket connection closed with code: ${event.code}`);
-    // TODO: update global hangout state, and implement reconnection logic
+    setTimeout(() => initHangoutWebSocket(hangoutMemberId, hangoutId, ++reconnectionAttempts), 200);
   });
 
   hangoutWebSocket.addEventListener('error', (err) => {
-    console.log(err);
-    // TODO: update global hangout state, and implement reconnection logic if necessary
+    console.log(err)
+
+    if (hangoutWebSocket.readyState === 1) {
+      hangoutWebSocket.close(1011);
+    };
   });
 };
 
