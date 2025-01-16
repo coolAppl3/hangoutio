@@ -9,7 +9,7 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
 
     InfoModal.display({
       title: 'Server connection issues.',
-      description: 'We ran into issues when establishing a live connection to our server.\nThis may result in some hangout updates not being visible without reloading the page.',
+      description: `Live server connection has been lost, and we couldn't reconnect you.\nThis may result in some hangout updates not being visible without a page reload.`,
       btnTitle: 'Okay',
     }, { simple: true });
     return;
@@ -38,12 +38,14 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
       return;
     };
 
-    const messageContent: unknown | null = parseJsonString(e.data);
-    if (messageContent === null) {
+    const WebSocketData: unknown | null = parseJsonString(e.data);
+    if (WebSocketData === null) {
       return;
     };
 
-    hangoutWebSocketRouter(messageContent, hangoutWebSocket);
+    console.log(WebSocketData);
+
+    hangoutWebSocketRouter(WebSocketData, hangoutWebSocket);
   });
 
   hangoutWebSocket.addEventListener('close', (event) => {

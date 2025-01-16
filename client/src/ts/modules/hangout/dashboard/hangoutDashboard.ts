@@ -132,14 +132,14 @@ function loadEventListeners(): void {
 };
 
 function renderDashboardSection(): void {
-  populateMainDashboardContent();
-  populateHangoutStageDescriptions();
-  displayLatestMessages();
-  displayLatestEvents();
-  populateMembersSection();
+  renderMainDashboardContent();
+  renderHangoutStageDescriptions();
+  renderLatestMessages();
+  renderLatestEvents();
+  renderMembersSection();
 };
 
-function populateMainDashboardContent(): void {
+export function renderMainDashboardContent(): void {
   if (!globalHangoutState.data) {
     handleIrrecoverableError();
     return;
@@ -210,7 +210,7 @@ function displayHangoutPassword(): void {
   hangoutPasswordValueSpan.textContent = 'None';
 };
 
-function populateHangoutStageDescriptions(): void {
+export function renderHangoutStageDescriptions(): void {
   if (!globalHangoutState.data) {
     return;
   };
@@ -261,7 +261,7 @@ function populateHangoutStageDescriptions(): void {
   };
 };
 
-function populateMembersSection(): void {
+function renderMembersSection(): void {
   if (!globalHangoutState.data) {
     return;
   };
@@ -326,7 +326,7 @@ function pushUserAndLeaderToFront(hangoutMembers: HangoutMember[]): void {
   hangoutMembers.splice(1, 0, leaderMember);
 };
 
-function displayLatestMessages(): void {
+function renderLatestMessages(): void {
   if (hangoutDashboardState.latestHangoutMessages.length === 0) {
     return;
   };
@@ -352,7 +352,7 @@ function displayLatestMessages(): void {
   dashboardChatEmptyElement.classList.add('hidden');
 };
 
-function displayLatestEvents(): void {
+function renderLatestEvents(): void {
   const dashboardEventsElement: HTMLDivElement | null = document.querySelector('#dashboard-events');
 
   if (!dashboardEventsElement) {
