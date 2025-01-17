@@ -367,11 +367,7 @@ export function renderLatestEvents(): void {
   const dashboardEventsContainer: HTMLDivElement = document.createElement('div');
   dashboardEventsContainer.id = 'dashboard-events-container';
 
-  console.log(hangoutDashboardState.latestHangoutEvents)
-
   for (let i = 0; i < 2; i++) {
-    console.log(hangoutDashboardState.latestHangoutEvents[i])
-
     if (!hangoutDashboardState.latestHangoutEvents[i]) {
       break;
     };
