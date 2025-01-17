@@ -18,7 +18,7 @@ interface HangoutDashboardState {
   latestHangoutMessages: HangoutMessage[],
 };
 
-const hangoutDashboardState: HangoutDashboardState = {
+export const hangoutDashboardState: HangoutDashboardState = {
   latestHangoutEvents: [],
   latestHangoutMessages: [],
 };
@@ -65,8 +65,8 @@ export async function getHangoutDashboardData(): Promise<void> {
       hangoutDetails: initialHangoutData.hangoutDetails,
     };
 
-    hangoutDashboardState.latestHangoutMessages = initialHangoutData.latestHangoutChats.reverse();
-    hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents.reverse();
+    hangoutDashboardState.latestHangoutMessages = initialHangoutData.latestHangoutChats;
+    hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents;
 
     renderDashboardSection();
 
@@ -341,8 +341,12 @@ function renderLatestMessages(): void {
   const dashboardChatContainerInner: HTMLDivElement = document.createElement('div');
   dashboardChatContainerInner.id = 'dashboard-chat-container-inner';
 
-  for (const message of hangoutDashboardState.latestHangoutMessages) {
-    dashboardChatContainerInner.appendChild(createDashboardMessage(message));
+  for (let i = 0; i < 2; i++) {
+    if (!hangoutDashboardState.latestHangoutMessages[i]) {
+      break;
+    };
+
+    dashboardChatContainerInner.insertAdjacentElement('afterbegin', createDashboardMessage(hangoutDashboardState.latestHangoutMessages[i]));
   };
 
   dashboardChatContainer.firstElementChild?.remove();
@@ -352,7 +356,7 @@ function renderLatestMessages(): void {
   dashboardChatEmptyElement.classList.add('hidden');
 };
 
-function renderLatestEvents(): void {
+export function renderLatestEvents(): void {
   const dashboardEventsElement: HTMLDivElement | null = document.querySelector('#dashboard-events');
 
   if (!dashboardEventsElement) {
@@ -363,8 +367,16 @@ function renderLatestEvents(): void {
   const dashboardEventsContainer: HTMLDivElement = document.createElement('div');
   dashboardEventsContainer.id = 'dashboard-events-container';
 
-  for (const event of hangoutDashboardState.latestHangoutEvents) {
-    dashboardEventsContainer.appendChild(createDashboardEvent(event));
+  console.log(hangoutDashboardState.latestHangoutEvents)
+
+  for (let i = 0; i < 2; i++) {
+    console.log(hangoutDashboardState.latestHangoutEvents[i])
+
+    if (!hangoutDashboardState.latestHangoutEvents[i]) {
+      break;
+    };
+
+    dashboardEventsContainer.insertAdjacentElement('afterbegin', createDashboardEvent(hangoutDashboardState.latestHangoutEvents[i]));
   };
 
   dashboardEventsElement.firstElementChild?.remove();
