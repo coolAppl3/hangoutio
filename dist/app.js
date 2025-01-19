@@ -50,7 +50,8 @@ app.use('/api/suggestions', suggestionsRouter_1.suggestionsRouter);
 app.use('/api/votes', votesRouter_1.votesRouter);
 app.use('/api/auth', authRouter_1.authRouter);
 app.use((req, res, next) => {
-    res.set('Content-Security-Policy', "default-src 'self'; script-src 'self';");
+    const stagingHostName = process.env.STAGING_HOST_NAME;
+    res.set('Content-Security-Policy', `default-src 'self'; script-src 'self'; connect-src 'self' wss://www.hangoutio.com${stagingHostName ? ` wss://${stagingHostName}` : ''};`);
     next();
 });
 app.use(htmlRouter_1.htmlRouter);

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.22] (2025-01-19)
+
+### Features
+
+- Improved the logic of rendering the latest hangout events and chat messages.
+- Websocket logic to update the next stage timer and rerender necessary elements is completed.
+- Updated websocket logic to allow connections in staging environment.
+
+
+### Bug Fixes
+
+- Implemented a new fix to transition-related flickering since the previous one was no longer valid since a CSP was introduced.
+
+
 ## [0.4.21] (2025-01-16)
 
 ### Features
