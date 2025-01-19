@@ -4,6 +4,8 @@ export default function themeSwitcher(): void {
   const themeBtn: HTMLElement | null = document.querySelector('#theme-switcher');
   themeBtn?.addEventListener('click', changeTheme);
   themeBtn?.addEventListener('keyup', handleThemeBtnKeyEvents);
+
+  setTimeout(() => document.documentElement.classList.remove('loading'), 0);
 };
 
 function setTheme(): void {
