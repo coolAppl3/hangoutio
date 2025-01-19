@@ -64,7 +64,9 @@ app.use('/api/auth', authRouter);
 
 // CSP
 app.use((req, res, next) => {
-  res.set('Content-Security-Policy', "default-src 'self'; script-src 'self';");
+  const stagingHostName: string | undefined = process.env.STAGING_HOST_NAME;
+  res.set('Content-Security-Policy', `default-src 'self'; script-src 'self'; connect-src 'self' wss://www.hangoutio.com${stagingHostName ? ` wss://${stagingHostName}` : ''};`);
+
   next();
 });
 

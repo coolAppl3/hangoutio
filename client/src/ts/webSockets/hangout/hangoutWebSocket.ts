@@ -17,7 +17,7 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
 
   const webSocketServerURL: string = window.location.hostname === 'localhost'
     ? 'ws://localhost:5000'
-    : 'wss://www.hangoutio.com';
+    : `wss://${window.location.hostname}`;
 
   const hangoutWebSocket: WebSocket = new WebSocket(`${webSocketServerURL}?hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
 
