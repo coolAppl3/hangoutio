@@ -42,6 +42,15 @@
   html {
     font-size: 62.5%;
     @apply font-main font-normal leading-[1.4];
+
+    &.loading {
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+      }
+    }
   }
 
   body {

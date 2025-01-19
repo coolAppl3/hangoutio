@@ -1,6 +1,7 @@
-import { renderHangoutStageDescriptions, renderMainDashboardContent } from "../../modules/hangout/dashboard/hangoutDashboard";
+import { hangoutDashboardState, renderHangoutStageDescriptions, renderLatestEvents, renderMainDashboardContent } from "../../modules/hangout/dashboard/hangoutDashboard";
 import { initiateNextStageTimer } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
+import { HangoutEvent } from "../../modules/hangout/hangoutTypes";
 
 interface WebSocketData {
   type: string,
@@ -89,25 +90,33 @@ function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
 
   if (reason === 'hangoutAutoProgressed') {
     hangoutDetails.current_stage++;
-    hangoutDetails.stage_control_timestamp = newStageControlTimestamp;
 
-    renderMainDashboardContent();
-    renderHangoutStageDescriptions();
+    if (hangoutDetails.current_stage === 4) {
+      const newHangoutEvent: HangoutEvent = {
+        event_description: 'Hangout has been concluded.',
+        event_timestamp: newStageControlTimestamp,
+      };
 
-    initiateNextStageTimer();
-    return;
+      hangoutDashboardState.latestHangoutEvents.push(newHangoutEvent);
+    };
   };
 
   if (reason === 'noSuggestionConclusion') {
     hangoutDetails.current_stage = 4;
-    hangoutDetails.stage_control_timestamp = newStageControlTimestamp;
 
-    renderMainDashboardContent();
-    renderHangoutStageDescriptions();
+    const newHangoutEvent: HangoutEvent = {
+      event_description: 'Hangout reached the voting stage without any suggestions and was therefore automatically concluded.',
+      event_timestamp: newStageControlTimestamp,
+    };
 
-    initiateNextStageTimer(true);
-    return;
+    hangoutDashboardState.latestHangoutEvents.unshift(newHangoutEvent);
   };
+
+  hangoutDetails.stage_control_timestamp = newStageControlTimestamp;
+  renderMainDashboardContent();
+  renderHangoutStageDescriptions();
+  initiateNextStageTimer();
+  renderLatestEvents();
 };
 
 function isValidWebSocketData(messageContent: unknown): messageContent is WebSocketData {
