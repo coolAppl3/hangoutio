@@ -264,14 +264,20 @@ export function closeDateTimePicker(): void {
 
 function resetDateTimePicker(): void {
   dateTimePickerState.data = null;
-
   dateTimePickerElement?.setAttribute('data-stage', 'date');
-
-  timePickerSlotStartInput && (timePickerSlotStartInput.value = '');
-  timePickerSlotEndInput && (timePickerSlotEndInput.value = '');
 
   const timePickerSelectedDateSpan: HTMLSpanElement | null = document.querySelector('#time-picker-selected-date');
   timePickerSelectedDateSpan && (timePickerSelectedDateSpan.textContent = '');
+
+  if (!timePickerSlotStartInput || !timePickerSlotEndInput) {
+    return;
+  };
+
+  timePickerSlotStartInput.value = '';
+  timePickerSlotEndInput.value = '';
+
+  ErrorSpan.hide(timePickerSlotStartInput);
+  ErrorSpan.hide(timePickerSlotEndInput);
 };
 
 function toggleSlotEndExtension(): void {
