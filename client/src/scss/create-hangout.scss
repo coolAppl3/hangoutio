@@ -53,16 +53,6 @@
         transition: none !important;
       }
     }
-
-    &.dark {
-      scrollbar-color: #3C3D3E #969696 !important;
-
-      *,
-      *::before,
-      **::after {
-        scrollbar-color: #3C3D3E #969696 !important;
-      }
-    }
   }
 
   body {
