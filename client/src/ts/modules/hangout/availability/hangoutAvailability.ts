@@ -227,6 +227,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
     };
 
     hangoutAvailabilityState.availabilitySlots.push(newAvailabilitySlot);
+    hangoutAvailabilityState.availabilitySlots.sort((a, b) => a.slot_start_timestamp - b.slot_start_timestamp);
     globalHangoutState.data.availabilitySlotsCount++;
 
     renderAvailabilitySection();
@@ -352,6 +353,8 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
       existingSlot.slot_start_timestamp = dateTimePickerData.startTimestamp;
       existingSlot.slot_end_timestamp = dateTimePickerData.endTimestamp;
     };
+
+    hangoutAvailabilityState.availabilitySlots.sort((a, b) => a.slot_start_timestamp - b.slot_start_timestamp);
 
     popup('Availability slot updated.', 'success');
     LoadingModal.remove();
