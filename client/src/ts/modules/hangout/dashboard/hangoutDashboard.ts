@@ -207,7 +207,7 @@ function displayHangoutPassword(): void {
     return;
   };
 
-  hangoutPasswordValueSpan.textContent = 'None';
+  hangoutPasswordValueSpan.textContent = 'Not set';
 };
 
 export function renderHangoutStageDescriptions(): void {

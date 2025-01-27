@@ -625,7 +625,7 @@
                 <button
                   data-goTo="chat"
                   type="button"
-                  class="header-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
+                  class="header-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1"
                 >
                   <span class="text-title dark:text-title-dark mr-[4px]">Chat</span>
                   <div class="svg w-2 h-2">
@@ -650,7 +650,7 @@
 
                 <button
                   type="button"
-                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center"
+                  class="close-menu-btn w-full mb-2 p-2 ml-auto bg-description-dark dark:bg-description rounded-sm flex justify-center items-center relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1"
                 >
                   <div class="svg w-2 h-2">
                     <svg
@@ -748,40 +748,10 @@
               <div class="dashboard-grid-content-main max-h-fit mb-2 p-2 row-span-8 bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple">
                 <!-- main content -->
                 <div>
-                  <div class="mb-2 flex justify-start items-start">
-                    <h3
-                      id="hangout-title"
-                      class="text-xl font-medium text-title dark:text-title-dark mr-1"
-                    ></h3>
-                    <button
-                      type="button"
-                      id="edit-hangout-title-btn"
-                      class="svg w-[2.4rem] h-[2.4rem] group"
-                      aria-label="Rename hangout title"
-                      title="Rename"
-                    >
-                      <svg
-                        width="640"
-                        height="640"
-                        viewBox="0 0 640 640"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M284.547 134.906C284.547 124.413 276.04 115.906 265.547 115.906H153C93.3533 115.906 45 164.259 45 223.906V487C45 546.647 93.3533 595 153 595H416.094C475.741 595 524.094 546.647 524.094 487V374.453C524.094 363.96 515.587 355.453 505.094 355.453H463.094C452.601 355.453 444.094 363.96 444.094 374.453V487C444.094 502.464 431.558 515 416.094 515H153C137.536 515 125 502.464 125 487V223.906C125 208.442 137.536 195.906 153 195.906H265.547C276.04 195.906 284.547 187.399 284.547 176.906V134.906Z"
-                          class="fill-title dark:fill-title-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                        />
-                        <path
-                          d="M260.834 273.216L442.82 91.23L548.3 196.71L366.313 378.696C363.447 381.562 359.902 383.656 356.009 384.781L255.376 413.875C237.223 419.123 220.406 402.307 225.655 384.154L254.748 283.521C255.874 279.628 257.968 276.082 260.834 273.216Z"
-                          class="fill-title dark:fill-title-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                        />
-                        <path
-                          d="M490.203 44.8635L456.542 78.5249L562.099 184.083L595.761 150.421C615.287 130.895 615.287 99.2369 595.761 79.7107L560.914 44.8635C541.387 25.3373 509.729 25.3372 490.203 44.8635Z"
-                          class="fill-title dark:fill-title-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                  <h3
+                    id="hangout-title"
+                    class="text-xl font-medium text-title dark:text-title-dark mb-2"
+                  ></h3>
 
                   <!-- summary -->
                   <div class="grid grid-cols-3 gap-2 sm:grid-cols-2 xs:grid-cols-1">
@@ -2952,5 +2922,85 @@
         </div>
       </div>
     </footer>
+
+    <!-- availability previewer -->
+    <div id="availability-previewer">
+      <div id="availability-previewer-container">
+        <!-- header -->
+        <div id="availability-previewer-header">
+          <button
+            type="button"
+            id="availability-previewer-backwards-btn"
+          >
+            <div class="svg w-2 h-2">
+              <svg
+                width="600"
+                height="600"
+                viewBox="0 0 600 600"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M400 100L200 300L400 500"
+                  stroke-width="90"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="stroke-title dark:stroke-title-dark"
+                ></path>
+              </svg>
+            </div>
+          </button>
+
+          <p id="availability-previewer-header-title"></p>
+
+          <button
+            type="button"
+            id="availability-previewer-forwards-btn"
+          >
+            <div class="svg w-2 h-2">
+              <svg
+                width="600"
+                height="600"
+                viewBox="0 0 600 600"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M200 500L400 300L200 100"
+                  stroke-width="90"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="stroke-title dark:stroke-title-dark"
+                ></path>
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <!-- slots -->
+        <div
+          id="availability-previewer-slots"
+          class="mb-2"
+        ></div>
+
+        <!-- btn container -->
+        <div class="btn-container">
+          <button
+            type="button"
+            id="availability-previewer-add-btn"
+            class="btn bg-cta dark:bg-cta-dark w-full mb-1"
+          >
+            Add availability slot
+          </button>
+          <button
+            type="button"
+            id="availability-previewer-close-btn"
+            class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title w-full"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

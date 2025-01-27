@@ -216,6 +216,26 @@ function selectDate(e: MouseEvent): void {
   progressStage();
 };
 
+export function switchToDateTimePicker(selectedDateTimestamp: number): void {
+  displayDateTimePicker('availabilitySlot');
+
+  if (!dateTimePickerState.data) {
+    popup('Something went wrong.', 'error');
+    closeDateTimePicker();
+
+    return;
+  };
+
+  const selectedDateObj: Date = new Date(selectedDateTimestamp);
+
+  dateTimePickerState.data.currentMonth = selectedDateObj.getMonth();
+  dateTimePickerState.data.currentYear = selectedDateObj.getFullYear();
+  dateTimePickerState.data.selectedDate = selectedDateObj.getDate();
+
+  updateCalendar();
+  progressStage();
+};
+
 function progressStage(): void {
   if (!dateTimePickerState.data) {
     return;
@@ -257,21 +277,27 @@ export function closeDateTimePicker(): void {
   dateTimePickerElement.classList.remove('revealed');
 
   setTimeout(() => {
-    dateTimePickerElement.style.display = 'none'
+    dateTimePickerElement.style.display = 'none';
     resetDateTimePicker();
   }, 150);
 };
 
 function resetDateTimePicker(): void {
   dateTimePickerState.data = null;
-
   dateTimePickerElement?.setAttribute('data-stage', 'date');
-
-  timePickerSlotStartInput && (timePickerSlotStartInput.value = '');
-  timePickerSlotEndInput && (timePickerSlotEndInput.value = '');
 
   const timePickerSelectedDateSpan: HTMLSpanElement | null = document.querySelector('#time-picker-selected-date');
   timePickerSelectedDateSpan && (timePickerSelectedDateSpan.textContent = '');
+
+  if (!timePickerSlotStartInput || !timePickerSlotEndInput) {
+    return;
+  };
+
+  timePickerSlotStartInput.value = '';
+  timePickerSlotEndInput.value = '';
+
+  ErrorSpan.hide(timePickerSlotStartInput);
+  ErrorSpan.hide(timePickerSlotEndInput);
 };
 
 function toggleSlotEndExtension(): void {

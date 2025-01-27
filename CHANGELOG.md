@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.23] (2025-01-227)
+
+### Features
+
+- Miscellaneous changes to the hangout dashboard.
+- Improved the look of scroll bars throughout the app.
+- Implemented availability previewer.
+
+
+### Bug Fixes
+
+- Fixed the two header buttons in the hangout phone menu having issues with the the SVGs within them.
+- Fixed the time picker inputs in `dateTimePicker.ts` not resetting their errors when closing the modal.
+
+
 ## [0.4.22] (2025-01-19)
 
 ### Features

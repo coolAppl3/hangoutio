@@ -871,6 +871,8 @@ availabilitySlotsRouter.get('/', async (req: Request, res: Response) => {
         availability_slots
       WHERE
         hangout_id = ?
+      ORDER BY
+        slot_start_timestamp ASC
       LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT * HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
       [hangoutId]
     );
