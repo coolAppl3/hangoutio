@@ -2922,5 +2922,85 @@
         </div>
       </div>
     </footer>
+
+    <!-- availability previewer -->
+    <div id="availability-previewer">
+      <div id="availability-previewer-container">
+        <!-- header -->
+        <div id="availability-previewer-header">
+          <button
+            type="button"
+            id="availability-previewer-backwards-btn"
+          >
+            <div class="svg w-2 h-2">
+              <svg
+                width="600"
+                height="600"
+                viewBox="0 0 600 600"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M400 100L200 300L400 500"
+                  stroke-width="90"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="stroke-title dark:stroke-title-dark"
+                ></path>
+              </svg>
+            </div>
+          </button>
+
+          <p id="availability-previewer-header-title"></p>
+
+          <button
+            type="button"
+            id="availability-previewer-forwards-btn"
+          >
+            <div class="svg w-2 h-2">
+              <svg
+                width="600"
+                height="600"
+                viewBox="0 0 600 600"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M200 500L400 300L200 100"
+                  stroke-width="90"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="stroke-title dark:stroke-title-dark"
+                ></path>
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <!-- slots -->
+        <div
+          id="availability-previewer-slots"
+          class="mb-2"
+        ></div>
+
+        <!-- btn container -->
+        <div class="btn-container">
+          <button
+            type="button"
+            id="availability-previewer-add-btn"
+            class="btn bg-cta dark:bg-cta-dark w-full mb-1"
+          >
+            Add availability slot
+          </button>
+          <button
+            type="button"
+            id="availability-previewer-close-btn"
+            class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title w-full"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

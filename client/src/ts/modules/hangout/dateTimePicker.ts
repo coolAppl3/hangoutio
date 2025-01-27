@@ -216,6 +216,26 @@ function selectDate(e: MouseEvent): void {
   progressStage();
 };
 
+export function switchToDateTimePicker(selectedDateTimestamp: number): void {
+  displayDateTimePicker('availabilitySlot');
+
+  if (!dateTimePickerState.data) {
+    popup('Something went wrong.', 'error');
+    closeDateTimePicker();
+
+    return;
+  };
+
+  const selectedDateObj: Date = new Date(selectedDateTimestamp);
+
+  dateTimePickerState.data.currentMonth = selectedDateObj.getMonth();
+  dateTimePickerState.data.currentYear = selectedDateObj.getFullYear();
+  dateTimePickerState.data.selectedDate = selectedDateObj.getDate();
+
+  updateCalendar();
+  progressStage();
+};
+
 function progressStage(): void {
   if (!dateTimePickerState.data) {
     return;
@@ -257,7 +277,7 @@ export function closeDateTimePicker(): void {
   dateTimePickerElement.classList.remove('revealed');
 
   setTimeout(() => {
-    dateTimePickerElement.style.display = 'none'
+    dateTimePickerElement.style.display = 'none';
     resetDateTimePicker();
   }, 150);
 };

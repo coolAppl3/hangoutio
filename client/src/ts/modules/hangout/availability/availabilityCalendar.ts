@@ -4,6 +4,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { createCalendarCell, generateAndAppendEmptyCalendarCells, getMonthNumberOfDays } from "../dateTimePicker";
 import { hangoutAvailabilityState } from "./hangoutAvailability";
 import { calculateHangoutConclusionTimestamp } from "./availabilityUtils";
+import { displayAvailabilityPreviewer } from "./availabilityPreviewer";
 
 interface AvailabilityCalendarState {
   hasBeenInitiated: boolean,
@@ -23,6 +24,10 @@ let availabilityCalendarState: AvailabilityCalendarState = {
   hasBeenInitiated: false,
   data: null,
 };
+
+const availabilityCalendarDatesElement: HTMLDivElement | null = document.querySelector('#availability-calendar-dates');
+const availabilityCalendarHeader: HTMLDivElement | null = document.querySelector('#availability-calendar-header');
+
 
 export function initAvailabilityCalendar(): void {
   if (availabilityCalendarState.hasBeenInitiated) {
@@ -54,8 +59,8 @@ export function initAvailabilityCalendar(): void {
 
   updateAvailabilityCalendar();
 
-  const availabilityCalendarHeader: HTMLDivElement | null = document.querySelector('#availability-calendar-header');
   availabilityCalendarHeader?.addEventListener('click', navigateCalendar);
+  availabilityCalendarDatesElement?.addEventListener('click', handleCalendarCellClick);
 };
 
 export function updateAvailabilityCalendar(): void {
@@ -73,9 +78,7 @@ export function updateAvailabilityCalendar(): void {
   const availabilityCalendarTitle: HTMLParagraphElement | null = document.querySelector('#availability-calendar-title');
   availabilityCalendarTitle && (availabilityCalendarTitle.textContent = `${monthName} ${currentYear}`);
 
-  const availabilityCalendarDates: HTMLDivElement | null = document.querySelector('#availability-calendar-dates');
-
-  if (!availabilityCalendarDates) {
+  if (!availabilityCalendarDatesElement) {
     availabilityCalendarState = {
       hasBeenInitiated: false,
       data: null,
@@ -91,8 +94,8 @@ export function updateAvailabilityCalendar(): void {
   generateAndAppendEmptyCalendarCells(availabilityCalendarDatesContainer, firstDayOfMonth);
   generateAndAppendCalendarCells(availabilityCalendarDatesContainer, numberOfDays);
 
-  availabilityCalendarDates.firstElementChild?.remove();
-  availabilityCalendarDates.appendChild(availabilityCalendarDatesContainer);
+  availabilityCalendarDatesElement.firstElementChild?.remove();
+  availabilityCalendarDatesElement.appendChild(availabilityCalendarDatesContainer);
 
   displayAvailabilityMarkers();
 };
@@ -276,4 +279,31 @@ function generateAndAppendCalendarCells(container: HTMLDivElement, numberOfDays:
 
     container.appendChild(createCalendarCell(i));
   };
+};
+
+function handleCalendarCellClick(e: MouseEvent): void {
+  if (!(e.target instanceof HTMLButtonElement)) {
+    return;
+  };
+
+  const selectedDateString: string | null = e.target.getAttribute('data-value');
+
+  if (!selectedDateString) {
+    return;
+  };
+
+  const selectedDate: number = +selectedDateString;
+
+  if (!Number.isInteger(selectedDate)) {
+    return;
+  };
+
+  if (!availabilityCalendarState.data) {
+    return;
+  };
+
+  const { currentYear, currentMonth } = availabilityCalendarState.data;
+  const selectedDateTimestamp: number = new Date(currentYear, currentMonth, selectedDate).getTime();
+
+  displayAvailabilityPreviewer(selectedDateTimestamp);
 };

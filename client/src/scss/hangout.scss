@@ -417,6 +417,82 @@
 
 }
 
+#availability-previewer {
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[15] justify-center items-center outline-none overscroll-y-auto hidden;
+
+  &.revealed {
+
+    #availability-previewer-container {
+      transform: translate3d(0, 0, 0) !important;
+      opacity: 1 !important;
+    }
+  }
+
+  &-container {
+    @apply w-[36rem] max-w-[36rem] py-3 px-2 mx-2 rounded-sm bg-secondary dark:bg-secondary-dark shadow-simple mt-6 md:mt-0 overflow-hidden;
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: opacity 150ms, transform 150ms;
+    max-height: calc(100svh - 8rem);
+
+    @media(max-width: 830px) {
+      max-height: calc(100svh - 16rem);
+    }
+  }
+
+  &-header {
+    @apply flex justify-between items-center overflow-hidden mb-2;
+
+    &-title {
+      @apply font-bold mx-auto w-full text-center text-title dark:text-title-dark 3xs:text-sm;
+    }
+
+    button {
+      @apply p-[1.4rem] rounded-sm bg-primary dark:bg-primary-dark transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-5;
+
+      &.disabled {
+        @apply invisible select-none;
+      }
+    }
+  }
+
+  &-slots {
+    @apply overflow-y-auto;
+    max-height: calc(100svh - 40rem);
+
+    &-container {
+
+      &.empty {
+        @apply relative;
+        min-height: 5rem;
+
+
+        &::after {
+          @apply absolute block top-0 left-0 right-0 bottom-0 m-auto text-description dark:text-description-dark font-medium w-fit h-fit;
+          content: 'No one is available on this date.';
+        }
+      }
+
+      .member {
+        @apply mb-1 last:mb-0 px-2 py-1 bg-primary dark:bg-primary-dark rounded-sm;
+
+        &-name {
+          @apply text-sm md:text-base font-medium text-title dark:text-title-dark mb-1;
+        }
+
+        &-slots {
+          @apply pl-2 list-disc list-outside;
+
+
+          li.slot {
+            @apply mb-[3px] last:mb-0 text-sm font-medium text-description dark:text-description-dark list-item;
+          }
+        }
+      }
+    }
+  }
+}
+
 // loading modal
 #loading-modal {
   @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[30] grid place-items-center;
