@@ -81,7 +81,7 @@ const server = http.createServer(app);
 
 server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) => {
   socket.on('error', (err) => {
-    console.log(err, err.stack)
+    console.log(err, err.stack);
 
     socket.write(`HTTP/1.1 ${http.STATUS_CODES[500]}\r\n\r\n`);
     socket.write('Internal server error\r\n');
