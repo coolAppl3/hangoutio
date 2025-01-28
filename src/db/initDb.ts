@@ -282,7 +282,7 @@ async function createVotesTable(): Promise<void> {
     await dbPool.execute(
       `CREATE TABLE IF NOT EXISTS votes (
         vote_id INT PRIMARY KEY AUTO_INCREMENT,
-        hangout_member_id INT,
+        hangout_member_id INT NOT NULL,
         suggestion_id INT NOT NULL,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
         FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
