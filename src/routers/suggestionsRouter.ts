@@ -9,6 +9,7 @@ import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
+import { Suggestion, SuggestionLikes, Votes } from "../util/hangoutTypes";
 
 export const suggestionsRouter: Router = express.Router();
 
@@ -1005,17 +1006,13 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
       return;
     };
 
-    interface Suggestion extends RowDataPacket {
-      suggestion_id: number,
-      hangout_member_id: number,
-      suggestion_title: string,
-      suggestion_description: string,
-      suggestion_start_timestamp: number,
-      suggestion_end_timestamp: number,
-      is_edited: boolean,
-    };
+    type SuggestionInfo = [
+      Suggestion[],
+      SuggestionLikes[],
+      Votes[],
+    ];
 
-    const [suggestionRows] = await dbPool.execute<Suggestion[]>(
+    const [suggestionInfoRows] = await dbPool.query<SuggestionInfo>(
       `SELECT
         suggestion_id,
         hangout_member_id,
@@ -1027,11 +1024,93 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
       FROM
         suggestions
       WHERE
-        hangout_id = ?;`,
-      [hangoutId]
+        hangout_id = :hangoutId;
+      
+      SELECT
+        suggestion_like_id,
+        hangout_member_id,
+        suggestion_id
+      FROM
+        suggestion_likes
+      WHERE
+        hangout_id = :hangoutId;
+      
+      SELECT
+        vote_id,
+        hangout_member_id,
+        suggestion_id
+      FROM
+        votes
+      WHERE
+        hangout_id = :hangoutId;`,
+      { hangoutId }
     );
 
-    res.json({ suggestions: suggestionRows });
+    const suggestions: Suggestion[] = suggestionInfoRows[0];
+    const suggestionLikes: SuggestionLikes[] = suggestionInfoRows[1];
+    const votes: Votes[] = suggestionInfoRows[2];
+
+    const suggestionLikesMap: Map<number, number> = new Map();
+    const memberLikedSuggestions: number[] = [];
+
+    for (const suggestionLike of suggestionLikes) {
+      if (suggestionLike.hangout_member_id === +hangoutMemberId) {
+        memberLikedSuggestions.push(suggestionLike.suggestion_id);
+      };
+
+      const suggestionLikeCount: number | undefined = suggestionLikesMap.get(suggestionLike.suggestion_id);
+
+      if (!suggestionLikeCount) {
+        suggestionLikesMap.set(suggestionLike.suggestion_id, 1);
+        continue;
+      };
+
+      suggestionLikesMap.set(suggestionLike.suggestion_id, suggestionLikeCount + 1);
+    };
+
+    const suggestionVotesMap: Map<number, number> = new Map();
+    const memberVotedSuggestions: number[] = [];
+
+    for (const vote of votes) {
+      if (vote.hangout_member_id === +hangoutMemberId) {
+        memberVotedSuggestions.push(vote.suggestion_id);
+      };
+
+      const suggestionVotesCount: number | undefined = suggestionVotesMap.get(vote.suggestion_id);
+
+      if (!suggestionVotesCount) {
+        suggestionVotesMap.set(vote.suggestion_id, 1);
+        continue;
+      };
+
+      suggestionVotesMap.set(vote.suggestion_id, suggestionVotesCount + 1);
+    };
+
+    interface CountedSuggestion extends Suggestion {
+      likes_count: number,
+      votes_count: number,
+    };
+
+    const countedSuggestions: CountedSuggestion[] = [];
+
+    for (const suggestion of suggestions) {
+      const likes_count: number | undefined = suggestionLikesMap.get(suggestion.suggestion_id);
+      const votes_count: number | undefined = suggestionVotesMap.get(suggestion.suggestion_id);
+
+      countedSuggestions.push({
+        ...suggestion,
+        likes_count: likes_count ? likes_count : 0,
+        votes_count: votes_count ? votes_count : 0,
+      });
+    };
+
+    res.json({
+      resData: {
+        suggestions: countedSuggestions,
+        memberLikedSuggestions,
+        memberVotedSuggestions,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
