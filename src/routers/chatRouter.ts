@@ -26,7 +26,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -75,7 +75,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -85,7 +85,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -116,7 +116,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -185,7 +185,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -234,7 +234,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -244,7 +244,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;

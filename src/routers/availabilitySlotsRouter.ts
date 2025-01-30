@@ -29,7 +29,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -80,7 +80,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -90,7 +90,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -145,7 +145,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
@@ -243,7 +243,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -299,7 +299,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -309,7 +309,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -364,7 +364,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
@@ -478,7 +478,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -528,7 +528,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -538,7 +538,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -579,7 +579,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -631,7 +631,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -675,7 +675,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -685,7 +685,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -726,7 +726,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -778,7 +778,7 @@ availabilitySlotsRouter.get('/', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -822,7 +822,7 @@ availabilitySlotsRouter.get('/', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -832,7 +832,7 @@ availabilitySlotsRouter.get('/', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;

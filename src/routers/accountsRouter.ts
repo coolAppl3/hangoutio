@@ -928,7 +928,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -967,7 +967,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -977,7 +977,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession('authSessionId');
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1009,7 +1009,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     if (accountRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -1088,7 +1088,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1132,7 +1132,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1142,7 +1142,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1181,7 +1181,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
     if (accountRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -1218,7 +1218,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
       if (toBeSuspended) {
         await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
+        removeRequestCookie(res, 'authSessionId');
       };
 
       const expiryTimestampValue: number = toBeSuspended
@@ -1288,7 +1288,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1332,7 +1332,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1342,7 +1342,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1368,7 +1368,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     if (accountRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -1443,7 +1443,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1489,7 +1489,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1499,7 +1499,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1535,7 +1535,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     if (accountRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -1636,7 +1636,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1662,7 +1662,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1672,7 +1672,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1770,7 +1770,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1816,7 +1816,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1826,7 +1826,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1867,7 +1867,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
     if (accountRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -1914,7 +1914,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
       if (requestSuspended) {
         await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId', true);
+        removeRequestCookie(res, 'authSessionId');
       };
 
       res.status(401).json({
@@ -2002,7 +2002,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -2048,7 +2048,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -2058,7 +2058,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -2084,7 +2084,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
     if (accountRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -2160,7 +2160,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -2199,7 +2199,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -2209,7 +2209,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -2326,7 +2326,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -2367,7 +2367,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -2377,7 +2377,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -2473,7 +2473,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -2511,7 +2511,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -2521,7 +2521,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -2561,7 +2561,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -2600,7 +2600,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -2610,7 +2610,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;

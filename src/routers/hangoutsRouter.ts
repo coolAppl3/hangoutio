@@ -37,7 +37,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -94,7 +94,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -104,7 +104,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -128,7 +128,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
     if (accountRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -406,7 +406,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -455,7 +455,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -465,7 +465,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -495,7 +495,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     if (hangoutMemberRows.length === 0) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -505,7 +505,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -573,7 +573,7 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -624,7 +624,7 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -634,7 +634,7 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -683,7 +683,7 @@ hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Re
 
     if (hangoutDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
@@ -774,7 +774,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -820,7 +820,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -830,7 +830,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -889,7 +889,7 @@ hangoutsRouter.patch('/details/steps/update', async (req: Request, res: Response
 
     if (hangoutDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
@@ -998,7 +998,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1044,7 +1044,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1054,7 +1054,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1115,7 +1115,7 @@ hangoutsRouter.patch('/details/steps/progressForward', async (req: Request, res:
 
     if (hangoutDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       await connection.rollback();
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
@@ -1256,7 +1256,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1300,7 +1300,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1310,7 +1310,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
@@ -1344,7 +1344,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
 
     if (hangoutMember[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
@@ -1438,7 +1438,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
   };
 
   if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
     return;
@@ -1476,7 +1476,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
     );
 
     if (authSessionRows.length === 0) {
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
@@ -1486,7 +1486,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;

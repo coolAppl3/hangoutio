@@ -20,7 +20,7 @@ export async function handleIncorrectAccountPassword(res: Response, accountId: n
 
     if (isLocked) {
       await purgeAuthSessions(accountId, 'account');
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
     };
 
     res.status(401).json({

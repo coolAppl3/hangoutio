@@ -13,7 +13,7 @@ authRouter.post('/signOut', async (req: Request, res: Response) => {
   };
 
   try {
-    removeRequestCookie(res, 'authSessionId', true);
+    removeRequestCookie(res, 'authSessionId');
     await destroyAuthSession(authSessionId);
 
     res.json({ success: true, resData: {} });
