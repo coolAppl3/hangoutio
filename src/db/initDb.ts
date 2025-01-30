@@ -283,8 +283,8 @@ async function createSuggestionLikesTable(): Promise<void> {
     await dbPool.execute(
       `CREATE TABLE IF NOT EXISTS suggestion_likes (
         suggestion_like_id INT PRIMARY KEY AUTO_INCREMENT,
-        hangout_member_id INT NOT NULL,
         suggestion_id INT NOT NULL,
+        hangout_member_id INT NOT NULL,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
         FOREIGN KEY (suggestion_id) REFERENCES suggestions(suggestion_id) ON DELETE CASCADE,
         FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
@@ -297,14 +297,13 @@ async function createSuggestionLikesTable(): Promise<void> {
   };
 };
 
-
 async function createVotesTable(): Promise<void> {
   try {
     await dbPool.execute(
       `CREATE TABLE IF NOT EXISTS votes (
         vote_id INT PRIMARY KEY AUTO_INCREMENT,
-        hangout_member_id INT NOT NULL,
         suggestion_id INT NOT NULL,
+        hangout_member_id INT NOT NULL,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
         FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
         FOREIGN KEY (suggestion_id) REFERENCES suggestions(suggestion_id) ON DELETE CASCADE,
