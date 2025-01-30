@@ -10,6 +10,7 @@ import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
 import { Suggestion, SuggestionLikes, Votes } from "../util/hangoutTypes";
+import { isSqlError } from "../util/isSqlError";
 
 export const suggestionsRouter: Router = express.Router();
 
@@ -1116,6 +1117,176 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     console.log(err);
 
     if (res.headersSent) {
+      return;
+    };
+
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  };
+});
+
+suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
+  interface RequestData {
+    suggestionId: number,
+    hangoutMemberId: number,
+    hangoutId: string,
+  };
+
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['suggestionId', 'hangoutMemberId', 'hangoutId'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.suggestionId)) {
+    res.status(400).json({ success: false, message: 'Invalid suggestion ID.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.hangoutMemberId)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
+    return;
+  };
+
+  if (!isValidHangoutId(requestData.hangoutId)) {
+    res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    if (authSessionRows.length === 0) {
+      removeRequestCookie(res, 'authSessionId', true);
+      res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId', true);
+
+      res.status(400).json({ success: false, message: 'Invalid request data.' });
+      return;
+    };
+
+    interface MemberSuggestionDetails extends RowDataPacket {
+      is_member: boolean,
+      suggestion_exists: boolean,
+      already_voted: boolean
+    };
+
+    const [memberSuggestionRows] = await dbPool.execute<MemberSuggestionDetails[]>(
+      `SELECT
+        EXISTS (
+          SELECT
+            1
+          FROM
+            hangout_members
+          WHERE
+            hangout_member_id = :hangoutMemberId AND
+            hangout_id = :hangoutId
+        ) AS is_member,
+
+        EXISTS (
+          SELECT
+            1
+          FROM
+            suggestions
+          WHERE
+            suggestion_id = :suggestionId
+        ) as suggestion_exists,
+         
+        EXISTS (
+          SELECT
+            1
+          FROM
+            suggestion_likes
+          WHERE
+            hangout_member_id = :hangoutMemberId AND
+            suggestion_id = :suggestionId
+        ) as already_voted;`,
+      { suggestionId: requestData.suggestionId, hangoutMemberId: requestData.hangoutMemberId, hangoutId: requestData.hangoutId }
+    );
+
+    const memberSuggestionDetails: MemberSuggestionDetails = memberSuggestionRows[0];
+
+    if (!memberSuggestionDetails.is_member) {
+      res.status(401).json({ success: false, message: 'Not a member of this hangout.' });
+      return;
+    };
+
+    if (!memberSuggestionDetails.suggestion_exists) {
+      res.status(404).json({ success: false, message: 'Suggestion not found.' });
+      return;
+    };
+
+    if (memberSuggestionDetails.already_voted) {
+      res.status(409).json({ success: false, message: 'Already liked this suggestion.' });
+      return;
+    };
+
+    await dbPool.execute(
+      `INSERT INTO suggestion_likes (
+        hangout_member_id,
+        suggestion_id,
+        hangout_id
+      ) VALUES(${generatePlaceHolders(3)});`,
+      [requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutId]
+    );
+
+    res.json({ resData: {} });
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
+    if (!isSqlError(err)) {
+      res.status(500).json({ success: false, message: 'Internal server error.' });
+      return;
+    };
+
+    const sqlError: SqlError = err;
+
+    if (sqlError.errno === 1062) {
+      res.status(409).json({ success: false, message: 'Already liked this suggestion.' });
       return;
     };
 
