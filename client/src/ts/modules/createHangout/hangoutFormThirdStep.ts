@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
@@ -10,7 +10,7 @@ import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
 import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername, validatePassword } from "../global/validation";
 import { AccountSignInBody, accountSignInService } from "../services/accountServices";
-import { CreateHangoutAsAccountBody, CreateHangoutAsAccountData, createHangoutAsAccountService, createHangoutAsGuestService, CreateHangoutAsGuestBody, CreateHangoutAsGuestData } from "../services/hangoutServices";
+import { CreateHangoutAsAccountBody, createHangoutAsAccountService, createHangoutAsGuestService, CreateHangoutAsGuestBody } from "../services/hangoutServices";
 import { displayFirstStepError, hangoutFormNavigationState } from "./hangoutFormNavigation";
 import { hangoutFormState } from "./hangoutFormState";
 import { dayMilliseconds } from "../global/clientConstants";
@@ -120,8 +120,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
   };
 
   try {
-    const accountLeaderHangoutData: AxiosResponse<CreateHangoutAsAccountData> = await createHangoutAsAccountService(accountLeaderHangoutBody);
-    const hangoutId: string = accountLeaderHangoutData.data.resData.hangoutId;
+    const hangoutId: string = (await createHangoutAsAccountService(accountLeaderHangoutBody)).data.hangoutId;
 
     popup('Hangout successfully created.', 'success');
     setTimeout(() => window.location.href = `hangout?id=${hangoutId}`, 1000);
@@ -241,12 +240,10 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
   };
 
   try {
-    const guestLeaderHangoutData: AxiosResponse<CreateHangoutAsGuestData> = await createHangoutAsGuestService(guestLeaderHangoutBody);
-    const { authSessionCreated, hangoutId } = guestLeaderHangoutData.data.resData;
-
-    popup('Hangout successfully created.', 'success');
+    const { authSessionCreated, hangoutId } = (await createHangoutAsGuestService(guestLeaderHangoutBody)).data;
     const redirectHref: string = authSessionCreated ? `hangout?id=${hangoutId}` : 'sign-in';
 
+    popup('Hangout successfully created.', 'success');
     setTimeout(() => window.location.replace(redirectHref), 1000);
 
   } catch (err: unknown) {

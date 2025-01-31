@@ -1,10 +1,10 @@
-import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
 import { handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_SUGGESTIONS_LIMIT } from "../../global/clientConstants";
 import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
-import { getInitialHangoutData, InitialHangoutData, InitialHangoutDataResponse } from "../../services/hangoutServices";
+import { getInitialHangoutData, InitialHangoutData } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
@@ -46,8 +46,7 @@ export async function getHangoutDashboardData(): Promise<void> {
   };
 
   try {
-    const initialHangoutDataResponse: AxiosResponse<InitialHangoutDataResponse> = await getInitialHangoutData(hangoutId);
-    const initialHangoutData: InitialHangoutData = initialHangoutDataResponse.data.resData;
+    const initialHangoutData: InitialHangoutData = (await getInitialHangoutData(hangoutId)).data;
 
     globalHangoutState.data = {
       hangoutId,

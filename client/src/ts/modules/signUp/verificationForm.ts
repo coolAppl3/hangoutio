@@ -1,12 +1,12 @@
 import { signUpState } from "./signUpState";
-import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { isValidCode, isValidQueryString, isValidTimestamp, validateCode, isValidHangoutId } from "../global/validation";
-import { AccountVerificationBody, AccountVerificationData, ResendVerificationEmailData, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
+import { AccountVerificationBody, resendVerificationEmailService, verifyAccountService } from "../services/accountServices";
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, handleSignedInUser, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal } from "../global/ConfirmModal";
 import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
@@ -73,8 +73,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
   };
 
   try {
-    const accountVerificationData: AxiosResponse<AccountVerificationData> = await verifyAccountService(accountVerificationBody);
-    const authSessionCreated: boolean = accountVerificationData.data.resData.authSessionCreated;
+    const authSessionCreated: boolean = (await verifyAccountService(accountVerificationBody)).data.authSessionCreated;
 
     clearVerificationCookies();
     popup('Account successfully verified.', 'success');
@@ -196,8 +195,7 @@ async function resendVerificationEmail(): Promise<void> {
   };
 
   try {
-    const resendVerificationEmailData: AxiosResponse<ResendVerificationEmailData> = await resendVerificationEmailService({ accountId: signUpState.accountId });
-    const verificationEmailsSent: number = resendVerificationEmailData.data.resData.verificationEmailsSent;
+    const verificationEmailsSent: number = (await resendVerificationEmailService({ accountId: signUpState.accountId })).data.verificationEmailsSent;
 
     signUpState.verificationEmailsSent = verificationEmailsSent;
 

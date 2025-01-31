@@ -14,12 +14,9 @@ export interface AccountSignUpBody {
   password: string,
 };
 
-export interface AccountSignUpData {
-  success: true,
-  resData: {
-    accountId: number,
-    verificationExpiryTimestamp: number,
-  },
+interface AccountSignUpData {
+  accountId: number,
+  verificationExpiryTimestamp: number,
 };
 
 export async function accountSignUpService(requestBody: AccountSignUpBody): Promise<AxiosResponse<AccountSignUpData>> {
@@ -40,11 +37,8 @@ export async function accountSignInService(requestBody: AccountSignInBody): Prom
 
 // --- --- ---
 
-export interface ResendVerificationEmailData {
-  success: true,
-  resData: {
-    verificationEmailsSent: number,
-  },
+interface ResendVerificationEmailData {
+  verificationEmailsSent: number,
 };
 
 export async function resendVerificationEmailService(requestBody: { accountId: number }): Promise<AxiosResponse<ResendVerificationEmailData>> {
@@ -58,11 +52,8 @@ export interface AccountVerificationBody {
   verificationCode: string,
 };
 
-export interface AccountVerificationData {
-  success: true,
-  resData: {
-    authSessionCreated: boolean,
-  };
+interface AccountVerificationData {
+  authSessionCreated: boolean,
 };
 
 export async function verifyAccountService(requestBody: AccountVerificationBody): Promise<AxiosResponse<AccountVerificationData>> {
@@ -71,12 +62,9 @@ export async function verifyAccountService(requestBody: AccountVerificationBody)
 
 // --- --- ---
 
-export interface StartAccountRecoveryData {
-  success: true,
-  resData: {
-    accountId: number,
-    expiryTimestamp: number,
-  },
+interface StartAccountRecoveryData {
+  accountId: number,
+  expiryTimestamp: number,
 };
 
 export async function startAccountRecoveryService(requestBody: { email: string }): Promise<AxiosResponse<StartAccountRecoveryData>> {
@@ -97,11 +85,8 @@ export interface RecoveryUpdatePasswordBody {
   newPassword: string,
 };
 
-export interface RecoveryUpdatePasswordData {
-  success: true,
-  resData: {
-    authSessionCreated: boolean,
-  },
+interface RecoveryUpdatePasswordData {
+  authSessionCreated: boolean,
 };
 
 export function recoveryUpdatePasswordService(requestBody: RecoveryUpdatePasswordBody): Promise<AxiosResponse<RecoveryUpdatePasswordData>> {

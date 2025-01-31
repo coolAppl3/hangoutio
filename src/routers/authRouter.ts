@@ -8,7 +8,7 @@ authRouter.post('/signOut', async (req: Request, res: Response) => {
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
-    res.status(409).json({ success: false, message: 'Not signed in.' });
+    res.status(409).json({ message: 'Not signed in.' });
     return;
   };
 
@@ -16,7 +16,7 @@ authRouter.post('/signOut', async (req: Request, res: Response) => {
     removeRequestCookie(res, 'authSessionId');
     await destroyAuthSession(authSessionId);
 
-    res.json({ success: true, resData: {} });
+    res.json({});
 
   } catch (err: unknown) {
     console.log(err);
@@ -25,6 +25,6 @@ authRouter.post('/signOut', async (req: Request, res: Response) => {
       return;
     };
 
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    res.status(500).json({ message: 'Internal server error.' });
   };
 });

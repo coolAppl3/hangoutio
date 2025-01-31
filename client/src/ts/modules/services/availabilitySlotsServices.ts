@@ -26,10 +26,7 @@ export interface AddHangoutAvailabilitySlotBody {
 };
 
 interface AddHangoutAvailabilitySlotData {
-  success: true,
-  resData: {
-    availabilitySlotId: number,
-  },
+  availabilitySlotId: number,
 };
 
 export async function addHangoutAvailabilitySlotService(requestBody: AddHangoutAvailabilitySlotBody): Promise<AxiosResponse<AddHangoutAvailabilitySlotData>> {

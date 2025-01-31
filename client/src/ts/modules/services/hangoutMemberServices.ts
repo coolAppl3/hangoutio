@@ -26,11 +26,8 @@ export interface JoinHangoutAsGuestBody {
   displayName: string,
 };
 
-export interface JoinHangoutAsGuestData {
-  success: true,
-  resData: {
-    authSessionCreated: boolean,
-  },
+interface JoinHangoutAsGuestData {
+  authSessionCreated: boolean,
 };
 
 export async function joinHangoutAsGuestService(requestBody: JoinHangoutAsGuestBody): Promise<AxiosResponse<JoinHangoutAsGuestData>> {

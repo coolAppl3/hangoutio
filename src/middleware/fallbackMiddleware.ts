@@ -9,7 +9,7 @@ export function fallbackMiddleware(req: Request, res: Response): void {
     return;
   };
 
-  res.status(404).json({ success: false, message: 'Resource not found.' });
+  res.status(404).json({ message: 'Resource not found.' });
 };
 
 function sendBrowserResponse(res: Response, errCode: number): void {
