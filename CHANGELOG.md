@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.24] (2025-01-31)
+
+### Features
+
+- Added GET `suggestions/`.
+- Created `suggestion_likes` table.
+- Added POST `suggestions/likes`.
+- Added DELETE `suggestions/likes`.
+
+
+### Code Refactoring
+
+- Simplified the usage of `removeRequestCookie()`.
+- Abolished the usage of the `success` property in server responses to reduce redundancies.
+
+
 ## [0.4.23] (2025-01-27)
 
 ### Features

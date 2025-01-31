@@ -16,18 +16,17 @@ async function handleIncorrectAccountPassword(res, accountId, failedSignInAttemp
         const isLocked = failedSignInAttempts + 1 >= constants_1.FAILED_SIGN_IN_LIMIT;
         if (isLocked) {
             await (0, authSessions_1.purgeAuthSessions)(accountId, 'account');
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
         }
         ;
         res.status(401).json({
-            success: false,
             message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
             reason: isLocked ? 'accountLocked' : undefined,
         });
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 }
