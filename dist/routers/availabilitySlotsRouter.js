@@ -42,35 +42,35 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['hangoutId', 'hangoutMemberId', 'slotStartTimestamp', 'slotEndTimestamp'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.', reason: 'hangoutId' });
+        res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.hangoutMemberId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
+        res.status(400).json({ message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
         return;
     }
     ;
     if (!availabilitySlotValidation.isValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
-        res.status(400).json({ success: false, message: 'Invalid availability slot.' });
+        res.status(400).json({ message: 'Invalid availability slot.' });
         return;
     }
     ;
@@ -86,16 +86,16 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -125,28 +125,28 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
-            res.status(404).json({ success: false, message: 'Hangout not found.' });
+            res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             await connection.rollback();
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
         if (hangoutMemberDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
+            res.status(409).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;
         if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Invalid availability slot start date and time.', reason: 'invalidStart' });
+            res.status(409).json({ message: 'Invalid availability slot start date and time.', reason: 'invalidStart' });
             return;
         }
         ;
@@ -158,7 +158,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         }));
         if (existingAvailabilitySlots.length >= constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: `Availability slots limit of ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT} reached.` });
+            res.status(409).json({ message: `Availability slots limit of ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT} reached.` });
             return;
         }
         ;
@@ -167,7 +167,6 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         if (overlappedSlot) {
             await connection.rollback();
             res.status(409).json({
-                success: false,
                 message: 'Overlap detected.',
                 reason: 'slotOverlap',
                 resData: {
@@ -184,7 +183,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         slot_end_timestamp
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, requestData.hangoutId, requestData.slotStartTimestamp, requestData.slotEndTimestamp]);
         await connection.commit();
-        res.status(201).json({ success: true, resData: { availabilitySlotId: resultSetHeader.insertId } });
+        res.status(201).json({ availabilitySlotId: resultSetHeader.insertId });
     }
     catch (err) {
         console.log(err);
@@ -193,7 +192,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -204,40 +203,40 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['hangoutId', 'hangoutMemberId', 'availabilitySlotId', 'slotStartTimestamp', 'slotEndTimestamp'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+        res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.hangoutMemberId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
+        res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.availabilitySlotId)) {
-        res.status(400).json({ success: false, message: 'Invalid availability slot ID.' });
+        res.status(400).json({ message: 'Invalid availability slot ID.' });
         return;
     }
     ;
     if (!availabilitySlotValidation.isValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
-        res.status(400).json({ success: false, message: 'Invalid availability slot.', reason: 'invalidSlot' });
+        res.status(400).json({ message: 'Invalid availability slot.', reason: 'invalidSlot' });
         return;
     }
     ;
@@ -253,16 +252,16 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -292,22 +291,22 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.hangoutId, requestData.hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
             await connection.rollback();
-            res.status(404).json({ success: false, message: 'Hangout not found.', reason: 'hangoutNotFound' });
+            res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
             return;
         }
         ;
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             await connection.rollback();
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
         if (hangoutMemberDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: `Hangout has already been concluded.`, reason: 'hangoutConcluded' });
+            res.status(409).json({ message: `Hangout has already been concluded.`, reason: 'hangoutConcluded' });
             return;
         }
         ;
@@ -320,20 +319,20 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         const slotToEdit = existingAvailabilitySlots.find((slot) => slot.availability_slot_id === requestData.availabilitySlotId);
         if (!slotToEdit) {
             await connection.rollback();
-            res.status(404).json({ success: false, message: 'Availability slot not found.', reason: 'slotNotFound' });
+            res.status(404).json({ message: 'Availability slot not found.', reason: 'slotNotFound' });
             return;
         }
         ;
         if (slotToEdit.slot_start_timestamp === requestData.slotStartTimestamp &&
             slotToEdit.slot_end_timestamp === requestData.slotEndTimestamp) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Slot already starts and ends at this date and time.', reason: 'slotsIdentical' });
+            res.status(409).json({ message: 'Slot already starts and ends at this date and time.', reason: 'slotsIdentical' });
             return;
         }
         ;
         if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Invalid slot start.', reason: 'invalidStart' });
+            res.status(409).json({ message: 'Invalid slot start.', reason: 'invalidStart' });
             return;
         }
         ;
@@ -345,7 +344,6 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         if (overlappedSlot) {
             await connection.rollback();
             res.status(409).json({
-                success: false,
                 message: 'Overlap detected.',
                 reason: 'slotOverlap',
                 resData: {
@@ -364,12 +362,12 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         availability_slot_id = ?;`, [requestData.slotStartTimestamp, requestData.slotEndTimestamp, requestData.availabilitySlotId]);
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         await connection.commit();
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
@@ -378,7 +376,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -388,13 +386,13 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
 exports.availabilitySlotsRouter.delete('/', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
@@ -402,22 +400,22 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
     const hangoutMemberId = req.query.hangoutMemberId;
     const availabilitySlotId = req.query.availabilitySlotId;
     if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof availabilitySlotId !== 'string') {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+        res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
     ;
     if (!Number.isInteger(+hangoutMemberId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
+        res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
     if (!Number.isInteger(+availabilitySlotId)) {
-        res.status(400).json({ success: false, message: 'Invalid availability slot ID.' });
+        res.status(400).json({ message: 'Invalid availability slot ID.' });
         return;
     }
     ;
@@ -432,16 +430,16 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -462,26 +460,26 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
         hangout_members.hangout_member_id = ?
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [hangoutId, +hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Hangout not found.', reason: 'hangoutNotFound' });
+            res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
             return;
         }
         ;
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
         if (hangoutMemberDetails.is_concluded) {
-            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
+            res.status(409).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;
         const slotFound = hangoutMemberRows.find((member) => member.availability_slot_id === +availabilitySlotId) !== undefined;
         if (!slotFound) {
-            res.status(404).json({ success: false, message: 'Availability slot not found.', reason: 'slotNotFound' });
+            res.status(404).json({ message: 'Availability slot not found.', reason: 'slotNotFound' });
             return;
         }
         ;
@@ -490,11 +488,11 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
       WHERE
         availability_slot_id = ?;`, [+availabilitySlotId]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
@@ -502,37 +500,37 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
 exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const hangoutId = req.query.hangoutId;
     const hangoutMemberId = req.query.hangoutMemberId;
     if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string') {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+        res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
     ;
     if (!Number.isInteger(+hangoutMemberId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
+        res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
@@ -547,16 +545,16 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
       WHERe
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -577,25 +575,25 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         hangout_members.hangout_member_id = ?
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [hangoutId, +hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Hangout not found.', reason: 'hangoutNotFound' });
+            res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
             return;
         }
         ;
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
         if (hangoutMemberDetails.is_concluded) {
-            res.status(409).json({ success: false, message: 'Hangout has already been concluded.' });
+            res.status(409).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;
         if (!hangoutMemberDetails.availability_slot_id) {
-            res.status(404).json({ success: false, message: 'No slots found.', reason: 'noSlotsFound' });
+            res.status(404).json({ message: 'No slots found.', reason: 'noSlotsFound' });
             return;
         }
         ;
@@ -605,11 +603,11 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         hangout_member_id = ?
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [+hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: { deletedSlots: resultSetHeader.affectedRows } });
+        res.json({ deletedSlots: resultSetHeader.affectedRows });
     }
     catch (err) {
         console.log(err);
@@ -617,37 +615,37 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
 exports.availabilitySlotsRouter.get('/', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const hangoutId = req.query.hangoutId;
     const hangoutMemberId = req.query.hangoutMemberId;
     if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string') {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout ID.' });
+        res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
     ;
     if (!Number.isInteger(+hangoutMemberId)) {
-        res.status(400).json({ success: false, message: 'Invalid hangout member ID.' });
+        res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
@@ -662,16 +660,16 @@ exports.availabilitySlotsRouter.get('/', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -683,7 +681,7 @@ exports.availabilitySlotsRouter.get('/', async (req, res) => {
         hangout_member_id = ? AND
         hangout_id = ?;`, [+hangoutMemberId, hangoutId]);
         if (validationRows.length === 0) {
-            res.status(401).json({ success: false, message: 'Not a member of this hangout.' });
+            res.status(401).json({ message: 'Not a member of this hangout.' });
             return;
         }
         ;
@@ -708,7 +706,7 @@ exports.availabilitySlotsRouter.get('/', async (req, res) => {
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });

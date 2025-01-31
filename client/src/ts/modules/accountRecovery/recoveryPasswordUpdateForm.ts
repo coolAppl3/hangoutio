@@ -4,9 +4,9 @@ import { validateCode, validateConfirmPassword, validateNewPassword } from "../g
 import { handleRecoverySuspension, handleSignedInUser, reloadWithoutQueryString, } from "./recoveryUtils";
 import revealPassword from "../global/revealPassword";
 import popup from "../global/popup";
-import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
-import { RecoveryUpdatePasswordBody, RecoveryUpdatePasswordData, recoveryUpdatePasswordService, resendAccountRecoveryEmailService } from "../services/accountServices";
+import { RecoveryUpdatePasswordBody, recoveryUpdatePasswordService, resendAccountRecoveryEmailService } from "../services/accountServices";
 
 const passwordUpdateFormElement: HTMLFormElement | null = document.querySelector('#password-update-form');
 
@@ -74,12 +74,10 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
   };
 
   try {
-    const recoveryUpdatePasswordData: AxiosResponse<RecoveryUpdatePasswordData> = await recoveryUpdatePasswordService(recoveryUpdatePasswordBody);
-    const authSessionCreated: boolean = recoveryUpdatePasswordData.data.resData.authSessionCreated;
+    const authSessionCreated: boolean = (await recoveryUpdatePasswordService(recoveryUpdatePasswordBody)).data.authSessionCreated;
+    const redirectHref: string = authSessionCreated ? 'account' : 'sign-in'
 
     popup('Account recovery successful.', 'success');
-
-    const redirectHref: string = authSessionCreated ? 'account' : 'sign-in'
     setTimeout(() => window.location.replace(redirectHref), 1000);
 
   } catch (err: unknown) {

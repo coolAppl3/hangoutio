@@ -11,14 +11,14 @@ exports.authRouter = express_1.default.Router();
 exports.authRouter.post('/signOut', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(409).json({ success: false, message: 'Not signed in.' });
+        res.status(409).json({ message: 'Not signed in.' });
         return;
     }
     ;
     try {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
         await (0, authSessions_1.destroyAuthSession)(authSessionId);
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
@@ -26,7 +26,7 @@ exports.authRouter.post('/signOut', async (req, res) => {
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });

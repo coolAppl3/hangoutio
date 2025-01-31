@@ -44,3 +44,25 @@ export interface AvailabilitySlot {
   slot_start_timestamp: number,
   slot_end_timestamp: number,
 }
+
+export interface Suggestion extends RowDataPacket {
+  suggestion_id: number,
+  hangout_member_id: number,
+  suggestion_title: string,
+  suggestion_description: string,
+  suggestion_start_timestamp: number,
+  suggestion_end_timestamp: number,
+  is_edited: boolean,
+}
+
+export interface SuggestionLikes extends RowDataPacket {
+  suggestion_like_id: number,
+  hangout_member_id: number,
+  suggestion_id: number,
+}
+
+export interface Votes extends RowDataPacket {
+  vote_id: number,
+  hangout_member_id: number,
+  suggestion_id: number,
+}

@@ -18,17 +18,17 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['username', 'password'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidUsername)(requestData.username)) {
-        res.status(400).json({ success: false, message: 'Invalid username.', reason: 'invalidUsername' });
+        res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
         return;
     }
     ;
     if (!(0, userValidation_1.isValidPassword)(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.', reason: 'invalidPassword' });
+        res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
         return;
     }
     ;
@@ -48,14 +48,14 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
         username = ?
       LIMIT 1;`, [requestData.username]);
         if (guestRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Guest account not found.' });
+            res.status(404).json({ message: 'Guest account not found.' });
             return;
         }
         ;
         const guestDetails = guestRows[0];
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, guestDetails.hashed_password);
         if (!isCorrectPassword) {
-            res.status(401).json({ success: false, message: 'Incorrect password.' });
+            res.status(401).json({ message: 'Incorrect password.' });
             return;
         }
         ;
@@ -65,13 +65,13 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
             keepSignedIn: requestData.keepSignedIn,
         });
         if (!authSessionCreated) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         const guestHangoutIdCookieMaxAge = requestData.keepSignedIn ? constants_1.hourMilliseconds * 24 * 7 : constants_1.hourMilliseconds * 6;
         (0, cookieUtils_1.setResponseCookie)(res, 'guestHangoutId', guestDetails.hangout_id, guestHangoutIdCookieMaxAge, false);
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
@@ -79,7 +79,7 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });

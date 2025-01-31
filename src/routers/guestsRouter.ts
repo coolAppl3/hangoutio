@@ -21,17 +21,17 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
 
   const expectedKeys: string[] = ['username', 'password'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
-    res.status(400).json({ success: false, message: 'Invalid request data.' });
+    res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
   if (!isValidUsername(requestData.username)) {
-    res.status(400).json({ success: false, message: 'Invalid username.', reason: 'invalidUsername' });
+    res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
     return;
   };
 
   if (!isValidPassword(requestData.password)) {
-    res.status(400).json({ success: false, message: 'Invalid password.', reason: 'invalidPassword' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
@@ -60,7 +60,7 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
     );
 
     if (guestRows.length === 0) {
-      res.status(404).json({ success: false, message: 'Guest account not found.' });
+      res.status(404).json({ message: 'Guest account not found.' });
       return;
     };
 
@@ -68,7 +68,7 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, guestDetails.hashed_password);
     if (!isCorrectPassword) {
-      res.status(401).json({ success: false, message: 'Incorrect password.' });
+      res.status(401).json({ message: 'Incorrect password.' });
       return;
     };
 
@@ -79,14 +79,14 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
     });
 
     if (!authSessionCreated) {
-      res.status(500).json({ success: false, message: 'Internal server error.' });
+      res.status(500).json({ message: 'Internal server error.' });
       return;
     };
 
     const guestHangoutIdCookieMaxAge: number = requestData.keepSignedIn ? hourMilliseconds * 24 * 7 : hourMilliseconds * 6
 
     setResponseCookie(res, 'guestHangoutId', guestDetails.hangout_id, guestHangoutIdCookieMaxAge, false);
-    res.json({ success: true, resData: {} });
+    res.json({});
 
   } catch (err: unknown) {
     console.log(err);
@@ -95,6 +95,6 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
       return;
     };
 
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    res.status(500).json({ message: 'Internal server error.' });
   };
 });

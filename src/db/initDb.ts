@@ -14,6 +14,7 @@ export async function initDb(): Promise<void> {
   await createHangoutMembersTable();
   await createAvailabilitySlotsTable();
   await createSuggestionsTable();
+  await createSuggestionLikesTable();
   await createVotesTable();
   await createChatTable();
   await createAuthSessionsTable();
@@ -277,13 +278,32 @@ async function createSuggestionsTable(): Promise<void> {
   };
 };
 
+async function createSuggestionLikesTable(): Promise<void> {
+  try {
+    await dbPool.execute(
+      `CREATE TABLE IF NOT EXISTS suggestion_likes (
+        suggestion_like_id INT PRIMARY KEY AUTO_INCREMENT,
+        suggestion_id INT NOT NULL,
+        hangout_member_id INT NOT NULL,
+        hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
+        FOREIGN KEY (suggestion_id) REFERENCES suggestions(suggestion_id) ON DELETE CASCADE,
+        FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
+        UNIQUE (hangout_member_id, suggestion_id)
+      );`
+    );
+
+  } catch (err: unknown) {
+    console.log(err);
+  };
+};
+
 async function createVotesTable(): Promise<void> {
   try {
     await dbPool.execute(
       `CREATE TABLE IF NOT EXISTS votes (
         vote_id INT PRIMARY KEY AUTO_INCREMENT,
-        hangout_member_id INT,
         suggestion_id INT NOT NULL,
+        hangout_member_id INT NOT NULL,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
         FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
         FOREIGN KEY (suggestion_id) REFERENCES suggestions(suggestion_id) ON DELETE CASCADE,

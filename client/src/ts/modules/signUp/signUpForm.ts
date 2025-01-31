@@ -1,5 +1,5 @@
 import { signUpState } from "./signUpState";
-import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
@@ -7,7 +7,7 @@ import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
 import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
-import { AccountSignUpBody, AccountSignUpData, accountSignUpService } from "../services/accountServices";
+import { AccountSignUpBody, accountSignUpService } from "../services/accountServices";
 import { switchToVerificationStage } from "./signUpUtils";
 import LoadingModal from "../global/LoadingModal";
 
@@ -67,8 +67,7 @@ async function signUp(e: SubmitEvent): Promise<void> {
   };
 
   try {
-    const accountSignUpData: AxiosResponse<AccountSignUpData> = await accountSignUpService(accountSignUpBody);
-    const { accountId, verificationExpiryTimestamp } = accountSignUpData.data.resData;
+    const { accountId, verificationExpiryTimestamp } = (await accountSignUpService(accountSignUpBody)).data;
 
     signUpState.accountId = accountId;
     signUpState.verificationExpiryTimestamp = verificationExpiryTimestamp;

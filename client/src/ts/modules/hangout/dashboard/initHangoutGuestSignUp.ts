@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
 import ErrorSpan from "../../global/ErrorSpan";
 import { InfoModal } from "../../global/InfoModal";
@@ -6,7 +6,7 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import revealPassword from "../../global/revealPassword";
 import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateNewUsername, validatePassword } from "../../global/validation";
-import { JoinHangoutAsGuestBody, JoinHangoutAsGuestData, joinHangoutAsGuestService } from "../../services/hangoutMemberServices";
+import { JoinHangoutAsGuestBody, joinHangoutAsGuestService } from "../../services/hangoutMemberServices";
 import { getHangoutDashboardData } from "./hangoutDashboard";
 import { handleHangoutFull } from "./hangoutDashboardUtils";
 
@@ -87,8 +87,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
   };
 
   try {
-    const joinHangoutAsGuestData: AxiosResponse<JoinHangoutAsGuestData> = await joinHangoutAsGuestService(joinHangoutAsGuestBody);
-    const authSessionCreated: boolean = joinHangoutAsGuestData.data.resData.authSessionCreated;
+    const authSessionCreated: boolean = (await joinHangoutAsGuestService(joinHangoutAsGuestBody)).data.authSessionCreated;
 
     popup('Successfully joined hangout.', 'success');
     LoadingModal.remove();

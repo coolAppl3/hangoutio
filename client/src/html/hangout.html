@@ -841,7 +841,7 @@
                   <button
                     type="button"
                     data-goTo="members"
-                    class="btn mt-2 bg-secondary-dark dark:bg-primary text-title-dark dark:text-title hidden xl:block sm:w-full"
+                    class="btn mt-2 bg-description dark:bg-description-dark text-title-dark dark:text-title hidden xl:block sm:w-full"
                     id="dashboard-view-members-btn"
                   >
                     View hangout members
@@ -1021,7 +1021,7 @@
 
                       <button
                         type="button"
-                        class="btn bg-secondary-dark dark:bg-primary text-title-dark dark:text-title w-1/2 sm:w-full mx-auto"
+                        class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title w-1/2 sm:w-full mx-auto"
                       >
                         Start chatting
                       </button>
@@ -1263,19 +1263,102 @@
     >
       <div class="container mb-3 mt-2 md:mt-3">
         <div class="suggestions">
-          <div class="suggestions-search form-group">
-            <label for="suggestions-filter-input">Search suggestions</label>
-            <input
-              type="text"
-              id="suggestions-filter-input"
-              autocomplete="name"
-              placeholder="Suggestion or member"
-              class="placeholder-description/50 dark:placeholder-description-dark/50"
-            />
-            <span
-              class="error-span"
-              data-target="suggestions-filter-input"
-            ></span>
+          <form id="suggestions-form">
+            <div id="suggestions-form-header">
+              <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Add a suggestion</h3>
+              <p class="text-sm md:text-base font-bold text-description dark:text-description-dark mb-1">
+                Share your ideas with everyone and contribute to the hangout.
+              </p>
+              <p class="w-full text-sm md:text-base font-bold text-description dark:text-description-dark">
+                Remaining suggestions:
+                <span
+                  id="suggestions-remaining-span"
+                  class="text-title dark:text-title-dark"
+                  >3.</span
+                >
+              </p>
+
+              <button
+                type="button"
+                class="btn bg-cta dark:bg-cta-dark mt-2 md:w-full"
+                id="suggestions-form-expand-btn"
+              >
+                Add suggestion
+              </button>
+            </div>
+
+            <div id="suggestions-form-container">
+              <div class="form-group">
+                <label for="suggestion-title-input">Title</label>
+                <input
+                  type="text"
+                  id="suggestion-title-input"
+                  autocomplete="name"
+                />
+                <span
+                  class="error-span"
+                  data-target="suggestion-title-input"
+                ></span>
+              </div>
+
+              <div class="form-group">
+                <label for="suggestion-date-time-input">Date and time</label>
+                <input
+                  type="text"
+                  id="suggestion-date-time-input"
+                  autocomplete="name"
+                />
+                <span
+                  class="error-span"
+                  data-target="suggestion-date-time-input"
+                ></span>
+              </div>
+
+              <div class="form-group">
+                <label for="suggestion-description-textarea">Description</label>
+                <textarea id="suggestion-description-textarea"></textarea>
+                <span
+                  class="error-span"
+                  data-target="suggestion-description-textarea"
+                ></span>
+              </div>
+
+              <div class="btn-container flex justify-start items-center md:block">
+                <button
+                  type="submit"
+                  class="btn bg-cta dark:bg-cta-dark mr-1 md:w-full md:mr-0 md:mb-1"
+                >
+                  Add suggestion
+                </button>
+
+                <button
+                  type="button"
+                  class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title md:w-full"
+                  id="suggestions-form-collapse-btn"
+                >
+                  Collapse
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="h-line mb-2"></div>
+
+          <div class="suggestions-search mb-2">
+            <div class="form-group !mb-0">
+              <label for="suggestions-search-input">Search suggestions</label>
+              <input
+                type="text"
+                id="suggestions-search-input"
+                autocomplete="name"
+                placeholder="Example: Boardgames Night"
+                class="placeholder-description/50 dark:placeholder-description-dark/50"
+              />
+              <span
+                class="error-span"
+                data-target="suggestions-search-input"
+              ></span>
+            </div>
           </div>
 
           <div class="suggestions-filter">
@@ -1889,304 +1972,306 @@
           </div>
 
           <div id="suggestions-container">
-            <div
-              class="suggestion"
-              data-suggestion-id="123"
-            >
-              <div class="suggestion-header">
-                <p class="suggestion-title">Table Tennis</p>
-                <p class="suggestion-time">
-                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                  <span class="suggestion-end">18:00</span>
-                </p>
-                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+            <div id="suggestions-container-inner">
+              <div
+                class="suggestion"
+                data-suggestion-id="123"
+              >
+                <div class="suggestion-header">
+                  <p class="suggestion-title">Table Tennis</p>
+                  <p class="suggestion-time">
+                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                    <span class="suggestion-end">18:00</span>
+                  </p>
+                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
 
-                <div class="btn-container pb-3">
-                  <button
-                    type="button"
-                    class="add-vote-btn"
-                    title="Unlocks in voting stage"
-                  >
-                    Add vote
-                  </button>
-
-                  <button
-                    type="button"
-                    class="view-suggestion-btn"
-                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                  >
-                    View details
-                  </button>
-
-                  <div class="rating-container">
-                    <span class="suggestion-likes-count">3</span>
+                  <div class="btn-container pb-3">
+                    <button
+                      type="button"
+                      class="add-vote-btn"
+                      title="Unlocks in voting stage"
+                    >
+                      Add vote
+                    </button>
 
                     <button
                       type="button"
-                      class="like-suggestion-btn"
+                      class="view-suggestion-btn"
+                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
                     >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                          stroke-width="30"
-                        />
-                      </svg>
+                      View details
                     </button>
+
+                    <div class="rating-container">
+                      <span class="suggestion-likes-count">3</span>
+
+                      <button
+                        type="button"
+                        class="like-suggestion-btn"
+                      >
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
+                            stroke-width="30"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <p class="suggestion-description">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
-                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-              </p>
-            </div>
-
-            <div
-              class="suggestion"
-              data-suggestion-id="123"
-            >
-              <div class="suggestion-header">
-                <p class="suggestion-title">Table Tennis</p>
-                <p class="suggestion-time">
-                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                  <span class="suggestion-end">18:00</span>
+                <p class="suggestion-description">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
+                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
                 </p>
-                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+              </div>
 
-                <div class="btn-container pb-3">
-                  <button
-                    type="button"
-                    class="add-vote-btn"
-                    title="Unlocks in voting stage"
-                  >
-                    Add vote
-                  </button>
+              <div
+                class="suggestion"
+                data-suggestion-id="123"
+              >
+                <div class="suggestion-header">
+                  <p class="suggestion-title">Table Tennis</p>
+                  <p class="suggestion-time">
+                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                    <span class="suggestion-end">18:00</span>
+                  </p>
+                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
 
-                  <button
-                    type="button"
-                    class="view-suggestion-btn"
-                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                  >
-                    View details
-                  </button>
-
-                  <div class="rating-container">
-                    <span class="suggestion-likes-count">3</span>
+                  <div class="btn-container pb-3">
+                    <button
+                      type="button"
+                      class="add-vote-btn"
+                      title="Unlocks in voting stage"
+                    >
+                      Add vote
+                    </button>
 
                     <button
                       type="button"
-                      class="like-suggestion-btn"
+                      class="view-suggestion-btn"
+                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
                     >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                          stroke-width="30"
-                        />
-                      </svg>
+                      View details
                     </button>
+
+                    <div class="rating-container">
+                      <span class="suggestion-likes-count">3</span>
+
+                      <button
+                        type="button"
+                        class="like-suggestion-btn"
+                      >
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
+                            stroke-width="30"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <p class="suggestion-description">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
-                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-              </p>
-            </div>
-
-            <div
-              class="suggestion"
-              data-suggestion-id="123"
-            >
-              <div class="suggestion-header">
-                <p class="suggestion-title">Table Tennis</p>
-                <p class="suggestion-time">
-                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                  <span class="suggestion-end">18:00</span>
+                <p class="suggestion-description">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
+                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
                 </p>
-                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+              </div>
 
-                <div class="btn-container pb-3">
-                  <button
-                    type="button"
-                    class="add-vote-btn"
-                    title="Unlocks in voting stage"
-                  >
-                    Add vote
-                  </button>
+              <div
+                class="suggestion"
+                data-suggestion-id="123"
+              >
+                <div class="suggestion-header">
+                  <p class="suggestion-title">Table Tennis</p>
+                  <p class="suggestion-time">
+                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                    <span class="suggestion-end">18:00</span>
+                  </p>
+                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
 
-                  <button
-                    type="button"
-                    class="view-suggestion-btn"
-                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                  >
-                    View details
-                  </button>
-
-                  <div class="rating-container">
-                    <span class="suggestion-likes-count">3</span>
+                  <div class="btn-container pb-3">
+                    <button
+                      type="button"
+                      class="add-vote-btn"
+                      title="Unlocks in voting stage"
+                    >
+                      Add vote
+                    </button>
 
                     <button
                       type="button"
-                      class="like-suggestion-btn"
+                      class="view-suggestion-btn"
+                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
                     >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                          stroke-width="30"
-                        />
-                      </svg>
+                      View details
                     </button>
+
+                    <div class="rating-container">
+                      <span class="suggestion-likes-count">3</span>
+
+                      <button
+                        type="button"
+                        class="like-suggestion-btn"
+                      >
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
+                            stroke-width="30"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <p class="suggestion-description">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
-                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-              </p>
-            </div>
-
-            <div
-              class="suggestion"
-              data-suggestion-id="123"
-            >
-              <div class="suggestion-header">
-                <p class="suggestion-title">Table Tennis</p>
-                <p class="suggestion-time">
-                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                  <span class="suggestion-end">18:00</span>
+                <p class="suggestion-description">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
+                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
                 </p>
-                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+              </div>
 
-                <div class="btn-container pb-3">
-                  <button
-                    type="button"
-                    class="add-vote-btn"
-                    title="Unlocks in voting stage"
-                  >
-                    Add vote
-                  </button>
+              <div
+                class="suggestion"
+                data-suggestion-id="123"
+              >
+                <div class="suggestion-header">
+                  <p class="suggestion-title">Table Tennis</p>
+                  <p class="suggestion-time">
+                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                    <span class="suggestion-end">18:00</span>
+                  </p>
+                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
 
-                  <button
-                    type="button"
-                    class="view-suggestion-btn"
-                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                  >
-                    View details
-                  </button>
-
-                  <div class="rating-container">
-                    <span class="suggestion-likes-count">3</span>
+                  <div class="btn-container pb-3">
+                    <button
+                      type="button"
+                      class="add-vote-btn"
+                      title="Unlocks in voting stage"
+                    >
+                      Add vote
+                    </button>
 
                     <button
                       type="button"
-                      class="like-suggestion-btn"
+                      class="view-suggestion-btn"
+                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
                     >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                          stroke-width="30"
-                        />
-                      </svg>
+                      View details
                     </button>
+
+                    <div class="rating-container">
+                      <span class="suggestion-likes-count">3</span>
+
+                      <button
+                        type="button"
+                        class="like-suggestion-btn"
+                      >
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
+                            stroke-width="30"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <p class="suggestion-description">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
-                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-              </p>
-            </div>
-
-            <div
-              class="suggestion"
-              data-suggestion-id="123"
-            >
-              <div class="suggestion-header">
-                <p class="suggestion-title">Table Tennis</p>
-                <p class="suggestion-time">
-                  On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                  <span class="suggestion-end">18:00</span>
+                <p class="suggestion-description">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
+                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
                 </p>
-                <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
+              </div>
 
-                <div class="btn-container pb-3">
-                  <button
-                    type="button"
-                    class="add-vote-btn"
-                    title="Unlocks in voting stage"
-                  >
-                    Add vote
-                  </button>
+              <div
+                class="suggestion"
+                data-suggestion-id="123"
+              >
+                <div class="suggestion-header">
+                  <p class="suggestion-title">Table Tennis</p>
+                  <p class="suggestion-time">
+                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
+                    <span class="suggestion-end">18:00</span>
+                  </p>
+                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
 
-                  <button
-                    type="button"
-                    class="view-suggestion-btn"
-                    onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                  >
-                    View details
-                  </button>
-
-                  <div class="rating-container">
-                    <span class="suggestion-likes-count">3</span>
+                  <div class="btn-container pb-3">
+                    <button
+                      type="button"
+                      class="add-vote-btn"
+                      title="Unlocks in voting stage"
+                    >
+                      Add vote
+                    </button>
 
                     <button
                       type="button"
-                      class="like-suggestion-btn"
+                      class="view-suggestion-btn"
+                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
                     >
-                      <svg
-                        width="500"
-                        height="500"
-                        viewBox="0 0 500 500"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                          stroke-width="30"
-                        />
-                      </svg>
+                      View details
                     </button>
+
+                    <div class="rating-container">
+                      <span class="suggestion-likes-count">3</span>
+
+                      <button
+                        type="button"
+                        class="like-suggestion-btn"
+                      >
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
+                            stroke-width="30"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
+                <p class="suggestion-description">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
+                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
+                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
+                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
+                </p>
               </div>
-              <p class="suggestion-description">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto debitis
-                officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-              </p>
             </div>
           </div>
 

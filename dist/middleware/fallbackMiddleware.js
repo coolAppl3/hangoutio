@@ -12,7 +12,7 @@ function fallbackMiddleware(req, res) {
         return;
     }
     ;
-    res.status(404).json({ success: false, message: 'Resource not found.' });
+    res.status(404).json({ message: 'Resource not found.' });
 }
 exports.fallbackMiddleware = fallbackMiddleware;
 ;

@@ -193,7 +193,14 @@ async function guestSignIn(): Promise<void> {
 
   try {
     await guestSignInService(guestSignInBody);
-    const guestHangoutId = Cookies.get('guestHangoutId') as string;
+    const guestHangoutId: string | null = Cookies.get('guestHangoutId');
+
+    if (!guestHangoutId) {
+      popup('Internal server error.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
 
     popup('Signed in successfully.', 'success');
 

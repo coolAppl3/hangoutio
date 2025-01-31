@@ -23,7 +23,7 @@ function getRequestCookie(req, cookieName) {
 }
 exports.getRequestCookie = getRequestCookie;
 ;
-function removeRequestCookie(res, cookieName, httpOnly) {
+function removeRequestCookie(res, cookieName, httpOnly = true) {
     res.clearCookie(cookieName, {
         httpOnly,
         secure: true,

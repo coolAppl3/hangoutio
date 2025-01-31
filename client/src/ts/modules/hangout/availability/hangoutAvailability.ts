@@ -217,7 +217,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
   };
 
   try {
-    const availabilitySlotId: number = (await addHangoutAvailabilitySlotService(addHangoutAvailabilitySlotBody)).data.resData.availabilitySlotId;
+    const availabilitySlotId: number = (await addHangoutAvailabilitySlotService(addHangoutAvailabilitySlotBody)).data.availabilitySlotId;
 
     const newAvailabilitySlot: AvailabilitySlot = {
       availability_slot_id: availabilitySlotId,

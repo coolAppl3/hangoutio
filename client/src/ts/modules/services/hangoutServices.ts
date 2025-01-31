@@ -17,11 +17,8 @@ export interface CreateHangoutAsAccountBody {
   votingPeriod: number,
 };
 
-export interface CreateHangoutAsAccountData {
-  success: true,
-  resData: {
-    hangoutId: string,
-  },
+interface CreateHangoutAsAccountData {
+  hangoutId: string,
 };
 
 export async function createHangoutAsAccountService(requestBody: CreateHangoutAsAccountBody): Promise<AxiosResponse<CreateHangoutAsAccountData>> {
@@ -42,12 +39,9 @@ export interface CreateHangoutAsGuestBody {
   displayName: string,
 };
 
-export interface CreateHangoutAsGuestData {
-  success: true,
-  resData: {
-    authSessionCreated: boolean,
-    hangoutId: string,
-  },
+interface CreateHangoutAsGuestData {
+  authSessionCreated: boolean,
+  hangoutId: string,
 };
 
 export async function createHangoutAsGuestService(requestBody: CreateHangoutAsGuestBody): Promise<AxiosResponse<CreateHangoutAsGuestData>> {
@@ -56,11 +50,8 @@ export async function createHangoutAsGuestService(requestBody: CreateHangoutAsGu
 
 // --- --- ---
 
-export interface HangoutExistsData {
-  success: true,
-  resData: {
-    isPasswordProtected: boolean,
-  },
+interface HangoutExistsData {
+  isPasswordProtected: boolean,
 };
 
 export async function getHangoutExistsService(hangoutId: string): Promise<AxiosResponse<HangoutExistsData>> {
@@ -83,11 +74,6 @@ export interface InitialHangoutData {
   latestHangoutEvents: HangoutEvent[],
 };
 
-export interface InitialHangoutDataResponse {
-  success: true,
-  resData: InitialHangoutData,
-};
-
-export async function getInitialHangoutData(hangoutId: string): Promise<AxiosResponse<InitialHangoutDataResponse>> {
+export async function getInitialHangoutData(hangoutId: string): Promise<AxiosResponse<InitialHangoutData>> {
   return axios.get(`${hangoutsApiUrl}/details/initial?hangoutId=${hangoutId}`);
 };

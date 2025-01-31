@@ -1,11 +1,11 @@
-import axios, { AxiosError, AxiosResponse } from "../../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
 import { InfoModal } from "../../global/InfoModal";
 import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
-import { getHangoutExistsService, HangoutExistsData } from "../../services/hangoutServices";
+import { getHangoutExistsService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString, getDayName, getTime } from "../globalHangoutUtils";
 import { HangoutMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
@@ -88,8 +88,7 @@ export async function handleNotSignedIn(hangoutId: string): Promise<void> {
   let isPasswordProtected: boolean = false;
 
   try {
-    const hangoutExistsData: AxiosResponse<HangoutExistsData> = await getHangoutExistsService(hangoutId);
-    isPasswordProtected = hangoutExistsData.data.resData.isPasswordProtected;
+    isPasswordProtected = (await getHangoutExistsService(hangoutId)).data.isPasswordProtected;
 
   } catch (err: unknown) {
     console.log(err);

@@ -20,17 +20,16 @@ export async function handleIncorrectAccountPassword(res: Response, accountId: n
 
     if (isLocked) {
       await purgeAuthSessions(accountId, 'account');
-      removeRequestCookie(res, 'authSessionId', true);
+      removeRequestCookie(res, 'authSessionId');
     };
 
     res.status(401).json({
-      success: false,
       message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
       reason: isLocked ? 'accountLocked' : undefined,
     });
 
   } catch (err: unknown) {
     console.log(err);
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    res.status(500).json({ message: 'Internal server error.' });
   };
 };

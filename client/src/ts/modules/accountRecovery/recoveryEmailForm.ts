@@ -1,11 +1,11 @@
 import { recoveryState } from "./recoveryState";
-import axios, { AxiosError, AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { isValidQueryString, isValidTimestamp, isValidCode, validateEmail } from "../global/validation";
-import { StartAccountRecoveryData, startAccountRecoveryService } from "../services/accountServices";
+import { startAccountRecoveryService } from "../services/accountServices";
 import { signOut } from "../global/signOut";
 import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
@@ -64,9 +64,7 @@ async function startAccountRecovery(e: SubmitEvent): Promise<void> {
   recoveryState.recoveryEmail = recoveryEmailInput.value;
 
   try {
-    const sendRecoveryEmailData: AxiosResponse<StartAccountRecoveryData> = await startAccountRecoveryService({ email: recoveryState.recoveryEmail });
-
-    const { accountId, expiryTimestamp } = sendRecoveryEmailData.data.resData;
+    const { accountId, expiryTimestamp } = (await startAccountRecoveryService({ email: recoveryState.recoveryEmail })).data;
 
     recoveryState.accountId = accountId;
     recoveryState.expiryTimestamp = expiryTimestamp;

@@ -47,38 +47,38 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['email', 'username', 'displayName', 'password'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
+        res.status(400).json({ message: 'Invalid email address.', reason: 'invalidEmail' });
         return;
     }
     ;
     if (!userValidation.isValidDisplayName(requestData.displayName)) {
-        res.status(400).json({ success: false, message: 'Invalid display name.', reason: 'invalidDisplayName' });
+        res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
         return;
     }
     ;
     if (!userValidation.isValidUsername(requestData.username)) {
-        res.status(400).json({ success: false, message: 'Invalid username.', reason: 'invalidUsername' });
+        res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.', reason: 'invalidPassword' });
+        res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
         return;
     }
     ;
     if (requestData.username === requestData.password) {
-        res.status(409).json({ success: false, message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+        res.status(409).json({ message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
         return;
     }
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: 'You must sign out before proceeding.', reason: 'signedIn' });
+        res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -98,7 +98,6 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
             emailUsernameRows.forEach((row) => takenDataSet.add(row.taken_status));
             if (takenDataSet.has(1) && takenDataSet.has(2)) {
                 res.status(409).json({
-                    success: false,
                     message: 'Email address and username are both already taken.',
                     reason: 'emailAndUsernameTaken',
                 });
@@ -106,16 +105,16 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
             }
             ;
             if (takenDataSet.has(1)) {
-                res.status(409).json({ success: false, message: 'Email address is already taken.', reason: 'emailTaken' });
+                res.status(409).json({ message: 'Email address is already taken.', reason: 'emailTaken' });
                 return;
             }
             ;
             if (takenDataSet.has(2)) {
-                res.status(409).json({ success: false, message: 'Username is already taken.', reason: 'usernameTaken' });
+                res.status(409).json({ message: 'Username is already taken.', reason: 'usernameTaken' });
                 return;
             }
             ;
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -141,7 +140,7 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         expiry_timestamp
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountId, verificationCode, 1, 0, verificationExpiryTimestamp]);
         await connection.commit();
-        res.status(201).json({ success: true, resData: { accountId, verificationExpiryTimestamp } });
+        res.status(201).json({ accountId, verificationExpiryTimestamp });
         await (0, emailServices_1.sendVerificationEmail)({
             to: requestData.email,
             accountId,
@@ -154,22 +153,22 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         console.log(err);
         await connection?.rollback();
         if (!(0, isSqlError_1.isSqlError)(err)) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         const sqlError = err;
         if (sqlError.errno === 1062 && sqlError.sqlMessage?.endsWith(`for key 'email'`)) {
-            res.status(409).json({ success: false, message: 'Email address is already taken.', reason: 'emailTaken' });
+            res.status(409).json({ message: 'Email address is already taken.', reason: 'emailTaken' });
             return;
         }
         ;
         if (sqlError.errno === 1062 && sqlError.sqlMessage?.endsWith(`for key 'username'`)) {
-            res.status(409).json({ success: false, message: 'Username is already taken.', reason: 'usernameTaken' });
+            res.status(409).json({ message: 'Username is already taken.', reason: 'usernameTaken' });
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -181,12 +180,12 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['accountId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.accountId)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'invalidAccountId' });
+        res.status(400).json({ message: 'Invalid account ID.', reason: 'invalidAccountId' });
         return;
     }
     ;
@@ -208,23 +207,23 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         accounts.account_id = ?
       LIMIT 1;`, [requestData.accountId]);
         if (accountRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Account not found.' });
+            res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
         if (accountDetails.is_verified) {
-            res.status(409).json({ success: false, message: 'Account already verified.', reason: 'alreadyVerified' });
+            res.status(409).json({ message: 'Account already verified.', reason: 'alreadyVerified' });
             return;
         }
         ;
         if (!accountDetails.verification_id) {
-            res.status(404).json({ success: false, message: 'Verification request not found.' });
+            res.status(404).json({ message: 'Verification request not found.' });
             return;
         }
         ;
         if (accountDetails.verification_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(403).json({ success: false, message: 'Verification emails limit reached.', reason: 'emailLimitReached' });
+            res.status(403).json({ message: 'Verification emails limit reached.', reason: 'emailLimitReached' });
             return;
         }
         ;
@@ -235,11 +234,11 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
       WHERE
         verification_id = ?;`, [accountDetails.verification_id]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: { verificationEmailsSent: accountDetails.verification_emails_sent } });
+        res.json({ verificationEmailsSent: accountDetails.verification_emails_sent });
         await (0, emailServices_1.sendVerificationEmail)({
             to: accountDetails.email,
             accountId: requestData.accountId,
@@ -250,7 +249,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -259,23 +258,23 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['accountId', 'verificationCode'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.accountId)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'accountId' });
+        res.status(400).json({ message: 'Invalid account ID.', reason: 'accountId' });
         return;
     }
     ;
     if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-        res.status(400).json({ success: false, message: 'Invalid verification code.', reason: 'verificationCode' });
+        res.status(400).json({ message: 'Invalid verification code.', reason: 'verificationCode' });
         return;
     }
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: 'You must sign out before proceeding.', reason: 'signedIn' });
+        res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -295,13 +294,13 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
         accounts.account_id = ?
       LIMIT 1;`, [requestData.accountId]);
         if (accountRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Account not found.' });
+            res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
         if (accountDetails.is_verified) {
-            res.status(409).json({ success: false, message: 'Account already verified.' });
+            res.status(409).json({ message: 'Account already verified.' });
             return;
         }
         ;
@@ -312,7 +311,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
             accounts
           WHERE
             account_id = ?;`, [requestData.accountId]);
-                res.status(401).json({ success: false, message: 'Incorrect verification code.', reason: 'accountDeleted' });
+                res.status(401).json({ message: 'Incorrect verification code.', reason: 'accountDeleted' });
                 return;
             }
             ;
@@ -322,7 +321,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
           failed_verification_attempts = failed_verification_attempts + 1
         WHERE
           verification_id = ?;`, [accountDetails.verification_id]);
-            res.status(401).json({ success: false, message: 'Incorrect verification code.' });
+            res.status(401).json({ message: 'Incorrect verification code.' });
             return;
         }
         ;
@@ -336,7 +335,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
         account_id = ?;`, [true, requestData.accountId]);
         if (firstResultSetHeader.affectedRows === 0) {
             await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -346,7 +345,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
         verification_id = ?;`, [accountDetails.verification_id]);
         if (secondResultSetHeader.affectedRows === 0) {
             await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -356,12 +355,12 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
             user_type: 'account',
             keepSignedIn: false,
         });
-        res.json({ success: true, resData: { authSessionCreated } });
+        res.json({ authSessionCreated });
     }
     catch (err) {
         console.log(err);
         await connection?.rollback();
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -373,17 +372,17 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['email', 'password', 'keepSignedIn'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
+        res.status(400).json({ message: 'Invalid email address.', reason: 'invalidEmail' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid account password.', reason: 'invalidPassword' });
+        res.status(400).json({ message: 'Invalid account password.', reason: 'invalidPassword' });
         return;
     }
     ;
@@ -404,18 +403,18 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         email = ?
       LIMIT 1;`, [requestData.email]);
         if (accountRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Account not found.' });
+            res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
         if (accountDetails.failed_sign_in_attempts >= constants_1.FAILED_SIGN_IN_LIMIT) {
-            res.status(403).json({ success: false, message: 'Account locked.', reason: 'accountLocked' });
+            res.status(403).json({ message: 'Account locked.', reason: 'accountLocked' });
             return;
         }
         ;
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: 'Account unverified.', reason: 'unverified' });
+            res.status(403).json({ message: 'Account unverified.', reason: 'unverified' });
             return;
         }
         ;
@@ -440,15 +439,15 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
             keepSignedIn: requestData.keepSignedIn,
         });
         if (!authSessionCreated) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -457,18 +456,18 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['email'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidEmail(requestData.email)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.', reason: 'invalidEmail' });
+        res.status(400).json({ message: 'Invalid email address.', reason: 'invalidEmail' });
         return;
     }
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: 'You must sign out before proceeding.', reason: 'signedIn' });
+        res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -488,20 +487,19 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
         accounts.email = ?
       LIMIT 1;`, [requestData.email]);
         if (accountRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Account not found.' });
+            res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
         if (!accountDetails.is_verified) {
-            res.status(403).json({ success: false, message: `Can't recover an unverified account.`, reason: 'accountUnverified' });
+            res.status(403).json({ message: `Can't recover an unverified account.`, reason: 'accountUnverified' });
             return;
         }
         ;
         if (accountDetails.expiry_timestamp) {
             if (accountDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(403).json({
-                    success: false,
                     message: 'Recovery suspended.',
                     reason: 'recoverySuspended',
                     resData: {
@@ -512,7 +510,6 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
             }
             ;
             res.status(409).json({
-                success: false,
                 message: 'Ongoing recovery request found.',
                 reason: 'ongoingRequest',
                 resData: {
@@ -532,7 +529,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
           recovery_emails_sent,
           failed_recovery_attempts
         ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountDetails.account_id, recoveryCode, expiryTimestamp, 1, 0]);
-        res.json({ success: true, resData: { accountId: accountDetails.account_id, expiryTimestamp } });
+        res.json({ accountId: accountDetails.account_id, expiryTimestamp });
         await (0, emailServices_1.sendRecoveryEmail)({
             to: requestData.email,
             accountId: accountDetails.account_id,
@@ -543,7 +540,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -552,12 +549,12 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['accountId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.accountId)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'invalidAccountId' });
+        res.status(400).json({ message: 'Invalid account ID.', reason: 'invalidAccountId' });
         return;
     }
     ;
@@ -577,19 +574,18 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
       WHERE
         accounts.account_id = ?;`, [requestData.accountId]);
         if (accountRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Account not found.', reason: 'accountNotFound' });
+            res.status(404).json({ message: 'Account not found.', reason: 'accountNotFound' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
         if (!accountDetails.recovery_code) {
-            res.status(404).json({ success: false, message: 'Recovery request not found.', reason: 'requestNotFound' });
+            res.status(404).json({ message: 'Recovery request not found.', reason: 'requestNotFound' });
             return;
         }
         ;
         if (accountDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
-                success: false,
                 message: 'Recovery suspended.',
                 reason: 'recoverySuspended',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
@@ -598,7 +594,7 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
         }
         ;
         if (accountDetails.recovery_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(409).json({ success: false, message: 'Recovery emails limit reached.' });
+            res.status(409).json({ message: 'Recovery emails limit reached.' });
             return;
         }
         ;
@@ -610,11 +606,11 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
         account_id = ?
       LIMIT 1;`, [requestData.accountId]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({});
         await (0, emailServices_1.sendRecoveryEmail)({
             to: accountDetails.email,
             accountId: accountDetails.user_id,
@@ -625,7 +621,7 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -634,28 +630,28 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
     const requestData = req.body;
     const expectedKeys = ['accountId', 'recoveryCode', 'newPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.accountId)) {
-        res.status(400).json({ success: false, message: 'Invalid account ID.', reason: 'invalidAccountId' });
+        res.status(400).json({ message: 'Invalid account ID.', reason: 'invalidAccountId' });
         return;
     }
     ;
     if (!userValidation.isValidRandomCode(requestData.recoveryCode)) {
-        res.status(400).json({ success: false, message: 'Invalid recovery code.', reason: 'invalidRecoveryCode' });
+        res.status(400).json({ message: 'Invalid recovery code.', reason: 'invalidRecoveryCode' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid new password.', reason: 'invalidPassword' });
+        res.status(400).json({ message: 'Invalid new password.', reason: 'invalidPassword' });
         return;
     }
     ;
     const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (existingAuthSessionId) {
-        res.status(403).json({ success: false, message: 'You must sign out before proceeding.', reason: 'signedIn' });
+        res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
         return;
     }
     ;
@@ -673,14 +669,13 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
         account_id = :accountId
       LIMIT 1;`, { accountId: requestData.accountId });
         if (recoveryRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Recovery request not found.' });
+            res.status(404).json({ message: 'Recovery request not found.' });
             return;
         }
         ;
         const recoveryDetails = recoveryRows[0];
         if (recoveryDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
-                success: false,
                 message: 'Recovery suspended.',
                 reason: 'recoverySuspended',
                 resData: {
@@ -699,7 +694,6 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
           recovery_id = ?;`, [recoveryDetails.recovery_id]);
             if (recoveryDetails.failed_recovery_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(401).json({
-                    success: false,
                     message: 'Incorrect recovery code.',
                     reason: 'recoverySuspended',
                     requestData: {
@@ -709,12 +703,12 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
                 return;
             }
             ;
-            res.status(401).json({ success: false, message: 'Incorrect recovery code.', reason: 'incorrectRecoveryCode' });
+            res.status(401).json({ message: 'Incorrect recovery code.', reason: 'incorrectRecoveryCode' });
             return;
         }
         ;
         if (recoveryDetails.username === requestData.newPassword) {
-            res.status(409).json({ success: false, message: `New password can't be identical to username.` });
+            res.status(409).json({ message: `New password can't be identical to username.` });
             return;
         }
         ;
@@ -727,7 +721,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
       WHERE
         account_id = ?;`, [newHashedPassword, 0, requestData.accountId]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -740,11 +734,11 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
             user_type: 'account',
             keepSignedIn: false,
         });
-        res.json({ success: true, resData: { authSessionCreated } });
+        res.json({ authSessionCreated });
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -752,25 +746,25 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['password'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.' });
+        res.status(400).json({ message: 'Invalid password.' });
         return;
     }
     ;
@@ -785,16 +779,16 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)('authSessionId');
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -812,8 +806,8 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         account_id = ?`, [authSessionDetails.user_id]);
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -833,7 +827,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         expiry_timestamp,
         failed_deletion_attempts
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, confirmationCode, expiryTimestamp]);
-            res.json({ success: true, resData: {} });
+            res.json({});
             await (0, emailServices_1.sendDeletionConfirmationEmail)({
                 to: accountDetails.email,
                 confirmationCode,
@@ -845,7 +839,6 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         const requestSuspended = accountDetails.failed_deletion_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
         if (requestSuspended) {
             res.status(403).json({
-                success: false,
                 message: 'Deletion request suspended.',
                 reason: 'requestSuspended',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
@@ -854,7 +847,6 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         }
         ;
         res.status(409).json({
-            success: false,
             message: 'Deletion request detected.',
             reason: 'requestDetected',
             resData: { expiryTimestamp: accountDetails.expiry_timestamp, failedDeletionAttempts: accountDetails.failed_deletion_attempts },
@@ -862,7 +854,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -870,30 +862,30 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['password', 'confirmationCode'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.', reason: 'invalidPassword' });
+        res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
         return;
     }
     ;
     if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
-        res.status(400).json({ success: false, message: 'Invalid confirmation code.', reason: 'invalidCode' });
+        res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidCode' });
         return;
     }
     ;
@@ -908,16 +900,16 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -940,8 +932,8 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
       LIMIT 1;`, [authSessionDetails.user_id]);
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -953,14 +945,13 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         }
         ;
         if (!accountDetails.deletion_id) {
-            res.status(404).json({ success: false, message: 'Deletion request not found.' });
+            res.status(404).json({ message: 'Deletion request not found.' });
             return;
         }
         ;
         const requestSuspended = accountDetails.failed_deletion_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
         if (requestSuspended) {
             res.status(403).json({
-                success: false,
                 message: 'Deletion request suspended.',
                 reason: 'requestSuspended',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
@@ -973,7 +964,7 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
             const toBeSuspended = accountDetails.failed_deletion_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
             if (toBeSuspended) {
                 await (0, authSessions_1.purgeAuthSessions)(authSessionDetails.user_id, 'account');
-                (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+                (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             }
             ;
             const expiryTimestampValue = toBeSuspended
@@ -987,7 +978,6 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         WHERE
           deletion_id = ?;`, [expiryTimestampValue, accountDetails.deletion_id]);
             res.status(401).json({
-                success: false,
                 message: 'Incorrect confirmation code.',
                 reason: toBeSuspended ? 'requestSuspended' : 'incorrectCode',
                 resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : undefined,
@@ -1007,15 +997,15 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
       WHERE
         account_id = ?;`, [authSessionDetails.user_id]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -1023,30 +1013,30 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['currentPassword', 'newPassword'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.currentPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid password.' });
+        res.status(400).json({ message: 'Invalid password.' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-        res.status(400).json({ success: false, message: 'Invalid new password.' });
+        res.status(400).json({ message: 'Invalid new password.' });
         return;
     }
     ;
@@ -1061,16 +1051,16 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1085,8 +1075,8 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         account_id = ?;`, [authSessionDetails.user_id]);
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -1100,7 +1090,6 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         const areIdenticalPasswords = await bcrypt_1.default.compare(requestData.newPassword, accountDetails.hashed_password);
         if (areIdenticalPasswords) {
             res.status(409).json({
-                success: false,
                 message: `New password can't be identical to current password.`,
                 reason: 'identicalPasswords'
             });
@@ -1108,7 +1097,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         }
         ;
         if (accountDetails.username === requestData.newPassword) {
-            res.status(409).json({ success: false, message: `New password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+            res.status(409).json({ message: `New password can't be identical to username.`, reason: 'passwordEqualsUsername' });
             return;
         }
         ;
@@ -1120,7 +1109,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
       WHERE
         account_id = ?;`, [newHashedPassword, authSessionDetails.user_id]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -1130,11 +1119,11 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
             user_type: 'account',
             keepSignedIn: false,
         });
-        res.json({ success: true, resData: { authSessionCreated } });
+        res.json({ authSessionCreated });
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -1142,30 +1131,30 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['password', 'newEmail'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidEmail(requestData.newEmail)) {
-        res.status(400).json({ success: false, message: 'Invalid email address.' });
+        res.status(400).json({ message: 'Invalid email address.' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.' });
+        res.status(400).json({ message: 'Invalid password.' });
         return;
     }
     ;
@@ -1181,16 +1170,16 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1211,8 +1200,8 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         const accountDetails = accountRows[0];
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -1225,7 +1214,6 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         if (accountDetails.expiry_timestamp) {
             if (accountDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(403).json({
-                    success: false,
                     message: 'Request is suspended due to too many failed attempts.',
                     reason: 'requestSuspended',
                     resData: { expiryTimestamp: accountDetails.expiry_timestamp },
@@ -1234,7 +1222,6 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
             }
             ;
             res.status(409).json({
-                success: false,
                 message: 'Ongoing email update request found.',
                 reason: 'ongoingRequest',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
@@ -1243,7 +1230,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         }
         ;
         if (requestData.newEmail === accountDetails.email) {
-            res.status(409).json({ success: false, message: 'This email is already assigned to your account.', reason: 'identicalEmail' });
+            res.status(409).json({ message: 'This email is already assigned to your account.', reason: 'identicalEmail' });
             return;
         }
         ;
@@ -1255,7 +1242,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
       (SELECT 1 FROM email_update WHERE new_email = :newEmail LIMIT 1);`, { newEmail: requestData.newEmail });
         if (emailRows.length > 0) {
             await connection.rollback();
-            res.status(409).json({ success: false, message: 'Email address is already taken.', reason: 'emailTaken' });
+            res.status(409).json({ message: 'Email address is already taken.', reason: 'emailTaken' });
             return;
         }
         ;
@@ -1270,7 +1257,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
           failed_update_attempts
         ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]);
         await connection.commit();
-        res.json({ success: true, resData: {} });
+        res.json({});
         await (0, emailServices_1.sendEmailUpdateEmail)({
             to: requestData.newEmail,
             verificationCode: newVerificationCode,
@@ -1280,7 +1267,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
     catch (err) {
         console.log(err);
         await connection?.rollback();
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -1290,13 +1277,13 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
 exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
@@ -1311,16 +1298,16 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1338,14 +1325,13 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         account_id = :accountId
       LIMIT 1;`, { accountId: authSessionDetails.user_id });
         if (emailUpdateRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Email update request not found.' });
+            res.status(404).json({ message: 'Email update request not found.' });
             return;
         }
         ;
         const emailUpdateDetails = emailUpdateRows[0];
         if (emailUpdateDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
-                success: false,
                 message: 'Request is suspended due to too many failed attempts.',
                 reason: 'requestSuspended',
                 resData: { expiryTimestamp: emailUpdateDetails.expiry_timestamp },
@@ -1354,7 +1340,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         }
         ;
         if (emailUpdateDetails.update_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(409).json({ success: false, message: 'Update emails limit reached.' });
+            res.status(409).json({ message: 'Update emails limit reached.' });
             return;
         }
         ;
@@ -1366,11 +1352,11 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         account_id = ?
       LIMIT 1;`, [authSessionDetails.user_id]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({});
         await (0, emailServices_1.sendEmailUpdateEmail)({
             to: emailUpdateDetails.newEmail,
             verificationCode: emailUpdateDetails.verification_code,
@@ -1379,7 +1365,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -1387,30 +1373,30 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['password', 'verificationCode'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(401).json({ success: false, message: 'Invalid password.' });
+        res.status(401).json({ message: 'Invalid password.' });
         return;
     }
     ;
     if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-        res.status(400).json({ success: false, message: 'Invalid verification code.' });
+        res.status(400).json({ message: 'Invalid verification code.' });
         return;
     }
     ;
@@ -1426,16 +1412,16 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
       WHERE
         sessions_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1459,20 +1445,19 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
       LIMIT 1;`, [authSessionDetails.user_id]);
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
         const accountDetails = accountRows[0];
         if (!accountDetails.update_id) {
-            res.status(404).json({ success: false, message: 'Email update request not found.' });
+            res.status(404).json({ message: 'Email update request not found.' });
             return;
         }
         ;
         if (accountDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
-                success: false,
                 message: 'Email update request suspended.',
                 reason: 'requestSuspended.',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
@@ -1498,11 +1483,10 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             update_id = ?;`, [Date.now(), accountDetails.update_id]);
             if (requestSuspended) {
                 await (0, authSessions_1.purgeAuthSessions)(authSessionDetails.user_id, 'account');
-                (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+                (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             }
             ;
             res.status(401).json({
-                success: false,
                 message: 'Incorrect verification code.',
                 reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
             });
@@ -1523,7 +1507,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         account_id = ?;`, [accountDetails.new_email, authSessionDetails.user_id]);
         if (firstResultSetHeader.affectedRows === 0) {
             await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -1534,7 +1518,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
       LIMIT 1;`, [authSessionDetails.user_id]);
         if (secondResultSetHeader.affectedRows === 0) {
             await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -1545,12 +1529,12 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             user_type: 'account',
             keepSignedIn: false,
         });
-        res.json({ success: true, resData: { authSessionCreated } });
+        res.json({ authSessionCreated });
     }
     catch (err) {
         console.log(err);
         await connection?.rollback();
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -1561,31 +1545,31 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['password', 'newDisplayName'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ success: false, message: 'Invalid password.' });
+        res.status(400).json({ message: 'Invalid password.' });
         return;
     }
     ;
     let connection;
     if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
-        res.status(400).json({ success: false, message: 'Invalid display name.' });
+        res.status(400).json({ message: 'Invalid display name.' });
         return;
     }
     ;
@@ -1600,16 +1584,16 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1624,8 +1608,8 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         account_id = ?;`, [authSessionDetails.user_id]);
         if (accountRows.length === 0) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
@@ -1637,7 +1621,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         }
         ;
         if (requestData.newDisplayName === accountDetails.display_name) {
-            res.status(409).json({ success: false, message: `New display name can't be identical to current display name` });
+            res.status(409).json({ message: `New display name can't be identical to current display name` });
             return;
         }
         ;
@@ -1651,7 +1635,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         account_id = ?;`, [requestData.newDisplayName, authSessionDetails.user_id]);
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
@@ -1662,12 +1646,12 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
       WHERE
         account_id = ?;`, [requestData.newDisplayName]);
         await connection.commit();
-        res.json({ success: true, resData: { newDisplayName: requestData.newDisplayName } });
+        res.json({ newDisplayName: requestData.newDisplayName });
     }
     catch (err) {
         console.log(err);
         await connection?.rollback();
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -1678,25 +1662,25 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['requesteeUsername'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!userValidation.isValidUsername(requestData.requesteeUsername)) {
-        res.status(400).json({ success: false, message: 'Invalid requestee username.' });
+        res.status(400).json({ message: 'Invalid requestee username.' });
         return;
     }
     ;
@@ -1711,16 +1695,16 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1733,13 +1717,13 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         username = ?
       LIMIT 1;`, [requestData.requesteeUsername, authSessionDetails.user_id]);
         if (requesteeRows.length === 0) {
-            res.status(404).json({ success: false, message: 'User not found.' });
+            res.status(404).json({ message: 'User not found.' });
             return;
         }
         ;
         const requesteeId = requesteeRows[0].requestee_id;
         if (requesteeId === authSessionDetails.user_id) {
-            res.status(409).json({ success: false, message: 'Can not add yourself as a friend.' });
+            res.status(409).json({ message: 'Can not add yourself as a friend.' });
             return;
         }
         ;
@@ -1765,12 +1749,12 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         const alreadyFriends = friendshipRows[0][0].already_friends === 1;
         const requestAlreadySent = friendshipRows[1][0].request_already_sent === 1;
         if (alreadyFriends) {
-            res.status(409).json({ success: false, message: 'Already friends.' });
+            res.status(409).json({ message: 'Already friends.' });
             return;
         }
         ;
         if (requestAlreadySent) {
-            res.status(409).json({ success: false, message: 'Friend request already sent.' });
+            res.status(409).json({ message: 'Friend request already sent.' });
             return;
         }
         ;
@@ -1779,22 +1763,22 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         requestee_id,
         request_timestamp
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, requesteeId, Date.now()]);
-        res.json({ success: true, resData: {} });
+        res.json({});
         return;
     }
     catch (err) {
         console.log(err);
         if (!(0, isSqlError_1.isSqlError)(err)) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         if (err.errno === 1062) {
-            res.status(409).json({ success: false, message: 'Friend request already sent.' });
+            res.status(409).json({ message: 'Friend request already sent.' });
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -1802,25 +1786,25 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['friendRequestId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.friendRequestId)) {
-        res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
+        res.status(400).json({ message: 'Invalid friend request ID.' });
         return;
     }
     ;
@@ -1836,16 +1820,16 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1857,7 +1841,7 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
       WHERE
         request_id = ?;`, [requestData.friendRequestId]);
         if (friendRequestRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Friend request not found.' });
+            res.status(404).json({ message: 'Friend request not found.' });
             return;
         }
         ;
@@ -1878,28 +1862,28 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
       LIMIT 2;`, { accountId: authSessionDetails.user_id, requesterId });
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         await connection.commit();
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
         await connection?.rollback();
         if (!(0, isSqlError_1.isSqlError)(err)) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         const sqlError = err;
         if (sqlError.errno === 1062) {
-            res.status(409).json({ success: false, message: 'Already friends.' });
+            res.status(409).json({ message: 'Already friends.' });
             return;
         }
         ;
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     finally {
         connection?.release();
@@ -1910,25 +1894,25 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['friendRequestId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.friendRequestId)) {
-        res.status(400).json({ success: false, message: 'Invalid friend request ID.' });
+        res.status(400).json({ message: 'Invalid friend request ID.' });
     }
     ;
     try {
@@ -1942,16 +1926,16 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1960,15 +1944,15 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
       WHERE
         request_id = ?;`, [requestData.friendRequestId]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(404).json({ success: false, message: 'Friend request not found.' });
+            res.status(404).json({ message: 'Friend request not found.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });
@@ -1976,25 +1960,25 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     if (!authUtils.isValidAuthSessionId(authSessionId)) {
-        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-        res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
         return;
     }
     ;
     const requestData = req.body;
     const expectedKeys = ['friendshipId'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
-        res.status(400).json({ success: false, message: 'Invalid request data.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.friendshipId)) {
-        res.status(400).json({ success: false, message: 'Invalid friendship ID.' });
+        res.status(400).json({ message: 'Invalid friendship ID.' });
         return;
     }
     ;
@@ -2009,16 +1993,16 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
       WHERE
         session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
         const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
-            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
-            res.status(401).json({ success: false, message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -2030,7 +2014,7 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
       WHERE
         friendship_id = ?;`, [requestData.friendshipId]);
         if (friendshipRows.length === 0) {
-            res.status(404).json({ success: false, message: 'Friend not found.' });
+            res.status(404).json({ message: 'Friend not found.' });
             return;
         }
         ;
@@ -2042,15 +2026,15 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
         (account_id = :friendId AND friend_id = :accountId)
       LIMIT 2;`, { accountId: authSessionDetails.user_id, friendId });
         if (resultSetHeader.affectedRows !== 2) {
-            res.status(500).json({ success: false, message: 'Internal server error.' });
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        res.json({ success: true, resData: {} });
+        res.json({});
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
     ;
 });

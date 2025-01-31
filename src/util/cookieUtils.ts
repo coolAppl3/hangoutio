@@ -24,7 +24,7 @@ export function getRequestCookie(req: Request, cookieName: AllowedCookieNames): 
   return null;
 };
 
-export function removeRequestCookie(res: Response, cookieName: AllowedCookieNames, httpOnly: boolean): void {
+export function removeRequestCookie(res: Response, cookieName: AllowedCookieNames, httpOnly: boolean = true): void {
   res.clearCookie(cookieName, {
     httpOnly,
     secure: true,
