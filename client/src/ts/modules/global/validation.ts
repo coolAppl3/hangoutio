@@ -31,6 +31,11 @@ export function validateHangoutTitle(input: HTMLInputElement): boolean {
     return false;
   };
 
+  if (title.trim() !== title) {
+    ErrorSpan.display(input, 'Whitespace must not exist at either ends of the title.');
+    return false;
+  };
+
   if (title.length < 3) {
     ErrorSpan.display(input, 'Title must contain at least 3 characters.');
     return false;
@@ -38,11 +43,6 @@ export function validateHangoutTitle(input: HTMLInputElement): boolean {
 
   if (title.length > 25) {
     ErrorSpan.display(input, 'Title must not exceed 25 characters.');
-    return false;
-  };
-
-  if (title.trim() !== title) {
-    ErrorSpan.display(input, 'Whitespace must not exist at either ends of the title.');
     return false;
   };
 
@@ -146,7 +146,7 @@ export function validateNewUsername(input: HTMLInputElement): boolean {
   };
 
   if (username.length < 5) {
-    ErrorSpan.display(input, 'Username must contain at least 5 characters.');
+    ErrorSpan.display(input, 'Username must be at least 5 characters long.');
     return false;
   };
 
@@ -186,17 +186,17 @@ export function validateDisplayName(input: HTMLInputElement): boolean {
   const displayName: string = input.value;
 
   if (displayName === '') {
-    ErrorSpan.display(input, 'A display name is required.');
-    return false;
-  };
-
-  if (displayName.length > 25) {
-    ErrorSpan.display(input, 'Display name must not exceed 25 characters.');
+    ErrorSpan.display(input, 'A valid display name is required.');
     return false;
   };
 
   if (displayName.trim() !== displayName) {
     ErrorSpan.display(input, 'Whitespace must not exist at either ends of the display name.');
+    return false;
+  };
+
+  if (displayName.length > 25) {
+    ErrorSpan.display(input, 'Display name must not exceed 25 characters.');
     return false;
   };
 
@@ -241,6 +241,73 @@ export function validateCode(input: HTMLInputElement): boolean {
   };
 
   ErrorSpan.hide(input);
+  return true;
+};
+
+export function validateSuggestionTitle(input: HTMLInputElement): boolean {
+  const title: string = input.value;
+
+  if (title === '') {
+    ErrorSpan.display(input, 'A valid suggestion title is required.');
+    return false;
+  };
+
+  if (title.trim() !== title) {
+    ErrorSpan.display(input, 'Whitespace must not exist at either ends of the display name.');
+    return false;
+  };
+
+  if (title.length < 3) {
+    ErrorSpan.display(input, 'Title must be at least 3 characters long.');
+    return false;
+  };
+
+  if (title.length > 40) {
+    ErrorSpan.display(input, 'Title must not exceed 40 characters.');
+    return false;
+  };
+
+  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
+  if (title !== doubleSpacesRemoved) {
+    ErrorSpan.display(input, 'Only one whitespace is allowed between words.');
+    return false;
+  };
+
+  const regex: RegExp = /^[-A-Za-z0-9 ()!?.]{3,40}$/;
+  if (!regex.test(title)) {
+    ErrorSpan.display(input, 'Only letters, numbers, whitespace, and the following symbols are allowed: ()!?.');
+    return false;
+  };
+
+  ErrorSpan.hide(input);
+  return true;
+};
+
+export function validateSuggestionDescription(textarea: HTMLTextAreaElement): boolean {
+  const description: string = textarea.value;
+
+  if (description === '') {
+    ErrorSpan.display(textarea, 'A suggestion description is required.');
+    return false;
+  };
+
+  if (description.length < 10) {
+    ErrorSpan.display(textarea, 'Description must be at least 10 characters long.');
+    return false;
+  };
+
+  if (description.length > 500) {
+    ErrorSpan.display(textarea, 'Description must not exceed 500 characters.');
+    return false;
+  };
+
+  const regex: RegExp = /^[ -~\r\n]{10,500}$/;
+  if (!regex.test(description)) {
+    ErrorSpan.display(textarea, 'Only English letters, numbers, and common symbols are allowed.');
+    return false;
+  };
+
+  ErrorSpan.hide(textarea);
   return true;
 };
 
