@@ -10,8 +10,8 @@ export function isValidSuggestionTitle(title: string): boolean {
     return false;
   };
 
-  const titleRegex: RegExp = /^[-A-Za-z0-9 ()!?.]{3,40}$/;
-  return titleRegex.test(title);
+  const regex: RegExp = /^[-A-Za-z0-9 ()!?.]{3,40}$/;
+  return regex.test(title);
 };
 
 export function isValidSuggestionDescription(description: string): boolean {
@@ -23,8 +23,8 @@ export function isValidSuggestionDescription(description: string): boolean {
     return false;
   };
 
-  const descriptionRegex: RegExp = /^[ -~\u20AC\r\n]{10,500}$/; // printable ASCII, euro symbol, and line breaks. 
-  return descriptionRegex.test(description);
+  const regex: RegExp = /^[ -~\r\n]{10,500}$/;
+  return regex.test(description);
 };
 
 export function isValidSuggestionTimeSlot(slotStart: number, slotEnd: number): boolean {

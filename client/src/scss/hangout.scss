@@ -237,11 +237,31 @@
 
   span.extra-info {
     @apply block my-[4px] text-xs md:text-sm font-medium text-description dark:text-description-dark;
+
+    &.error {
+      @apply text-danger dark:text-danger-dark;
+
+      span#suggestion-description-character-count {
+        @apply text-danger dark:text-danger-dark;
+      }
+    }
   }
 
   input,
   textarea {
     @apply block w-full bg-transparent text-sm font-medium md:text-base md:font-normal leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none focus:border-cta dark:focus:border-cta-dark;
+
+    &::placeholder {
+      @apply text-title/50 dark:text-title-dark/50;
+    }
+  }
+
+  p.mock-input {
+    @apply block w-full bg-transparent text-sm font-medium md:text-base md:font-normal leading-[2rem] text-title dark:text-title-dark p-1 rounded border-1 border-light-gray dark:border-light-black outline-none focus:border-cta dark:focus:border-cta-dark cursor-pointer hover:border-cta dark:hover:border-cta-dark;
+
+    &.empty {
+      @apply text-title/50 dark:text-title-dark/50;
+    }
   }
 
   .error-span {

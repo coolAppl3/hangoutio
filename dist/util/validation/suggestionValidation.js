@@ -12,8 +12,8 @@ function isValidSuggestionTitle(title) {
         return false;
     }
     ;
-    const titleRegex = /^[-A-Za-z0-9 ()!?.]{3,40}$/;
-    return titleRegex.test(title);
+    const regex = /^[-A-Za-z0-9 ()!?.]{3,40}$/;
+    return regex.test(title);
 }
 exports.isValidSuggestionTitle = isValidSuggestionTitle;
 ;
@@ -26,8 +26,8 @@ function isValidSuggestionDescription(description) {
         return false;
     }
     ;
-    const descriptionRegex = /^[ -~\u20AC\r\n]{10,500}$/;
-    return descriptionRegex.test(description);
+    const regex = /^[ -~\r\n]{10,500}$/;
+    return regex.test(description);
 }
 exports.isValidSuggestionDescription = isValidSuggestionDescription;
 ;

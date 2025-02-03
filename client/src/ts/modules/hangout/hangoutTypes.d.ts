@@ -41,3 +41,15 @@ export interface AvailabilitySlot {
   slot_start_timestamp: number,
   slot_end_timestamp: number,
 }
+
+export interface Suggestion {
+  suggestion_id: number,
+  hangout_member_id: number,
+  suggestion_title: string,
+  suggestion_description: string,
+  suggestion_start_timestamp: number,
+  suggestion_end_timestamp: number,
+  is_edited: boolean,
+  likes_count: number,
+  votes_count: number,
+}
