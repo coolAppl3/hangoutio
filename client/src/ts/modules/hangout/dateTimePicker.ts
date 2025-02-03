@@ -78,6 +78,8 @@ export function displayDateTimePicker(purpose: 'availabilitySlot' | 'suggestionS
   updateCalendar();
 
   dateTimePicker.style.display = 'flex';
+  dateTimePicker.focus();
+
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       dateTimePicker.classList.add('revealed');
