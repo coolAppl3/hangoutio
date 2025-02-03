@@ -10,7 +10,7 @@ function isValidMessageContent(message) {
         return false;
     }
     ;
-    const messageRegex = /^[ -~\u20AC\r\n]{1,500}$/;
+    const messageRegex = /^[ -~\r\n]{1,500}$/;
     return messageRegex.test(message);
 }
 exports.isValidMessageContent = isValidMessageContent;

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.25] (2025-02-03)
+
+### Features
+
+- Explicitly set a placeholder color for all inputs and textarea elements.
+- Updated `ErrorSpan.ts` to accept textarea and paragraph elements.
+- Partially implemented hangout suggestions logic.
+
+
 ## [0.4.24] (2025-01-31)
 
 ### Features
