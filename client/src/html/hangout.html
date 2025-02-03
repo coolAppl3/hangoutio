@@ -1301,22 +1301,54 @@
                 ></span>
               </div>
 
-              <div class="form-group">
-                <label for="suggestion-date-time-input">Date and time</label>
-                <input
-                  type="text"
-                  id="suggestion-date-time-input"
-                  autocomplete="name"
-                />
-                <span
-                  class="error-span"
-                  data-target="suggestion-date-time-input"
-                ></span>
+              <div
+                id="suggestions-form-date-time-container"
+                class="grid grid-cols-2 gap-x-2 sm:grid-cols-1 sm:gap-x-0"
+              >
+                <div class="form-group">
+                  <label for="suggestion-start-mock-input">Start</label>
+                  <p
+                    id="suggestion-start-mock-input"
+                    tabindex="0"
+                    class="mock-input empty"
+                  >
+                    Click to set date and time
+                  </p>
+                  <span
+                    class="error-span"
+                    data-target="suggestion-date-time-start-input"
+                  ></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="suggestion-end-mock-input">Start</label>
+                  <p
+                    id="suggestion-end-mock-input"
+                    tabindex="0"
+                    class="mock-input empty"
+                  >
+                    Click to set date and time
+                  </p>
+                  <span
+                    class="error-span"
+                    data-target="suggestion-date-time-end-input"
+                  ></span>
+                </div>
               </div>
 
               <div class="form-group">
                 <label for="suggestion-description-textarea">Description</label>
-                <textarea id="suggestion-description-textarea"></textarea>
+                <span class="extra-info !font-bold">
+                  <span
+                    id="suggestion-description-character-count"
+                    class="text-description dark:text-description-dark"
+                    >0</span
+                  >/500 characters
+                </span>
+                <textarea
+                  id="suggestion-description-textarea"
+                  maxlength="500"
+                ></textarea>
                 <span
                   class="error-span"
                   data-target="suggestion-description-textarea"
@@ -2675,6 +2707,7 @@
     <div
       id="date-time-picker"
       data-stage="date"
+      tabindex="0"
     >
       <div id="date-time-picker-container">
         <!-- date picker -->
