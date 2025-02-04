@@ -55,13 +55,13 @@ export interface Suggestion extends RowDataPacket {
   is_edited: boolean,
 }
 
-export interface SuggestionLikes extends RowDataPacket {
+export interface SuggestionLike extends RowDataPacket {
   suggestion_like_id: number,
   hangout_member_id: number,
   suggestion_id: number,
 }
 
-export interface Votes extends RowDataPacket {
+export interface Vote extends RowDataPacket {
   vote_id: number,
   hangout_member_id: number,
   suggestion_id: number,
