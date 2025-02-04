@@ -1,6 +1,0 @@
----
-deployment:
-  tasks:
-    - export DEPLOYPATH=/home/coolappl/hangoutio-staging
-    - /bin/cp -R * $DEPLOYPATH
-    - /usr/bin/rsync -av --delete --exclude='node_modules' $HOME/repositories/hangoutio-staging/ $HOME/hangoutio-staging/
