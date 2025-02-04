@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.26] (2025-02-05)
+
+### Build Changes
+
+- Removed `.cpanel.yml`.
+- Added `suggestionsServices.ts` and all suggestions-related services.
+
+
+### Code Refactoring
+
+- Renamed DELETE `suggestions/leader/delete` to `suggestions/leader`.
+- Improved data sent to the client in GET `suggestions/`.
+
+
+### Bug Fixes
+
+- Fixed DELETE requests in `suggestionsRouter.ts` using a request body.
+
+
 ## [0.4.25] (2025-02-03)
 
 ### Features
