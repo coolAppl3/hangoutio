@@ -9,7 +9,7 @@ import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
-import { Suggestion, SuggestionLikes, Votes } from "../util/hangoutTypes";
+import { Suggestion, SuggestionLike, Vote } from "../util/hangoutTypes";
 import { isSqlError } from "../util/isSqlError";
 
 export const suggestionsRouter: Router = express.Router();
@@ -995,8 +995,8 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
 
     type SuggestionInfo = [
       Suggestion[],
-      SuggestionLikes[],
-      Votes[],
+      SuggestionLike[],
+      Vote[],
     ];
 
     const [suggestionInfoRows] = await dbPool.query<SuggestionInfo>(
@@ -1034,15 +1034,15 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     );
 
     const suggestions: Suggestion[] = suggestionInfoRows[0];
-    const suggestionLikes: SuggestionLikes[] = suggestionInfoRows[1];
-    const votes: Votes[] = suggestionInfoRows[2];
+    const suggestionLikes: SuggestionLike[] = suggestionInfoRows[1];
+    const votes: Vote[] = suggestionInfoRows[2];
 
     const suggestionLikesMap: Map<number, number> = new Map();
-    const memberLikedSuggestions: number[] = [];
+    const memberLikes: SuggestionLike[] = [];
 
     for (const suggestionLike of suggestionLikes) {
       if (suggestionLike.hangout_member_id === +hangoutMemberId) {
-        memberLikedSuggestions.push(suggestionLike.suggestion_id);
+        memberLikes.push(suggestionLike);
       };
 
       const suggestionLikeCount: number | undefined = suggestionLikesMap.get(suggestionLike.suggestion_id);
@@ -1056,11 +1056,11 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     };
 
     const suggestionVotesMap: Map<number, number> = new Map();
-    const memberVotedSuggestions: number[] = [];
+    const memberVotes: Vote[] = [];
 
     for (const vote of votes) {
       if (vote.hangout_member_id === +hangoutMemberId) {
-        memberVotedSuggestions.push(vote.suggestion_id);
+        memberVotes.push(vote);
       };
 
       const suggestionVotesCount: number | undefined = suggestionVotesMap.get(vote.suggestion_id);
@@ -1093,8 +1093,8 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
 
     res.json({
       suggestions: countedSuggestions,
-      memberLikedSuggestions,
-      memberVotedSuggestions,
+      memberLikes,
+      memberVotes,
     });
 
   } catch (err: unknown) {
@@ -1244,7 +1244,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
       return;
     };
 
-    await dbPool.execute(
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `INSERT INTO suggestion_likes (
         suggestion_id,
         hangout_member_id,
@@ -1253,7 +1253,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
       [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]
     );
 
-    res.json({});
+    res.json({ suggestionLikeId: resultSetHeader.insertId });
 
   } catch (err: unknown) {
     console.log(err);
