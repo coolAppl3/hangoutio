@@ -745,7 +745,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
   };
 });
 
-suggestionsRouter.delete('/leader/delete', async (req: Request, res: Response) => {
+suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
