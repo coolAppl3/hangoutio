@@ -53,3 +53,15 @@ export interface Suggestion {
   likes_count: number,
   votes_count: number,
 }
+
+export interface SuggestionLike {
+  suggestion_like_id: number,
+  hangout_member_id: number,
+  suggestion_id: number,
+}
+
+export interface Vote {
+  vote_id: number,
+  hangout_member_id: number,
+  suggestion_id: number,
+}
