@@ -84,7 +84,7 @@ exports.votesRouter.post('/', async (req, res) => {
       FROM
         auth_sessions
       WHERE
-        session_id = ?;`, { authSessionId });
+        session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -268,7 +268,7 @@ exports.votesRouter.delete('/', async (req, res) => {
       FROM
         auth_sessions
       WHERE
-        session_id = ?;`, { authSessionId });
+        session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -387,7 +387,7 @@ exports.votesRouter.delete('/clear', async (req, res) => {
       FROM
         auth_sessions
       WHERE
-        session_id = ?;`, { authSessionId });
+        session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
