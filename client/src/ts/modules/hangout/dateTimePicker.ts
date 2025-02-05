@@ -644,7 +644,7 @@ export function isValidDateTimePickerEvent(event: unknown): event is DateTimePic
     return false;
   };
 
-  if (purpose !== 'availabilitySlot' && purpose !== 'suggestionsSlot') {
+  if (purpose !== 'availabilitySlot' && purpose !== 'suggestionSlot') {
     return false;
   };
 
