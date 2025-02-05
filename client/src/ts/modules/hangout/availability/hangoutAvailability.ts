@@ -673,7 +673,7 @@ function updateSlotsRemaining(): void {
   const slotsRemaining: number = HANGOUT_AVAILABILITY_SLOTS_LIMIT - availabilitySlotsCount;
 
   const slotsRemainingSpan: HTMLSpanElement | null = document.querySelector('#availability-section-slots-remaining');
-  slotsRemainingSpan && (slotsRemainingSpan.textContent = `${slotsRemaining}.`);
+  slotsRemainingSpan && (slotsRemainingSpan.textContent = `${slotsRemaining}`);
 };
 
 interface NewAvailabilitySlotTimestamps {
