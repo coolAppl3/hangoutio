@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.27] (2025-02-06)
+
+### Features
+
+- Added a few necessary error reasons to some responses in POST `suggestions/`.
+- Mostly implemented logic to add hangout suggestions in `hangoutSuggestionsForm.ts`.
+- Implemented logic to first initializing availability slots before initializing suggestions in `hangoutSuggestions.ts`.
+
+
+### Bug Fixes
+
+- Fixed `dateTimePicker-selection` event listener throwing an error for selections not meant for availability slots in `hangoutAvailability.ts`.
+- Fixed a typo in `dateTimePicker.ts`.
+
+
+### Bug Fixes
+
+- Fixed incorrect auth session SQL statements in `votesRouter.ts`.
+
+
 ## [0.4.26] (2025-02-05)
 
 ### Build Changes

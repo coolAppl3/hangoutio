@@ -8,7 +8,7 @@ const suggestionsApiUrl: string = window.location.hostname === 'localhost'
   : `https://${window.location.hostname}/api/suggestions`;
 //
 
-interface AddHangoutSuggestionBody {
+export interface AddHangoutSuggestionBody {
   hangoutId: string,
   hangoutMemberId: number,
   suggestionTitle: string,

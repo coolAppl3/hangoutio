@@ -1116,10 +1116,10 @@
   .suggestions {
 
     #suggestions-form {
-      @apply grid grid-rows-[auto_0fr] transition-[grid] mb-2;
+      @apply grid grid-rows-[auto_0fr] transition-[grid];
 
       &.expanded {
-        @apply grid-rows-[auto_1fr] mb-2;
+        @apply grid-rows-[auto_1fr];
 
         #suggestions-form-header {
           @apply mb-2;

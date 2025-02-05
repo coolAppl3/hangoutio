@@ -1,19 +1,23 @@
-import { HANGOUT_SUGGESTIONS_LIMIT } from "../../global/clientConstants";
+import axios, { AxiosError } from "../../../../../node_modules/axios/index";
+import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
+import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
+import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { validateSuggestionDescription, validateSuggestionTitle } from "../../global/validation";
+import { AddHangoutSuggestionBody, addHangoutSuggestionService } from "../../services/suggestionsServices";
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 
 interface HangoutSuggestionFormState {
-  inEditMode: boolean,
+  suggestionIdToEdit: number | null,
 
   suggestionStartTimestamp: number | null,
   suggestionEndTimestamp: number | null,
 };
 
 const hangoutSuggestionFormState: HangoutSuggestionFormState = {
-  inEditMode: false,
+  suggestionIdToEdit: null,
 
   suggestionEndTimestamp: null,
   suggestionStartTimestamp: null,
@@ -26,16 +30,19 @@ const suggestionsFormDateTimeContainer: HTMLDivElement | null = document.querySe
 const suggestionTitleInput: HTMLInputElement | null = document.querySelector('#suggestion-title-input');
 const suggestionDescriptionTextarea: HTMLTextAreaElement | null = document.querySelector('#suggestion-description-textarea');
 
+const suggestionStartMockInput: HTMLParagraphElement | null = document.querySelector('#suggestion-start-mock-input');
+const suggestionEndMockInput: HTMLParagraphElement | null = document.querySelector('#suggestion-end-mock-input');
+
 const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
 
 export function initHangoutSuggestionsForm(): void {
-  renderSuggestionsSection();
+  renderSuggestionsForm();
   loadEventListeners();
   setActiveValidation();
 };
 
 function loadEventListeners(): void {
-  suggestionsForm?.addEventListener('submit', addHangoutSuggestion);
+  suggestionsForm?.addEventListener('submit', handleSuggestionsFormSubmission);
   suggestionsForm?.addEventListener('click', handleSuggestionsFormClicks);
 
   suggestionsFormDateTimeContainer?.addEventListener('click', (e: MouseEvent) => {
@@ -60,9 +67,6 @@ function loadEventListeners(): void {
 
   document.addEventListener('dateTimePicker-selection', async (e: Event) => {
     if (!isValidDateTimePickerEvent(e) || e.detail.purpose !== 'suggestionSlot') {
-      popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -72,19 +76,171 @@ function loadEventListeners(): void {
     hangoutSuggestionFormState.suggestionEndTimestamp = dateTimePickerData.endTimestamp;
 
     if (dateTimePickerData.existingSlotId) {
-      hangoutSuggestionFormState.inEditMode = true;
+      hangoutSuggestionFormState.suggestionIdToEdit = dateTimePickerData.existingSlotId;
     };
   });
 };
 
-function renderSuggestionsSection(): void {
+function renderSuggestionsForm(): void {
   updateRemainingSuggestionsCount();
 };
 
-async function addHangoutSuggestion(e: SubmitEvent): Promise<void> {
+async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
   e.preventDefault();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    return;
+  };
+
+  if (globalHangoutState.data.hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
+    popup('Not in suggestions stage.', 'error');
+    return;
+  };
+
+  if (hangoutSuggestionFormState.suggestionIdToEdit) {
+    await editHangoutSuggestion(hangoutSuggestionFormState.suggestionIdToEdit);
+    return;
+  };
+
+  await addHangoutSuggestion();
+};
+
+async function addHangoutSuggestion(): Promise<void> {
   LoadingModal.display();
 
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, hangoutDetails } = globalHangoutState.data;
+
+  if (hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
+    popup('Not in suggestion stage.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!suggestionStartMockInput || !suggestionEndMockInput || !suggestionTitleInput || !suggestionDescriptionTextarea) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { suggestionStartTimestamp, suggestionEndTimestamp } = hangoutSuggestionFormState;
+
+  if (!suggestionStartTimestamp || !suggestionEndTimestamp) {
+    ErrorSpan.display(suggestionStartMockInput, 'Suggestion date and time required.');
+    ErrorSpan.display(suggestionEndMockInput, 'Suggestion date and time required.');
+
+    popup('Suggestion date and time required.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  ErrorSpan.hide(suggestionStartMockInput);
+  ErrorSpan.hide(suggestionEndMockInput);
+
+  const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
+  const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
+
+  if (!isValidSuggestionTitle || !isValidSuggestionDescription) {
+    popup('Invalid suggestion details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const addHangoutSuggestionBody: AddHangoutSuggestionBody = {
+    hangoutId,
+    hangoutMemberId,
+    suggestionTitle: suggestionTitleInput.value,
+    suggestionDescription: suggestionDescriptionTextarea.value,
+    suggestionEndTimestamp,
+    suggestionStartTimestamp,
+  };
+
+  try {
+    const suggestionId: number = (await addHangoutSuggestionService(addHangoutSuggestionBody)).data.suggestionId;
+
+    popup('Suggestion added.', 'success');
+    LoadingModal.remove();
+
+    // TODO: add to state, resort, rerender.
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400 && (errReason === 'hangoutId' || errReason === 'hangoutMemberId')) {
+      popup('Something went wrong.', 'error');
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    popup(errMessage, 'error');
+    LoadingModal.remove();
+
+    if (status === 400) {
+      setTimeout(() => window.location.reload(), 1000);
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(window.location.href);
+        return;
+      };
+
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed(window.location.href);
+      };
+
+      return;
+    };
+
+    const inputRecord: Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLParagraphElement | undefined> = {
+      title: suggestionTitleInput,
+      description: suggestionDescriptionTextarea,
+      dateTime: suggestionStartMockInput,
+    };
+
+    if (status === 400) {
+      const input = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
+      };
+    };
+  };
+};
+
+async function editHangoutSuggestion(suggestionId: number): Promise<void> {
   // TODO: continue implementation
 };
 
@@ -103,6 +259,16 @@ function handleSuggestionsFormClicks(e: MouseEvent): void {
   };
 
   if (e.target.id === 'suggestions-form-expand-btn') {
+    if (!globalHangoutState.data) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    if (globalHangoutState.data.hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
+      popup('Not in suggestions stage.', 'error');
+      return;
+    };
+
     suggestionsFormContainer && (suggestionsFormContainer.style.display = 'block');
     suggestionsForm?.classList.add('expanded');
 

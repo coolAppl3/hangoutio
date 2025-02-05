@@ -31,7 +31,7 @@ export function hangoutAvailability(): void {
   loadEventListeners();
 };
 
-async function init(): Promise<void> {
+export async function initHangoutAvailability(): Promise<void> {
   if (!globalHangoutState.data) {
     return;
   };
@@ -48,7 +48,7 @@ function renderAvailabilitySection(): void {
 };
 
 function loadEventListeners(): void {
-  document.addEventListener('loadSection-availability', init);
+  document.addEventListener('loadSection-availability', initHangoutAvailability);
   availabilitySlotsContainer?.addEventListener('click', handleAvailabilitySlotsContainerClicks);
 
   addAvailabilityBtn?.addEventListener('click', () => {
@@ -102,9 +102,6 @@ function loadEventListeners(): void {
 
   document.addEventListener('dateTimePicker-selection', async (e: Event) => {
     if (!isValidDateTimePickerEvent(e) || e.detail.purpose !== 'availabilitySlot') {
-      popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -673,7 +670,7 @@ function updateSlotsRemaining(): void {
   const slotsRemaining: number = HANGOUT_AVAILABILITY_SLOTS_LIMIT - availabilitySlotsCount;
 
   const slotsRemainingSpan: HTMLSpanElement | null = document.querySelector('#availability-section-slots-remaining');
-  slotsRemainingSpan && (slotsRemainingSpan.textContent = `${slotsRemaining}.`);
+  slotsRemainingSpan && (slotsRemainingSpan.textContent = `${slotsRemaining}`);
 };
 
 interface NewAvailabilitySlotTimestamps {

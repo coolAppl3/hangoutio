@@ -1,3 +1,4 @@
+import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { Suggestion } from "../hangoutTypes";
 import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
 
@@ -15,10 +16,16 @@ export function hangoutSuggestions(): void {
   loadEventListeners();
 };
 
-async function init(): Promise<void> {
+async function initHangoutSuggestions(): Promise<void> {
   initHangoutSuggestionsForm();
 };
 
 function loadEventListeners(): void {
-  document.addEventListener('loadSection-suggestions', init);
+  document.addEventListener('loadSection-suggestions', async () => {
+    if (!hangoutAvailabilityState.isLoaded) {
+      await initHangoutAvailability();
+    };
+
+    initHangoutSuggestions();
+  });
 };
