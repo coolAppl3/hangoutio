@@ -31,7 +31,7 @@ export function hangoutAvailability(): void {
   loadEventListeners();
 };
 
-async function init(): Promise<void> {
+export async function initHangoutAvailability(): Promise<void> {
   if (!globalHangoutState.data) {
     return;
   };
@@ -48,7 +48,7 @@ function renderAvailabilitySection(): void {
 };
 
 function loadEventListeners(): void {
-  document.addEventListener('loadSection-availability', init);
+  document.addEventListener('loadSection-availability', initHangoutAvailability);
   availabilitySlotsContainer?.addEventListener('click', handleAvailabilitySlotsContainerClicks);
 
   addAvailabilityBtn?.addEventListener('click', () => {
