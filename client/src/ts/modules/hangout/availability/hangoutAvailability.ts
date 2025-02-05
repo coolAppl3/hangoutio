@@ -102,9 +102,6 @@ function loadEventListeners(): void {
 
   document.addEventListener('dateTimePicker-selection', async (e: Event) => {
     if (!isValidDateTimePickerEvent(e) || e.detail.purpose !== 'availabilitySlot') {
-      popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
