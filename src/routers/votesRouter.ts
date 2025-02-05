@@ -74,7 +74,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
         auth_sessions
       WHERE
         session_id = ?;`,
-      { authSessionId }
+      [authSessionId]
     );
 
     if (authSessionRows.length === 0) {
@@ -328,7 +328,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
         auth_sessions
       WHERE
         session_id = ?;`,
-      { authSessionId }
+      [authSessionId]
     );
 
     if (authSessionRows.length === 0) {
@@ -486,7 +486,7 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
         auth_sessions
       WHERE
         session_id = ?;`,
-      { authSessionId }
+      [authSessionId]
     );
 
     if (authSessionRows.length === 0) {
