@@ -47,27 +47,27 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.' });
+    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ message: 'Invalid hangout member ID.' });
+    res.status(400).json({ message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
     return;
   };
 
   if (!suggestionValidation.isValidSuggestionTitle(requestData.suggestionTitle)) {
-    res.status(400).json({ message: 'Invalid suggestion title.' });
+    res.status(400).json({ message: 'Invalid suggestion title.', reason: 'title' });
     return;
   };
 
   if (!suggestionValidation.isValidSuggestionDescription(requestData.suggestionDescription)) {
-    res.status(400).json({ message: 'Invalid suggestion description.' });
+    res.status(400).json({ message: 'Invalid suggestion description.', reason: 'description' });
     return;
   };
 
   if (!suggestionValidation.isValidSuggestionTimeSlot(requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp)) {
-    res.status(400).json({ message: 'Invalid suggestion time slot.' });
+    res.status(400).json({ message: 'Invalid suggestion date and time.', reason: 'dateTime' });
     return;
   };
 
@@ -175,14 +175,14 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
     if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
       await connection.rollback();
-      res.status(400).json({ message: 'Invalid suggestion time slot.' });
+      res.status(400).json({ message: 'Invalid suggestion date and time.', reason: 'dateTime' });
 
       return;
     };
 
     if (hangoutMemberRows.length === HANGOUT_SUGGESTIONS_LIMIT) {
       await connection.rollback();
-      res.status(409).json({ message: 'Suggestions limit reached.' });
+      res.status(409).json({ message: `Suggestions limit of ${HANGOUT_SUGGESTIONS_LIMIT} reached.` });
 
       return;
     };
