@@ -37,14 +37,12 @@ export async function initHangoutAvailability(): Promise<void> {
     return;
   };
 
-  LoadingModal.display();
-
   if (!globalHangoutState.data) {
     popup('Failed to load availability slots.', 'error');
-    LoadingModal.remove();
-
     return;
   };
+
+  LoadingModal.display();
 
   await getHangoutAvailabilitySlots();
   initAvailabilityCalendar();
@@ -162,19 +160,29 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Failed to load availability slots.', 'error');
+      return;
+    };
 
     popup(errMessage, 'error');
 
     if (status === 401) {
-      handleAuthSessionExpired(window.location.href);
-      return;
-    };
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(window.location.href);
+        return;
+      };
 
-    if (status === 401) {
-      setTimeout(() => {
-        sessionStorage.removeItem('latestHangoutSection');
-        window.location.href = 'home';
-      }, 1000);
+      if (errReason === 'notHangoutMember') {
+        setTimeout(() => {
+          sessionStorage.removeItem('latestHangoutSection');
+          window.location.href = 'home';
+        }, 1000);
+      };
+
+      return;
     };
   };
 };
