@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.28] (2025-02-06)
+
+### Code Refactoring
+
+- Improved how errors affect mock inputs in the suggestions form in `hangoutSuggestionsForm.ts`.
+- Improved how availability section is initiated and loaded in `hangoutAvailability.ts`.
+
+
+### Bug Fixes
+
+- Fixed selected suggestion date and time values not being reflected in the suggestions form mock inputs in `hangoutSuggestionsForm.ts`.
+- Fixed label value for second dateTime mock input being "Start" instead of "End" in `hangout.html`.
+- Fixed a number of minor bugs in `getHangoutAvailabilitySlots()` in `hangoutAvailability.ts`.
+- Fixed `GetHangoutSuggestionsData` interface being incorrectly formed in `suggestionsServices.ts`.
+
+
 ## [0.4.27] (2025-02-06)
 
 ### Features

@@ -681,7 +681,7 @@ exports.availabilitySlotsRouter.get('/', async (req, res) => {
         hangout_member_id = ? AND
         hangout_id = ?;`, [+hangoutMemberId, hangoutId]);
         if (validationRows.length === 0) {
-            res.status(401).json({ message: 'Not a member of this hangout.' });
+            res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
             return;
         }
         ;
