@@ -957,7 +957,7 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
         auth_sessions
       WHERE
         session_id = ?;`,
-      [[authSessionId]]
+      [authSessionId]
     );
 
     if (authSessionRows.length === 0) {
