@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
 import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -8,6 +8,7 @@ import { validateSuggestionDescription, validateSuggestionTitle } from "../../gl
 import { AddHangoutSuggestionBody, addHangoutSuggestionService } from "../../services/suggestionsServices";
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
+import { getDateAndTimeString } from "../globalHangoutUtils";
 
 interface HangoutSuggestionFormState {
   suggestionIdToEdit: number | null,
@@ -33,10 +34,7 @@ const suggestionDescriptionTextarea: HTMLTextAreaElement | null = document.query
 const suggestionStartMockInput: HTMLParagraphElement | null = document.querySelector('#suggestion-start-mock-input');
 const suggestionEndMockInput: HTMLParagraphElement | null = document.querySelector('#suggestion-end-mock-input');
 
-const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
-
 export function initHangoutSuggestionsForm(): void {
-  renderSuggestionsForm();
   loadEventListeners();
   setActiveValidation();
 };
@@ -71,18 +69,8 @@ function loadEventListeners(): void {
     };
 
     const dateTimePickerData: DateTimePickerData = e.detail;
-
-    hangoutSuggestionFormState.suggestionStartTimestamp = dateTimePickerData.startTimestamp;
-    hangoutSuggestionFormState.suggestionEndTimestamp = dateTimePickerData.endTimestamp;
-
-    if (dateTimePickerData.existingSlotId) {
-      hangoutSuggestionFormState.suggestionIdToEdit = dateTimePickerData.existingSlotId;
-    };
+    handleSuggestionDateTimeSelection(dateTimePickerData);
   });
-};
-
-function renderSuggestionsForm(): void {
-  updateRemainingSuggestionsCount();
 };
 
 async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
@@ -132,23 +120,20 @@ async function addHangoutSuggestion(): Promise<void> {
     return;
   };
 
+  const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
+  const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
+
   const { suggestionStartTimestamp, suggestionEndTimestamp } = hangoutSuggestionFormState;
 
   if (!suggestionStartTimestamp || !suggestionEndTimestamp) {
     ErrorSpan.display(suggestionStartMockInput, 'Suggestion date and time required.');
     ErrorSpan.display(suggestionEndMockInput, 'Suggestion date and time required.');
 
-    popup('Suggestion date and time required.', 'error');
+    popup('Invalid suggestion details.', 'error');
     LoadingModal.remove();
 
     return;
   };
-
-  ErrorSpan.hide(suggestionStartMockInput);
-  ErrorSpan.hide(suggestionEndMockInput);
-
-  const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
-  const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
 
   if (!isValidSuggestionTitle || !isValidSuggestionDescription) {
     popup('Invalid suggestion details.', 'error');
@@ -244,13 +229,26 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
   // TODO: continue implementation
 };
 
-function updateRemainingSuggestionsCount(): void {
-  if (!suggestionsRemainingSpan || !globalHangoutState.data) {
+function handleSuggestionDateTimeSelection(dateTimePickerData: DateTimePickerData): void {
+  hangoutSuggestionFormState.suggestionStartTimestamp = dateTimePickerData.startTimestamp;
+  hangoutSuggestionFormState.suggestionEndTimestamp = dateTimePickerData.endTimestamp;
+
+  if (dateTimePickerData.existingSlotId) {
+    hangoutSuggestionFormState.suggestionIdToEdit = dateTimePickerData.existingSlotId;
+  };
+
+  if (!suggestionStartMockInput || !suggestionEndMockInput) {
     return;
   };
 
-  const suggestionsCount: number = HANGOUT_SUGGESTIONS_LIMIT - globalHangoutState.data.suggestionsCount;
-  suggestionsRemainingSpan.textContent = `${suggestionsCount}`;
+  suggestionStartMockInput.textContent = getDateAndTimeString(dateTimePickerData.startTimestamp);
+  suggestionEndMockInput.textContent = getDateAndTimeString(dateTimePickerData.endTimestamp);
+
+  suggestionStartMockInput.classList.remove('empty');
+  suggestionEndMockInput.classList.remove('empty');
+
+  suggestionStartMockInput.parentElement?.classList.remove('error');
+  suggestionEndMockInput.parentElement?.classList.remove('error');
 };
 
 function handleSuggestionsFormClicks(e: MouseEvent): void {
@@ -317,7 +315,7 @@ function updateSuggestionCharacterCount(textarea: HTMLTextAreaElement): void {
   const characterCount: number = textarea.value.length;
   characterCountSpan.textContent = `${characterCount}`;
 
-  if (characterCount > 500) {
+  if (characterCount > 500 || characterCount < 10) {
     characterCountSpan.parentElement?.classList.add('error');
     return;
   };

@@ -957,7 +957,7 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
         auth_sessions
       WHERE
         session_id = ?;`,
-      [[authSessionId]]
+      [authSessionId]
     );
 
     if (authSessionRows.length === 0) {
@@ -989,7 +989,7 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     );
 
     if (validationRows.length === 0) {
-      res.status(401).json({ message: 'Not a member of this hangout.' });
+      res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
       return;
     };
 

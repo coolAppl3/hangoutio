@@ -774,7 +774,7 @@ exports.suggestionsRouter.get('/', async (req, res) => {
       FROM
         auth_sessions
       WHERE
-        session_id = ?;`, [[authSessionId]]);
+        session_id = ?;`, [authSessionId]);
         if (authSessionRows.length === 0) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -797,7 +797,7 @@ exports.suggestionsRouter.get('/', async (req, res) => {
         hangout_member_id = ? AND
         hangout_id = ?;`, [+hangoutMemberId, hangoutId]);
         if (validationRows.length === 0) {
-            res.status(401).json({ message: 'Not a member of this hangout.' });
+            res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
             return;
         }
         ;

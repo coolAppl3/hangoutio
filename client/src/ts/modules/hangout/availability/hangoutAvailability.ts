@@ -32,13 +32,23 @@ export function hangoutAvailability(): void {
 };
 
 export async function initHangoutAvailability(): Promise<void> {
-  if (!globalHangoutState.data) {
+  if (hangoutAvailabilityState.isLoaded) {
+    renderAvailabilitySection();
     return;
   };
+
+  if (!globalHangoutState.data) {
+    popup('Failed to load availability slots.', 'error');
+    return;
+  };
+
+  LoadingModal.display();
 
   await getHangoutAvailabilitySlots();
   initAvailabilityCalendar();
   renderAvailabilitySection();
+
+  LoadingModal.remove();
 };
 
 function renderAvailabilitySection(): void {
@@ -121,12 +131,8 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
     return;
   };
 
-  LoadingModal.display();
-
   if (!globalHangoutState.data) {
-    popup('Something went wrong.', 'error');
-    LoadingModal.remove();
-
+    popup('Failed to load availability slots.', 'error');
     return;
   };
 
@@ -137,41 +143,46 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
     hangoutAvailabilityState.availabilitySlots = availabilitySlots;
     hangoutAvailabilityState.isLoaded = true;
 
-    LoadingModal.remove();
-
   } catch (err: unknown) {
     console.log(err);
-    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
-      popup('Something went wrong.', 'error');
+      popup('Failed to load availability slots.', 'error');
       return;
     };
 
     const axiosError: AxiosError<AxiosErrorResponseData> = err;
 
     if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
+      popup('Failed to load availability slots.', 'error');
       return;
     };
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Failed to load availability slots.', 'error');
+      return;
+    };
 
     popup(errMessage, 'error');
 
     if (status === 401) {
-      handleAuthSessionExpired(window.location.href);
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired(window.location.href);
+        return;
+      };
+
+      if (errReason === 'notHangoutMember') {
+        setTimeout(() => {
+          sessionStorage.removeItem('latestHangoutSection');
+          window.location.href = 'home';
+        }, 1000);
+      };
+
       return;
-    };
-
-    if (status === 401) {
-      setTimeout(() => {
-        sessionStorage.removeItem('latestHangoutSection');
-
-        LoadingModal.display();
-        window.location.href = 'home';
-      }, 1000);
     };
   };
 };

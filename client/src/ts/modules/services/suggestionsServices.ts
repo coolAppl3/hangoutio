@@ -90,7 +90,8 @@ interface GetHangoutSuggestionsBody {
   hangoutId: string,
 };
 
-interface GetHangoutSuggestionsData extends Suggestion {
+interface GetHangoutSuggestionsData {
+  suggestions: Suggestion[],
   memberLikes: SuggestionLike[],
   memberVotes: Vote[],
 }
