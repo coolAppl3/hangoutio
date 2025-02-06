@@ -32,13 +32,25 @@ export function hangoutAvailability(): void {
 };
 
 export async function initHangoutAvailability(): Promise<void> {
+  if (hangoutAvailabilityState.isLoaded) {
+    renderAvailabilitySection();
+    return;
+  };
+
+  LoadingModal.display();
+
   if (!globalHangoutState.data) {
+    popup('Failed to load availability slots.', 'error');
+    LoadingModal.remove();
+
     return;
   };
 
   await getHangoutAvailabilitySlots();
   initAvailabilityCalendar();
   renderAvailabilitySection();
+
+  LoadingModal.remove();
 };
 
 function renderAvailabilitySection(): void {
@@ -121,12 +133,8 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
     return;
   };
 
-  LoadingModal.display();
-
   if (!globalHangoutState.data) {
-    popup('Something went wrong.', 'error');
-    LoadingModal.remove();
-
+    popup('Failed to load availability slots.', 'error');
     return;
   };
 
@@ -137,21 +145,18 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
     hangoutAvailabilityState.availabilitySlots = availabilitySlots;
     hangoutAvailabilityState.isLoaded = true;
 
-    LoadingModal.remove();
-
   } catch (err: unknown) {
     console.log(err);
-    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
-      popup('Something went wrong.', 'error');
+      popup('Failed to load availability slots.', 'error');
       return;
     };
 
     const axiosError: AxiosError<AxiosErrorResponseData> = err;
 
     if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
+      popup('Failed to load availability slots.', 'error');
       return;
     };
 
@@ -168,8 +173,6 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
     if (status === 401) {
       setTimeout(() => {
         sessionStorage.removeItem('latestHangoutSection');
-
-        LoadingModal.display();
         window.location.href = 'home';
       }, 1000);
     };
