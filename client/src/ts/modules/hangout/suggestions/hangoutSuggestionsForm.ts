@@ -127,6 +127,9 @@ async function addHangoutSuggestion(): Promise<void> {
     return;
   };
 
+  const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
+  const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
+
   const { suggestionStartTimestamp, suggestionEndTimestamp } = hangoutSuggestionFormState;
 
   if (!suggestionStartTimestamp || !suggestionEndTimestamp) {
@@ -138,12 +141,6 @@ async function addHangoutSuggestion(): Promise<void> {
 
     return;
   };
-
-  ErrorSpan.hide(suggestionStartMockInput);
-  ErrorSpan.hide(suggestionEndMockInput);
-
-  const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
-  const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
 
   if (!isValidSuggestionTitle || !isValidSuggestionDescription) {
     popup('Invalid suggestion details.', 'error');
@@ -256,6 +253,9 @@ function handleSuggestionDateTimeSelection(dateTimePickerData: DateTimePickerDat
 
   suggestionStartMockInput.classList.remove('empty');
   suggestionEndMockInput.classList.remove('empty');
+
+  suggestionStartMockInput.parentElement?.classList.remove('error');
+  suggestionEndMockInput.parentElement?.classList.remove('error');
 };
 
 function updateRemainingSuggestionsCount(): void {
