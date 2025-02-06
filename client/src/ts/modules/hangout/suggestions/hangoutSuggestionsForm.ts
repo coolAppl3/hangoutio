@@ -8,6 +8,7 @@ import { validateSuggestionDescription, validateSuggestionTitle } from "../../gl
 import { AddHangoutSuggestionBody, addHangoutSuggestionService } from "../../services/suggestionsServices";
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
+import { getDateAndTimeString } from "../globalHangoutUtils";
 
 interface HangoutSuggestionFormState {
   suggestionIdToEdit: number | null,
@@ -71,13 +72,7 @@ function loadEventListeners(): void {
     };
 
     const dateTimePickerData: DateTimePickerData = e.detail;
-
-    hangoutSuggestionFormState.suggestionStartTimestamp = dateTimePickerData.startTimestamp;
-    hangoutSuggestionFormState.suggestionEndTimestamp = dateTimePickerData.endTimestamp;
-
-    if (dateTimePickerData.existingSlotId) {
-      hangoutSuggestionFormState.suggestionIdToEdit = dateTimePickerData.existingSlotId;
-    };
+    handleSuggestionDateTimeSelection(dateTimePickerData);
   });
 };
 
@@ -242,6 +237,25 @@ async function addHangoutSuggestion(): Promise<void> {
 
 async function editHangoutSuggestion(suggestionId: number): Promise<void> {
   // TODO: continue implementation
+};
+
+function handleSuggestionDateTimeSelection(dateTimePickerData: DateTimePickerData): void {
+  hangoutSuggestionFormState.suggestionStartTimestamp = dateTimePickerData.startTimestamp;
+  hangoutSuggestionFormState.suggestionEndTimestamp = dateTimePickerData.endTimestamp;
+
+  if (dateTimePickerData.existingSlotId) {
+    hangoutSuggestionFormState.suggestionIdToEdit = dateTimePickerData.existingSlotId;
+  };
+
+  if (!suggestionStartMockInput || !suggestionEndMockInput) {
+    return;
+  };
+
+  suggestionStartMockInput.textContent = getDateAndTimeString(dateTimePickerData.startTimestamp);
+  suggestionEndMockInput.textContent = getDateAndTimeString(dateTimePickerData.endTimestamp);
+
+  suggestionStartMockInput.classList.remove('empty');
+  suggestionEndMockInput.classList.remove('empty');
 };
 
 function updateRemainingSuggestionsCount(): void {
