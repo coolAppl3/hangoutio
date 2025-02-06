@@ -136,7 +136,7 @@ async function addHangoutSuggestion(): Promise<void> {
     ErrorSpan.display(suggestionStartMockInput, 'Suggestion date and time required.');
     ErrorSpan.display(suggestionEndMockInput, 'Suggestion date and time required.');
 
-    popup('Suggestion date and time required.', 'error');
+    popup('Invalid suggestion details.', 'error');
     LoadingModal.remove();
 
     return;
@@ -331,7 +331,7 @@ function updateSuggestionCharacterCount(textarea: HTMLTextAreaElement): void {
   const characterCount: number = textarea.value.length;
   characterCountSpan.textContent = `${characterCount}`;
 
-  if (characterCount > 500) {
+  if (characterCount > 500 || characterCount < 10) {
     characterCountSpan.parentElement?.classList.add('error');
     return;
   };
