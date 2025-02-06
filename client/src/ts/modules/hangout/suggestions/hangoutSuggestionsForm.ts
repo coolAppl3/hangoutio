@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
 import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -34,10 +34,7 @@ const suggestionDescriptionTextarea: HTMLTextAreaElement | null = document.query
 const suggestionStartMockInput: HTMLParagraphElement | null = document.querySelector('#suggestion-start-mock-input');
 const suggestionEndMockInput: HTMLParagraphElement | null = document.querySelector('#suggestion-end-mock-input');
 
-const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
-
 export function initHangoutSuggestionsForm(): void {
-  renderSuggestionsForm();
   loadEventListeners();
   setActiveValidation();
 };
@@ -74,10 +71,6 @@ function loadEventListeners(): void {
     const dateTimePickerData: DateTimePickerData = e.detail;
     handleSuggestionDateTimeSelection(dateTimePickerData);
   });
-};
-
-function renderSuggestionsForm(): void {
-  updateRemainingSuggestionsCount();
 };
 
 async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
@@ -256,15 +249,6 @@ function handleSuggestionDateTimeSelection(dateTimePickerData: DateTimePickerDat
 
   suggestionStartMockInput.parentElement?.classList.remove('error');
   suggestionEndMockInput.parentElement?.classList.remove('error');
-};
-
-function updateRemainingSuggestionsCount(): void {
-  if (!suggestionsRemainingSpan || !globalHangoutState.data) {
-    return;
-  };
-
-  const suggestionsCount: number = HANGOUT_SUGGESTIONS_LIMIT - globalHangoutState.data.suggestionsCount;
-  suggestionsRemainingSpan.textContent = `${suggestionsCount}`;
 };
 
 function handleSuggestionsFormClicks(e: MouseEvent): void {
