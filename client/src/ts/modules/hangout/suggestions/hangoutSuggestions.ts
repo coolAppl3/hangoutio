@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_SUGGESTIONS_LIMIT } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutSuggestionsService } from "../../services/suggestionsServices";
@@ -8,6 +9,7 @@ import { hangoutAvailabilityState, initHangoutAvailability } from "../availabili
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion, SuggestionLike, Vote } from "../hangoutTypes";
 import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
+import { createSuggestionElement } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -15,6 +17,9 @@ interface HangoutSuggestionsState {
   suggestions: Suggestion[],
   memberLikes: SuggestionLike[],
   memberVotes: Vote[],
+
+  pageCount: number,
+  pageItemsCount: number,
 };
 
 export const hangoutSuggestionState: HangoutSuggestionsState = {
@@ -23,13 +28,13 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
   suggestions: [],
   memberLikes: [],
   memberVotes: [],
+
+  pageCount: 1,
+  pageItemsCount: 0,
 };
 
 const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
-
-// CONTINUE HERE <<<<<<<<<<<
-// DO WHAT U DID IN hangoutAvailability here, and check if the dashboard can be improved too.
-// check if u want to improve how the functiosn are ordered. A bit confusing at the moment how they're ordered
+const suggestionsContainer: HTMLDivElement | null = document.querySelector('#suggestions-container');
 
 export function hangoutSuggestions(): void {
   loadEventListeners();
@@ -55,7 +60,8 @@ async function initHangoutSuggestions(): Promise<void> {
   LoadingModal.remove();
 };
 
-function renderSuggestionsSection(): void {
+export function renderSuggestionsSection(): void {
+  displayHangoutSuggestions();
   updateRemainingSuggestionsCount();
 };
 
@@ -83,9 +89,6 @@ async function getHangoutSuggestions(): Promise<void> {
     hangoutSuggestionState.suggestions = suggestions;
     hangoutSuggestionState.memberLikes = memberLikes;
     hangoutSuggestionState.memberVotes = memberVotes;
-
-    renderSuggestionsSection();
-    LoadingModal.remove();
 
   } catch (err: unknown) {
     console.log(err);
@@ -128,6 +131,34 @@ async function getHangoutSuggestions(): Promise<void> {
 
       return;
     };
+  };
+};
+
+function displayHangoutSuggestions(): void {
+  if (!suggestionsContainer || !globalHangoutState.data) {
+    return;
+  };
+
+  const { isLeader, hangoutDetails } = globalHangoutState.data;
+  const pageCount: number = hangoutSuggestionState.pageCount;
+  const suggestions: Suggestion[] = hangoutSuggestionState.suggestions;
+
+  const innerSuggestionsContainer: HTMLDivElement = createDivElement(null);
+
+  for (let i = (pageCount * 10) - 10; i < (pageCount * 10); i++) {
+    if (i >= suggestions.length) {
+      break;
+    };
+
+    innerSuggestionsContainer.appendChild(createSuggestionElement(suggestions[i], isLeader));
+    hangoutSuggestionState.pageItemsCount = (i + 1) % 10 && (i + 1);
+  };
+
+  suggestionsContainer.firstElementChild?.remove();
+  suggestionsContainer.appendChild(innerSuggestionsContainer);
+
+  if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
+    suggestionsContainer.classList.add('in-voting-stage');
   };
 };
 
