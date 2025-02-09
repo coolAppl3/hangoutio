@@ -44,7 +44,7 @@ export interface AvailabilitySlot {
 
 export interface Suggestion {
   suggestion_id: number,
-  hangout_member_id: number,
+  hangout_member_id: number | null,
   suggestion_title: string,
   suggestion_description: string,
   suggestion_start_timestamp: number,

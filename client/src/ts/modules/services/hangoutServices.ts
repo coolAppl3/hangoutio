@@ -74,6 +74,6 @@ export interface InitialHangoutData {
   latestHangoutEvents: HangoutEvent[],
 };
 
-export async function getInitialHangoutData(hangoutId: string): Promise<AxiosResponse<InitialHangoutData>> {
+export async function getInitialHangoutDataService(hangoutId: string): Promise<AxiosResponse<InitialHangoutData>> {
   return axios.get(`${hangoutsApiUrl}/details/initial?hangoutId=${hangoutId}`);
 };

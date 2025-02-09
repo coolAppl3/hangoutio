@@ -7,7 +7,7 @@ import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutMemberServices";
-import { getHangoutDashboardData } from "./hangoutDashboard";
+import { getInitialHangoutData } from "./hangoutDashboard";
 import { handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import { initJoinHangoutForm, removeJoinHangoutForm } from "./initJoinHangoutForm";
@@ -102,7 +102,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
     popup('Successfully joined hangout.', 'success');
     LoadingModal.remove();
 
-    await getHangoutDashboardData();
+    await getInitialHangoutData();
 
   } catch (err: unknown) {
     console.log(err);

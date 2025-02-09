@@ -675,7 +675,7 @@
               >
                 <button
                   data-goTo="dashboard"
-                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-light-gray dark:border-light-black w-full rounded-tl-sm rounded-tr-sm"
                 >
                   Dashboard
                 </button>
@@ -683,7 +683,7 @@
                 <button
                   data-goTo="availability"
                   type="button"
-                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-light-gray dark:border-light-black w-full"
                 >
                   Availability
                 </button>
@@ -691,7 +691,7 @@
                 <button
                   data-goTo="suggestions"
                   type="button"
-                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-light-gray dark:border-light-black w-full"
                 >
                   Suggestions
                 </button>
@@ -699,7 +699,7 @@
                 <button
                   data-goTo="conclusion"
                   type="button"
-                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-light-gray dark:border-light-black w-full"
                 >
                   Conclusion
                 </button>
@@ -707,7 +707,7 @@
                 <button
                   data-goTo="members"
                   type="button"
-                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-light-gray dark:border-light-black w-full"
                 >
                   Members
                 </button>
@@ -715,7 +715,7 @@
                 <button
                   data-goTo="events"
                   type="button"
-                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-b-1 border-light-gray dark:border-light-black w-full"
+                  class="bg-description-dark dark:bg-description text-start text-title dark:text-title-dark p-2 border-light-gray dark:border-light-black w-full"
                 >
                   Events
                 </button>
@@ -756,44 +756,43 @@
                   <!-- summary -->
                   <div class="grid grid-cols-3 gap-2 sm:grid-cols-2 xs:grid-cols-1">
                     <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Current stage</span>
+                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Current stage</span>
                       <span
                         id="dashboard-current-stage"
-                        class="text-sm md:text-base font-medium text-title dark:text-title-dark w-full"
+                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                       ></span>
                     </div>
 
                     <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Time remaining</span>
+                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Time remaining</span>
                       <span
                         id="dashboard-next-stage-time"
-                        class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                       ></span>
                     </div>
 
                     <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Next stage</span>
+                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Next stage</span>
                       <span
                         id="dashboard-next-stage"
-                        class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                       ></span>
                     </div>
 
                     <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Hangout conclusion</span>
+                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Hangout conclusion</span>
                       <span
                         id="dashboard-conclusion-time"
-                        class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                       ></span>
                     </div>
 
                     <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Members limit</span>
+                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Members limit</span>
                       <span
                         id="dashboard-member-limit"
-                        class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                        >15 members</span
-                      >
+                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                      ></span>
                     </div>
 
                     <div class="flex flex-col justify-start items-start">
@@ -805,9 +804,8 @@
                       <div class="flex justify-between items-center">
                         <span
                           id="dashboard-hangout-password-value"
-                          class="text-sm md:text-base font-medium text-title dark:text-title-dark"
-                          >No</span
-                        >
+                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                        ></span>
 
                         <button
                           id="dashboard-hangout-password-btn"
@@ -857,29 +855,25 @@
                 >
                   <!-- availability -->
                   <div id="dashboard-availability-description">
-                    <p class="text-base font-medium text-title dark:text-title-dark mb-[4px] md:mb-1">
+                    <p class="text-base font-medium text-title dark:text-title-dark mb-1">
                       Add your availability slots and let everyone know when you're free.
-                    </p>
-
-                    <p class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-                      Don't worry, you can always edit them later if necessary.
                     </p>
 
                     <div class="grid grid-cols-3 gap-2 mb-2 sm:grid-cols-2">
                       <div class="flex flex-col justify-center items-start">
-                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Slots added</span>
+                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Slots added</span>
                         <span
                           id="dashboard-slots-added"
-                          class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                         >
                         </span>
                       </div>
 
                       <div class="flex flex-col justify-center items-start">
-                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Remaining</span>
+                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Remaining</span>
                         <span
                           id="dashboard-slots-remaining"
-                          class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                         ></span>
                       </div>
                     </div>
@@ -895,23 +889,23 @@
 
                   <!-- suggestions -->
                   <div id="dashboard-suggestions-description">
-                    <p class="text-base font-medium text-title dark:text-title-dark mb-2">Add your suggestions.</p>
+                    <p class="text-base font-medium text-title dark:text-title-dark mb-1">Add your suggestions.</p>
 
                     <div class="grid grid-cols-3 gap-2 mb-2 md:grid-cols-2">
                       <div class="flex flex-col justify-center items-start">
-                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Suggestions added</span>
+                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Suggestions added</span>
                         <span
                           id="dashboard-suggestions-added"
-                          class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                         >
                         </span>
                       </div>
 
                       <div class="flex flex-col justify-center items-start">
-                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Remaining</span>
+                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Remaining</span>
                         <span
                           id="dashboard-suggestions-remaining"
-                          class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                         ></span>
                       </div>
                     </div>
@@ -927,23 +921,23 @@
 
                   <!-- votes -->
                   <div id="dashboard-votes-description">
-                    <p class="text-base font-medium text-title dark:text-title-dark mb-2">Vote for the suggestions you like best.</p>
+                    <p class="text-base font-medium text-title dark:text-title-dark mb-1">Vote for the suggestions you like best.</p>
 
                     <div class="grid grid-cols-3 gap-2 mb-2 md:grid-cols-2">
                       <div class="flex flex-col justify-center items-start">
-                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Votes cast</span>
+                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Votes cast</span>
                         <span
                           id="dashboard-votes-added"
-                          class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                         >
                         </span>
                       </div>
 
                       <div class="flex flex-col justify-center items-start">
-                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]">Remaining</span>
+                        <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Remaining</span>
                         <span
                           id="dashboard-votes-remaining"
-                          class="text-sm md:text-base font-medium text-title dark:text-title-dark"
+                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
                         ></span>
                       </div>
                     </div>
@@ -1266,7 +1260,7 @@
           <form id="suggestions-form">
             <div id="suggestions-form-header">
               <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Add a suggestion</h3>
-              <p class="text-sm md:text-base font-bold text-description dark:text-description-dark mb-1">
+              <p class="text-sm md:text-base font-bold text-description dark:text-description-dark mb-[4px]">
                 Share your ideas with everyone and contribute to the hangout.
               </p>
               <p class="w-full text-sm md:text-base font-bold text-description dark:text-description-dark">
@@ -2002,309 +1996,7 @@
             </div>
           </div>
 
-          <div id="suggestions-container">
-            <div id="suggestions-container-inner">
-              <div
-                class="suggestion"
-                data-suggestion-id="123"
-              >
-                <div class="suggestion-header">
-                  <p class="suggestion-title">Table Tennis</p>
-                  <p class="suggestion-time">
-                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                    <span class="suggestion-end">18:00</span>
-                  </p>
-                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
-
-                  <div class="btn-container pb-3">
-                    <button
-                      type="button"
-                      class="add-vote-btn"
-                      title="Unlocks in voting stage"
-                    >
-                      Add vote
-                    </button>
-
-                    <button
-                      type="button"
-                      class="view-suggestion-btn"
-                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                    >
-                      View details
-                    </button>
-
-                    <div class="rating-container">
-                      <span class="suggestion-likes-count">3</span>
-
-                      <button
-                        type="button"
-                        class="like-suggestion-btn"
-                      >
-                        <svg
-                          width="500"
-                          height="500"
-                          viewBox="0 0 500 500"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                            stroke-width="30"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <p class="suggestion-description">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
-                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-                </p>
-              </div>
-
-              <div
-                class="suggestion"
-                data-suggestion-id="123"
-              >
-                <div class="suggestion-header">
-                  <p class="suggestion-title">Table Tennis</p>
-                  <p class="suggestion-time">
-                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                    <span class="suggestion-end">18:00</span>
-                  </p>
-                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
-
-                  <div class="btn-container pb-3">
-                    <button
-                      type="button"
-                      class="add-vote-btn"
-                      title="Unlocks in voting stage"
-                    >
-                      Add vote
-                    </button>
-
-                    <button
-                      type="button"
-                      class="view-suggestion-btn"
-                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                    >
-                      View details
-                    </button>
-
-                    <div class="rating-container">
-                      <span class="suggestion-likes-count">3</span>
-
-                      <button
-                        type="button"
-                        class="like-suggestion-btn"
-                      >
-                        <svg
-                          width="500"
-                          height="500"
-                          viewBox="0 0 500 500"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                            stroke-width="30"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <p class="suggestion-description">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
-                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-                </p>
-              </div>
-
-              <div
-                class="suggestion"
-                data-suggestion-id="123"
-              >
-                <div class="suggestion-header">
-                  <p class="suggestion-title">Table Tennis</p>
-                  <p class="suggestion-time">
-                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                    <span class="suggestion-end">18:00</span>
-                  </p>
-                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
-
-                  <div class="btn-container pb-3">
-                    <button
-                      type="button"
-                      class="add-vote-btn"
-                      title="Unlocks in voting stage"
-                    >
-                      Add vote
-                    </button>
-
-                    <button
-                      type="button"
-                      class="view-suggestion-btn"
-                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                    >
-                      View details
-                    </button>
-
-                    <div class="rating-container">
-                      <span class="suggestion-likes-count">3</span>
-
-                      <button
-                        type="button"
-                        class="like-suggestion-btn"
-                      >
-                        <svg
-                          width="500"
-                          height="500"
-                          viewBox="0 0 500 500"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                            stroke-width="30"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <p class="suggestion-description">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
-                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-                </p>
-              </div>
-
-              <div
-                class="suggestion"
-                data-suggestion-id="123"
-              >
-                <div class="suggestion-header">
-                  <p class="suggestion-title">Table Tennis</p>
-                  <p class="suggestion-time">
-                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                    <span class="suggestion-end">18:00</span>
-                  </p>
-                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
-
-                  <div class="btn-container pb-3">
-                    <button
-                      type="button"
-                      class="add-vote-btn"
-                      title="Unlocks in voting stage"
-                    >
-                      Add vote
-                    </button>
-
-                    <button
-                      type="button"
-                      class="view-suggestion-btn"
-                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                    >
-                      View details
-                    </button>
-
-                    <div class="rating-container">
-                      <span class="suggestion-likes-count">3</span>
-
-                      <button
-                        type="button"
-                        class="like-suggestion-btn"
-                      >
-                        <svg
-                          width="500"
-                          height="500"
-                          viewBox="0 0 500 500"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                            stroke-width="30"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <p class="suggestion-description">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
-                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-                </p>
-              </div>
-
-              <div
-                class="suggestion"
-                data-suggestion-id="123"
-              >
-                <div class="suggestion-header">
-                  <p class="suggestion-title">Table Tennis</p>
-                  <p class="suggestion-time">
-                    On <span class="suggestion-date">November 14th</span>, between <span class="suggestion-start">14:00</span> and
-                    <span class="suggestion-end">18:00</span>
-                  </p>
-                  <p class="suggestion-member">By: <span class="suggested-by">John Doe</span></p>
-
-                  <div class="btn-container pb-3">
-                    <button
-                      type="button"
-                      class="add-vote-btn"
-                      title="Unlocks in voting stage"
-                    >
-                      Add vote
-                    </button>
-
-                    <button
-                      type="button"
-                      class="view-suggestion-btn"
-                      onclick="this.parentElement.parentElement.parentElement.classList.toggle('expanded')"
-                    >
-                      View details
-                    </button>
-
-                    <div class="rating-container">
-                      <span class="suggestion-likes-count">3</span>
-
-                      <button
-                        type="button"
-                        class="like-suggestion-btn"
-                      >
-                        <svg
-                          width="500"
-                          height="500"
-                          viewBox="0 0 500 500"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z"
-                            stroke-width="30"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <p class="suggestion-description">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident et ducimus porro animi, architecto distinctio minus molestiae atque rem,
-                  earum ipsum totam fugiat vitae dolorum delectus. Unde iste explicabo hic, debitis est numquam reprehenderit a vel velit harum vitae atque?
-                  Veniam ipsam ipsa officia iusto id similique adipisci quisquam natus dolor, illo molestiae iure fugit optio animi illum odit architecto
-                  debitis officiis est facilis numquam omnis alias? Illo unde sit quo beatae assumenda.
-                </p>
-              </div>
-            </div>
-          </div>
+          <div id="suggestions-container"></div>
 
           <div class="suggestions-pagination">
             <div class="suggestions-pagination-container">

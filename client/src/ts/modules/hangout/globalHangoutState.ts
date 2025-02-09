@@ -8,6 +8,7 @@ interface GlobalHangoutState {
     hangoutId: string,
     hangoutMemberId: number,
     hangoutMembers: HangoutMember[],
+    hangoutMembersMap: Map<number, string>,
 
     isLeader: boolean,
     isPasswordProtected: boolean,
