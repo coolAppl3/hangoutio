@@ -4,7 +4,7 @@ import { handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_SUGGESTIONS_LIMIT } from "../../global/clientConstants";
 import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
-import { getInitialHangoutData, InitialHangoutData } from "../../services/hangoutServices";
+import { getInitialHangoutDataService, InitialHangoutData } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
@@ -24,13 +24,13 @@ export const hangoutDashboardState: HangoutDashboardState = {
 };
 
 export async function hangoutDashboard(): Promise<void> {
-  await getHangoutDashboardData();
+  await getInitialHangoutData();
 
   detectLatestSection();
   loadEventListeners();
 };
 
-export async function getHangoutDashboardData(): Promise<void> {
+export async function getInitialHangoutData(): Promise<void> {
   const url = new URL(window.location.href);
   const hangoutId: string | null = url.searchParams.get('id');
 
@@ -46,12 +46,18 @@ export async function getHangoutDashboardData(): Promise<void> {
   };
 
   try {
-    const initialHangoutData: InitialHangoutData = (await getInitialHangoutData(hangoutId)).data;
+    const initialHangoutData: InitialHangoutData = (await getInitialHangoutDataService(hangoutId)).data;
+    const hangoutMembersMap: Map<number, string> = new Map();
+
+    for (const member of initialHangoutData.hangoutMembers) {
+      hangoutMembersMap.set(member.hangout_member_id, member.display_name);
+    };
 
     globalHangoutState.data = {
       hangoutId,
       hangoutMemberId: initialHangoutData.hangoutMemberId,
       hangoutMembers: initialHangoutData.hangoutMembers,
+      hangoutMembersMap,
 
       isLeader: initialHangoutData.isLeader,
       isPasswordProtected: initialHangoutData.isPasswordProtected,
