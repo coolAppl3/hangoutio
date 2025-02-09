@@ -22,25 +22,25 @@ function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolea
 
   const isMemberSuggestion: boolean = globalHangoutState.data?.hangoutMemberId === suggestion.hangout_member_id;
   if (isLeader || isMemberSuggestion) {
-    suggestionDetailsElement.appendChild(createDropdownMenuElement(isMemberSuggestion));
+    suggestionDetailsHeaderElement.appendChild(createDropdownMenuElement(isMemberSuggestion));
   };
 
-  const suggestionDetailsContainer: HTMLDivElement = createSuggestionDetailsContainer(suggestion);
-
   suggestionDetailsElement.appendChild(suggestionDetailsHeaderElement);
-  suggestionDetailsElement.appendChild(suggestionDetailsContainer);
+  suggestionDetailsElement.appendChild(createSuggestionDetailsContainer(suggestion));
+  suggestionDetailsElement.appendChild(createBtnContainer());
 
   return suggestionDetailsElement;
 };
 
 function createRatingContainer(likesCount: number): HTMLDivElement {
   const ratingContainer: HTMLDivElement = createDivElement('rating-container');
-  ratingContainer.appendChild(createSpanElement('suggestion-likes-count', `${likesCount}`));
 
   const likeSuggestionBtn: HTMLButtonElement = createBtnElement('like-suggestion-btn', null);
   likeSuggestionBtn.appendChild(createLikeIcon());
 
+  ratingContainer.appendChild(createSpanElement('suggestion-likes-count', `${likesCount}`));
   ratingContainer.appendChild(likeSuggestionBtn);
+
   return ratingContainer;
 };
 
@@ -52,12 +52,12 @@ function createDropdownMenuElement(isMemberSuggestion: boolean): HTMLDivElement 
 
   const dropdownMenuList: HTMLDivElement = createDivElement('dropdown-menu-list');
   isMemberSuggestion && dropdownMenuList.appendChild(createBtnElement('edit-btn', 'Edit'));
-  dropdownMenuList.appendChild(createBtnElement('delete-btn', 'Edit'));
+  dropdownMenuList.appendChild(createBtnElement('delete-btn', 'Delete'));
 
   dropdownMenuElement.appendChild(dropdownMenuBtn);
   dropdownMenuElement.appendChild(dropdownMenuList);
 
-  return dropdownMenuList;
+  return dropdownMenuElement;
 };
 
 function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElement {
@@ -84,18 +84,26 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   return suggestionDetailsContainer;
 };
 
+function createBtnContainer(): HTMLDivElement {
+  const btnContainer: HTMLDivElement = createDivElement('btn-container');
+  btnContainer.appendChild(createBtnElement('add-vote-btn', 'Add vote'));
+  btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
+
+  return btnContainer;
+};
+
 function createLikeIcon(): SVGSVGElement {
   const likeSvgElement: SVGSVGElement = createSvgElement(500, 500);
   const likePathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   likePathElement.setAttribute('stroke-width', '30');
   likePathElement.setAttribute('d', 'M231.098 395.508L231.087 395.498L231.076 395.488C179.281 348.521 137.498 310.548 108.489 275.057C79.6444 239.768 65 208.769 65 176C65 122.502 106.666 81 160 81C190.265 81 219.562 95.1669 238.617 117.369L250 130.631L261.383 117.369C280.438 95.1669 309.735 81 340 81C393.334 81 435 122.502 435 176C435 208.769 420.356 239.768 391.511 275.057C362.502 310.548 320.719 348.521 268.924 395.488L268.913 395.498L268.902 395.508L250 412.715L231.098 395.508Z');
 
-  likeSvgElement.appendChild(likeSvgElement);
+  likeSvgElement.appendChild(likePathElement);
   return likeSvgElement;
 };
 
 function createDropdownIcon(): SVGSVGElement {
-  const dropdownSvgElement: SVGSVGElement = createSvgElement(500, 500);
+  const dropdownSvgElement: SVGSVGElement = createSvgElement(540, 540);
 
   const firstDropdownPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   firstDropdownPathElement.setAttribute('d', 'M330 70C330 103.137 303.137 130 270 130C236.863 130 210 103.137 210 70C210 36.8629 236.863 10 270 10C303.137 10 330 36.8629 330 70Z');
