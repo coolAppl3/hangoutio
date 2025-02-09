@@ -7,7 +7,7 @@ import popup from "../../global/popup";
 import revealPassword from "../../global/revealPassword";
 import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateNewUsername, validatePassword } from "../../global/validation";
 import { JoinHangoutAsGuestBody, joinHangoutAsGuestService } from "../../services/hangoutMemberServices";
-import { getHangoutDashboardData } from "./hangoutDashboard";
+import { getInitialHangoutData } from "./hangoutDashboard";
 import { handleHangoutFull } from "./hangoutDashboardUtils";
 
 const guestSignUpForm: HTMLFormElement | null = document.querySelector('#guest-sign-up-form');
@@ -115,7 +115,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     };
 
     hideGuestSignUpSection();
-    await getHangoutDashboardData();
+    await getInitialHangoutData();
 
   } catch (err: unknown) {
     console.log(err);
