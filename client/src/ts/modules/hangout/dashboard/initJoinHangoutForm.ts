@@ -105,7 +105,7 @@ function createFormGroup(): HTMLDivElement {
   passwordRevealBtn.setAttribute('aria-label', 'Reveal guest password');
   passwordRevealBtn.addEventListener('click', () => revealPassword(passwordRevealBtn));
 
-  const existingPasswordRevealIcon: SVGElement | undefined | null = document.querySelector('#guest-sign-up-section')?.querySelector('svg');
+  const existingPasswordRevealIcon: SVGSVGElement | undefined | null = document.querySelector('#guest-sign-up-section')?.querySelector('svg');
   if (existingPasswordRevealIcon) {
     passwordRevealBtn.appendChild(existingPasswordRevealIcon.cloneNode(true));
   };
