@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.29] (2025-02-09)
+
+### Features
+
+- Improved the look of grid-structured data in `hangout.html`.
+- Added `domUtils.ts`.
+- Added `hangoutMembersMap` to the global hangout state.
+- Added `createSuggestionElement()` in `suggestionUtils.ts`.
+- Added suggestions rendering logic in `hangoutSuggestions.ts`.
+
+
+### Code Refactoring
+
+- A few miscellaneous changes.
+
+
+### Bug Fixes
+
+- Fixed the `Suggestion` interface not having a potential null value fo the suggestion ID.
+
+
 ## [0.4.28] (2025-02-06)
 
 ### Code Refactoring
