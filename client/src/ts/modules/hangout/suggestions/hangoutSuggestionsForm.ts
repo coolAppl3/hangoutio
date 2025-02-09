@@ -9,6 +9,7 @@ import { AddHangoutSuggestionBody, addHangoutSuggestionService } from "../../ser
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../globalHangoutUtils";
+import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSuggestions";
 
 interface HangoutSuggestionFormState {
   suggestionIdToEdit: number | null,
@@ -147,17 +148,31 @@ async function addHangoutSuggestion(): Promise<void> {
     hangoutMemberId,
     suggestionTitle: suggestionTitleInput.value,
     suggestionDescription: suggestionDescriptionTextarea.value,
-    suggestionEndTimestamp,
     suggestionStartTimestamp,
+    suggestionEndTimestamp,
   };
 
   try {
     const suggestionId: number = (await addHangoutSuggestionService(addHangoutSuggestionBody)).data.suggestionId;
 
+    globalHangoutState.data.suggestionsCount++;
+    hangoutSuggestionState.suggestions.push({
+      suggestion_id: suggestionId,
+      hangout_member_id: hangoutMemberId,
+      suggestion_title: addHangoutSuggestionBody.suggestionTitle,
+      suggestion_description: addHangoutSuggestionBody.suggestionDescription,
+      suggestion_start_timestamp: suggestionStartTimestamp,
+      suggestion_end_timestamp: suggestionEndTimestamp,
+      is_edited: false,
+      likes_count: 0,
+      votes_count: 0,
+    });
+
+    renderSuggestionsSection();
+    clearSuggestionsForm();
+
     popup('Suggestion added.', 'success');
     LoadingModal.remove();
-
-    // TODO: add to state, resort, rerender.
 
   } catch (err: unknown) {
     console.log(err);
@@ -227,6 +242,25 @@ async function addHangoutSuggestion(): Promise<void> {
 
 async function editHangoutSuggestion(suggestionId: number): Promise<void> {
   // TODO: continue implementation
+};
+
+function clearSuggestionsForm(): void {
+  hangoutSuggestionFormState.suggestionIdToEdit = null;
+  hangoutSuggestionFormState.suggestionStartTimestamp = null;
+  hangoutSuggestionFormState.suggestionEndTimestamp = null;
+
+  suggestionTitleInput && (suggestionTitleInput.value = '');
+  suggestionDescriptionTextarea && (suggestionDescriptionTextarea.value = '');
+
+  if (!suggestionStartMockInput || !suggestionEndMockInput) {
+    return;
+  };
+
+  suggestionStartMockInput.textContent = 'Click to set date and time';
+  suggestionStartMockInput.classList.add('empty');
+
+  suggestionEndMockInput.textContent = 'Click to set date and time';
+  suggestionEndMockInput.classList.add('empty');
 };
 
 function handleSuggestionDateTimeSelection(dateTimePickerData: DateTimePickerData): void {
