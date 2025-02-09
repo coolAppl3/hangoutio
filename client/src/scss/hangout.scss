@@ -1062,12 +1062,12 @@
           @apply grid grid-cols-2 gap-2 md:grid-cols-1;
 
           .slot {
-            @apply grid grid-cols-2 gap-2 xs:grid-cols-1 bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple;
+            @apply grid grid-cols-2 gap-1 xs:grid-cols-1 bg-secondary dark:bg-secondary-dark p-2 rounded-sm shadow-simple;
 
             .slot-info {
 
               span {
-                @apply block text-sm md:last:text-base font-medium text-description dark:text-description-dark last:text-title dark:last:text-title-dark first:mb-[4px];
+                @apply block text-sm md:last:text-base font-medium text-description dark:text-description-dark last:text-title dark:last:text-title-dark last:font-bold dark:last:font-medium;
               }
             }
 
@@ -1228,26 +1228,91 @@
             @apply grid-rows-[auto_1fr] pb-2;
           }
 
-          &-header {
-            @apply mb-2 relative;
+          &-details {
+            @apply mb-2 overflow-hidden;
 
-            p.suggestion-title {
-              @apply text-md font-bold text-title dark:text-title-dark mb-[4px];
-            }
+            &-header {
+              @apply flex justify-start items-start mb-2;
 
-            p.suggestion-time {
-              @apply text-sm md:text-base font-medium text-description dark:text-description-dark mb-1;
+              p.suggestion-title {
+                @apply text-md font-bold text-title dark:text-title-dark mr-auto text-ellipsis whitespace-nowrap md:whitespace-normal overflow-hidden;
+              }
 
-              span {
-                @apply text-description dark:text-description-dark;
+              .rating-container {
+                @apply flex justify-center items-center mx-1;
+
+                &.liked {
+                  span {
+                    @apply text-description dark:text-description-dark font-bold;
+                  }
+
+                  button {
+
+                    svg path {
+                      @apply stroke-cta dark:stroke-cta-dark fill-cta dark:fill-cta-dark;
+
+                    }
+                  }
+                }
+
+                span {
+                  @apply text-sm font-medium text-description dark:text-description-dark mr-[2px];
+                }
+
+                button {
+                  @apply svg w-[2.5rem] h-[2.5rem] transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1;
+
+                  svg path {
+                    @apply stroke-title dark:stroke-title-dark fill-transparent;
+                  }
+                }
+              }
+
+              .dropdown-menu {
+                @apply relative;
+
+                &>button {
+                  @apply svg w-2 h-2 mt-[2px] transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1;
+
+                  svg path {
+                    @apply fill-title dark:fill-title-dark;
+                  }
+                }
+
+                &.expanded {
+
+                  .dropdown-menu-list {
+                    @apply block;
+                  }
+                }
+
+                &-list {
+                  @apply absolute top-0 right-3 w-fit h-fit hidden z-3 rounded-sm overflow-hidden;
+
+                  button {
+                    @apply block w-full p-1 pr-3 bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
+
+                    &:last-child {
+                      @apply text-danger dark:text-danger-dark;
+                    }
+                  }
+                }
               }
             }
 
-            p.suggestion-member {
-              @apply text-sm md:text-base font-medium text-description dark:text-description-dark mb-1;
+            &-container {
+              @apply grid grid-cols-2 xs:grid-cols-1 gap-1 mb-2 relative z-0;
 
-              span {
-                @apply text-title dark:text-title-dark;
+              div {
+                @apply last:col-span-2 xs:last:col-span-1;
+
+                span {
+                  @apply block text-sm text-description dark:text-description-dark font-medium;
+
+                  &:last-child {
+                    @apply md:text-base text-title dark:text-title-dark font-bold dark:font-medium;
+                  }
+                }
               }
             }
 
@@ -1264,32 +1329,7 @@
                 }
               }
 
-              .rating-container {
-                @apply mb-2 flex justify-center items-center absolute bottom-[-3rem] right-0;
 
-                &.liked {
-                  button.like-suggestion-btn {
-                    @apply svg w-3 h-3;
-
-                    svg path {
-                      @apply stroke-cta dark:stroke-cta-dark fill-cta dark:fill-cta-dark;
-
-                    }
-                  }
-                }
-
-                span.suggestion-likes-count {
-                  @apply text-sm font-medium text-description dark:text-description-dark mr-[2px];
-                }
-
-                button.like-suggestion-btn {
-                  @apply svg w-3 h-3;
-
-                  svg path {
-                    @apply stroke-title dark:stroke-title-dark fill-transparent;
-                  }
-                }
-              }
             }
           }
 
