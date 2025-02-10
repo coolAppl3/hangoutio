@@ -155,7 +155,6 @@ async function addHangoutSuggestion(): Promise<void> {
   try {
     const suggestionId: number = (await addHangoutSuggestionService(addHangoutSuggestionBody)).data.suggestionId;
 
-    globalHangoutState.data.suggestionsCount++;
     hangoutSuggestionState.suggestions.push({
       suggestion_id: suggestionId,
       hangout_member_id: hangoutMemberId,
@@ -167,6 +166,9 @@ async function addHangoutSuggestion(): Promise<void> {
       likes_count: 0,
       votes_count: 0,
     });
+
+    hangoutSuggestionState.suggestions.sort((a, b) => a.likes_count - b.likes_count);
+    globalHangoutState.data.suggestionsCount++;
 
     renderSuggestionsSection();
     clearSuggestionsForm();
