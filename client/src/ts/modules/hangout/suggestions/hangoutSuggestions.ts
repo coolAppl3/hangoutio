@@ -76,6 +76,10 @@ function loadEventListeners(): void {
 };
 
 async function getHangoutSuggestions(): Promise<void> {
+  if (hangoutSuggestionState.isLoaded) {
+    return;
+  };
+
   if (!globalHangoutState.data) {
     popup('Failed to load hangout suggestions.', 'error');
     return;
@@ -89,6 +93,8 @@ async function getHangoutSuggestions(): Promise<void> {
     hangoutSuggestionState.suggestions = suggestions;
     hangoutSuggestionState.memberLikes = memberLikes;
     hangoutSuggestionState.memberVotes = memberVotes;
+
+    hangoutSuggestionState.isLoaded = true;
 
   } catch (err: unknown) {
     console.log(err);
