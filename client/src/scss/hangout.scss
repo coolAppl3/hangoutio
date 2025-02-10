@@ -1220,12 +1220,15 @@
       &>div {
         @apply grid grid-cols-2 md:grid-cols-1 items-start gap-2 mb-3;
 
-
         .suggestion {
-          @apply grid grid-rows-[auto_0fr] transition-[grid] bg-secondary dark:bg-secondary-dark p-2 pb-0 rounded-sm shadow-simple;
+          @apply grid grid-rows-[auto_0fr] transition-[grid] bg-secondary dark:bg-secondary-dark p-2 pb-0 rounded-sm shadow-simple overflow-hidden;
 
           &.expanded {
             @apply grid-rows-[auto_1fr] pb-2;
+          }
+
+          &.user {
+            @apply relative after:absolute after:top-[-1rem] after:right-[-1rem] after:w-2 after:h-2 after:bg-cta dark:after:bg-cta-dark after:rotate-[-45deg];
           }
 
           &-details {
@@ -1328,8 +1331,6 @@
                   @apply btn sm:w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
                 }
               }
-
-
             }
           }
 

@@ -7,6 +7,10 @@ export function createSuggestionElement(suggestion: Suggestion, isLeader: boolea
   const suggestionElement: HTMLDivElement = createDivElement('suggestion');
   suggestionElement.setAttribute('data-suggestionId', `${suggestion.hangout_member_id || 0}`);
 
+  if (suggestion.hangout_member_id === globalHangoutState.data?.hangoutMemberId) {
+    suggestionElement.classList.add('user');
+  };
+
   suggestionElement.appendChild(createSuggestionDetailsElement(suggestion, isLeader));
   suggestionElement.appendChild(createParagraphElement('suggestion-description', suggestion.suggestion_description));
 
