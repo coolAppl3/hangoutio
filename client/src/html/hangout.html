@@ -1011,7 +1011,7 @@
                       id="dashboard-chat-empty"
                       class="bg-primary dark:bg-primary-dark p-2 rounded-sm flex-col justify-center items-center"
                     >
-                      <p class="text-sm md:text-base font-medium text-center text-description dark:text-description-dark mb-2">No messages found.</p>
+                      <p class="text-sm md:text-base font-medium text-center text-description dark:text-description-dark mb-2">No messages found</p>
 
                       <button
                         type="button"
@@ -1426,7 +1426,7 @@
               <div id="suggestions-sort">
                 <p>Sort by</p>
 
-                <div class="btn-container group">
+                <div class="btn-container group/suggestionsSort">
                   <button
                     type="button"
                     id="suggestions-sort-btn"
@@ -1434,7 +1434,7 @@
                   >
                     <span>Popularity</span>
 
-                    <div class="svg w-[1.6rem] h-[1.6rem] transition-transform group-[.expanded]:rotate-180">
+                    <div class="svg w-[1.6rem] h-[1.6rem] transition-transform group-[.expanded]/suggestionsSort:rotate-180">
                       <svg
                         width="500"
                         height="500"
@@ -1456,27 +1456,21 @@
                   <div class="btn-container-inner">
                     <button
                       type="button"
-                      class="popularity"
+                      data-sortBy="popularity"
                     >
                       Popularity
                     </button>
                     <button
                       type="button"
-                      class="newest"
+                      data-sortBy="latest"
                     >
-                      Newest
+                      Latest
                     </button>
                     <button
                       type="button"
-                      class="oldest"
+                      data-sortBy="oldest"
                     >
                       Oldest
-                    </button>
-                    <button
-                      type="button"
-                      class="name"
-                    >
-                      Name
                     </button>
                   </div>
                 </div>
@@ -1484,487 +1478,456 @@
             </div>
 
             <div class="suggestions-filter-dropdown">
-              <p class="text-sm md:text-base font-medium text-title dark:text-title-dark mb-2">Filter by members</p>
-
               <div
-                id="suggestions-filter-container"
+                id="suggestions-utility-filter-container"
                 class="mb-2"
               >
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Doe</p>
+                <p class="text-sm md:text-base font-medium text-title dark:text-title-dark mb-2">Filter by</p>
+
+                <div class="suggestions-filter-container">
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-filterBy="mySuggestions"
+                    >
+                      My suggestions
+                    </p>
+                  </div>
+
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-filterBy="liked"
+                    >
+                      Liked
+                    </p>
+                  </div>
+
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-filterBy="Voted for"
+                    >
+                      Voted for
+                    </p>
+                  </div>
                 </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
-                </div>
-                <div class="member">
-                  <button
-                    data-member-id="123"
-                    class="checkbox-btn"
-                    type="button"
-                    aria-label="Toggle user-select checkbox"
-                  >
-                    <div class="svg">
-                      <svg
-                        width="601"
-                        height="601"
-                        viewBox="0 0 601 601"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                        <path
-                          d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                          class="fill-dark dark:fill-cta-dark"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  <p class="member-name">John Smith</p>
+              </div>
+
+              <div class="h-line mb-2"></div>
+
+              <div
+                id="suggestions-member-filter-container"
+                class="mb-2"
+              >
+                <p class="text-sm md:text-base font-medium text-title dark:text-title-dark mb-2">Filter members</p>
+
+                <div class="suggestions-filter-container">
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
+                  <div class="filter-item">
+                    <button
+                      data-member-id="123"
+                      class="checkbox-btn"
+                      type="button"
+                      aria-label="Toggle user-select checkbox"
+                    >
+                      <div class="svg">
+                        <svg
+                          width="601"
+                          height="601"
+                          viewBox="0 0 601 601"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                          <path
+                            d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
+                            class="fill-dark dark:fill-cta-dark"
+                          />
+                        </svg>
+                      </div>
+                    </button>
+                    <p
+                      class="filter-item-title"
+                      data-hangoutMemberId="23"
+                    >
+                      John Smith
+                    </p>
+                  </div>
                 </div>
               </div>
 

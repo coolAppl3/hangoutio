@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.4.30] (2025-02-10)
+
+### Features
+
+- Added a ribbon to distinguish suggestions made by the user.
+- Added logic to render user likes and votes on respective suggestions in `suggestionUtils.ts`.
+- User will not be informed if they try to expand the suggestions form when they've already reached the suggestions limit.
+- Suggestion form now collapses after a suggestion is successfully added.
+
+
+### Code Refactoring
+
+- Reversed the order of buttons in suggestion elements in `hangout.html`.
+- Changed `memberLikes` and `memberVotes` to a set containing suggestions IDs, instead of an array of suggestions.
+- Improved suggestion filtering options in `hangout.html`.
+
+
+### Bug Fixes
+
+- Fixed suggestions not being resorted after a new one is added by the user in `hangoutSuggestionsForm.ts`.
+  - This is a temporary solution until further sorting logic is implemented.
+- Fixed `getHangoutSuggestions()` being called every time the user navigated to the suggestions section in `hangoutSuggestions.ts`.
+- Fixed the hangout member ID being appended to the suggestion instead of the suggestion ID in `suggestionUtils.ts`.
+
+
 ## [0.4.29] (2025-02-09)
 
 ### Features

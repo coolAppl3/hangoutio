@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
 import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -155,7 +155,6 @@ async function addHangoutSuggestion(): Promise<void> {
   try {
     const suggestionId: number = (await addHangoutSuggestionService(addHangoutSuggestionBody)).data.suggestionId;
 
-    globalHangoutState.data.suggestionsCount++;
     hangoutSuggestionState.suggestions.push({
       suggestion_id: suggestionId,
       hangout_member_id: hangoutMemberId,
@@ -168,8 +167,12 @@ async function addHangoutSuggestion(): Promise<void> {
       votes_count: 0,
     });
 
-    renderSuggestionsSection();
+    hangoutSuggestionState.suggestions.sort((a, b) => a.likes_count - b.likes_count);
+    globalHangoutState.data.suggestionsCount++;
+
     clearSuggestionsForm();
+    collapseSuggestionsForm();
+    renderSuggestionsSection();
 
     popup('Suggestion added.', 'success');
     LoadingModal.remove();
@@ -301,17 +304,17 @@ function handleSuggestionsFormClicks(e: MouseEvent): void {
       return;
     };
 
-    suggestionsFormContainer && (suggestionsFormContainer.style.display = 'block');
-    suggestionsForm?.classList.add('expanded');
+    if (globalHangoutState.data.suggestionsCount === HANGOUT_SUGGESTIONS_LIMIT) {
+      popup(`Suggestions limit of ${HANGOUT_SUGGESTIONS_LIMIT} reached.`, 'error');
+      return;
+    };
 
+    expandSuggestionsFrom();
     return;
   };
 
   if (e.target.id === 'suggestions-form-collapse-btn') {
-    suggestionsForm?.classList.remove('expanded');
-    suggestionsFormContainer && setTimeout(() => suggestionsFormContainer.style.display = 'none', 150);
-
-    return;
+    collapseSuggestionsForm();
   };
 };
 
@@ -355,4 +358,14 @@ function updateSuggestionCharacterCount(textarea: HTMLTextAreaElement): void {
   };
 
   characterCountSpan.parentElement?.classList.remove('error');
+};
+
+function expandSuggestionsFrom(): void {
+  suggestionsFormContainer && (suggestionsFormContainer.style.display = 'block');
+  suggestionsForm?.classList.add('expanded');
+};
+
+function collapseSuggestionsForm(): void {
+  suggestionsForm?.classList.remove('expanded');
+  suggestionsFormContainer && setTimeout(() => suggestionsFormContainer.style.display = 'none', 150);
 };

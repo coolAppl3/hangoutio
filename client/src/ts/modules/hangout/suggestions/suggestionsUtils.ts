@@ -2,10 +2,15 @@ import { createBtnElement, createDivElement, createParagraphElement, createSpanE
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../globalHangoutUtils";
 import { Suggestion } from "../hangoutTypes";
+import { hangoutSuggestionState } from "./hangoutSuggestions";
 
 export function createSuggestionElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionElement: HTMLDivElement = createDivElement('suggestion');
-  suggestionElement.setAttribute('data-suggestionId', `${suggestion.hangout_member_id || 0}`);
+  suggestionElement.setAttribute('data-suggestionId', `${suggestion.suggestion_id || 0}`);
+
+  if (suggestion.hangout_member_id === globalHangoutState.data?.hangoutMemberId) {
+    suggestionElement.classList.add('user');
+  };
 
   suggestionElement.appendChild(createSuggestionDetailsElement(suggestion, isLeader));
   suggestionElement.appendChild(createParagraphElement('suggestion-description', suggestion.suggestion_description));
@@ -16,9 +21,12 @@ export function createSuggestionElement(suggestion: Suggestion, isLeader: boolea
 function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionDetailsElement: HTMLDivElement = createDivElement('suggestion-details');
 
+  const isLiked: boolean = hangoutSuggestionState.memberLikesSet.has(suggestion.suggestion_id);
+  const isVotedFor: boolean = hangoutSuggestionState.memberVotesSet.has(suggestion.suggestion_id);
+
   const suggestionDetailsHeaderElement: HTMLDivElement = createDivElement('suggestion-details-header');
   suggestionDetailsHeaderElement.appendChild(createParagraphElement('suggestion-title', suggestion.suggestion_title));
-  suggestionDetailsHeaderElement.appendChild(createRatingContainer(suggestion.likes_count));
+  suggestionDetailsHeaderElement.appendChild(createRatingContainer(suggestion.likes_count, isLiked));
 
   const isMemberSuggestion: boolean = globalHangoutState.data?.hangoutMemberId === suggestion.hangout_member_id;
   if (isLeader || isMemberSuggestion) {
@@ -27,13 +35,17 @@ function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolea
 
   suggestionDetailsElement.appendChild(suggestionDetailsHeaderElement);
   suggestionDetailsElement.appendChild(createSuggestionDetailsContainer(suggestion));
-  suggestionDetailsElement.appendChild(createBtnContainer());
+  suggestionDetailsElement.appendChild(createBtnContainer(isVotedFor));
 
   return suggestionDetailsElement;
 };
 
-function createRatingContainer(likesCount: number): HTMLDivElement {
+function createRatingContainer(likesCount: number, isLiked: boolean): HTMLDivElement {
   const ratingContainer: HTMLDivElement = createDivElement('rating-container');
+
+  if (isLiked) {
+    ratingContainer.classList.add('liked');
+  };
 
   const likeSuggestionBtn: HTMLButtonElement = createBtnElement('like-suggestion-btn', null);
   likeSuggestionBtn.appendChild(createLikeIcon());
@@ -84,10 +96,10 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   return suggestionDetailsContainer;
 };
 
-function createBtnContainer(): HTMLDivElement {
+function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
-  btnContainer.appendChild(createBtnElement('add-vote-btn', 'Add vote'));
   btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
+  btnContainer.appendChild(createBtnElement('add-vote-btn', isVotedFor ? 'Remove vote' : 'Add vote'));
 
   return btnContainer;
 };

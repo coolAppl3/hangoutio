@@ -983,7 +983,7 @@
           }
 
           &.user {
-            @apply mb-3 relative after:absolute after:top-[-1rem] after:left-[-1rem] after:w-2 after:h-2 after:bg-cta dark:after:bg-cta-dark after:rotate-[-45deg];
+            @apply mb-3 relative after:absolute after:top-[-1rem] after:right-[-1rem] after:w-2 after:h-2 after:bg-cta dark:after:bg-cta-dark after:rotate-[-45deg];
           }
 
           p.display-name {
@@ -1197,13 +1197,13 @@
       &-dropdown {
         @apply overflow-hidden;
 
-        #suggestions-filter-container {
+        .suggestions-filter-container {
           @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-x-2 gap-y-1;
 
-          .member {
+          .filter-item {
             @apply flex justify-start items-center;
 
-            &-name {
+            &-title {
               @apply text-sm font-medium text-description dark:text-description-dark ml-1 text-nowrap overflow-hidden text-ellipsis;
             }
           }
@@ -1217,15 +1217,22 @@
         @apply block;
       }
 
-      &>div {
+      &>p.no-suggestions {
+        @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-3 mt-1 mx-auto w-fit rounded-[20rem];
+      }
+
+      .suggestions-container-inner {
         @apply grid grid-cols-2 md:grid-cols-1 items-start gap-2 mb-3;
 
-
         .suggestion {
-          @apply grid grid-rows-[auto_0fr] transition-[grid] bg-secondary dark:bg-secondary-dark p-2 pb-0 rounded-sm shadow-simple;
+          @apply grid grid-rows-[auto_0fr] transition-[grid] bg-secondary dark:bg-secondary-dark p-2 pb-0 rounded-sm shadow-simple overflow-hidden;
 
           &.expanded {
             @apply grid-rows-[auto_1fr] pb-2;
+          }
+
+          &.user {
+            @apply relative after:absolute after:top-[-1rem] after:right-[-1rem] after:w-2 after:h-2 after:bg-cta dark:after:bg-cta-dark after:rotate-[-45deg];
           }
 
           &-details {
@@ -1328,8 +1335,6 @@
                   @apply btn sm:w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
                 }
               }
-
-
             }
           }
 

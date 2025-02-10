@@ -838,7 +838,7 @@ exports.suggestionsRouter.get('/', async (req, res) => {
         const memberLikes = [];
         for (const suggestionLike of suggestionLikes) {
             if (suggestionLike.hangout_member_id === +hangoutMemberId) {
-                memberLikes.push(suggestionLike);
+                memberLikes.push(suggestionLike.suggestion_id);
             }
             ;
             const suggestionLikeCount = suggestionLikesMap.get(suggestionLike.suggestion_id);
@@ -854,7 +854,7 @@ exports.suggestionsRouter.get('/', async (req, res) => {
         const memberVotes = [];
         for (const vote of votes) {
             if (vote.hangout_member_id === +hangoutMemberId) {
-                memberVotes.push(vote);
+                memberVotes.push(vote.suggestion_id);
             }
             ;
             const suggestionVotesCount = suggestionVotesMap.get(vote.suggestion_id);

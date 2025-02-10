@@ -1,13 +1,13 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
-import { createDivElement } from "../../global/domUtils";
+import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutSuggestionsService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
-import { Suggestion, SuggestionLike, Vote } from "../hangoutTypes";
+import { Suggestion } from "../hangoutTypes";
 import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
 import { createSuggestionElement } from "./suggestionsUtils";
 
@@ -15,8 +15,8 @@ interface HangoutSuggestionsState {
   isLoaded: boolean,
 
   suggestions: Suggestion[],
-  memberLikes: SuggestionLike[],
-  memberVotes: Vote[],
+  memberLikesSet: Set<number>,
+  memberVotesSet: Set<number>,
 
   pageCount: number,
   pageItemsCount: number,
@@ -26,8 +26,8 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
   isLoaded: false,
 
   suggestions: [],
-  memberLikes: [],
-  memberVotes: [],
+  memberLikesSet: new Set<number>(),
+  memberVotesSet: new Set<number>(),
 
   pageCount: 1,
   pageItemsCount: 0,
@@ -76,6 +76,10 @@ function loadEventListeners(): void {
 };
 
 async function getHangoutSuggestions(): Promise<void> {
+  if (hangoutSuggestionState.isLoaded) {
+    return;
+  };
+
   if (!globalHangoutState.data) {
     popup('Failed to load hangout suggestions.', 'error');
     return;
@@ -87,8 +91,10 @@ async function getHangoutSuggestions(): Promise<void> {
     const { suggestions, memberLikes, memberVotes } = (await getHangoutSuggestionsService({ hangoutId, hangoutMemberId })).data;
 
     hangoutSuggestionState.suggestions = suggestions;
-    hangoutSuggestionState.memberLikes = memberLikes;
-    hangoutSuggestionState.memberVotes = memberVotes;
+    hangoutSuggestionState.memberLikesSet = new Set<number>(memberLikes);
+    hangoutSuggestionState.memberVotesSet = new Set<number>(memberVotes);
+
+    hangoutSuggestionState.isLoaded = true;
 
   } catch (err: unknown) {
     console.log(err);
@@ -139,11 +145,18 @@ function displayHangoutSuggestions(): void {
     return;
   };
 
+  if (hangoutSuggestionState.suggestions.length === 0) {
+    suggestionsContainer.firstElementChild?.remove();
+    suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions yet'));
+
+    return;
+  };
+
   const { isLeader, hangoutDetails } = globalHangoutState.data;
   const pageCount: number = hangoutSuggestionState.pageCount;
   const suggestions: Suggestion[] = hangoutSuggestionState.suggestions;
 
-  const innerSuggestionsContainer: HTMLDivElement = createDivElement(null);
+  const innerSuggestionsContainer: HTMLDivElement = createDivElement('suggestions-container-inner');
 
   for (let i = (pageCount * 10) - 10; i < (pageCount * 10); i++) {
     if (i >= suggestions.length) {
