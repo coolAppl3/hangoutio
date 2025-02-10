@@ -170,8 +170,9 @@ async function addHangoutSuggestion(): Promise<void> {
     hangoutSuggestionState.suggestions.sort((a, b) => a.likes_count - b.likes_count);
     globalHangoutState.data.suggestionsCount++;
 
-    renderSuggestionsSection();
     clearSuggestionsForm();
+    collapseSuggestionsForm();
+    renderSuggestionsSection();
 
     popup('Suggestion added.', 'success');
     LoadingModal.remove();
@@ -308,17 +309,12 @@ function handleSuggestionsFormClicks(e: MouseEvent): void {
       return;
     };
 
-    suggestionsFormContainer && (suggestionsFormContainer.style.display = 'block');
-    suggestionsForm?.classList.add('expanded');
-
+    expandSuggestionsFrom();
     return;
   };
 
   if (e.target.id === 'suggestions-form-collapse-btn') {
-    suggestionsForm?.classList.remove('expanded');
-    suggestionsFormContainer && setTimeout(() => suggestionsFormContainer.style.display = 'none', 150);
-
-    return;
+    collapseSuggestionsForm();
   };
 };
 
@@ -362,4 +358,14 @@ function updateSuggestionCharacterCount(textarea: HTMLTextAreaElement): void {
   };
 
   characterCountSpan.parentElement?.classList.remove('error');
+};
+
+function expandSuggestionsFrom(): void {
+  suggestionsFormContainer && (suggestionsFormContainer.style.display = 'block');
+  suggestionsForm?.classList.add('expanded');
+};
+
+function collapseSuggestionsForm(): void {
+  suggestionsForm?.classList.remove('expanded');
+  suggestionsFormContainer && setTimeout(() => suggestionsFormContainer.style.display = 'none', 150);
 };
