@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
 import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -300,6 +300,11 @@ function handleSuggestionsFormClicks(e: MouseEvent): void {
 
     if (globalHangoutState.data.hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
       popup('Not in suggestions stage.', 'error');
+      return;
+    };
+
+    if (globalHangoutState.data.suggestionsCount === HANGOUT_SUGGESTIONS_LIMIT) {
+      popup(`Suggestions limit of ${HANGOUT_SUGGESTIONS_LIMIT} reached.`, 'error');
       return;
     };
 
