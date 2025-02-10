@@ -7,7 +7,7 @@ import popup from "../../global/popup";
 import { getHangoutSuggestionsService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
-import { Suggestion, SuggestionLike, Vote } from "../hangoutTypes";
+import { Suggestion } from "../hangoutTypes";
 import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
 import { createSuggestionElement } from "./suggestionsUtils";
 
@@ -15,8 +15,8 @@ interface HangoutSuggestionsState {
   isLoaded: boolean,
 
   suggestions: Suggestion[],
-  memberLikes: Set<number>,
-  memberVotes: Set<number>,
+  memberLikesSet: Set<number>,
+  memberVotesSet: Set<number>,
 
   pageCount: number,
   pageItemsCount: number,
@@ -26,8 +26,8 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
   isLoaded: false,
 
   suggestions: [],
-  memberLikes: new Set(),
-  memberVotes: new Set(),
+  memberLikesSet: new Set<number>(),
+  memberVotesSet: new Set<number>(),
 
   pageCount: 1,
   pageItemsCount: 0,
@@ -88,11 +88,11 @@ async function getHangoutSuggestions(): Promise<void> {
   const { hangoutId, hangoutMemberId } = globalHangoutState.data;
 
   try {
-    const { suggestions, memberLikes, memberVotes } = (await getHangoutSuggestionsService({ hangoutId, hangoutMemberId })).data;
+    const { suggestions, memberLikesSet, memberVotesSet } = (await getHangoutSuggestionsService({ hangoutId, hangoutMemberId })).data;
 
     hangoutSuggestionState.suggestions = suggestions;
-    hangoutSuggestionState.memberLikes = memberLikes;
-    hangoutSuggestionState.memberVotes = memberVotes;
+    hangoutSuggestionState.memberLikesSet = new Set<number>(memberLikesSet);
+    hangoutSuggestionState.memberVotesSet = new Set<number>(memberVotesSet);
 
     hangoutSuggestionState.isLoaded = true;
 
