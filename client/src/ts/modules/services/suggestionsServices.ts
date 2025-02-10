@@ -92,8 +92,8 @@ interface GetHangoutSuggestionsBody {
 
 interface GetHangoutSuggestionsData {
   suggestions: Suggestion[],
-  memberLikes: Set<number>,
-  memberVotes: Set<number>,
+  memberLikesSet: Set<number>,
+  memberVotesSet: Set<number>,
 }
 
 export function getHangoutSuggestionsService(requestBody: GetHangoutSuggestionsBody): Promise<AxiosResponse<GetHangoutSuggestionsData>> {
