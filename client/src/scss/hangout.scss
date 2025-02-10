@@ -983,7 +983,7 @@
           }
 
           &.user {
-            @apply mb-3 relative after:absolute after:top-[-1rem] after:left-[-1rem] after:w-2 after:h-2 after:bg-cta dark:after:bg-cta-dark after:rotate-[-45deg];
+            @apply mb-3 relative after:absolute after:top-[-1rem] after:right-[-1rem] after:w-2 after:h-2 after:bg-cta dark:after:bg-cta-dark after:rotate-[-45deg];
           }
 
           p.display-name {
