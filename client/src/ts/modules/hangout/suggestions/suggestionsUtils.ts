@@ -86,8 +86,8 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
 
 function createBtnContainer(): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
-  btnContainer.appendChild(createBtnElement('add-vote-btn', 'Add vote'));
   btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
+  btnContainer.appendChild(createBtnElement('add-vote-btn', 'Add vote'));
 
   return btnContainer;
 };
