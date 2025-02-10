@@ -1038,11 +1038,11 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     const votes: Vote[] = suggestionInfoRows[2];
 
     const suggestionLikesMap: Map<number, number> = new Map();
-    const memberLikesSet: Set<number> = new Set();
+    const memberLikes: number[] = [];
 
     for (const suggestionLike of suggestionLikes) {
       if (suggestionLike.hangout_member_id === +hangoutMemberId) {
-        memberLikesSet.add(suggestionLike.suggestion_id);
+        memberLikes.push(suggestionLike.suggestion_id);
       };
 
       const suggestionLikeCount: number | undefined = suggestionLikesMap.get(suggestionLike.suggestion_id);
@@ -1056,11 +1056,11 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     };
 
     const suggestionVotesMap: Map<number, number> = new Map();
-    const memberVotesSet: Set<number> = new Set();
+    const memberVotes: number[] = [];
 
     for (const vote of votes) {
       if (vote.hangout_member_id === +hangoutMemberId) {
-        memberVotesSet.add(vote.suggestion_id);
+        memberVotes.push(vote.suggestion_id);
       };
 
       const suggestionVotesCount: number | undefined = suggestionVotesMap.get(vote.suggestion_id);
@@ -1093,8 +1093,8 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
 
     res.json({
       suggestions: countedSuggestions,
-      memberLikes: memberLikesSet,
-      memberVotes: memberVotesSet,
+      memberLikes,
+      memberVotes,
     });
 
   } catch (err: unknown) {

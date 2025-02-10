@@ -88,11 +88,11 @@ async function getHangoutSuggestions(): Promise<void> {
   const { hangoutId, hangoutMemberId } = globalHangoutState.data;
 
   try {
-    const { suggestions, memberLikesSet, memberVotesSet } = (await getHangoutSuggestionsService({ hangoutId, hangoutMemberId })).data;
+    const { suggestions, memberLikes, memberVotes } = (await getHangoutSuggestionsService({ hangoutId, hangoutMemberId })).data;
 
     hangoutSuggestionState.suggestions = suggestions;
-    hangoutSuggestionState.memberLikesSet = new Set<number>(memberLikesSet);
-    hangoutSuggestionState.memberVotesSet = new Set<number>(memberVotesSet);
+    hangoutSuggestionState.memberLikesSet = new Set<number>(memberLikes);
+    hangoutSuggestionState.memberVotesSet = new Set<number>(memberVotes);
 
     hangoutSuggestionState.isLoaded = true;
 
