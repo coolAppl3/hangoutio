@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
-import { createDivElement } from "../../global/domUtils";
+import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutSuggestionsService } from "../../services/suggestionsServices";
@@ -145,11 +145,18 @@ function displayHangoutSuggestions(): void {
     return;
   };
 
+  if (hangoutSuggestionState.suggestions.length === 0) {
+    suggestionsContainer.firstElementChild?.remove();
+    suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions yet'));
+
+    return;
+  };
+
   const { isLeader, hangoutDetails } = globalHangoutState.data;
   const pageCount: number = hangoutSuggestionState.pageCount;
   const suggestions: Suggestion[] = hangoutSuggestionState.suggestions;
 
-  const innerSuggestionsContainer: HTMLDivElement = createDivElement(null);
+  const innerSuggestionsContainer: HTMLDivElement = createDivElement('suggestions-container-inner');
 
   for (let i = (pageCount * 10) - 10; i < (pageCount * 10); i++) {
     if (i >= suggestions.length) {

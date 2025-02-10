@@ -1217,7 +1217,11 @@
         @apply block;
       }
 
-      &>div {
+      &>p.no-suggestions {
+        @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-3 mt-1 mx-auto w-fit rounded-[20rem];
+      }
+
+      .suggestions-container-inner {
         @apply grid grid-cols-2 md:grid-cols-1 items-start gap-2 mb-3;
 
         .suggestion {
