@@ -35,7 +35,7 @@ function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolea
 
   suggestionDetailsElement.appendChild(suggestionDetailsHeaderElement);
   suggestionDetailsElement.appendChild(createSuggestionDetailsContainer(suggestion));
-  suggestionDetailsElement.appendChild(createBtnContainer(isLiked));
+  suggestionDetailsElement.appendChild(createBtnContainer(isVotedFor));
 
   return suggestionDetailsElement;
 };
