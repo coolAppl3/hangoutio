@@ -15,8 +15,8 @@ interface HangoutSuggestionsState {
   isLoaded: boolean,
 
   suggestions: Suggestion[],
-  memberLikes: SuggestionLike[],
-  memberVotes: Vote[],
+  memberLikes: Set<number>,
+  memberVotes: Set<number>,
 
   pageCount: number,
   pageItemsCount: number,
@@ -26,8 +26,8 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
   isLoaded: false,
 
   suggestions: [],
-  memberLikes: [],
-  memberVotes: [],
+  memberLikes: new Set(),
+  memberVotes: new Set(),
 
   pageCount: 1,
   pageItemsCount: 0,
