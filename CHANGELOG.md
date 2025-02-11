@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.31] (2025-02-11)
+
+### Features
+
+- Simplified the use of `handleAuthSessionExpired()` and `handleAuthSessionDestroyed()`.
+- Added `dateTimeUtils.ts` as a global utility module.
+
+
+### Code Refactoring
+
+- Reworked DOM-related functions to leverage `domUtils.ts` where necessary.
+
+
 ## [0.4.30] (2025-02-10)
 
 ### Features
