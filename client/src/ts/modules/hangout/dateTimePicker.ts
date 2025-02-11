@@ -431,7 +431,7 @@ function updateCalendar(): void {
     return;
   };
 
-  const datePickerDatesContainer: HTMLDivElement = createDivElement('date-picker-dates-container');
+  const datePickerDatesContainer: HTMLDivElement = createDivElement(null, 'date-picker-dates-container');
 
   generateAndAppendEmptyCalendarCells(datePickerDatesContainer, firstDayOfMonth);
   generateAndAppendCalendarCells(datePickerDatesContainer, numberOfDays);
