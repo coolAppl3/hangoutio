@@ -2,6 +2,7 @@ import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
+import { createBtnElement, createDivElement, createParagraphElement, createSpanElement, createSvgElement } from "../../global/domUtils";
 import { InfoModal } from "../../global/InfoModal";
 import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
@@ -263,18 +264,12 @@ export function getHangoutConclusionDate(): string {
 };
 
 export function createHangoutMemberElement(hangoutMember: HangoutMember): HTMLButtonElement {
-  const memberItem: HTMLButtonElement = document.createElement('button');
-  memberItem.className = 'member-item';
-  memberItem.setAttribute('type', 'button');
+  const memberItem: HTMLButtonElement = createBtnElement('member-item', null);
   memberItem.setAttribute('data-memberId', `${hangoutMember.hangout_member_id}`);
   memberItem.setAttribute('title', 'View member details');
   memberItem.setAttribute('aria-label', 'View member details');
 
-  const displayName: HTMLParagraphElement = document.createElement('p');
-  displayName.className = 'display-name';
-  displayName.appendChild(document.createTextNode(hangoutMember.display_name));
-
-  memberItem.appendChild(displayName);
+  memberItem.appendChild(createParagraphElement('display-name', hangoutMember.display_name));
 
   if (hangoutMember.hangout_member_id === globalHangoutState.data?.hangoutMemberId) {
     memberItem.classList.add('user');
@@ -289,88 +284,45 @@ export function createHangoutMemberElement(hangoutMember: HangoutMember): HTMLBu
 };
 
 function getLeaderIcon(): HTMLDivElement {
-  const leaderIcon: HTMLDivElement = document.createElement('div');
-  leaderIcon.className = 'leader-icon';
+  const leaderIcon: HTMLDivElement = createDivElement('leader-icon');
   leaderIcon.setAttribute('title', 'Hangout leader');
 
-  const svg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', '540');
-  svg.setAttribute('height', '540');
-  svg.setAttribute('viewBox', '0 0 540 540');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const leaderSvgElement: SVGSVGElement = createSvgElement(540, 540);
 
-  const path: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', 'M286.748 168.173C297.072 162.086 304 150.852 304 138C304 118.67 288.33 103 269 103C249.67 103 234 118.67 234 138C234 151.04 241.131 162.415 251.707 168.436L196.5 273.376C193.977 278.174 188.09 280.087 183.227 277.689L74.1836 223.909C76.623 219.135 78 213.728 78 208C78 188.67 62.3301 173 43 173C23.6699 173 8 188.67 8 208C8 227.33 23.6699 243 43 243C44.2012 243 45.3887 242.939 46.5586 242.821L64.8477 419.064C65.9062 429.256 74.4941 437 84.7402 437H453.854C464.1 437 472.688 429.256 473.746 419.064L492.039 242.778C493.34 242.925 494.66 243 496 243C515.33 243 531 227.33 531 208C531 188.67 515.33 173 496 173C476.67 173 461 188.67 461 208C461 213.664 462.346 219.015 464.734 223.748L355.367 277.689C350.504 280.087 344.617 278.174 342.094 273.376L286.748 168.173Z');
+  const leaderSvgPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  leaderSvgPathElement.setAttribute('d', 'M286.748 168.173C297.072 162.086 304 150.852 304 138C304 118.67 288.33 103 269 103C249.67 103 234 118.67 234 138C234 151.04 241.131 162.415 251.707 168.436L196.5 273.376C193.977 278.174 188.09 280.087 183.227 277.689L74.1836 223.909C76.623 219.135 78 213.728 78 208C78 188.67 62.3301 173 43 173C23.6699 173 8 188.67 8 208C8 227.33 23.6699 243 43 243C44.2012 243 45.3887 242.939 46.5586 242.821L64.8477 419.064C65.9062 429.256 74.4941 437 84.7402 437H453.854C464.1 437 472.688 429.256 473.746 419.064L492.039 242.778C493.34 242.925 494.66 243 496 243C515.33 243 531 227.33 531 208C531 188.67 515.33 173 496 173C476.67 173 461 188.67 461 208C461 213.664 462.346 219.015 464.734 223.748L355.367 277.689C350.504 280.087 344.617 278.174 342.094 273.376L286.748 168.173Z');
 
-  svg.appendChild(path);
-  leaderIcon.appendChild(svg);
+  leaderSvgElement.appendChild(leaderSvgPathElement);
+  leaderIcon.appendChild(leaderSvgElement);
 
   return leaderIcon;
 };
 
 export function createDashboardMessage(message: HangoutMessage): HTMLDivElement {
-  const messageElement: HTMLDivElement = document.createElement('div');
-  messageElement.className = 'message';
+  const messageElement: HTMLDivElement = createDivElement('message');
 
-  const messageBy: HTMLSpanElement = document.createElement('span');
-  messageBy.className = 'message-sent-by';
+  const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);
+  messageElement.appendChild(createSpanElement('message-sent-by', senderDisplayName || 'Former member'));
 
-  const sender: HangoutMember | undefined = globalHangoutState.data?.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === message.hangout_member_id);
-  messageBy.appendChild(document.createTextNode(sender ? `${sender.display_name}` : 'Unknown user'));
-
-  const messageContent: HTMLDivElement = document.createElement('div');
-  messageContent.className = 'message-content';
+  const messageContent: HTMLDivElement = createDivElement('message-content');
 
   for (const paragraph of message.message_content.split('\r\n\r\n')) {
-    const paragraphElement: HTMLParagraphElement = document.createElement('p');
-    paragraphElement.appendChild(document.createTextNode(paragraph));
-
-    messageContent.appendChild(paragraphElement);
+    messageContent.appendChild(createParagraphElement(null, paragraph));
   };
 
-  const messageSentOn: HTMLSpanElement = document.createElement('span');
-  messageSentOn.className = 'message-sent-on';
-  messageSentOn.appendChild(document.createTextNode(getMessageSentOn(message.message_timestamp)));
-
-  messageElement.appendChild(messageBy);
   messageElement.appendChild(messageContent);
-  messageElement.appendChild(messageSentOn);
+  messageElement.appendChild(createSpanElement('message-sent-on', getDateAndTimeString(message.message_timestamp)));
 
   return messageElement;
 };
 
-function getMessageSentOn(messageTimestamp: number): string {
-  const messageDate: Date = new Date(messageTimestamp);
-  const currentDate: Date = new Date();
-
-  if (currentDate.getTime() - messageDate.getTime() < dayMilliseconds && messageDate.getDate() === currentDate.getDate()) {
-    return getTime(messageDate);
-  };
-
-  if (currentDate.getTime() - messageDate.getTime() < dayMilliseconds * 5) {
-    return `${getDayName(messageDate)}, at ${getTime(messageDate)}`;
-  };
-
-  return getDateAndTimeString(messageTimestamp);
-};
-
 export function createDashboardEvent(hangoutEvent: HangoutEvent): HTMLDivElement {
-  const event: HTMLDivElement = document.createElement('div');
-  event.className = 'event-item';
+  const eventElement: HTMLDivElement = createDivElement('event-item');
 
-  const createdOn: HTMLSpanElement = document.createElement('span');
-  createdOn.className = 'created-on';
-  createdOn.appendChild(document.createTextNode(getDateAndTimeString(hangoutEvent.event_timestamp)));
+  eventElement.appendChild(createSpanElement('created-on', getDateAndTimeString(hangoutEvent.event_timestamp)));
+  eventElement.appendChild(createParagraphElement('description', hangoutEvent.event_description));
 
-  const description: HTMLParagraphElement = document.createElement('p');
-  description.className = 'description';
-  description.appendChild(document.createTextNode(hangoutEvent.event_description));
-
-  event.appendChild(createdOn);
-  event.appendChild(description);
-
-  return event;
+  return eventElement;
 };
 
 export async function copyToClipboard(text: string): Promise<void> {
