@@ -1,3 +1,4 @@
+import { createBtnElement, createDivElement, createSpanElement, createSvgElement } from "../../global/domUtils";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString, getTotalTimeString } from "../globalHangoutUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
@@ -14,54 +15,35 @@ export function calculateHangoutConclusionTimestamp(): number | null {
 };
 
 export function createAvailabilitySlotElement(slot: AvailabilitySlot): HTMLDivElement {
-  const availabilitySlotElement: HTMLDivElement = document.createElement('div');
-  availabilitySlotElement.className = 'slot';
+  const availabilitySlotElement: HTMLDivElement = createDivElement('slot');
   availabilitySlotElement.setAttribute('data-slotId', `${slot.availability_slot_id}`);
 
-  const slotStartInfoElement: HTMLDivElement = createSlotInfoElement('Start', getDateAndTimeString(slot.slot_start_timestamp), 'slot-start');
-  const slotEndInfoElement: HTMLDivElement = createSlotInfoElement('End', getDateAndTimeString(slot.slot_end_timestamp), 'slot-end');
-  const slotTotalInfoElement: HTMLDivElement = createSlotInfoElement('Total', getTotalTimeString(slot.slot_start_timestamp, slot.slot_end_timestamp), 'slot-total');
-  const slotBtnContainer: HTMLDivElement = createSlotBtnContainer();
+  availabilitySlotElement.appendChild(createSlotInfoElement('Start', getDateAndTimeString(slot.slot_start_timestamp), 'slot-start'));
+  availabilitySlotElement.appendChild(createSlotInfoElement('End', getDateAndTimeString(slot.slot_end_timestamp), 'slot-end'));
+  availabilitySlotElement.appendChild(createSlotInfoElement('Total', getTotalTimeString(slot.slot_start_timestamp, slot.slot_end_timestamp), 'slot-total'));
 
-  availabilitySlotElement.appendChild(slotStartInfoElement);
-  availabilitySlotElement.appendChild(slotEndInfoElement);
-  availabilitySlotElement.appendChild(slotTotalInfoElement);
-  availabilitySlotElement.appendChild(slotBtnContainer);
+  availabilitySlotElement.appendChild(createSlotBtnContainer());
 
   return availabilitySlotElement;
 };
 
 function createSlotInfoElement(title: string, value: string, infoClass: string): HTMLDivElement {
-  const slotInfoElement: HTMLDivElement = document.createElement('div');
-  slotInfoElement.className = `slot-info ${infoClass}`;
+  const slotInfoElement: HTMLDivElement = createDivElement(`slot-info ${infoClass}`);
 
-  const titleSpan: HTMLSpanElement = document.createElement('span');
-  titleSpan.appendChild(document.createTextNode(title));
-
-  const valueSpan: HTMLSpanElement = document.createElement('span');
-  valueSpan.appendChild(document.createTextNode(value));
-
-  slotInfoElement.appendChild(titleSpan);
-  slotInfoElement.appendChild(valueSpan);
+  slotInfoElement.appendChild(createSpanElement(null, title));
+  slotInfoElement.appendChild(createSpanElement(null, value));
 
   return slotInfoElement;
 };
 
 function createSlotBtnContainer(): HTMLDivElement {
-  const slotBtnContainer: HTMLDivElement = document.createElement('div');
-  slotBtnContainer.className = 'slot-btn-container';
+  const slotBtnContainer: HTMLDivElement = createDivElement('slot-btn-container');
 
-  const deleteBtn: HTMLButtonElement = document.createElement('button');
-  deleteBtn.className = 'delete-btn';
-  deleteBtn.setAttribute('type', 'button');
+  const deleteBtn: HTMLButtonElement = createBtnElement('delete-btn', null);
   deleteBtn.setAttribute('title', 'Delete slot');
   deleteBtn.setAttribute('aria-label', 'Delete availability slot');
 
-  const trashBinSvg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  trashBinSvg.setAttribute('width', '540');
-  trashBinSvg.setAttribute('height', '540');
-  trashBinSvg.setAttribute('viewBox', '0 0 540 540');
-  trashBinSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const trashBinSvg: SVGSVGElement = createSvgElement(540, 540);
 
   const trashBinSvgPath: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   trashBinSvgPath.setAttribute('fill-rule', 'evenodd');
@@ -71,17 +53,11 @@ function createSlotBtnContainer(): HTMLDivElement {
   trashBinSvg.appendChild(trashBinSvgPath);
   deleteBtn.appendChild(trashBinSvg);
 
-  const editBtn: HTMLButtonElement = document.createElement('button');
-  editBtn.className = 'edit-btn';
-  editBtn.setAttribute('type', 'button');
+  const editBtn: HTMLButtonElement = createBtnElement('edit-btn', null);
   editBtn.setAttribute('title', 'Edit slot');
   editBtn.setAttribute('aria-label', 'Edit availability slot');
 
-  const editSvg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  editSvg.setAttribute('width', '640');
-  editSvg.setAttribute('height', '640');
-  editSvg.setAttribute('viewBox', '0 0 640 640');
-  editSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const editSvg: SVGSVGElement = createSvgElement(640, 640);
 
   const firstEditSvgPath: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   firstEditSvgPath.setAttribute('d', 'M266.547 152.906C266.547 142.413 258.04 133.906 247.547 133.906H135C75.3533 133.906 27 182.259 27 241.906V505C27 564.647 75.3533 613 135 613H398.094C457.741 613 506.094 564.647 506.094 505V392.453C506.094 381.96 497.587 373.453 487.094 373.453H445.094C434.601 373.453 426.094 381.96 426.094 392.453V505C426.094 520.464 413.558 533 398.094 533H135C119.536 533 107 520.464 107 505V241.906C107 226.442 119.536 213.906 135 213.906H247.547C258.04 213.906 266.547 205.399 266.547 194.906V152.906Z');
