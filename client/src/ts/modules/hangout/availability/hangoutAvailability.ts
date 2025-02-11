@@ -2,6 +2,7 @@ import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
+import { createDivElement } from "../../global/domUtils";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -660,7 +661,7 @@ function displayPersonalAvailabilitySlots(): void {
     return;
   };
 
-  const innerContainer: HTMLDivElement = document.createElement('div');
+  const innerContainer: HTMLDivElement = createDivElement(null);
 
   for (const slot of hangoutAvailabilityState.availabilitySlots) {
     innerContainer.appendChild(createAvailabilitySlotElement(slot));
