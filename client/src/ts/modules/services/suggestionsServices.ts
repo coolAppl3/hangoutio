@@ -109,11 +109,7 @@ interface AddSuggestionLikeBody {
   hangoutId: string,
 };
 
-interface AddSuggestionLikeData {
-  suggestionLikeId: number,
-};
-
-export function addHangoutSuggestionLikeService(requestBody: AddSuggestionLikeBody): Promise<AxiosResponse<AddSuggestionLikeData>> {
+export function addHangoutSuggestionLikeService(requestBody: AddSuggestionLikeBody): Promise<AxiosResponse> {
   return axios.post(`${suggestionsApiUrl}/likes`, requestBody);
 };
 
