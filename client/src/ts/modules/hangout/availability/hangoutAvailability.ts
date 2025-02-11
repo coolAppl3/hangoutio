@@ -171,7 +171,7 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
@@ -274,12 +274,12 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
 
       return;
@@ -439,12 +439,12 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
     };
   };
@@ -525,12 +525,12 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
     };
   };
@@ -605,12 +605,12 @@ async function clearAvailabilitySlots(): Promise<void> {
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
     };
   };
