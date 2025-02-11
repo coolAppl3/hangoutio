@@ -1,4 +1,5 @@
 import { dayMilliseconds, HANGOUT_AVAILABILITY_SLOTS_LIMIT, hourMilliseconds } from "../../global/clientConstants";
+import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import { InfoModal } from "../../global/InfoModal";
 import { switchToDateTimePicker } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
@@ -132,8 +133,7 @@ interface MemberSlotData {
 };
 
 function createAvailabilityPreviewerSlotsContainer(selectedDateTimestamp: number): HTMLDivElement {
-  const availabilityPreviewerContainer: HTMLDivElement = document.createElement('div');
-  availabilityPreviewerContainer.id = 'availability-previewer-slots-container';
+  const availabilityPreviewerContainer: HTMLDivElement = createDivElement(null, 'availability-previewer-slots-container');
 
   if (!globalHangoutState.data || hangoutAvailabilityState.availabilitySlots.length === 0) {
     availabilityPreviewerContainer.classList.add('empty');
@@ -177,22 +177,13 @@ function createAvailabilityPreviewerSlotsContainer(selectedDateTimestamp: number
 };
 
 function createMemberElement(memberSlotData: MemberSlotData): HTMLDivElement {
-  const memberElement: HTMLDivElement = document.createElement('div');
-  memberElement.className = 'member';
+  const memberElement: HTMLDivElement = createDivElement('member');
   memberElement.setAttribute('data-member-id', `${memberSlotData.slots[0].hangout_member_id}`);
 
-  memberElement.appendChild(createMemberNameElement(memberSlotData.display_name));
+  memberElement.appendChild(createParagraphElement('member-name', memberSlotData.display_name));
   memberElement.appendChild(createMemberSlotsContainer(memberSlotData.slots));
 
   return memberElement;
-};
-
-function createMemberNameElement(hangoutMemberDisplayName: string): HTMLParagraphElement {
-  const memberNameElement: HTMLParagraphElement = document.createElement('p');
-  memberNameElement.className = 'member-name';
-  memberNameElement.appendChild(document.createTextNode(hangoutMemberDisplayName));
-
-  return memberNameElement;
 };
 
 function createMemberSlotsContainer(availabilitySlots: AvailabilitySlot[]): HTMLUListElement {
