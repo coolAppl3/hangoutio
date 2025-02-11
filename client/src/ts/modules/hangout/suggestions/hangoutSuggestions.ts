@@ -73,6 +73,8 @@ function loadEventListeners(): void {
 
     initHangoutSuggestions();
   });
+
+  suggestionsContainer?.addEventListener('click', handleSuggestionsContainerClicks);
 };
 
 async function getHangoutSuggestions(): Promise<void> {
@@ -182,4 +184,29 @@ function updateRemainingSuggestionsCount(): void {
 
   const suggestionsCount: number = HANGOUT_SUGGESTIONS_LIMIT - globalHangoutState.data.suggestionsCount;
   suggestionsRemainingSpan.textContent = `${suggestionsCount}`;
+};
+
+function handleSuggestionsContainerClicks(e: MouseEvent): void {
+  if (!(e.target instanceof HTMLButtonElement)) {
+    return;
+  };
+
+  const suggestionElement: Element | null = e.target.closest('.suggestion');
+
+  if (!suggestionElement || !(suggestionElement instanceof HTMLDivElement)) {
+    return;
+  };
+
+  const suggestionIdString: string | null = suggestionElement.getAttribute('data-suggestionId');
+
+  if (!suggestionIdString || !Number.isInteger(+suggestionIdString)) {
+    return;
+  };
+
+  const suggestionId: number = +suggestionIdString;
+
+  if (e.target.classList.contains('view-suggestion-btn')) {
+    suggestionElement.classList.toggle('expanded');
+    return;
+  };
 };
