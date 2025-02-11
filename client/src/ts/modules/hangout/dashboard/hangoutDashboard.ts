@@ -12,6 +12,7 @@ import { handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, hideLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
+import { createDivElement } from "../../global/domUtils";
 
 interface HangoutDashboardState {
   latestHangoutEvents: HangoutEvent[],
@@ -294,10 +295,8 @@ function listHangoutMembers(): void {
     return;
   };
 
-  const dashboardMembersContainer: HTMLDivElement = document.createElement('div');
-  dashboardMembersContainer.className = 'dashboard-members-container';
-
   pushUserAndLeaderToFront(hangoutMembers);
+  const dashboardMembersContainer: HTMLDivElement = createDivElement('dashboard-members-container');
 
   for (const member of hangoutMembers) {
     dashboardMembersContainer.appendChild(createHangoutMemberElement(member));
@@ -343,8 +342,7 @@ function renderLatestMessages(): void {
     return;
   };
 
-  const dashboardChatContainerInner: HTMLDivElement = document.createElement('div');
-  dashboardChatContainerInner.id = 'dashboard-chat-container-inner';
+  const dashboardChatContainerInner: HTMLDivElement = createDivElement(null, 'dashboard-chat-container-inner');
 
   for (let i = 0; i < 2; i++) {
     if (!hangoutDashboardState.latestHangoutMessages[i]) {
@@ -369,8 +367,7 @@ export function renderLatestEvents(): void {
     return;
   };
 
-  const dashboardEventsContainer: HTMLDivElement = document.createElement('div');
-  dashboardEventsContainer.id = 'dashboard-events-container';
+  const dashboardEventsContainer: HTMLDivElement = createDivElement(null, 'dashboard-events-container');
 
   for (let i = 0; i < 2; i++) {
     if (!hangoutDashboardState.latestHangoutEvents[i]) {
