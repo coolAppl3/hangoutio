@@ -3,7 +3,7 @@ import { createDivElement, createParagraphElement } from "../../global/domUtils"
 import { InfoModal } from "../../global/InfoModal";
 import { switchToDateTimePicker } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
-import { getMonthName, getTime } from "../globalHangoutUtils";
+import { getMonthName, getTime } from "../../global/dateTimeUtils";
 import { AvailabilitySlot, HangoutMember } from "../hangoutTypes";
 import { hangoutAvailabilityState } from "./hangoutAvailability";
 

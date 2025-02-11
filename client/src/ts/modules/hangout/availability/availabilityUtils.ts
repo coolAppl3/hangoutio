@@ -1,6 +1,6 @@
 import { createBtnElement, createDivElement, createSpanElement, createSvgElement } from "../../global/domUtils";
 import { globalHangoutState } from "../globalHangoutState";
-import { getDateAndTimeString, getTotalTimeString } from "../globalHangoutUtils";
+import { getDateAndTimeString, getTotalTimeString } from "../../global/dateTimeUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
 
 export function calculateHangoutConclusionTimestamp(): number | null {

@@ -9,7 +9,7 @@ import popup from "../../global/popup";
 import { AddHangoutAvailabilitySlotBody, addHangoutAvailabilitySlotService, ClearHangoutAvailabilitySlotBody, clearHangoutAvailabilitySlotService, DeleteHangoutAvailabilitySlotBody, deleteHangoutAvailabilitySlotService, EditHangoutAvailabilitySlotBody, editHangoutAvailabilitySlotService, getHangoutAvailabilitySlotsService } from "../../services/availabilitySlotsServices";
 import { closeDateTimePicker, DateTimePickerData, displayDateTimePicker, displayTimePickerError, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
-import { getDateAndTimeString } from "../globalHangoutUtils";
+import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
 import { initAvailabilityCalendar, updateAvailabilityCalendar } from "./availabilityCalendar";
 import { createAvailabilitySlotElement } from "./availabilityUtils";

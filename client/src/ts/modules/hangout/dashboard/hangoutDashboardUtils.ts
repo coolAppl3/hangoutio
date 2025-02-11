@@ -8,7 +8,7 @@ import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getHangoutExistsService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
-import { getDateAndTimeString, getDayName, getTime } from "../globalHangoutUtils";
+import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { HangoutMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 

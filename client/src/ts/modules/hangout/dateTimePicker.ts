@@ -4,7 +4,7 @@ import ErrorSpan from "../global/ErrorSpan";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { calculateHangoutConclusionTimestamp } from "./availability/availabilityUtils";
-import { getDateOrdinalSuffix, getMonthName, getTime } from "./globalHangoutUtils";
+import { getDateOrdinalSuffix, getMonthName, getTime } from "../global/dateTimeUtils";
 
 interface DateTimePickerState {
   hasBeenInitiated: boolean,
