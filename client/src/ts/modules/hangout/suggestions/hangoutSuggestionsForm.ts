@@ -8,7 +8,7 @@ import { validateSuggestionDescription, validateSuggestionTitle } from "../../gl
 import { AddHangoutSuggestionBody, addHangoutSuggestionService } from "../../services/suggestionsServices";
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
-import { getDateAndTimeString } from "../globalHangoutUtils";
+import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSuggestions";
 
 interface HangoutSuggestionFormState {
@@ -217,12 +217,12 @@ async function addHangoutSuggestion(): Promise<void> {
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
 
       return;

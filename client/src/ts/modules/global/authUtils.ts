@@ -1,7 +1,7 @@
 import { ConfirmModal } from "./ConfirmModal";
 import Cookies from "./Cookies";
 
-export function handleAuthSessionExpired(afterAuthRedirectHref: string): void {
+export function handleAuthSessionExpired(afterAuthRedirectHref: string = window.location.href): void {
   removeRelevantCookies();
   document.dispatchEvent(new CustomEvent('signedOut'));
 
@@ -32,7 +32,7 @@ export function handleAuthSessionExpired(afterAuthRedirectHref: string): void {
   });
 };
 
-export function handleAuthSessionDestroyed(afterAuthRedirectHref: string): void {
+export function handleAuthSessionDestroyed(afterAuthRedirectHref: string = window.location.href): void {
   removeRelevantCookies();
   dispatchEvent(new CustomEvent('signedOut'));
 

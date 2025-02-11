@@ -5,6 +5,7 @@ import { createCalendarCell, generateAndAppendEmptyCalendarCells, getMonthNumber
 import { hangoutAvailabilityState } from "./hangoutAvailability";
 import { calculateHangoutConclusionTimestamp } from "./availabilityUtils";
 import { displayAvailabilityPreviewer } from "./availabilityPreviewer";
+import { createDivElement } from "../../global/domUtils";
 
 interface AvailabilityCalendarState {
   hasBeenInitiated: boolean,
@@ -88,8 +89,7 @@ export function updateAvailabilityCalendar(): void {
     return;
   };
 
-  const availabilityCalendarDatesContainer: HTMLDivElement = document.createElement('div');
-  availabilityCalendarDatesContainer.id = 'availability-calendar-dates-container';
+  const availabilityCalendarDatesContainer: HTMLDivElement = createDivElement(null, 'availability-calendar-dates-container');
 
   generateAndAppendEmptyCalendarCells(availabilityCalendarDatesContainer, firstDayOfMonth);
   generateAndAppendCalendarCells(availabilityCalendarDatesContainer, numberOfDays);

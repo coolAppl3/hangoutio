@@ -132,12 +132,12 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
     if (status == 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
         return;
       };
 

@@ -124,7 +124,7 @@ async function getHangoutSuggestions(): Promise<void> {
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 

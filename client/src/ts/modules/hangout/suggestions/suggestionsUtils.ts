@@ -1,6 +1,6 @@
 import { createBtnElement, createDivElement, createParagraphElement, createSpanElement, createSvgElement } from "../../global/domUtils";
 import { globalHangoutState } from "../globalHangoutState";
-import { getDateAndTimeString } from "../globalHangoutUtils";
+import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
 

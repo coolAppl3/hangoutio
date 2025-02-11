@@ -2,13 +2,14 @@ import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
+import { createDivElement } from "../../global/domUtils";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { AddHangoutAvailabilitySlotBody, addHangoutAvailabilitySlotService, ClearHangoutAvailabilitySlotBody, clearHangoutAvailabilitySlotService, DeleteHangoutAvailabilitySlotBody, deleteHangoutAvailabilitySlotService, EditHangoutAvailabilitySlotBody, editHangoutAvailabilitySlotService, getHangoutAvailabilitySlotsService } from "../../services/availabilitySlotsServices";
 import { closeDateTimePicker, DateTimePickerData, displayDateTimePicker, displayTimePickerError, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
-import { getDateAndTimeString } from "../globalHangoutUtils";
+import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
 import { initAvailabilityCalendar, updateAvailabilityCalendar } from "./availabilityCalendar";
 import { createAvailabilitySlotElement } from "./availabilityUtils";
@@ -171,7 +172,7 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
@@ -274,12 +275,12 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
 
       return;
@@ -439,12 +440,12 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
     };
   };
@@ -525,12 +526,12 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
     };
   };
@@ -605,12 +606,12 @@ async function clearAvailabilitySlots(): Promise<void> {
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired(window.location.href);
+        handleAuthSessionExpired();
         return;
       };
 
       if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed(window.location.href);
+        handleAuthSessionDestroyed();
       };
     };
   };
@@ -660,7 +661,7 @@ function displayPersonalAvailabilitySlots(): void {
     return;
   };
 
-  const innerContainer: HTMLDivElement = document.createElement('div');
+  const innerContainer: HTMLDivElement = createDivElement(null);
 
   for (const slot of hangoutAvailabilityState.availabilitySlots) {
     innerContainer.appendChild(createAvailabilitySlotElement(slot));

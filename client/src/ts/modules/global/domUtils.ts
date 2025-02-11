@@ -1,6 +1,8 @@
-export function createDivElement(className: string | null): HTMLDivElement {
+export function createDivElement(className: string | null, id: string | null = null): HTMLDivElement {
   const divElement: HTMLDivElement = document.createElement('div');
+
   className && (divElement.className = className);
+  id && (divElement.id = id);
 
   return divElement;
 };
