@@ -1,4 +1,5 @@
 import { dayMilliseconds, hourMilliseconds } from "../global/clientConstants";
+import { createBtnElement, createDivElement } from "../global/domUtils";
 import ErrorSpan from "../global/ErrorSpan";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
@@ -430,8 +431,7 @@ function updateCalendar(): void {
     return;
   };
 
-  const datePickerDatesContainer: HTMLDivElement = document.createElement('div');
-  datePickerDatesContainer.id = 'date-picker-dates-container';
+  const datePickerDatesContainer: HTMLDivElement = createDivElement('date-picker-dates-container');
 
   generateAndAppendEmptyCalendarCells(datePickerDatesContainer, firstDayOfMonth);
   generateAndAppendCalendarCells(datePickerDatesContainer, numberOfDays);
@@ -483,11 +483,8 @@ function generateAndAppendCalendarCells(container: HTMLDivElement, numberOfDays:
 };
 
 export function createCalendarCell(date: number, forbidden: boolean = false): HTMLButtonElement {
-  const dateCell: HTMLButtonElement = document.createElement('button');
-  dateCell.className = 'date-cell';
-  dateCell.setAttribute('type', 'button');
+  const dateCell: HTMLButtonElement = createBtnElement('date-cell', `${date}`);
   dateCell.setAttribute('data-value', `${date}`);
-  dateCell.appendChild(document.createTextNode(`${date}`));
 
   if (forbidden) {
     dateCell.classList.add('forbidden');
