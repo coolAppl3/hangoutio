@@ -167,7 +167,7 @@ async function addHangoutSuggestion(): Promise<void> {
       votes_count: 0,
     });
 
-    sortHangoutSuggestions('likes');
+    sortHangoutSuggestions();
     globalHangoutState.data.suggestionsCount++;
 
     clearSuggestionsForm();

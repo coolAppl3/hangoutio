@@ -20,6 +20,8 @@ interface HangoutSuggestionsState {
 
   pageCount: number,
   pageItemsCount: number,
+
+  sortingMode: 'likes' | 'votes',
 };
 
 export const hangoutSuggestionState: HangoutSuggestionsState = {
@@ -31,6 +33,8 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
 
   pageCount: 1,
   pageItemsCount: 0,
+
+  sortingMode: 'likes',
 };
 
 const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
@@ -244,7 +248,7 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
     const suggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionId);
     suggestion && suggestion.likes_count++;
 
-    sortHangoutSuggestions('likes');
+    sortHangoutSuggestions();
     displaySuggestionLike(suggestionElement);
 
   } catch (err: unknown) {
@@ -337,6 +341,7 @@ function removeSuggestionLike(suggestionElement: HTMLDivElement): void {
   suggestionElement.classList.remove('like-pending', 'liked');
 };
 
-export function sortHangoutSuggestions(sortBy: 'likes' | 'votes'): void {
-  hangoutSuggestionState.suggestions.sort((a, b) => a[`${sortBy}_count`] - b[`${sortBy}_count`]);
+export function sortHangoutSuggestions(): void {
+  const sortMode: 'likes' | 'votes' = hangoutSuggestionState.sortingMode
+  hangoutSuggestionState.suggestions.sort((a, b) => a[`${sortMode}_count`] - b[`${sortMode}_count`]);
 };
