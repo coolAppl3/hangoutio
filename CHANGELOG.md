@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.32] (2025-02-13)
+
+### Features
+
+- Implemented suggestion liking logic.
+- Added `sortHangoutSuggestions()` to centralize sorting.
+- Added `sortingMode` into `HangoutSuggestionsState` and improved how `sortHangoutSuggestions()` is used.
+
+
+### Code Refactoring
+
+- Changed POST `suggestions/likes` to no longer return the suggestion like ID unnecessarily.
+
+
+### Bug Fixes
+
+- Fixed `datePickerDatesContainer` being correct without the correct ID in `dateTimePicker.ts`.
+
+
 ## [0.4.31] (2025-02-11)
 
 ### Features

@@ -1230,7 +1230,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
     const memberSuggestionDetails: MemberSuggestionDetails = memberSuggestionRows[0];
 
     if (!memberSuggestionDetails.is_member) {
-      res.status(401).json({ message: 'Not a member of this hangout.' });
+      res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
       return;
     };
 
@@ -1244,7 +1244,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
       return;
     };
 
-    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+    await dbPool.execute<ResultSetHeader>(
       `INSERT INTO suggestion_likes (
         suggestion_id,
         hangout_member_id,
@@ -1253,7 +1253,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
       [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]
     );
 
-    res.json({ suggestionLikeId: resultSetHeader.insertId });
+    res.json({});
 
   } catch (err: unknown) {
     console.log(err);

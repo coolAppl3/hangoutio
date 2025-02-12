@@ -986,7 +986,7 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
         ) as already_liked;`, { suggestionId: requestData.suggestionId, hangoutMemberId: requestData.hangoutMemberId, hangoutId: requestData.hangoutId });
         const memberSuggestionDetails = memberSuggestionRows[0];
         if (!memberSuggestionDetails.is_member) {
-            res.status(401).json({ message: 'Not a member of this hangout.' });
+            res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
             return;
         }
         ;
@@ -1000,12 +1000,12 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
             return;
         }
         ;
-        const [resultSetHeader] = await db_1.dbPool.execute(`INSERT INTO suggestion_likes (
+        await db_1.dbPool.execute(`INSERT INTO suggestion_likes (
         suggestion_id,
         hangout_member_id,
         hangout_id
       ) VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]);
-        res.json({ suggestionLikeId: resultSetHeader.insertId });
+        res.json({});
     }
     catch (err) {
         console.log(err);
