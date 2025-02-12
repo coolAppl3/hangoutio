@@ -244,7 +244,7 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
     const suggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionId);
     suggestion && suggestion.likes_count++;
 
-    hangoutSuggestionState.suggestions.sort((a, b) => a.likes_count - b.likes_count);
+    sortHangoutSuggestions('likes');
     displaySuggestionLike(suggestionElement);
 
   } catch (err: unknown) {
@@ -333,4 +333,8 @@ function removeSuggestionLike(suggestionElement: HTMLDivElement): void {
   suggestionLikesCountSpan.textContent = `${(suggestionLikesCount - 1) < 0 ? 0 : suggestionLikesCount - 1}`;
 
   suggestionElement.classList.remove('like-pending', 'liked');
+};
+
+export function sortHangoutSuggestions(sortBy: 'likes' | 'votes'): void {
+  hangoutSuggestionState.suggestions.sort((a, b) => a[`${sortBy}_count`] - b[`${sortBy}_count`]);
 };

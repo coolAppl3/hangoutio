@@ -9,7 +9,7 @@ import { AddHangoutSuggestionBody, addHangoutSuggestionService } from "../../ser
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSuggestions";
+import { hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
 
 interface HangoutSuggestionFormState {
   suggestionIdToEdit: number | null,
@@ -167,7 +167,7 @@ async function addHangoutSuggestion(): Promise<void> {
       votes_count: 0,
     });
 
-    hangoutSuggestionState.suggestions.sort((a, b) => a.likes_count - b.likes_count);
+    sortHangoutSuggestions('likes');
     globalHangoutState.data.suggestionsCount++;
 
     clearSuggestionsForm();
