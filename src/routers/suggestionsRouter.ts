@@ -1230,7 +1230,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
     const memberSuggestionDetails: MemberSuggestionDetails = memberSuggestionRows[0];
 
     if (!memberSuggestionDetails.is_member) {
-      res.status(401).json({ message: 'Not a member of this hangout.' });
+      res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
       return;
     };
 
