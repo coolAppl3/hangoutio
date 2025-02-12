@@ -12,6 +12,11 @@ export function createSuggestionElement(suggestion: Suggestion, isLeader: boolea
     suggestionElement.classList.add('user');
   };
 
+  const isLiked: boolean = hangoutSuggestionState.memberLikesSet.has(suggestion.suggestion_id);
+  if (isLiked) {
+    suggestionElement.classList.add('liked');
+  };
+
   suggestionElement.appendChild(createSuggestionDetailsElement(suggestion, isLeader));
   suggestionElement.appendChild(createParagraphElement('suggestion-description', suggestion.suggestion_description));
 
@@ -20,13 +25,11 @@ export function createSuggestionElement(suggestion: Suggestion, isLeader: boolea
 
 function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionDetailsElement: HTMLDivElement = createDivElement('suggestion-details');
-
-  const isLiked: boolean = hangoutSuggestionState.memberLikesSet.has(suggestion.suggestion_id);
   const isVotedFor: boolean = hangoutSuggestionState.memberVotesSet.has(suggestion.suggestion_id);
 
   const suggestionDetailsHeaderElement: HTMLDivElement = createDivElement('suggestion-details-header');
   suggestionDetailsHeaderElement.appendChild(createParagraphElement('suggestion-title', suggestion.suggestion_title));
-  suggestionDetailsHeaderElement.appendChild(createRatingContainer(suggestion.likes_count, isLiked));
+  suggestionDetailsHeaderElement.appendChild(createRatingContainer(suggestion.likes_count));
 
   const isMemberSuggestion: boolean = globalHangoutState.data?.hangoutMemberId === suggestion.hangout_member_id;
   if (isLeader || isMemberSuggestion) {
@@ -40,15 +43,12 @@ function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolea
   return suggestionDetailsElement;
 };
 
-function createRatingContainer(likesCount: number, isLiked: boolean): HTMLDivElement {
+function createRatingContainer(likesCount: number): HTMLDivElement {
   const ratingContainer: HTMLDivElement = createDivElement('rating-container');
-
-  if (isLiked) {
-    ratingContainer.classList.add('liked');
-  };
 
   const likeSuggestionBtn: HTMLButtonElement = createBtnElement('like-suggestion-btn', null);
   likeSuggestionBtn.appendChild(createLikeIcon());
+  likeSuggestionBtn.appendChild(createDivElement('like-spinner'));
 
   ratingContainer.appendChild(createSpanElement('suggestion-likes-count', `${likesCount}`));
   ratingContainer.appendChild(likeSuggestionBtn);
