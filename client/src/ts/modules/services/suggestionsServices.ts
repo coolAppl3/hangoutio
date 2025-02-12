@@ -115,13 +115,13 @@ export function addHangoutSuggestionLikeService(requestBody: AddSuggestionLikeBo
 
 // --- --- ---
 
-interface DeleteSuggestionLikeBody {
+interface RemoveSuggestionLikeBody {
   suggestionLikeId: number,
   hangoutMemberId: number,
   hangoutId: string,
 };
 
-export function deleteHangoutSuggestionLikeService(requestBody: DeleteSuggestionLikeBody): Promise<AxiosResponse> {
+export function removeHangoutSuggestionLikeService(requestBody: RemoveSuggestionLikeBody): Promise<AxiosResponse> {
   const { suggestionLikeId, hangoutMemberId, hangoutId } = requestBody;
   return axios.delete(`${suggestionsApiUrl}?suggestionLikeId=${suggestionLikeId}&hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
 };
