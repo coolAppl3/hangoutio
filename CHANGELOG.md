@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.33] (2025-02-13)
+
+### Features
+
+- Added `removeHangoutSuggestionLike()` and suggestion unlike logic in `hangoutSuggestions.ts`.
+
+
+### Code Refactoring
+
+- Reworked DELETE `suggestions/likes` to rely on the suggestion ID instead of the like ID for removing suggestion likes.
+
+
+### Bug Fixes
+
+- Fixed a few incorrect error responses in `suggestionsRouter.ts`.
+- Fixed `removeHangoutSuggestionLikeService()` pointing to the incorrect endpoint in `suggestionServices.ts`.
+
+
 ## [0.4.32] (2025-02-13)
 
 ### Features
