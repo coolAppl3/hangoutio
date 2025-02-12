@@ -272,6 +272,8 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
       return;
     };
 
+    popup(errMessage, 'error');
+
     if (status === 409) {
       displaySuggestionLike(suggestionElement);
       return;
