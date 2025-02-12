@@ -4,7 +4,7 @@ import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE } from "../../global/cl
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { addHangoutSuggestionLikeService, getHangoutSuggestionsService } from "../../services/suggestionsServices";
+import { addHangoutSuggestionLikeService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
@@ -220,7 +220,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     };
 
     if (suggestionElement.classList.contains('liked')) {
-      // TODO: implement unlike logic
+      removeHangoutSuggestionLike(suggestionId, suggestionElement);
       return;
     };
 
@@ -248,8 +248,10 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
     const suggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionId);
     suggestion && suggestion.likes_count++;
 
+    hangoutSuggestionState.memberLikesSet.add(suggestionId);
     sortHangoutSuggestions();
-    displaySuggestionLike(suggestionElement);
+
+    displaySuggestionLikeIcon(suggestionElement);
 
   } catch (err: unknown) {
     console.log(err);
@@ -279,7 +281,7 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
     popup(errMessage, 'error');
 
     if (status === 409) {
-      displaySuggestionLike(suggestionElement);
+      displaySuggestionLikeIcon(suggestionElement);
       return;
     };
 
@@ -302,7 +304,77 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
   };
 };
 
-function displaySuggestionLike(suggestionElement: HTMLDivElement): void {
+async function removeHangoutSuggestionLike(suggestionId: number, suggestionElement: HTMLDivElement): Promise<void> {
+  if (!globalHangoutState.data) {
+    popup('Failed to like suggestion.', 'error');
+    return;
+  };
+
+  if (!hangoutSuggestionState.memberLikesSet.has(suggestionId)) {
+    return;
+  };
+
+  suggestionElement.classList.add('like-pending');
+  const { hangoutMemberId, hangoutId } = globalHangoutState.data;
+
+  try {
+    await removeHangoutSuggestionLikeService({ suggestionId, hangoutMemberId, hangoutId });
+
+    const suggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionId);
+    suggestion && suggestion.likes_count--;
+
+    hangoutSuggestionState.memberLikesSet.delete(suggestionId);
+    sortHangoutSuggestions();
+
+    removeSuggestionLikeIcon(suggestionElement);
+
+  } catch (err: unknown) {
+    console.log(err);
+    suggestionElement.classList.remove('like-pending');
+
+    if (!axios.isAxiosError(err)) {
+      popup('Failed to unlike suggestion.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Failed to unlike suggestion.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Failed to unlike suggestion.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      if (errReason === 'notHangoutMember') {
+        popup(errMessage, 'error');
+        LoadingModal.display();
+
+        setTimeout(() => {
+          sessionStorage.removeItem('latestHangoutSection');
+          window.location.href = 'home';
+        }, 1000);
+      };
+    };
+  };
+};
+
+function displaySuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
   const suggestionLikesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.rating-container span');
 
   if (!suggestionLikesCountSpan) {
@@ -322,7 +394,7 @@ function displaySuggestionLike(suggestionElement: HTMLDivElement): void {
   suggestionElement.classList.add('liked');
 };
 
-function removeSuggestionLike(suggestionElement: HTMLDivElement): void {
+function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
   const suggestionLikesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.rating-container span');
 
   if (!suggestionLikesCountSpan) {
