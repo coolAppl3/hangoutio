@@ -123,5 +123,5 @@ interface RemoveSuggestionLikeBody {
 
 export function removeHangoutSuggestionLikeService(requestBody: RemoveSuggestionLikeBody): Promise<AxiosResponse> {
   const { suggestionId, hangoutMemberId, hangoutId } = requestBody;
-  return axios.delete(`${suggestionsApiUrl}?suggestionId=${suggestionId}&hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
+  return axios.delete(`${suggestionsApiUrl}/likes?suggestionId=${suggestionId}&hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
 };
