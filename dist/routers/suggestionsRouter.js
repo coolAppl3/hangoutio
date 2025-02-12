@@ -785,7 +785,7 @@ exports.suggestionsRouter.get('/', async (req, res) => {
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
-            res.status(401).json({ message: 'Sign in session expired', reason: 'authSessionExpired' });
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -950,7 +950,7 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
-            res.status(400).json({ message: 'Invalid request data.' });
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1041,16 +1041,16 @@ exports.suggestionsRouter.delete('/likes', async (req, res) => {
         return;
     }
     ;
-    const suggestionLikeId = req.query.suggestionLikeId;
+    const suggestionId = req.query.suggestionId;
     const hangoutMemberId = req.query.hangoutMemberId;
     const hangoutId = req.query.hangoutId;
-    if (typeof suggestionLikeId !== 'string' || typeof hangoutMemberId !== 'string' || typeof hangoutId !== 'string') {
+    if (typeof suggestionId !== 'string' || typeof hangoutMemberId !== 'string' || typeof hangoutId !== 'string') {
         res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(+suggestionLikeId)) {
-        res.status(400).json({ message: 'Invalid suggestion like ID.' });
+    if (!Number.isInteger(+suggestionId)) {
+        res.status(400).json({ message: 'Invalid suggestion ID.' });
         return;
     }
     ;
@@ -1084,7 +1084,7 @@ exports.suggestionsRouter.delete('/likes', async (req, res) => {
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
-            res.status(400).json({ message: 'Invalid request data.' });
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
@@ -1106,9 +1106,10 @@ exports.suggestionsRouter.delete('/likes', async (req, res) => {
           FROM
             suggestion_likes
           WHERE
-            suggestion_like_id = :suggestionLikeId AND
+            suggestion_id = :suggestionId AND
             hangout_member_id = :hangoutMemberId
-        ) as like_exists;`, { suggestionLikeId: +suggestionLikeId, hangoutMemberId: +hangoutMemberId, hangoutId });
+          LIMIT 1
+        ) as like_exists;`, { suggestionId: +suggestionId, hangoutMemberId: +hangoutMemberId, hangoutId });
         const memberSuggestionDetails = memberSuggestionRows[0];
         if (!memberSuggestionDetails.is_member) {
             res.status(401).json({ message: 'Not a member of this hangout.' });
@@ -1123,7 +1124,8 @@ exports.suggestionsRouter.delete('/likes', async (req, res) => {
         await db_1.dbPool.execute(`DELETE FROM
         suggestion_likes
       WHERE
-        suggestion_like_id = ?;`, [suggestionLikeId]);
+        suggestion_id = ? AND
+        hangout_member_id = ?;`, [suggestionId, hangoutMemberId]);
         res.json({});
     }
     catch (err) {
