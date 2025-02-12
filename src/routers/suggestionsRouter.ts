@@ -973,7 +973,7 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
-      res.status(401).json({ message: 'Sign in session expired', reason: 'authSessionExpired' });
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
     };
 
@@ -1184,7 +1184,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
-      res.status(400).json({ message: 'Invalid request data.' });
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
     };
 
@@ -1293,17 +1293,17 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
     return;
   };
 
-  const suggestionLikeId = req.query.suggestionLikeId;
+  const suggestionId = req.query.suggestionId;
   const hangoutMemberId = req.query.hangoutMemberId;
   const hangoutId = req.query.hangoutId;
 
-  if (typeof suggestionLikeId !== 'string' || typeof hangoutMemberId !== 'string' || typeof hangoutId !== 'string') {
+  if (typeof suggestionId !== 'string' || typeof hangoutMemberId !== 'string' || typeof hangoutId !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(+suggestionLikeId)) {
-    res.status(400).json({ message: 'Invalid suggestion like ID.' });
+  if (!Number.isInteger(+suggestionId)) {
+    res.status(400).json({ message: 'Invalid suggestion ID.' });
     return;
   };
 
@@ -1349,7 +1349,7 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
-      res.status(400).json({ message: 'Invalid request data.' });
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
       return;
     };
 
@@ -1376,10 +1376,11 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
           FROM
             suggestion_likes
           WHERE
-            suggestion_like_id = :suggestionLikeId AND
+            suggestion_id = :suggestionId AND
             hangout_member_id = :hangoutMemberId
+          LIMIT 1
         ) as like_exists;`,
-      { suggestionLikeId: +suggestionLikeId, hangoutMemberId: +hangoutMemberId, hangoutId }
+      { suggestionId: +suggestionId, hangoutMemberId: +hangoutMemberId, hangoutId }
     );
 
     const memberSuggestionDetails: MemberSuggestionDetails = memberSuggestionRows[0];
@@ -1398,8 +1399,9 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
       `DELETE FROM
         suggestion_likes
       WHERE
-        suggestion_like_id = ?;`,
-      [suggestionLikeId]
+        suggestion_id = ? AND
+        hangout_member_id = ?;`,
+      [suggestionId, hangoutMemberId]
     );
 
     res.json({});
