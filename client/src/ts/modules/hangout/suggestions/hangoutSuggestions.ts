@@ -69,6 +69,11 @@ export function renderSuggestionsSection(): void {
   updateRemainingSuggestionsCount();
 };
 
+export function sortHangoutSuggestions(): void {
+  const sortMode: 'likes' | 'votes' = hangoutSuggestionState.sortingMode
+  hangoutSuggestionState.suggestions.sort((a, b) => a[`${sortMode}_count`] - b[`${sortMode}_count`]);
+};
+
 function loadEventListeners(): void {
   document.addEventListener('loadSection-suggestions', async () => {
     if (!hangoutAvailabilityState.isLoaded) {
@@ -225,6 +230,12 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     };
 
     await addHangoutSuggestionLike(suggestionId, suggestionElement);
+    return;
+  };
+
+  if (e.target.classList.contains('dropdown-menu-btn')) {
+    e.target.parentElement?.classList.toggle('expanded');
+    return;
   };
 };
 
@@ -411,9 +422,4 @@ function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
   suggestionLikesCountSpan.textContent = `${(suggestionLikesCount - 1) < 0 ? 0 : suggestionLikesCount - 1}`;
 
   suggestionElement.classList.remove('like-pending', 'liked');
-};
-
-export function sortHangoutSuggestions(): void {
-  const sortMode: 'likes' | 'votes' = hangoutSuggestionState.sortingMode
-  hangoutSuggestionState.suggestions.sort((a, b) => a[`${sortMode}_count`] - b[`${sortMode}_count`]);
 };
