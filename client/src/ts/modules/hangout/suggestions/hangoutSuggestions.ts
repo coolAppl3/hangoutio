@@ -1,10 +1,11 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
-import { handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { addHangoutSuggestionLikeService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
+import { addHangoutSuggestionLikeService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
@@ -158,7 +159,7 @@ function displayHangoutSuggestions(): void {
 
   if (hangoutSuggestionState.suggestions.length === 0) {
     suggestionsContainer.firstElementChild?.remove();
-    suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions yet'));
+    suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions found'));
 
     return;
   };
@@ -200,6 +201,11 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     return;
   };
 
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    return;
+  };
+
   const suggestionElement: Element | null = e.target.closest('.suggestion');
 
   if (!suggestionElement || !(suggestionElement instanceof HTMLDivElement)) {
@@ -212,7 +218,17 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     return;
   };
 
-  const suggestionId: number = +suggestionIdString;
+  const suggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === +suggestionIdString);
+
+  if (!suggestion) {
+    popup('Suggestion not found.', 'error');
+    LoadingModal.display();
+
+    renderSuggestionsSection();
+    LoadingModal.remove();
+
+    return;
+  };
 
   if (e.target.classList.contains('view-suggestion-btn')) {
     suggestionElement.classList.toggle('expanded');
@@ -225,11 +241,11 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     };
 
     if (suggestionElement.classList.contains('liked')) {
-      removeHangoutSuggestionLike(suggestionId, suggestionElement);
+      removeHangoutSuggestionLike(suggestion, suggestionElement);
       return;
     };
 
-    await addHangoutSuggestionLike(suggestionId, suggestionElement);
+    await addHangoutSuggestionLike(suggestion, suggestionElement);
     return;
   };
 
@@ -237,15 +253,63 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     e.target.parentElement?.classList.toggle('expanded');
     return;
   };
+
+  if (e.target.classList.contains('delete-btn')) {
+    const { hangoutMemberId, isLeader } = globalHangoutState.data;
+    const isMemberOwnSuggestion: boolean = suggestion.hangout_member_id === hangoutMemberId;
+
+    if (!isMemberOwnSuggestion && !isLeader) {
+      popup(`Can't delete other members' suggestions.`, 'error');
+      return;
+    };
+
+    const confirmModal: HTMLDivElement = ConfirmModal.display({
+      title: 'Are you sure you want to delete this suggestion?',
+      description: 'Any likes or votes associated with it will be permanently lost.',
+      confirmBtnTitle: 'Delete suggestion',
+      cancelBtnTitle: 'Cancel',
+      extraBtnTitle: isMemberOwnSuggestion ? 'Edit suggestion' : null,
+      isDangerousAction: true,
+    });
+
+    confirmModal.addEventListener('click', async (e: MouseEvent) => {
+      if (!(e.target instanceof HTMLButtonElement)) {
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-confirm-btn') {
+        ConfirmModal.remove();
+
+        if (!isMemberOwnSuggestion) {
+          await deleteHangoutSuggestionAsLeader();
+          return;
+        };
+
+        await deleteHangoutSuggestion(suggestion, suggestionElement);
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-cancel-btn') {
+        ConfirmModal.remove();
+        return;
+      };
+
+      if (e.target.id === 'confirm-modal-other-btn') {
+        // TODO: implement suggestion edit logic.
+      };
+    });
+
+    return;
+  };
 };
 
-async function addHangoutSuggestionLike(suggestionId: number, suggestionElement: HTMLDivElement): Promise<void> {
+async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   if (!globalHangoutState.data) {
     popup('Failed to like suggestion.', 'error');
     return;
   };
 
-  if (hangoutSuggestionState.memberLikesSet.has(suggestionId)) {
+  if (hangoutSuggestionState.memberLikesSet.has(suggestion.suggestion_id)) {
     return;
   };
 
@@ -253,15 +317,12 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
   const { hangoutMemberId, hangoutId } = globalHangoutState.data;
 
   try {
-    await addHangoutSuggestionLikeService({ suggestionId, hangoutMemberId, hangoutId });
-    hangoutSuggestionState.memberLikesSet.add(suggestionId);
+    await addHangoutSuggestionLikeService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
 
-    const suggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionId);
-    suggestion && suggestion.likes_count++;
+    hangoutSuggestionState.memberLikesSet.add(suggestion.suggestion_id);
+    suggestion.likes_count++
 
-    hangoutSuggestionState.memberLikesSet.add(suggestionId);
     sortHangoutSuggestions();
-
     displaySuggestionLikeIcon(suggestionElement);
 
   } catch (err: unknown) {
@@ -315,13 +376,13 @@ async function addHangoutSuggestionLike(suggestionId: number, suggestionElement:
   };
 };
 
-async function removeHangoutSuggestionLike(suggestionId: number, suggestionElement: HTMLDivElement): Promise<void> {
+async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   if (!globalHangoutState.data) {
     popup('Failed to like suggestion.', 'error');
     return;
   };
 
-  if (!hangoutSuggestionState.memberLikesSet.has(suggestionId)) {
+  if (!hangoutSuggestionState.memberLikesSet.has(suggestion.suggestion_id)) {
     return;
   };
 
@@ -329,14 +390,12 @@ async function removeHangoutSuggestionLike(suggestionId: number, suggestionEleme
   const { hangoutMemberId, hangoutId } = globalHangoutState.data;
 
   try {
-    await removeHangoutSuggestionLikeService({ suggestionId, hangoutMemberId, hangoutId });
+    await removeHangoutSuggestionLikeService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
 
-    const suggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionId);
-    suggestion && suggestion.likes_count--;
+    hangoutSuggestionState.memberLikesSet.delete(suggestion.suggestion_id);
+    suggestion.likes_count--;
 
-    hangoutSuggestionState.memberLikesSet.delete(suggestionId);
     sortHangoutSuggestions();
-
     removeSuggestionLikeIcon(suggestionElement);
 
   } catch (err: unknown) {
@@ -422,4 +481,97 @@ function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
   suggestionLikesCountSpan.textContent = `${(suggestionLikesCount - 1) < 0 ? 0 : suggestionLikesCount - 1}`;
 
   suggestionElement.classList.remove('like-pending', 'liked');
+};
+
+async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutMemberId, hangoutId, hangoutDetails, suggestionsCount } = globalHangoutState.data;
+  const suggestionDropdownMenu: HTMLDivElement | null = suggestionElement.querySelector('.dropdown-menu');
+
+  if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+    LoadingModal.remove();
+    return;
+  };
+
+  if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
+    popup(`Can't alter suggestions after hangout conclusion.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await deleteHangoutSuggestionService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
+
+    hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
+
+    hangoutSuggestionState.memberLikesSet.delete(suggestion.suggestion_id);
+    hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
+
+    globalHangoutState.data.suggestionsCount = suggestionsCount - 1 < 0 ? 0 : suggestionsCount - 1;
+
+    suggestionDropdownMenu?.classList.remove('expanded');
+    renderSuggestionsSection();
+
+    popup('Suggestion deleted.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      LoadingModal.remove();
+
+      return;
+    };
+
+    popup(errMessage, 'error');
+    LoadingModal.remove();
+
+    suggestionDropdownMenu?.classList.remove('expanded');
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed();
+      };
+    };
+  };
+};
+
+async function deleteHangoutSuggestionAsLeader(): Promise<void> {
+  // TODO: implement
 };
