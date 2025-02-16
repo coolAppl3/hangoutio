@@ -301,6 +301,11 @@ export function validateSuggestionDescription(textarea: HTMLTextAreaElement): bo
     return false;
   };
 
+  if (description.trim() !== description) {
+    ErrorSpan.display(textarea, 'Description must not start or end with whitespace or line breaks.');
+    return false;
+  };
+
   const regex: RegExp = /^[ -~\r\n]{10,500}$/;
   if (!regex.test(description)) {
     ErrorSpan.display(textarea, 'Only English letters, numbers, and common symbols are allowed.');
