@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.34] (2025-02-16)
+
+### Features
+
+- Added suggestion dropdown menu expansion logic.
+- Added suggestion deletion logic.
+
+
+### Bug Fixes
+
+- Fixed `validateSuggestionDescription()` not accounting for whitespace and line breaks at either ends of the string in `hangoutSuggestionsForm.ts`.
+- Fixed invalid 400-error handling in `addHangoutSuggestion()`.
+
+
 ## [0.4.33] (2025-02-13)
 
 ### Features

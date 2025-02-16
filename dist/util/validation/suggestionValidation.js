@@ -22,7 +22,7 @@ function isValidSuggestionDescription(description) {
         return false;
     }
     ;
-    if (description !== description.trim()) {
+    if (description.trim() !== description) {
         return false;
     }
     ;

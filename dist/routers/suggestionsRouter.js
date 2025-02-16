@@ -450,12 +450,12 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         }
         ;
         if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
-            res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+            res.status(409).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;
         if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ message: 'Hangout has already been concluded.' });
+            res.status(409).json({ message: `Can't alter suggestions after hangout conclusion.`, reason: 'hangoutConcluded' });
             return;
         }
         ;
