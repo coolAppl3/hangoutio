@@ -551,12 +551,12 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+      res.status(409).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
       return;
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ message: 'Hangout has already been concluded.' });
+      res.status(409).json({ message: `Can't alter suggestions after hangout conclusion.`, reason: 'hangoutConcluded' });
       return;
     };
 

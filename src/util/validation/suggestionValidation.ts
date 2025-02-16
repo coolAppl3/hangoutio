@@ -19,7 +19,7 @@ export function isValidSuggestionDescription(description: string): boolean {
     return false;
   };
 
-  if (description !== description.trim()) {
+  if (description.trim() !== description) {
     return false;
   };
 
