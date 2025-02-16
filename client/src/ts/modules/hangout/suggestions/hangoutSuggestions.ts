@@ -549,7 +549,7 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
+      setTimeout(() => window.location.reload(), 1000);
 
       return;
     };

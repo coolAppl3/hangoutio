@@ -116,7 +116,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 400 && errReason === 'accountId') {
+    if (status === 400 && errReason === 'invalidAccountId') {
       popup('Something went wrong.', 'error');
       setTimeout(() => window.location.reload(), 1000);
 

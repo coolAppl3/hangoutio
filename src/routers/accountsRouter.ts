@@ -295,7 +295,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ message: 'Invalid account ID.', reason: 'accountId' });
+    res.status(400).json({ message: 'Invalid account ID.', reason: 'invalidAccountId' });
     return;
   };
 
