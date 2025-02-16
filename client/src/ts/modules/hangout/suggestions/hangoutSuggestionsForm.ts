@@ -210,11 +210,6 @@ async function addHangoutSuggestion(): Promise<void> {
     popup(errMessage, 'error');
     LoadingModal.remove();
 
-    if (status === 400) {
-      setTimeout(() => window.location.reload(), 1000);
-      return;
-    };
-
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
         handleAuthSessionExpired();
