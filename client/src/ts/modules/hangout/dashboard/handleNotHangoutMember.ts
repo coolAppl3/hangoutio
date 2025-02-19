@@ -52,7 +52,7 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
 
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Confirm access.',
-    description: `It looks like you haven't accessed this hangout before.\nWould you like to join?`,
+    description: `It looks like you're not a member of this hangout.\nWould you like to join?`,
     confirmBtnTitle: 'Join hangout',
     cancelBtnTitle: 'Go to my account',
     extraBtnTitle: null,
@@ -106,11 +106,10 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.reload(), 1000);
-
       return;
     };
 
@@ -118,8 +117,6 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.reload(), 1000);
-
       return;
     };
 
@@ -128,7 +125,6 @@ export async function joinHangoutAsAccount(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status == 401) {
       if (errReason === 'authSessionExpired') {
@@ -165,6 +161,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
       };
 
       if (errReason === 'alreadyJoined') {
+        LoadingModal.display();
         setTimeout(() => window.location.reload(), 1000);
       };
 
@@ -185,11 +182,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
       if (errReason === 'invalidHangoutPassword') {
         joinHangoutPasswordInput && ErrorSpan.display(joinHangoutPasswordInput, errMessage);
       };
-
-      return;
     };
-
-    setTimeout(() => window.location.reload(), 1000);
   };
 };
 

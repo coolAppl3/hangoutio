@@ -54,7 +54,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!availabilitySlotValidation.isValidAvailabilitySlot(requestData.slotStartTimestamp, requestData.slotEndTimestamp)) {
-    res.status(400).json({ message: 'Invalid availability slot.' });
+    res.status(400).json({ message: 'Invalid availability slot.', reason: 'invalidSlot' });
     return;
   };
 
@@ -155,7 +155,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ message: 'Hangout has already been concluded.' });
+      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };
@@ -176,7 +176,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (existingAvailabilitySlots.length >= HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
       await connection.rollback();
-      res.status(409).json({ message: `Availability slots limit of ${HANGOUT_AVAILABILITY_SLOTS_LIMIT} reached.` });
+      res.status(409).json({ message: `Availability slots limit of ${HANGOUT_AVAILABILITY_SLOTS_LIMIT} reached.`, reason: 'slotLimitReached' });
 
       return;
     };
@@ -421,7 +421,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
     if (overlappedSlot) {
       await connection.rollback();
       res.status(409).json({
-        message: 'Overlap detected.',
+        message: 'Slot overlap detected.',
         reason: 'slotOverlap',
         resData: {
           overlappedSlotId: overlappedSlot.availability_slot_id,

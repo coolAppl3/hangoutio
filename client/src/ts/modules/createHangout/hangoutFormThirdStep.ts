@@ -127,11 +127,10 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err)
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -139,8 +138,6 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -154,7 +151,6 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     };
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status === 409 && errReason === 'hangoutsLimitReached') {
       handleOngoingHangoutsLimitReached(errMessage);
@@ -248,11 +244,10 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -260,8 +255,6 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -275,7 +268,6 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
     };
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     const inputRecord: Record<string, HTMLInputElement | undefined> = {
       guestUsernameTaken: guestUsernameInput,
@@ -340,11 +332,10 @@ async function accountSignIn(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -352,8 +343,6 @@ async function accountSignIn(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -362,10 +351,28 @@ async function accountSignIn(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
-    if (status === 403 || status === 404) {
+    if (status === 401) {
+      ErrorSpan.display(accountPasswordInput, errMessage);
+      return;
+    };
+
+    if (status === 404) {
       ErrorSpan.display(accountEmailInput, errMessage);
+      return;
+    };
+
+    if (status === 403) {
+      ErrorSpan.display(accountEmailInput, errMessage);
+
+      if (errReason === 'unverified') {
+        InfoModal.display({
+          title: 'Account unverified.',
+          description: 'You must verify your account to sign in.\nCheck your inbox for a verification email.',
+          btnTitle: 'Okay',
+        }, { simple: true });
+      };
+
       return;
     };
 

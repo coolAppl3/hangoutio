@@ -83,11 +83,10 @@ async function signUp(e: SubmitEvent): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -95,8 +94,6 @@ async function signUp(e: SubmitEvent): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -105,7 +102,6 @@ async function signUp(e: SubmitEvent): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status === 403 && errReason === 'signedIn') {
       handleSignedInUser();

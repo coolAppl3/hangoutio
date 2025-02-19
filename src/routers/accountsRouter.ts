@@ -295,7 +295,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ message: 'Invalid account ID.', reason: 'accountId' });
+    res.status(400).json({ message: 'Invalid account ID.', reason: 'invalidAccountId' });
     return;
   };
 
@@ -708,7 +708,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
     const accountDetails: AccountDetails = accountRows[0];
 
     if (!accountDetails.recovery_code) {
-      res.status(404).json({ message: 'Recovery request not found.', reason: 'requestNotFound' });
+      res.status(404).json({ message: 'Recovery request not found or has expired.', reason: 'requestNotFound' });
       return;
     };
 
@@ -791,7 +791,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
 
   const existingAuthSessionId: string | null = getRequestCookie(req, 'authSessionId');
   if (existingAuthSessionId) {
-    res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
+    res.status(403).json({ message: `You can't recover an account while signed in.`, reason: 'signedIn' });
     return;
   };
 

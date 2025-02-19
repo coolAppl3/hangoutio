@@ -141,13 +141,9 @@ async function getHangoutSuggestions(): Promise<void> {
       };
 
       if (errReason === 'notHangoutMember') {
-        setTimeout(() => {
-          sessionStorage.removeItem('latestHangoutSection');
-          window.location.href = 'home';
-        }, 1000);
+        setTimeout(() => LoadingModal.display(), 0);
+        setTimeout(() => window.location.reload(), 1000);
       };
-
-      return;
     };
   };
 };
@@ -357,6 +353,16 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
       return;
     };
 
+    if (status === 404) {
+      hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
+
+      LoadingModal.display();
+      renderSuggestionsSection();
+
+      LoadingModal.remove();
+      return;
+    };
+
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
         handleAuthSessionExpired();
@@ -367,10 +373,7 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
         popup(errMessage, 'error');
         LoadingModal.display();
 
-        setTimeout(() => {
-          sessionStorage.removeItem('latestHangoutSection');
-          window.location.href = 'home';
-        }, 1000);
+        setTimeout(() => window.location.reload(), 1000);
       };
     };
   };
@@ -435,10 +438,7 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
         popup(errMessage, 'error');
         LoadingModal.display();
 
-        setTimeout(() => {
-          sessionStorage.removeItem('latestHangoutSection');
-          window.location.href = 'home';
-        }, 1000);
+        setTimeout(() => window.location.reload(), 1000);
       };
     };
   };
@@ -497,7 +497,6 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
   const suggestionDropdownMenu: HTMLDivElement | null = suggestionElement.querySelector('.dropdown-menu');
 
   if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-    LoadingModal.remove();
     return;
   };
 
@@ -526,11 +525,10 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -538,8 +536,6 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -549,15 +545,31 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
-
     suggestionDropdownMenu?.classList.remove('expanded');
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 409) {
+      if (errReason === 'inAvailabilityStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        return;
+      };
+
+      if (errReason === 'hangoutConcluded') {
+        globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+      };
+
+      return;
+    };
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {

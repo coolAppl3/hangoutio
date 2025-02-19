@@ -76,20 +76,17 @@ async function startAccountRecovery(e: SubmitEvent): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
-      LoadingModal.remove();
       popup('Something went wrong.', 'error');
-
       return;
     };
 
     const axiosError: AxiosError<AxiosErrorResponseData> = err;
 
     if (!axiosError.status || !axiosError.response) {
-      LoadingModal.remove();
       popup('Something went wrong.', 'error');
-
       return;
     };
 
@@ -117,14 +114,12 @@ async function startAccountRecovery(e: SubmitEvent): Promise<void> {
       recoveryState.accountId = errResData.accountId;
       recoveryState.expiryTimestamp = errResData.expiryTimestamp;
 
-      popup('Ongoing recovery request found.', 'success');
-      LoadingModal.remove();
-
+      popup(errMessage, 'success');
       progressRecovery();
+
       return;
     };
 
-    LoadingModal.remove();
     popup(errMessage, 'error');
 
     if (status === 404) {

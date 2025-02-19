@@ -20,11 +20,10 @@ export async function signOut(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'home', 1000);
-
       return;
     };
 
@@ -32,23 +31,20 @@ export async function signOut(): Promise<void> {
 
     if (!axiosError.status) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'home', 1000);
-
       return;
     };
 
     const status: number = axiosError.status;
     if (status === 409) {
-      LoadingModal.remove();
       popup('Not signed in.', 'error');
 
+      document.dispatchEvent(new CustomEvent('signedOut'));
       removeRelevantCookies();
+
       return;
     };
 
     popup('Something went wrong.', 'error');
-    setTimeout(() => window.location.href = 'home', 1000);
-
     return;
   };
 };

@@ -161,6 +161,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
     for (const id of hangoutIdsToProgress) {
       hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
     };
+
     hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
 
     await dbPool.execute(
