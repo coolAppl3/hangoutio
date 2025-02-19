@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.35] (2025-02-19)
+
+### Code Refactoring
+
+- Refactored a lot of code throughout the app to improve efficiency and fix a few bugs.
+
+
+### Bug Fixes
+
+- Fixed time values being incorrectly calculated in some of the email templates in `emailTemplates.ts`.
+- Fixed the parent div element of popup created by `popup.ts` preventing users from clicking around it.
+
+
 ## [0.4.34] (2025-02-16)
 
 ### Features

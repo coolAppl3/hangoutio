@@ -79,7 +79,7 @@ function getVerificationEmailTemplate(verificationEmailConfig) {
             >verification link</a
           >.
         </p>
-        <p>Your account will be automatically deleted if it's not verified within ${constants_1.ACCOUNT_VERIFICATION_WINDOW} minutes of being created.</p>
+        <p>Your account will be automatically deleted if it's not verified within ${constants_1.ACCOUNT_VERIFICATION_WINDOW / constants_1.minuteMilliseconds} minutes of being created.</p>
         <p>If this request wasn't made by you, feel free to ignore it.</p>
         <p id="end-of-email">Warmest regards,</p>
         <p>Hangoutio</p>
@@ -332,7 +332,7 @@ function getAccountDeletionWarningTemplate(displayName) {
           <p>Hey ${displayName},</p>
           <p>We're reaching out to confirm your account deletion request.</p>
           <p>
-            We've detected 3 failed attempts to delete your account, and have therefore suspended further attempts for the next 24 hours.
+            We've detected 3 failed attempts to delete your account, and have therefore suspended further attempts for the next ${constants_1.dayMilliseconds / constants_1.hourMilliseconds} hours.
           </p>
           <p>If these requests were not made by you, we highly suggest changing your account's password to ensure it's secure.</p>
           <p id="end-of-email">Warmest regards,</p>
@@ -500,7 +500,7 @@ function getEmailUpdateWarningTemplate(displayName) {
         <p>Hey ${displayName},</p>
         <p>We've detected 3 failed attempts to update the email address linked to your Hangoutio account.</p>
         <p>If these requests weren't made by you, please sign in and update your password to ensure your account is safe.</p>
-        <p>Further email update attempts have been suspended for the next ${constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW} hours to protect your account.</p>
+        <p>Further email update attempts have been suspended for the next ${constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW / constants_1.hourMilliseconds} hours to protect your account.</p>
         <p id="end-of-email">Warmest regards,</p>
         <p>Hangoutio</p>
       </div>
