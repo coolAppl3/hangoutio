@@ -8,7 +8,7 @@ import revealPassword from "../../global/revealPassword";
 import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateNewUsername, validatePassword } from "../../global/validation";
 import { JoinHangoutAsGuestBody, joinHangoutAsGuestService } from "../../services/hangoutMemberServices";
 import { getInitialHangoutData } from "./hangoutDashboard";
-import { handleHangoutFull } from "./hangoutDashboardUtils";
+import { handleHangoutFull, handleHangoutNotFound } from "./hangoutDashboardUtils";
 
 const guestSignUpForm: HTMLFormElement | null = document.querySelector('#guest-sign-up-form');
 
@@ -107,7 +107,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
         };
 
         if (e.target.id === 'info-modal-btn') {
-          setTimeout(() => window.location.href = 'sign-in', 1000);
+          window.location.href = 'sign-in';
         };
       });
 
@@ -119,11 +119,10 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -131,8 +130,6 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -141,25 +138,9 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status === 404) {
-      const infoModal: HTMLDivElement = InfoModal.display({
-        title: 'Hangout not found.',
-        description: 'Reach out to the hangout leader to request a valid link.',
-        btnTitle: 'Go to homepage',
-      });
-
-      infoModal.addEventListener('click', (e: MouseEvent) => {
-        if (!(e.target instanceof HTMLElement)) {
-          return;
-        };
-
-        if (e.target.id === 'info-modal-btn') {
-          window.location.href = 'home';
-        };
-      });
-
+      handleHangoutNotFound();
       return;
     };
 

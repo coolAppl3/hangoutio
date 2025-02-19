@@ -54,7 +54,6 @@ function loadEventListeners(): void {
 
 async function submitForm(e: SubmitEvent): Promise<void> {
   e.preventDefault();
-  LoadingModal.display();
 
   if (signInFormState.isGuestUser) {
     await guestSignIn();
@@ -65,6 +64,8 @@ async function submitForm(e: SubmitEvent): Promise<void> {
 };
 
 async function accountSignIn(): Promise<void> {
+  LoadingModal.display();
+
   if (!isValidAccountDetails()) {
     popup('Invalid account sign in details.', 'error');
     LoadingModal.remove();
@@ -109,11 +110,10 @@ async function accountSignIn(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -121,8 +121,6 @@ async function accountSignIn(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -131,9 +129,13 @@ async function accountSignIn(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
-    if ((status === 404)) {
+    if (status === 401) {
+      ErrorSpan.display(accountPasswordInput, errMessage);
+      return;
+    };
+
+    if (status === 404) {
       ErrorSpan.display(accountEmailInput, errMessage);
       return;
     };
@@ -141,15 +143,10 @@ async function accountSignIn(): Promise<void> {
     if (status === 403) {
       ErrorSpan.display(accountEmailInput, errMessage);
 
-      if (errReason === 'accountLocked') {
-        handleAccountLocked();
-        return;
-      };
-
       if (errReason === 'unverified') {
         InfoModal.display({
-          title: 'Account is unverified.',
-          description: `You must verify your account before being able to sign in.\nCheck your inbox for a verification email.`,
+          title: 'Account unverified.',
+          description: 'You must verify your account to sign in.\nCheck your inbox for a verification email.',
           btnTitle: 'Okay',
         }, { simple: true });
       };
@@ -172,6 +169,8 @@ async function accountSignIn(): Promise<void> {
 };
 
 async function guestSignIn(): Promise<void> {
+  LoadingModal.display();
+
   if (!isValidGuestDetails()) {
     popup('Invalid guest sign in details.', 'error');
     LoadingModal.remove();
@@ -214,11 +213,10 @@ async function guestSignIn(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -226,8 +224,6 @@ async function guestSignIn(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -236,7 +232,6 @@ async function guestSignIn(): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status === 404) {
       ErrorSpan.display(guestUsernameInput, errMessage);

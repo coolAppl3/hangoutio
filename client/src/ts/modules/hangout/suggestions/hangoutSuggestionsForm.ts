@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
+import { HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
 import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -179,11 +179,10 @@ async function addHangoutSuggestion(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -191,24 +190,41 @@ async function addHangoutSuggestion(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
+    const errResData: unknown = axiosError.response.data.resData;
 
     if (status === 400 && (errReason === 'hangoutId' || errReason === 'hangoutMemberId')) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.reload(), 1000);
-
       return;
     };
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
+
+    if (status === 409) {
+      if (errReason === 'limitReached') {
+        globalHangoutState.data.suggestionsCount = HANGOUT_SUGGESTIONS_LIMIT;
+        return;
+      };
+
+      if (errReason === 'notInSuggestionStage') {
+        if (!errResData || typeof errResData !== 'object' || errResData === null) {
+          return;
+        };
+
+        if (!('currentStage' in errResData) || !Number.isInteger(errResData.currentStage)) {
+          return;
+        };
+
+        globalHangoutState.data.hangoutDetails.current_stage === errResData.currentStage;
+      };
+
+      return;
+    };
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
@@ -223,13 +239,20 @@ async function addHangoutSuggestion(): Promise<void> {
       return;
     };
 
-    const inputRecord: Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLParagraphElement | undefined> = {
-      title: suggestionTitleInput,
-      description: suggestionDescriptionTextarea,
-      dateTime: suggestionStartMockInput,
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
     };
 
     if (status === 400) {
+      const inputRecord: Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLParagraphElement | undefined> = {
+        title: suggestionTitleInput,
+        description: suggestionDescriptionTextarea,
+        dateTime: suggestionStartMockInput,
+      };
+
       const input = inputRecord[`${errReason}`];
       if (input) {
         ErrorSpan.display(input, errMessage);

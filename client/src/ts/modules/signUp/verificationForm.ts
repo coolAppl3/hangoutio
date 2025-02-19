@@ -62,8 +62,8 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
   if (!signUpState.accountId) {
     popup('Something went wrong.', 'error');
     clearVerificationCookies();
-    setTimeout(() => window.location.reload(), 1000);
 
+    setTimeout(() => window.location.reload(), 1000);
     return;
   };
 
@@ -95,11 +95,10 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -107,8 +106,6 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -116,15 +113,17 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 400 && errReason === 'invalidAccountId') {
-      popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.reload(), 1000);
+    if (status === 400) {
+      if (errReason === 'verificationCode') {
+        ErrorSpan.display(verificationCodeInput, errMessage);
+        return;
+      };
 
+      popup('Something went wrong.', 'error');
       return;
     };
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status === 403) {
       handleSignedInUser();
@@ -158,12 +157,6 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
           };
         });
       };
-
-      return;
-    };
-
-    if (status === 400 && errReason === 'verificationCode') {
-      ErrorSpan.display(verificationCodeInput, errMessage);
     };
   };
 };
@@ -181,16 +174,16 @@ async function resendVerificationEmail(): Promise<void> {
   if (!signUpState.accountId || !signUpState.verificationExpiryTimestamp) {
     popup('Something went wrong.', 'error');
     clearVerificationCookies();
-    setTimeout(() => window.location.reload(), 1000);
 
+    setTimeout(() => window.location.reload(), 1000);
     return;
   };
 
   if (Date.now() >= signUpState.verificationExpiryTimestamp) {
     popup('Verification request expired.', 'error');
     clearVerificationCookies();
-    setTimeout(() => window.location.reload(), 1000);
 
+    setTimeout(() => window.location.reload(), 1000);
     return;
   };
 
@@ -204,11 +197,10 @@ async function resendVerificationEmail(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -216,8 +208,6 @@ async function resendVerificationEmail(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -225,15 +215,12 @@ async function resendVerificationEmail(): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 400 && errReason === 'invalidAccountId') {
+    if (status === 400) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.reload(), 1000);
-
       return;
     };
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status === 404 || status === 409) {
       clearVerificationCookies();

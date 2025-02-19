@@ -30,7 +30,7 @@ export function navigateHangoutSections(e: MouseEvent): void {
     return;
   };
 
-  const navigateTo: string | null = e.target.getAttribute('data-goTo');;
+  const navigateTo: string | null = e.target.getAttribute('data-goTo');
 
   if (!navigateTo) {
     return;
@@ -50,10 +50,6 @@ export function navigateHangoutSections(e: MouseEvent): void {
   hangoutDesktopNav?.setAttribute('data-selected', navigateTo);
   hangoutPhoneNav?.setAttribute('data-selected', navigateTo);
   hidePhoneNavMenu();
-
-  if (navigateTo === 'dashboard') {
-    return;
-  };
 
   document.dispatchEvent(new CustomEvent(`loadSection-${navigateTo}`));
 };

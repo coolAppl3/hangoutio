@@ -82,20 +82,17 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
-      LoadingModal.remove();
       popup('Something went wrong.', 'error');
-
       return;
     };
 
     const axiosError: AxiosError<AxiosErrorResponseData> = err;
 
     if (!axiosError.status || !axiosError.response) {
-      LoadingModal.remove();
       popup('Something went wrong.', 'error');
-
       return;
     };
 
@@ -106,12 +103,9 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
 
     if (status === 400 && errReason === 'invalidAccountId') {
       popup('Something went wrong.', 'error');
-      setTimeout(() => reloadWithoutQueryString(), 1000);
-
       return;
     };
 
-    LoadingModal.remove();
     popup(errMessage, 'error')
 
     if (status === 409) {
@@ -127,11 +121,12 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     };
 
     if (status === 401) {
+      ErrorSpan.display(recoveryCodeInput, errMessage);
+
       if (errReason === 'recoverySuspended') {
         handleRecoverySuspension(errResData);
       };
 
-      ErrorSpan.display(recoveryCodeInput, errMessage);
       return;
     };
 
@@ -185,11 +180,10 @@ async function resendAccountRecoveryEmail(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -197,8 +191,6 @@ async function resendAccountRecoveryEmail(): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      LoadingModal.remove();
-
       return;
     };
 
@@ -209,16 +201,15 @@ async function resendAccountRecoveryEmail(): Promise<void> {
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.reload(), 1000);
-
       return;
     };
 
     popup(errMessage, 'error');
-    LoadingModal.remove();
 
     if (status === 404) {
+      LoadingModal.display();
       setTimeout(() => window.location.reload(), 1000);
+
       return;
     };
 

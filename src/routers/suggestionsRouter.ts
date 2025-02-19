@@ -168,6 +168,10 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
       await connection.rollback();
       res.status(409).json({
         message: hangoutMemberDetails.is_concluded ? 'Hangout has already been concluded.' : `Hangout isn't in the suggestions stage.`,
+        reason: 'notInSuggestionsStage',
+        resData: {
+          currentStage: hangoutMemberDetails.current_stage,
+        },
       });
 
       return;
@@ -182,7 +186,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberRows.length === HANGOUT_SUGGESTIONS_LIMIT) {
       await connection.rollback();
-      res.status(409).json({ message: `Suggestions limit of ${HANGOUT_SUGGESTIONS_LIMIT} reached.` });
+      res.status(409).json({ message: `Suggestions limit of ${HANGOUT_SUGGESTIONS_LIMIT} reached.`, reason: 'limitReached' });
 
       return;
     };
@@ -562,7 +566,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
 
     const suggestionFound: boolean = hangoutMemberRows.find((suggestion: HangoutMemberDetails) => suggestion.suggestion_id === +suggestionId) !== undefined;
     if (!suggestionFound) {
-      res.status(404).json({ message: 'Suggestion not found.' });
+      res.json({});
       return;
     };
 
@@ -1386,7 +1390,7 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
     const memberSuggestionDetails: MemberSuggestionDetails = memberSuggestionRows[0];
 
     if (!memberSuggestionDetails.is_member) {
-      res.status(401).json({ message: 'Not a member of this hangout.' });
+      res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
       return;
     };
 

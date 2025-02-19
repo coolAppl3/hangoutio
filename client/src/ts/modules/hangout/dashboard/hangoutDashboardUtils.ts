@@ -11,6 +11,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { HangoutMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
+import LoadingModal from "../../global/LoadingModal";
 
 export function handleInvalidHangoutId(): void {
   const signedInAs: string | null = Cookies.get('signedInAs');
@@ -86,18 +87,19 @@ export function handleHangoutFull(): void {
 };
 
 export async function handleNotSignedIn(hangoutId: string): Promise<void> {
+  LoadingModal.display();
   let isPasswordProtected: boolean = false;
 
   try {
     isPasswordProtected = (await getHangoutExistsService(hangoutId)).data.isPasswordProtected;
+    LoadingModal.remove();
 
   } catch (err: unknown) {
     console.log(err);
+    LoadingModal.remove();
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'home', 1000);
-
       return;
     };
 
@@ -105,8 +107,6 @@ export async function handleNotSignedIn(hangoutId: string): Promise<void> {
 
     if (!axiosError.status || !axiosError.response) {
       popup('Something went wrong.', 'error');
-      setTimeout(() => window.location.href = 'home', 1000);
-
       return;
     };
 

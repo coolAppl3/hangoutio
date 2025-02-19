@@ -85,7 +85,7 @@ export async function getInitialHangoutData(): Promise<void> {
     console.log(err);
 
     if (!axios.isAxiosError(err)) {
-      popup('Something went wrong.', 'error');
+      popup('Failed to load hangout data.', 'error');
       setTimeout(() => window.location.href = 'home', 1000);
 
       return;
@@ -94,7 +94,7 @@ export async function getInitialHangoutData(): Promise<void> {
     const axiosError: AxiosError<AxiosErrorResponseData> = err;
 
     if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
+      popup('Failed to load hangout data.', 'error');
       setTimeout(() => window.location.href = 'home', 1000);
 
       return;
