@@ -137,7 +137,7 @@ function loadEventListeners(): void {
   document.addEventListener('loadSection-dashboard', renderDashboardSection);
 };
 
-function renderDashboardSection(): void {
+export function renderDashboardSection(): void {
   renderMainDashboardContent();
   renderHangoutStageDescriptions();
   renderLatestMessages();
@@ -145,7 +145,7 @@ function renderDashboardSection(): void {
   renderMembersSection();
 };
 
-export function renderMainDashboardContent(): void {
+function renderMainDashboardContent(): void {
   if (!globalHangoutState.data) {
     handleIrrecoverableError();
     return;
@@ -216,7 +216,7 @@ function displayHangoutPassword(): void {
   hangoutPasswordValueSpan.textContent = 'Not set';
 };
 
-export function renderHangoutStageDescriptions(): void {
+function renderHangoutStageDescriptions(): void {
   if (!globalHangoutState.data) {
     return;
   };
@@ -359,7 +359,7 @@ function renderLatestMessages(): void {
   dashboardChatEmptyElement.classList.add('hidden');
 };
 
-export function renderLatestEvents(): void {
+function renderLatestEvents(): void {
   const dashboardEventsElement: HTMLDivElement | null = document.querySelector('#dashboard-events');
 
   if (!dashboardEventsElement) {

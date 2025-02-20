@@ -49,6 +49,24 @@ function handleEmptyHangoutGuestRequest(): void {
   window.location.href = `${window.location.origin}/hangout?id=${guestHangoutId}`;
 };
 
+export function handleHangoutConcluded(): void {
+  const infoModal: HTMLDivElement = InfoModal.display({
+    title: 'Hangout has already been concluded.',
+    description: `You're too late to join this one, but you can always create a new one.`,
+    btnTitle: 'Go to homepage',
+  });
+
+  infoModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'info-modal-btn') {
+      window.location.href = 'home';
+    };
+  });
+};
+
 export function handleHangoutNotFound(): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: 'Hangout not found.',
@@ -114,6 +132,11 @@ export async function handleNotSignedIn(hangoutId: string): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
 
     popup(errMessage, 'error');
+
+    if (status === 403) {
+      handleHangoutConcluded();
+      return;
+    };
 
     if (status === 404) {
       handleHangoutNotFound();
