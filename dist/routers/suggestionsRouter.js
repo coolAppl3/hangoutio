@@ -148,15 +148,18 @@ exports.suggestionsRouter.post('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_SUGGESTIONS_STAGE) {
+        if (hangoutMemberDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({
-                message: hangoutMemberDetails.is_concluded ? 'Hangout has already been concluded.' : `Hangout isn't in the suggestions stage.`,
-                reason: 'notInSuggestionsStage',
-                resData: {
-                    currentStage: hangoutMemberDetails.current_stage,
-                },
-            });
+            res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+            return;
+        }
+        ;
+        if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_SUGGESTIONS_STAGE) {
+            const reason = hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE
+                ? 'inAvailabilityStage'
+                : 'inVotingStage';
+            await connection.rollback();
+            res.status(409).json({ message: `Hangout isn't in the suggestions stage.`, reason });
             return;
         }
         ;

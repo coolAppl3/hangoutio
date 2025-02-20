@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.36] (2025-02-20)
+
+### Code Refactoring
+
+- Implemented further improvements to error handling throughout the app, especially in regards to state updates.
+
+
+### Bug Fixes
+
+- Fixed users being allowed to join a concluded hangout.
+
+
 ## [0.4.35] (2025-02-19)
 
 ### Code Refactoring
