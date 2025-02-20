@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_AVAILABILITY_SLOTS_LIMIT } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement } from "../../global/domUtils";
 import { InfoModal } from "../../global/InfoModal";
@@ -13,6 +13,7 @@ import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
 import { initAvailabilityCalendar, updateAvailabilityCalendar } from "./availabilityCalendar";
 import { createAvailabilitySlotElement } from "./availabilityUtils";
+import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 
 interface HangoutAvailabilityState {
   isLoaded: boolean,
@@ -302,7 +303,18 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
         return;
       };
 
-      if (errReason === 'hangoutConcluded' || errReason === 'slotLimitReached') {
+      if (errReason === 'hangoutConcluded') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+        renderDashboardSection();
+
+        closeDateTimePicker();
+        return;
+      };
+
+      if (errReason === 'slotLimitReached') {
+        globalHangoutState.data.availabilitySlotsCount = HANGOUT_AVAILABILITY_SLOTS_LIMIT;
+        renderDashboardSection();
+
         closeDateTimePicker();
       };
 
@@ -415,11 +427,6 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
     popup(errMessage, 'error');
 
     if (status === 409) {
-      if (errReason === 'hangoutConcluded') {
-        closeDateTimePicker();
-        return;
-      };
-
       if (errReason === 'slotOverlap') {
         handleSlotOverlap(errResData);
         return;
@@ -432,6 +439,14 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
       return;
     };
 
+    if (status === 403) {
+      globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+      renderDashboardSection();
+
+      closeDateTimePicker();
+      return;
+    };
+
     if (status === 404) {
       if (errReason === 'hangoutNotFound') {
         setTimeout(() => window.location.reload(), 1000);
@@ -441,7 +456,10 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
       if (errReason === 'slotNotFound') {
         hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== dateTimePickerData.existingSlotId);
 
+        globalHangoutState.data.availabilitySlotsCount--;
+
         renderAvailabilitySection();
+        renderDashboardSection();
       };
 
       return;
@@ -514,6 +532,13 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
 
     popup(errMessage, 'error');
 
+    if (status === 403) {
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      renderDashboardSection();
+
+      return;
+    };
+
     if (status === 404) {
       if (errReason === 'hangoutNotFound') {
         setTimeout(() => window.location.reload(), 1000);
@@ -523,7 +548,10 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
       if (errReason === 'slotNotFound') {
         hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== availabilitySlotId);
 
+        globalHangoutState.data.availabilitySlotsCount--;
+
         renderAvailabilitySection();
+        renderDashboardSection();
       };
 
       return;
@@ -593,6 +621,13 @@ async function clearAvailabilitySlots(): Promise<void> {
 
     popup(errMessage, 'error');
 
+    if (status === 403) {
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      renderDashboardSection();
+
+      return;
+    };
+
     if (status === 404) {
       if (errReason === 'hangoutNotFound') {
         setTimeout(() => window.location.reload(), 1000);
@@ -604,6 +639,7 @@ async function clearAvailabilitySlots(): Promise<void> {
         globalHangoutState.data.availabilitySlotsCount = 10;
 
         renderAvailabilitySection();
+        renderDashboardSection();
       };
 
       return;

@@ -7,6 +7,7 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
+import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
 import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
@@ -349,15 +350,23 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     popup(errMessage, 'error');
 
     if (status === 409) {
+      hangoutSuggestionState.memberLikesSet.add(suggestion.suggestion_id);
       displaySuggestionLikeIcon(suggestionElement);
+
       return;
     };
 
     if (status === 404) {
       hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
 
+      if (suggestion.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+        globalHangoutState.data.suggestionsCount--;
+      };
+
       LoadingModal.display();
+
       renderSuggestionsSection();
+      renderDashboardSection();
 
       LoadingModal.remove();
       return;
@@ -561,11 +570,14 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     if (status === 409) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        renderDashboardSection();
+
         return;
       };
 
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+        renderDashboardSection();
       };
 
       return;

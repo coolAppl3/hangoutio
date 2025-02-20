@@ -132,6 +132,10 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
 
     if (status === 404 || status === 409) {
       clearVerificationCookies();
+
+      LoadingModal.display();
+      setTimeout(() => window.location.href = status === 404 ? 'sign-up' : 'sign-in', 1000);
+
       return;
     };
 
@@ -224,6 +228,10 @@ async function resendVerificationEmail(): Promise<void> {
 
     if (status === 404 || status === 409) {
       clearVerificationCookies();
+
+      LoadingModal.display();
+      setTimeout(() => window.location.href = status === 404 ? 'sign-up' : 'sign-in', 1000);
+
       return;
     };
 

@@ -143,6 +143,11 @@ async function accountSignIn(): Promise<void> {
     if (status === 403) {
       ErrorSpan.display(accountEmailInput, errMessage);
 
+      if (errReason === 'accountLocked') {
+        handleAccountLocked();
+        return;
+      };
+
       if (errReason === 'unverified') {
         InfoModal.display({
           title: 'Account unverified.',
@@ -390,7 +395,7 @@ function handleAccountLocked(): void {
   const confirmModal: HTMLDivElement = ConfirmModal.display({
     title: 'Account locked.',
     description: `Your account has been locked due to multiple failed sign in attempts.`,
-    confirmBtnTitle: 'Recover my account',
+    confirmBtnTitle: 'Recover account',
     cancelBtnTitle: 'Go to homepage',
     extraBtnTitle: null,
     isDangerousAction: false,

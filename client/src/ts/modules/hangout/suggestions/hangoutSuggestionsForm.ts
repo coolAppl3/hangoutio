@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -10,6 +10,7 @@ import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent }
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
+import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 
 interface HangoutSuggestionFormState {
   suggestionIdToEdit: number | null,
@@ -196,7 +197,6 @@ async function addHangoutSuggestion(): Promise<void> {
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
 
     if (status === 400 && (errReason === 'hangoutId' || errReason === 'hangoutMemberId')) {
       popup('Something went wrong.', 'error');
@@ -208,19 +208,28 @@ async function addHangoutSuggestion(): Promise<void> {
     if (status === 409) {
       if (errReason === 'limitReached') {
         globalHangoutState.data.suggestionsCount = HANGOUT_SUGGESTIONS_LIMIT;
+        renderDashboardSection();
+
         return;
       };
 
-      if (errReason === 'notInSuggestionStage') {
-        if (!errResData || typeof errResData !== 'object' || errResData === null) {
-          return;
-        };
+      if (errReason === 'hangoutConcluded') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+        renderDashboardSection();
 
-        if (!('currentStage' in errResData) || !Number.isInteger(errResData.currentStage)) {
-          return;
-        };
+        return;
+      };
 
-        globalHangoutState.data.hangoutDetails.current_stage === errResData.currentStage;
+      if (errReason === 'inAvailabilityStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        renderDashboardSection();
+
+        return;
+      };
+
+      if (errReason === 'inVotingStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_VOTING_STAGE;
+        renderDashboardSection();
       };
 
       return;
