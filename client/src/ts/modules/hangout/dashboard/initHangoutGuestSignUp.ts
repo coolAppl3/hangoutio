@@ -8,7 +8,7 @@ import revealPassword from "../../global/revealPassword";
 import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateNewUsername, validatePassword } from "../../global/validation";
 import { JoinHangoutAsGuestBody, joinHangoutAsGuestService } from "../../services/hangoutMemberServices";
 import { getInitialHangoutData } from "./hangoutDashboard";
-import { handleHangoutFull, handleHangoutNotFound } from "./hangoutDashboardUtils";
+import { handleHangoutConcluded, handleHangoutFull, handleHangoutNotFound } from "./hangoutDashboardUtils";
 
 const guestSignUpForm: HTMLFormElement | null = document.querySelector('#guest-sign-up-form');
 
@@ -138,6 +138,11 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
 
     popup(errMessage, 'error');
+
+    if (status === 403) {
+      handleHangoutConcluded();
+      return;
+    };
 
     if (status === 404) {
       handleHangoutNotFound();

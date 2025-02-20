@@ -1390,11 +1390,13 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
 
   try {
     interface HangoutDetails extends RowDataPacket {
+      is_concluded: boolean,
       encrypted_password: string | null,
     };
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
+        is_concluded,
         encrypted_password
       FROM
         hangouts
@@ -1408,8 +1410,14 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
       return;
     };
 
-    const isPasswordProtected: boolean = Boolean(hangoutRows[0].encrypted_password);
+    const hangoutDetails: HangoutDetails = hangoutRows[0];
 
+    if (hangoutDetails.is_concluded) {
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded.' });
+      return;
+    };
+
+    const isPasswordProtected: boolean = Boolean(hangoutDetails.encrypted_password);
     res.json({ isPasswordProtected });
 
   } catch (err: unknown) {
@@ -1487,6 +1495,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
     };
 
     interface HangoutInfo extends RowDataPacket {
+      is_concluded: boolean,
       encrypted_password: string | null,
       members_limit: number,
       hangout_member_id: number,
@@ -1497,6 +1506,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
 
     const [hangoutRows] = await dbPool.execute<HangoutInfo[]>(
       `SELECT
+        hangouts.is_concluded,
         hangouts.encrypted_password,
         hangouts.members_limit,
         hangout_members.hangout_member_id,
@@ -1529,6 +1539,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
         message: 'Not a member of this hangout.',
         reason: 'notMember',
         resData: {
+          isConcluded: Boolean(hangoutInfo.is_concluded),
           isPasswordProtected,
           isFull: isPasswordProtected ? null : isFull,
         },

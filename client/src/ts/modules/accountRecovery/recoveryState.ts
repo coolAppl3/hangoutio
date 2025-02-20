@@ -4,7 +4,6 @@ interface RecoveryState {
   inPasswordUpdateStage: boolean,
 
   recoveryEmailsSent: number,
-  recoveryEmailsSentLimit: number,
 
   accountId: number | null,
   expiryTimestamp: number | null,
@@ -16,7 +15,6 @@ export const recoveryState: RecoveryState = {
   inPasswordUpdateStage: false,
 
   recoveryEmailsSent: 0,
-  recoveryEmailsSentLimit: EMAILS_SENT_LIMIT,
 
   accountId: null,
   expiryTimestamp: null,

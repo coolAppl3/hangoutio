@@ -7,6 +7,7 @@ import popup from "../global/popup";
 import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
 import { RecoveryUpdatePasswordBody, recoveryUpdatePasswordService, resendAccountRecoveryEmailService } from "../services/accountServices";
+import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
 
 const passwordUpdateFormElement: HTMLFormElement | null = document.querySelector('#password-update-form');
 
@@ -172,8 +173,16 @@ async function resendAccountRecoveryEmail(): Promise<void> {
     return;
   };
 
+  if (recoveryState.recoveryEmailsSent >= EMAILS_SENT_LIMIT) {
+    popup(`Verification email limit of ${EMAILS_SENT_LIMIT} reached.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
   try {
     await resendAccountRecoveryEmailService({ accountId: recoveryState.accountId });
+    recoveryState.recoveryEmailsSent++;
 
     popup('Recovery email resent.', 'success');
     LoadingModal.remove();
@@ -206,6 +215,11 @@ async function resendAccountRecoveryEmail(): Promise<void> {
 
     popup(errMessage, 'error');
 
+    if (status === 403) {
+      recoveryState.recoveryEmailsSent = EMAILS_SENT_LIMIT;
+      return;
+    };
+
     if (status === 404) {
       LoadingModal.display();
       setTimeout(() => window.location.reload(), 1000);
@@ -213,8 +227,15 @@ async function resendAccountRecoveryEmail(): Promise<void> {
       return;
     };
 
-    if (status === 403 && errReason === 'recoverySuspended') {
-      handleRecoverySuspension(errResData);
+    if (status === 403) {
+      if (errReason === 'recoverySuspended') {
+        handleRecoverySuspension(errResData);
+        return;
+      };
+
+      if (errReason === 'limitReached') {
+        recoveryState.recoveryEmailsSent = EMAILS_SENT_LIMIT;
+      };
     };
   };
 };

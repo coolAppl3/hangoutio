@@ -8,7 +8,7 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutMemberServices";
 import { getInitialHangoutData } from "./hangoutDashboard";
-import { handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
+import { handleHangoutConcluded, handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import { initJoinHangoutForm, removeJoinHangoutForm } from "./initJoinHangoutForm";
 
@@ -25,6 +25,11 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
     popup('Something went wrong.', 'error');
     setTimeout(() => window.location.href = 'home', 1000);
 
+    return;
+  };
+
+  if (errResData.isConcluded) {
+    handleHangoutConcluded();
     return;
   };
 
@@ -145,7 +150,15 @@ export async function joinHangoutAsAccount(): Promise<void> {
     };
 
     if (status === 403) {
-      handleGuestNotMember();
+      if (errReason === 'guestAccount') {
+        handleGuestNotMember();
+        return;
+      };
+
+      if (errReason === 'hangoutConcluded') {
+        handleHangoutConcluded();
+      };
+
       return;
     };
 
@@ -187,12 +200,17 @@ export async function joinHangoutAsAccount(): Promise<void> {
 };
 
 interface ValidNotHangoutMemberErrResData {
+  isConcluded: boolean,
   isPasswordProtected: boolean,
   isFull: boolean | null,
 };
 
 function isValidNotHangoutMemberData(errResData: unknown): errResData is ValidNotHangoutMemberErrResData {
   if (typeof errResData !== 'object' || errResData === null) {
+    return false;
+  };
+
+  if (!('isConcluded' in errResData) || typeof errResData.isConcluded !== 'boolean') {
     return false;
   };
 

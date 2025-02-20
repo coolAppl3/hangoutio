@@ -609,7 +609,7 @@ function handleUserSignOut(): void {
 function handleOngoingHangoutsLimitReached(errMessage: string): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: errMessage,
-    description: `To create or join a new hangout, wait for one of your current hangouts to conclude or leave one to make room.`,
+    description: `To create or join a new hangout, wait for one of the ongoing hangouts to conclude or leave one of them.`,
     btnTitle: 'Go to my account',
   });
 

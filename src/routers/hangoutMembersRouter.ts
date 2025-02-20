@@ -139,6 +139,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     };
 
     interface HangoutDetails extends RowDataPacket {
+      is_concluded: boolean,
       encrypted_password: string | null,
       members_limit: number,
       member_count: number,
@@ -147,6 +148,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
     const [hangoutRows] = await connection.execute<HangoutDetails[]>(
       `SELECT
+        is_concluded,
         encrypted_password,
         members_limit,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count,
@@ -172,6 +174,11 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       res.status(409).json({ message: 'Already a member of this hangout.', reason: 'alreadyJoined' });
 
       return;
+    };
+
+    if (hangoutDetails.is_concluded) {
+      await connection.rollback();
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
     };
 
     if (hangoutDetails.encrypted_password) {
@@ -278,6 +285,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     await connection.beginTransaction();
 
     interface HangoutDetails extends RowDataPacket {
+      is_concluded: boolean,
       encrypted_password: string | null,
       members_limit: number,
       member_count: number,
@@ -285,6 +293,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
     const [hangoutRows] = await connection.execute<HangoutDetails[]>(
       `SELECT
+        is_concluded,
         encrypted_password,
         members_limit,
         (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS member_count
@@ -303,6 +312,13 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     };
 
     const hangoutDetails: HangoutDetails = hangoutRows[0];
+
+    if (hangoutDetails.is_concluded) {
+      await connection.rollback();
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+
+      return;
+    };
 
     if (hangoutDetails.encrypted_password) {
       const isCorrectHangoutPassword: boolean = requestData.hangoutPassword === decryptPassword(hangoutDetails.encrypted_password);
