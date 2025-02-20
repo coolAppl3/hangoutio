@@ -179,6 +179,8 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
       res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+
+      return;
     };
 
     if (hangoutDetails.encrypted_password) {
