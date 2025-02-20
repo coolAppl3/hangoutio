@@ -115,8 +115,8 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
     interface HangoutMemberDetails extends RowDataPacket {
       conclusion_timestamp: number,
-      current_stage: number,
       is_concluded: boolean,
+      current_stage: number,
       account_id: number | null,
       guest_id: number | null,
       suggestion_id: number,
@@ -127,8 +127,8 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
         (
           hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
         ) AS conclusion_timestamp,
-        hangouts.current_stage,
         hangouts.is_concluded,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id
@@ -166,7 +166,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };
@@ -178,7 +178,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
       // 
 
       await connection.rollback();
-      res.status(409).json({ message: `Hangout isn't in the suggestions stage.`, reason });
+      res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason });
 
       return;
     };
@@ -329,6 +329,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
 
     interface HangoutMemberDetails extends RowDataPacket {
       conclusion_timestamp: number,
+      is_concluded: boolean,
       current_stage: number,
       account_id: number | null,
       guest_id: number | null,
@@ -344,6 +345,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
         (
           hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
         ) AS conclusion_timestamp,
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -380,13 +382,13 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+    if (hangoutMemberDetails.is_concluded) {
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ message: 'Hangout has already been concluded.' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -520,6 +522,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     interface HangoutMemberDetails extends RowDataPacket {
+      is_concluded: boolean,
       current_stage: number,
       account_id: number | null,
       guest_id: number | null,
@@ -528,6 +531,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -560,13 +564,13 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(409).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
+    if (hangoutMemberDetails.is_concluded) {
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ message: `Can't alter suggestions after hangout conclusion.`, reason: 'hangoutConcluded' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -673,6 +677,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
     };
 
     interface HangoutMemberDetails extends RowDataPacket {
+      is_concluded: boolean,
       current_stage: number,
       account_id: number | null,
       guest_id: number | null,
@@ -681,6 +686,7 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -713,13 +719,13 @@ suggestionsRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+    if (hangoutMemberDetails.is_concluded) {
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ message: 'Hangout has already been concluded.' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -832,6 +838,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     };
 
     interface HangoutMemberDetails extends RowDataPacket {
+      is_concluded: boolean,
       current_stage: number,
       account_id: number | null,
       guest_id: number | null,
@@ -841,6 +848,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -877,13 +885,13 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+    if (hangoutMemberDetails.is_concluded) {
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-      res.status(409).json({ message: 'Hangout has already been concluded.' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
       return;
     };
 

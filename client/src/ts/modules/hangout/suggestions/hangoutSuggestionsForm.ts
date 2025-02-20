@@ -213,6 +213,10 @@ async function addHangoutSuggestion(): Promise<void> {
         return;
       };
 
+      return;
+    };
+
+    if (status === 403) {
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
         renderDashboardSection();
