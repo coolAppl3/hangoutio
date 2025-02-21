@@ -4,7 +4,7 @@ import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
 
-export function updateSuggestionLikeAttributes(suggestionElement: HTMLDivElement, actionTaken: 'liked' | 'unliked'): void {
+export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement, actionTaken: 'liked' | 'unliked'): void {
   const suggestionLikeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
 
   if (!suggestionLikeBtn) {
@@ -13,6 +13,19 @@ export function updateSuggestionLikeAttributes(suggestionElement: HTMLDivElement
 
   suggestionLikeBtn.setAttribute('title', actionTaken === 'liked' ? 'Unlike suggestion' : 'Like suggestion');
   suggestionLikeBtn.setAttribute('aria-label', actionTaken === 'liked' ? 'Unlike suggestion' : 'Like suggestion');
+};
+
+export function updateSuggestionDropdownMenuBtnAttributes(suggestionElement: HTMLDivElement): void {
+  const dropdownMenuBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
+
+  if (!dropdownMenuBtn) {
+    return;
+  };
+
+  const isExpanded: boolean = dropdownMenuBtn.parentElement?.classList.contains('expanded') === true;
+
+  dropdownMenuBtn.setAttribute('title', isExpanded ? 'Collapse suggestion options' : 'Expand suggestion options');
+  dropdownMenuBtn.setAttribute('aria-label', isExpanded ? 'Collapse suggestion options' : 'Expand suggestion options');
 };
 
 // --- --- ---
@@ -60,10 +73,8 @@ function createRatingContainer(likesCount: number, isLiked: boolean): HTMLDivEle
   const ratingContainer: HTMLDivElement = createDivElement('rating-container');
 
   const likeSuggestionBtn: HTMLButtonElement = createBtnElement('like-suggestion-btn', null);
-
   likeSuggestionBtn.setAttribute('title', isLiked ? 'Unlike suggestion' : 'Like suggestion');
   likeSuggestionBtn.setAttribute('aria-label', isLiked ? 'Unlike suggestion' : 'Like suggestion');
-
   likeSuggestionBtn.appendChild(createLikeIcon());
   likeSuggestionBtn.appendChild(createDivElement('like-spinner'));
 
@@ -77,6 +88,8 @@ function createDropdownMenuElement(isMemberSuggestion: boolean): HTMLDivElement 
   const dropdownMenuElement: HTMLDivElement = createDivElement('dropdown-menu');
 
   const dropdownMenuBtn: HTMLButtonElement = createBtnElement('dropdown-menu-btn', null);
+  dropdownMenuBtn.setAttribute('title', 'Expand suggestion options');
+  dropdownMenuBtn.setAttribute('aria-label', 'Expand suggestion options');
   dropdownMenuBtn.appendChild(createDropdownIcon());
 
   const dropdownMenuList: HTMLDivElement = createDivElement('dropdown-menu-list');
