@@ -84,7 +84,7 @@ async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
   };
 
   if (globalHangoutState.data.hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
-    popup('Not in suggestions stage.', 'error');
+    popup('Hangout is not in suggestions stage.', 'error');
     return;
   };
 
@@ -109,7 +109,7 @@ async function addHangoutSuggestion(): Promise<void> {
   const { hangoutId, hangoutMemberId, hangoutDetails } = globalHangoutState.data;
 
   if (hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
-    popup('Not in suggestion stage.', 'error');
+    popup('Hangout is not in suggestions stage.', 'error');
     LoadingModal.remove();
 
     return;
@@ -213,6 +213,10 @@ async function addHangoutSuggestion(): Promise<void> {
         return;
       };
 
+      return;
+    };
+
+    if (status === 403) {
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
         renderDashboardSection();

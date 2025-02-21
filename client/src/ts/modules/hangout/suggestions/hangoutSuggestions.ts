@@ -505,7 +505,17 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
   const { hangoutMemberId, hangoutId, hangoutDetails, suggestionsCount } = globalHangoutState.data;
   const suggestionDropdownMenu: HTMLDivElement | null = suggestionElement.querySelector('.dropdown-menu');
 
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
   if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+    popup('Hangout has not reached the suggestions stage yet.', 'error');
+    LoadingModal.remove();
+
     return;
   };
 

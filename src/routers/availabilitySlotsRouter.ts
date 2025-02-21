@@ -155,7 +155,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.is_concluded) {
       await connection.rollback();
-      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+      res.status(403).json({ message: 'Hangout has already been concluded.' });
 
       return;
     };

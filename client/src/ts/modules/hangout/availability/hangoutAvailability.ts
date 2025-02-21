@@ -236,6 +236,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 
     hangoutAvailabilityState.availabilitySlots.push(newAvailabilitySlot);
     hangoutAvailabilityState.availabilitySlots.sort((a, b) => a.slot_start_timestamp - b.slot_start_timestamp);
+
     globalHangoutState.data.availabilitySlotsCount++;
 
     renderAvailabilitySection();
@@ -292,6 +293,14 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
       return;
     };
 
+    if (status === 403) {
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      renderDashboardSection();
+
+      closeDateTimePicker();
+      return;
+    };
+
     if (status === 409) {
       if (errReason === 'slotOverlap') {
         handleSlotOverlap(errResData);
@@ -300,14 +309,6 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 
       if (errReason === 'invalidStart') {
         displayTimePickerError(errMessage, 'start');
-        return;
-      };
-
-      if (errReason === 'hangoutConcluded') {
-        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
-        renderDashboardSection();
-
-        closeDateTimePicker();
         return;
       };
 

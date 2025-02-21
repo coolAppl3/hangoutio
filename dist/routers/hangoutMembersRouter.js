@@ -158,6 +158,7 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
         if (hangoutDetails.is_concluded) {
             await connection.rollback();
             res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+            return;
         }
         ;
         if (hangoutDetails.encrypted_password) {
@@ -265,7 +266,7 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
         const hangoutDetails = hangoutRows[0];
         if (hangoutDetails.is_concluded) {
             await connection.rollback();
-            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+            res.status(403).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;

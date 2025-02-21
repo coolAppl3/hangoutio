@@ -104,8 +104,8 @@ exports.votesRouter.post('/', async (req, res) => {
         await connection.beginTransaction();
         ;
         const [hangoutMemberRows] = await connection.execute(`SELECT
-        hangouts.current_stage,
         hangouts.is_concluded,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         EXISTS (SELECT 1 FROM suggestions WHERE suggestion_id = :suggestionId) AS suggestion_found,
@@ -118,7 +118,7 @@ exports.votesRouter.post('/', async (req, res) => {
       WHERE
         hangouts.hangout_id = :hangoutId AND
         hangout_members.hangout_member_id = :hangoutMemberId
-        LIMIT 1;`, {
+      LIMIT 1;`, {
             suggestionId: requestData.suggestionId,
             hangoutMemberId: requestData.hangoutMemberId,
             hangoutId: requestData.hangoutMemberId,
@@ -139,11 +139,13 @@ exports.votesRouter.post('/', async (req, res) => {
             return;
         }
         ;
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+            return;
+        }
+        ;
         if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_VOTING_STAGE) {
-            await connection.rollback();
-            res.status(409).json({
-                message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`
-            });
+            res.status(403).json({ message: `Hangout hasn't reached the voting stage yet.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;
@@ -285,8 +287,8 @@ exports.votesRouter.delete('/', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_stage,
         hangouts.is_concluded,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         votes.vote_id
@@ -313,10 +315,13 @@ exports.votesRouter.delete('/', async (req, res) => {
             return;
         }
         ;
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+            return;
+        }
+        ;
         if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_VOTING_STAGE) {
-            res.status(409).json({
-                message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,
-            });
+            res.status(403).json({ message: `Hangout hasn't reached the voting stage yet.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;
@@ -404,8 +409,8 @@ exports.votesRouter.delete('/clear', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangouts.current_stage,
         hangouts.is_concluded,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         votes.vote_id
@@ -432,10 +437,13 @@ exports.votesRouter.delete('/clear', async (req, res) => {
             return;
         }
         ;
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+            return;
+        }
+        ;
         if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_VOTING_STAGE) {
-            res.status(409).json({
-                message: hangoutMemberDetails.is_concluded ? 'Hangout already concluded' : `Hangout isn't in the voting stage.`,
-            });
+            res.status(403).json({ message: `Hangout hasn't reached the voting stage yet.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;

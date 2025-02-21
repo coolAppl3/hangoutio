@@ -118,8 +118,8 @@ exports.suggestionsRouter.post('/', async (req, res) => {
         (
           hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
         ) AS conclusion_timestamp,
-        hangouts.current_stage,
         hangouts.is_concluded,
+        hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
         suggestions.suggestion_id
@@ -150,7 +150,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
         ;
         if (hangoutMemberDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
             return;
         }
         ;
@@ -159,7 +159,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
                 ? 'inAvailabilityStage'
                 : 'inVotingStage';
             await connection.rollback();
-            res.status(409).json({ message: `Hangout isn't in the suggestions stage.`, reason });
+            res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason });
             return;
         }
         ;
@@ -281,6 +281,7 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
         (
           hangouts.created_on_timestamp + hangouts.availability_period + hangouts.suggestions_period + hangouts.voting_period
         ) AS conclusion_timestamp,
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -312,13 +313,13 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
-            res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ message: 'Hangout has already been concluded.' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
+            res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;
@@ -429,6 +430,7 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -456,13 +458,13 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
-            res.status(409).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ message: `Can't alter suggestions after hangout conclusion.`, reason: 'hangoutConcluded' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
+            res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;
@@ -549,6 +551,7 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -576,13 +579,13 @@ exports.suggestionsRouter.delete('/clear', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
-            res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ message: 'Hangout has already been concluded.' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
+            res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;
@@ -675,6 +678,7 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.is_concluded,
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
@@ -706,13 +710,13 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
-            res.status(409).json({ message: `Hangout isn't in the suggestions stage.` });
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
             return;
         }
         ;
-        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-            res.status(409).json({ message: 'Hangout has already been concluded.' });
+        if (hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE) {
+            res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
             return;
         }
         ;

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.37] (2025-02-21)
+
+### Code Refactoring
+
+- Improved which status codes are used for some error responses, and fixed some actions being possible even after the hangout has been concluded.
+- Renamed `hideLoadingSkeleton()` to `removeLoadingSkeleton()` to better reflect the purpose of the function.
+
+
 ## [0.4.36] (2025-02-20)
 
 ### Code Refactoring

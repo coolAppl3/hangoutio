@@ -192,7 +192,7 @@ export function removeGuestSignUpSection(): void {
   hangoutLoadingSkeleton?.classList.remove('hidden');
 };
 
-export function hideLoadingSkeleton(): void {
+export function removeLoadingSkeleton(): void {
   const hangoutDesktopNav: HTMLElement | null = document.querySelector('#hangout-desktop-nav');
   const hangoutDashboardElement: HTMLElement | null = document.querySelector('#dashboard-section');
   const hangoutLoadingSkeleton: HTMLDivElement | null = document.querySelector('#hangout-loading-skeleton');
