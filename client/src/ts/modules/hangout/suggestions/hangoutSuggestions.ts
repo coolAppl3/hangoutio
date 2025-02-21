@@ -11,7 +11,7 @@ import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
 import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
-import { createSuggestionElement } from "./suggestionsUtils";
+import { createSuggestionElement, updateSuggestionLikeAttributes } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -320,7 +320,9 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     suggestion.likes_count++
 
     sortHangoutSuggestions();
+
     displaySuggestionLikeIcon(suggestionElement);
+    updateSuggestionLikeAttributes(suggestionElement, 'liked');
 
   } catch (err: unknown) {
     console.log(err);
@@ -408,7 +410,9 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
     suggestion.likes_count--;
 
     sortHangoutSuggestions();
+
     removeSuggestionLikeIcon(suggestionElement);
+    updateSuggestionLikeAttributes(suggestionElement, 'unliked');
 
   } catch (err: unknown) {
     console.log(err);
