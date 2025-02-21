@@ -1271,7 +1271,7 @@
               }
 
               .rating-container {
-                @apply flex justify-center items-center mx-1;
+                @apply flex justify-center items-center ml-1;
 
                 span {
                   @apply text-sm font-medium text-description dark:text-description-dark mr-[2px];
@@ -1302,7 +1302,7 @@
               }
 
               .dropdown-menu {
-                @apply relative;
+                @apply relative ml-1;
 
                 &>button {
                   @apply svg w-2 h-2 mt-[2px] transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1;

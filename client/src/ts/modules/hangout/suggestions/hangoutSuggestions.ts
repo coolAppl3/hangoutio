@@ -11,7 +11,7 @@ import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
 import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
-import { createSuggestionElement } from "./suggestionsUtils";
+import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -248,6 +248,8 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
 
   if (e.target.classList.contains('dropdown-menu-btn')) {
     e.target.parentElement?.classList.toggle('expanded');
+    updateSuggestionDropdownMenuBtnAttributes(suggestionElement);
+
     return;
   };
 
@@ -320,7 +322,9 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     suggestion.likes_count++
 
     sortHangoutSuggestions();
+
     displaySuggestionLikeIcon(suggestionElement);
+    updateSuggestionLikeBtnAttributes(suggestionElement);
 
   } catch (err: unknown) {
     console.log(err);
@@ -408,7 +412,9 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
     suggestion.likes_count--;
 
     sortHangoutSuggestions();
+
     removeSuggestionLikeIcon(suggestionElement);
+    updateSuggestionLikeBtnAttributes(suggestionElement);
 
   } catch (err: unknown) {
     console.log(err);
