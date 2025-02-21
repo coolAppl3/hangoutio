@@ -32,7 +32,7 @@ function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolea
   suggestionDetailsHeaderElement.appendChild(createRatingContainer(suggestion.likes_count));
 
   const isMemberSuggestion: boolean = globalHangoutState.data?.hangoutMemberId === suggestion.hangout_member_id;
-  if (isLeader || isMemberSuggestion) {
+  if ((isLeader || isMemberSuggestion) && !globalHangoutState.data?.hangoutDetails.is_concluded) {
     suggestionDetailsHeaderElement.appendChild(createDropdownMenuElement(isMemberSuggestion));
   };
 
@@ -99,7 +99,10 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
 function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
   btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
-  btnContainer.appendChild(createBtnElement('add-vote-btn', isVotedFor ? 'Remove vote' : 'Add vote'));
+
+  if (!globalHangoutState.data?.hangoutDetails.is_concluded) {
+    btnContainer.appendChild(createBtnElement('add-vote-btn', isVotedFor ? 'Remove vote' : 'Add vote'));
+  };
 
   return btnContainer;
 };
