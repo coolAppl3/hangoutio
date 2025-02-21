@@ -10,7 +10,7 @@ import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "..
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, hideLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent } from "./hangoutDashboardUtils";
+import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
 
@@ -77,7 +77,7 @@ export async function getInitialHangoutData(): Promise<void> {
     renderDashboardSection();
 
     removeGuestSignUpSection();
-    hideLoadingSkeleton();
+    removeLoadingSkeleton();
 
     initHangoutWebSocket(initialHangoutData.hangoutMemberId, hangoutId);
 
