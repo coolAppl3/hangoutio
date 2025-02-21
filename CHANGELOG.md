@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.38] (2025-02-21)
+
+### Features
+
+- Rendered suggestions now take into account whether or not the hangout is concluded, hiding certain options if needed.
+- Added appropriate `title` and `aria-label` properties to the like button in suggestion cards.
+
+
 ## [0.4.37] (2025-02-21)
 
 ### Code Refactoring
