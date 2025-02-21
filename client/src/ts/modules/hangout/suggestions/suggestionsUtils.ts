@@ -4,15 +4,17 @@ import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
 
-export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement, actionTaken: 'liked' | 'unliked'): void {
-  const suggestionLikeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
+export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement): void {
+  const likeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
 
-  if (!suggestionLikeBtn) {
+  if (!likeBtn) {
     return;
   };
 
-  suggestionLikeBtn.setAttribute('title', actionTaken === 'liked' ? 'Unlike suggestion' : 'Like suggestion');
-  suggestionLikeBtn.setAttribute('aria-label', actionTaken === 'liked' ? 'Unlike suggestion' : 'Like suggestion');
+  const isLiked: boolean = likeBtn.classList.contains('liked');
+
+  likeBtn.setAttribute('title', isLiked ? 'Unlike suggestion' : 'Like suggestion');
+  likeBtn.setAttribute('aria-label', isLiked ? 'Unlike suggestion' : 'Like suggestion');
 };
 
 export function updateSuggestionDropdownMenuBtnAttributes(suggestionElement: HTMLDivElement): void {

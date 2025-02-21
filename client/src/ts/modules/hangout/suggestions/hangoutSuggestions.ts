@@ -324,7 +324,7 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     sortHangoutSuggestions();
 
     displaySuggestionLikeIcon(suggestionElement);
-    updateSuggestionLikeBtnAttributes(suggestionElement, 'liked');
+    updateSuggestionLikeBtnAttributes(suggestionElement);
 
   } catch (err: unknown) {
     console.log(err);
@@ -414,7 +414,7 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
     sortHangoutSuggestions();
 
     removeSuggestionLikeIcon(suggestionElement);
-    updateSuggestionLikeBtnAttributes(suggestionElement, 'unliked');
+    updateSuggestionLikeBtnAttributes(suggestionElement);
 
   } catch (err: unknown) {
     console.log(err);
