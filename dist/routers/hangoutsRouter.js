@@ -390,11 +390,12 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         ;
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangout_id,
-        account_id,
-        guest_id,
-        is_leader,
-        (SELECT encrypted_password FROM hangouts WHERE hangout_id = ?) AS hangout_encrypted_password
+        hangout_members.hangout_id,
+        hangout_members.account_id,
+        hangout_members.guest_id,
+        hangout_members.is_leader,
+        hangouts.is_concluded,
+        hangouts.encrypted_password
       FROM
         hangout_members
       WHERE
@@ -424,7 +425,12 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
             return;
         }
         ;
-        if (hangoutMemberDetails.hangout_encrypted_password === requestData.newPassword) {
+        if (hangoutMemberDetails.is_concluded) {
+            res.status(403).json({ message: `Can't change password after hangout conclusion.` });
+            return;
+        }
+        ;
+        if (!hangoutMemberDetails.encrypted_password && !requestData.newPassword) {
             res.status(409).json({ message: 'Hangout already has no password', reason: 'passwordAlreadyNull' });
             return;
         }
@@ -558,7 +564,7 @@ exports.hangoutsRouter.patch('/details/changeMembersLimit', async (req, res) => 
         ;
         if (hangoutDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ message: 'Hangout has already been concluded.' });
+            res.status(403).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;
@@ -708,7 +714,7 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
         ;
         if (hangoutDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ message: 'Hangout has already been concluded.' });
+            res.status(403).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;
@@ -871,7 +877,7 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         ;
         if (hangoutDetails.is_concluded) {
             await connection.rollback();
-            res.status(409).json({ message: 'Hangout has already been concluded.' });
+            res.status(403).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;
@@ -1084,7 +1090,7 @@ exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
         ;
         const hangoutDetails = hangoutRows[0];
         if (hangoutDetails.is_concluded) {
-            res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded.' });
+            res.status(403).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;
