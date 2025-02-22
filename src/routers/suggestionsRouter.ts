@@ -8,7 +8,7 @@ import { isValidHangoutId } from "../util/validation/hangoutValidation";
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
 import { Suggestion, SuggestionLike, Vote } from "../util/hangoutTypes";
 import { isSqlError } from "../util/isSqlError";
 
@@ -403,6 +403,33 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
       return;
     };
 
+    let isIdentical: boolean = true;
+    let isMajorChange: boolean = false;
+
+    if (suggestionToEdit.suggestion_start_timestamp !== requestData.suggestionStartTimestamp) {
+      isIdentical = false;
+      isMajorChange = true;
+    };
+
+    if (suggestionToEdit.suggestion_end_timestamp !== requestData.suggestionEndTimestamp) {
+      isIdentical = false;
+      isMajorChange = true;
+    };
+
+    if (suggestionToEdit.suggestion_title !== requestData.suggestionTitle) {
+      isIdentical = false;
+      isMajorChange = true;
+    };
+
+    if (suggestionToEdit.suggestion_description !== requestData.suggestionDescription) {
+      isIdentical = false;
+    };
+
+    if (isIdentical) {
+      res.status(409).json({ message: 'No suggestion changes found.', reason: 'suggestionIdentical' });
+      return;
+    };
+
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `UPDATE
         suggestions
@@ -424,15 +451,19 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
 
     res.json({});
 
-    if (requestData.suggestionTitle !== suggestionToEdit.suggestion_title && hangoutMemberDetails.current_stage === HANGOUT_VOTING_STAGE) {
-      await dbPool.execute<ResultSetHeader>(
+    if (isMajorChange) {
+      await dbPool.query(
         `DELETE FROM
           votes
         WHERE
-          suggestion_id = ?;`,
-        [requestData.suggestionId]
+          suggestion_id = :suggestionId;
+        
+        DELETE FROM
+          suggestion_likes
+        WHERE
+          suggestion_id = :suggestionId;`,
+        { suggestionId: requestData.suggestionId }
       );
-
     };
 
   } catch (err: unknown) {
