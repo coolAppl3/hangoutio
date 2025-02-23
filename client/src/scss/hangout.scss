@@ -1229,6 +1229,17 @@
 
           &.expanded {
             @apply grid-rows-[auto_1fr] pb-2;
+
+            .suggestion-details {
+
+              &-header p.suggestion-title {
+                @apply whitespace-normal;
+              }
+
+              &-container div span {
+                @apply whitespace-normal;
+              }
+            }
           }
 
           &.user {
@@ -1337,10 +1348,10 @@
               @apply grid grid-cols-2 xs:grid-cols-1 gap-1 mb-2 relative z-0;
 
               div {
-                @apply last:col-span-2 xs:last:col-span-1;
+                @apply overflow-hidden;
 
                 span {
-                  @apply block text-sm text-description dark:text-description-dark font-medium;
+                  @apply block text-sm text-description dark:text-description-dark font-medium whitespace-nowrap text-ellipsis overflow-hidden;
 
                   &:last-child {
                     @apply md:text-base text-title dark:text-title-dark font-bold dark:font-medium;

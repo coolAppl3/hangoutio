@@ -7,10 +7,9 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
-import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
-import { initHangoutSuggestionsForm } from "./hangoutSuggestionsForm";
+import { endHangoutSuggestionsFormEdit, hangoutSuggestionFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./hangoutSuggestionsForm";
 import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
@@ -253,7 +252,22 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     return;
   };
 
+  if (e.target.classList.contains('edit-btn')) {
+    const hangoutMemberId: number = globalHangoutState.data.hangoutMemberId;
+    if (suggestion.hangout_member_id !== hangoutMemberId) {
+      popup(`You can only edit your own suggestions.`, 'error');
+      return;
+    };
+
+    e.target.closest('.dropdown-menu')?.classList.remove('expanded');
+    prepareHangoutSuggestionEditForm(suggestion);
+
+    return;
+  };
+
   if (e.target.classList.contains('delete-btn')) {
+    e.target.closest('.dropdown-menu')?.classList.remove('expanded');
+
     const { hangoutMemberId, isLeader } = globalHangoutState.data;
     const isMemberOwnSuggestion: boolean = suggestion.hangout_member_id === hangoutMemberId;
 
@@ -279,6 +293,10 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
       if (e.target.id === 'confirm-modal-confirm-btn') {
         ConfirmModal.remove();
 
+        if (hangoutSuggestionFormState.suggestionIdToEdit === suggestion.suggestion_id) {
+          endHangoutSuggestionsFormEdit();
+        };
+
         if (!isMemberOwnSuggestion) {
           await deleteHangoutSuggestionAsLeader();
           return;
@@ -294,7 +312,8 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
       };
 
       if (e.target.id === 'confirm-modal-other-btn') {
-        // TODO: implement suggestion edit logic.
+        ConfirmModal.remove();
+        prepareHangoutSuggestionEditForm(suggestion);
       };
     });
 
@@ -368,9 +387,7 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
       };
 
       LoadingModal.display();
-
       renderSuggestionsSection();
-      renderDashboardSection();
 
       LoadingModal.remove();
       return;
@@ -586,14 +603,11 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     if (status === 409) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
-        renderDashboardSection();
-
         return;
       };
 
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-        renderDashboardSection();
       };
 
       return;

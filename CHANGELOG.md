@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.39] (2025-02-23)
+
+### Features
+
+- Added suggestion editing logic.
+
+
+### Code Refactoring
+
+- PATCH `suggestions/` now returns a `isMajorChange` value to reflect whether the suggestion's likes and votes were removed.
+
+
+### Bug Fixes
+
+- Fixed PATCH `suggestions/` not correctly defining a major change when updating a suggestion, not deleting suggestion likes, and not rejecting requests where there are no changes provided.
+- Fixed `renderDashboardSection()` being unnecessarily called in a number of modules.
+  - Further improvements are to be expected in future patches to address how sections are rerendered.
+
+
 ## [0.4.38] (2025-02-21)
 
 ### Features

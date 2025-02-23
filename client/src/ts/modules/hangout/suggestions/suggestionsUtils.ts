@@ -125,6 +125,14 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   suggestionDetailsContainer.appendChild(secondItem);
   suggestionDetailsContainer.appendChild(thirdItem);
 
+  if (suggestion.is_edited) {
+    const fourthItem: HTMLDivElement = createDivElement(null);
+    fourthItem.appendChild(createSpanElement(null, 'Has been edited'));
+    fourthItem.appendChild(createSpanElement(null, 'Yes'));
+
+    suggestionDetailsContainer.appendChild(fourthItem);
+  };
+
   return suggestionDetailsContainer;
 };
 

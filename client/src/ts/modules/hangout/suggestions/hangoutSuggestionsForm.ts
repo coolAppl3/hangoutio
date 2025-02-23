@@ -5,12 +5,13 @@ import ErrorSpan from "../../global/ErrorSpan";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { validateSuggestionDescription, validateSuggestionTitle } from "../../global/validation";
-import { AddHangoutSuggestionBody, addHangoutSuggestionService } from "../../services/suggestionsServices";
+import { AddHangoutSuggestionBody, addHangoutSuggestionService, EditHangoutSuggestionBody, editHangoutSuggestionService } from "../../services/suggestionsServices";
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
-import { renderDashboardSection } from "../dashboard/hangoutDashboard";
+import { hangoutSuggestions, hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
+import { Suggestion } from "../hangoutTypes";
+import { ConfirmModal } from "../../global/ConfirmModal";
 
 interface HangoutSuggestionFormState {
   suggestionIdToEdit: number | null,
@@ -19,7 +20,7 @@ interface HangoutSuggestionFormState {
   suggestionEndTimestamp: number | null,
 };
 
-const hangoutSuggestionFormState: HangoutSuggestionFormState = {
+export const hangoutSuggestionFormState: HangoutSuggestionFormState = {
   suggestionIdToEdit: null,
 
   suggestionEndTimestamp: null,
@@ -89,6 +90,25 @@ async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
   };
 
   if (hangoutSuggestionFormState.suggestionIdToEdit) {
+    const { hasFailed, isIdentical, isMajorChange } = detectSuggestionEdits();
+
+    if (hasFailed) {
+      popup('Failed to update suggestion.', 'error');
+      endHangoutSuggestionsFormEdit();
+
+      return;
+    };
+
+    if (isIdentical) {
+      popup('No suggestion changes found.', 'error');
+      return;
+    };
+
+    if (isMajorChange) {
+      handleMajorSuggestionChanges(hangoutSuggestionFormState.suggestionIdToEdit);
+      return;
+    };
+
     await editHangoutSuggestion(hangoutSuggestionFormState.suggestionIdToEdit);
     return;
   };
@@ -208,8 +228,6 @@ async function addHangoutSuggestion(): Promise<void> {
     if (status === 409) {
       if (errReason === 'limitReached') {
         globalHangoutState.data.suggestionsCount = HANGOUT_SUGGESTIONS_LIMIT;
-        renderDashboardSection();
-
         return;
       };
 
@@ -219,21 +237,16 @@ async function addHangoutSuggestion(): Promise<void> {
     if (status === 403) {
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
-        renderDashboardSection();
-
         return;
       };
 
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
-        renderDashboardSection();
-
         return;
       };
 
       if (errReason === 'inVotingStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_VOTING_STAGE;
-        renderDashboardSection();
       };
 
       return;
@@ -274,8 +287,218 @@ async function addHangoutSuggestion(): Promise<void> {
   };
 };
 
+export function prepareHangoutSuggestionEditForm(suggestion: Suggestion): void {
+  hangoutSuggestionFormState.suggestionIdToEdit = suggestion.suggestion_id;
+  hangoutSuggestionFormState.suggestionStartTimestamp = suggestion.suggestion_start_timestamp;
+  hangoutSuggestionFormState.suggestionEndTimestamp = suggestion.suggestion_end_timestamp;
+
+  populateSuggestionsForm(suggestion);
+  toggleSuggestionsFormUiState();
+
+  expandSuggestionsFrom();
+  suggestionTitleInput?.focus();
+};
+
 async function editHangoutSuggestion(suggestionId: number): Promise<void> {
-  // TODO: continue implementation
+  LoadingModal.display();
+
+  if (!globalHangoutState.data || !hangoutSuggestionFormState.suggestionIdToEdit) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, hangoutDetails } = globalHangoutState.data;
+
+  if (hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
+    popup('Hangout is not in suggestions stage.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!suggestionStartMockInput || !suggestionEndMockInput || !suggestionTitleInput || !suggestionDescriptionTextarea) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
+  const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
+
+  const { suggestionStartTimestamp, suggestionEndTimestamp } = hangoutSuggestionFormState;
+
+  if (!suggestionStartTimestamp || !suggestionEndTimestamp) {
+    ErrorSpan.display(suggestionStartMockInput, 'Suggestion date and time required.');
+    ErrorSpan.display(suggestionEndMockInput, 'Suggestion date and time required.');
+
+    popup('Invalid suggestion details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!isValidSuggestionTitle || !isValidSuggestionDescription) {
+    popup('Invalid suggestion details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const newSuggestionTitle: string = suggestionTitleInput.value;
+  const newSuggestionDescription: string = suggestionDescriptionTextarea.value;
+
+  const editHangoutSuggestionBody: EditHangoutSuggestionBody = {
+    hangoutId,
+    hangoutMemberId,
+    suggestionId,
+    suggestionTitle: newSuggestionTitle,
+    suggestionDescription: newSuggestionDescription,
+    suggestionStartTimestamp,
+    suggestionEndTimestamp
+  };
+
+  try {
+    const isMajorChange: boolean = (await editHangoutSuggestionService(editHangoutSuggestionBody)).data.isMajorChange;
+
+    hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.map((suggestion: Suggestion) => {
+      if (suggestion.suggestion_id !== suggestionId) {
+        return suggestion;
+      };
+
+      return {
+        ...suggestion,
+        suggestion_title: newSuggestionTitle,
+        suggestion_description: newSuggestionDescription,
+        suggestion_start_timestamp: suggestionStartTimestamp,
+        suggestion_end_timestamp: suggestionEndTimestamp,
+        is_edited: true,
+        likes_count: isMajorChange ? 0 : suggestion.likes_count,
+        votes_count: isMajorChange ? 0 : suggestion.votes_count,
+      };
+    });
+
+    isMajorChange && sortHangoutSuggestions();
+    renderSuggestionsSection();
+    endHangoutSuggestionsFormEdit();
+
+    popup('Suggestion updated.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400 && !errReason) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      if (errReason === 'suggestionNotfound') {
+        globalHangoutState.data.suggestionsCount--;
+        hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((suggestion: Suggestion) => suggestion.suggestion_id !== suggestionId);
+
+        endHangoutSuggestionsFormEdit();
+        renderSuggestionsSection();
+
+        return;
+      };
+
+      if (errReason === 'hangoutNotFound') {
+        LoadingModal.display();
+        setTimeout(() => window.location.reload(), 100);
+      };
+
+      return;
+    };
+
+    if (status === 403) {
+      if (errReason === 'hangoutConcluded') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+        endHangoutSuggestionsFormEdit();
+
+        return;
+      };
+
+      if (errReason === 'inAvailabilityStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        endHangoutSuggestionsFormEdit();
+      };
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        endHangoutSuggestionsFormEdit();
+
+        return;
+      };
+
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed();
+        endHangoutSuggestionsFormEdit();
+      };
+
+      return;
+    };
+
+    if (status === 400) {
+      const inputRecord: Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLParagraphElement | undefined> = {
+        title: suggestionTitleInput,
+        description: suggestionDescriptionTextarea,
+        dateTime: suggestionStartMockInput,
+      };
+
+      const input = inputRecord[`${errReason}`];
+      if (input) {
+        ErrorSpan.display(input, errMessage);
+      };
+    };
+  };
+};
+
+function populateSuggestionsForm(suggestion: Suggestion): void {
+  if (!suggestionTitleInput || !suggestionDescriptionTextarea) {
+    return;
+  };
+
+  suggestionTitleInput.value = suggestion.suggestion_title;
+  suggestionDescriptionTextarea.value = suggestion.suggestion_description;
+
+  if (!suggestionStartMockInput || !suggestionEndMockInput) {
+    return;
+  };
+
+  suggestionStartMockInput.textContent = getDateAndTimeString(suggestion.suggestion_start_timestamp);
+  suggestionStartMockInput.classList.remove('empty');
+
+  suggestionEndMockInput.textContent = getDateAndTimeString(suggestion.suggestion_end_timestamp);
+  suggestionEndMockInput.classList.remove('empty');
+
+  document.documentElement.scrollTo({ top: 0 });
 };
 
 function clearSuggestionsForm(): void {
@@ -283,8 +506,12 @@ function clearSuggestionsForm(): void {
   hangoutSuggestionFormState.suggestionStartTimestamp = null;
   hangoutSuggestionFormState.suggestionEndTimestamp = null;
 
-  suggestionTitleInput && (suggestionTitleInput.value = '');
-  suggestionDescriptionTextarea && (suggestionDescriptionTextarea.value = '');
+  if (!suggestionTitleInput || !suggestionDescriptionTextarea) {
+    return;
+  };
+
+  suggestionTitleInput.value = '';
+  suggestionDescriptionTextarea.value = '';
 
   if (!suggestionStartMockInput || !suggestionEndMockInput) {
     return;
@@ -346,6 +573,7 @@ function handleSuggestionsFormClicks(e: MouseEvent): void {
 
   if (e.target.id === 'suggestions-form-collapse-btn') {
     collapseSuggestionsForm();
+    endHangoutSuggestionsFormEdit();
   };
 };
 
@@ -399,4 +627,116 @@ function expandSuggestionsFrom(): void {
 function collapseSuggestionsForm(): void {
   suggestionsForm?.classList.remove('expanded');
   suggestionsFormContainer && setTimeout(() => suggestionsFormContainer.style.display = 'none', 150);
+};
+
+export function endHangoutSuggestionsFormEdit(): void {
+  if (!hangoutSuggestionFormState.suggestionIdToEdit) {
+    return;
+  };
+
+  collapseSuggestionsForm();
+  clearSuggestionsForm();
+  toggleSuggestionsFormUiState();
+};
+
+function toggleSuggestionsFormUiState(): void {
+  const suggestionsFormHeader: HTMLDivElement | null = document.querySelector('#suggestions-form-header');
+
+  const formSubmitBtn: HTMLButtonElement | null = document.querySelector('#suggestions-form-submit-btn');
+  const formCollapseBtn: HTMLButtonElement | null = document.querySelector('#suggestions-form-collapse-btn');
+
+  if (!suggestionsFormHeader || !formSubmitBtn || !formCollapseBtn) {
+    return;
+  };
+
+  if (hangoutSuggestionFormState.suggestionIdToEdit) {
+    suggestionsFormHeader.style.display = 'none';
+
+    formSubmitBtn.textContent = 'Update suggestion';
+    formCollapseBtn.textContent = 'Cancel';
+
+    return;
+  };
+
+  suggestionsFormHeader.style.display = 'block';
+
+  formSubmitBtn.textContent = 'Add suggestion';
+  formCollapseBtn.textContent = 'Collapse';
+};
+
+function detectSuggestionEdits(): { hasFailed: boolean, isIdentical: boolean, isMajorChange: boolean } {
+  if (!hangoutSuggestionFormState.suggestionIdToEdit) {
+    return { hasFailed: true, isIdentical: false, isMajorChange: false };
+  };
+
+  const originalSuggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === hangoutSuggestionFormState.suggestionIdToEdit);
+
+  if (!originalSuggestion) {
+    LoadingModal.display();
+
+    renderSuggestionsSection();
+    globalHangoutState.data && globalHangoutState.data.suggestionsCount--;
+
+    LoadingModal.remove();
+
+    return { hasFailed: true, isIdentical: false, isMajorChange: false };
+  };
+
+  if (!suggestionTitleInput || !suggestionDescriptionTextarea) {
+    return { hasFailed: true, isIdentical: false, isMajorChange: false };
+  };
+
+  let isIdentical: boolean = true;
+  let isMajorChange: boolean = false;
+
+  const newTitle: string = suggestionTitleInput.value;
+  const newDescription: string = suggestionDescriptionTextarea.value;
+
+  if (originalSuggestion.suggestion_start_timestamp !== hangoutSuggestionFormState.suggestionStartTimestamp) {
+    isIdentical = false;
+    isMajorChange = true;
+  };
+
+  if (originalSuggestion.suggestion_end_timestamp !== hangoutSuggestionFormState.suggestionEndTimestamp) {
+    isIdentical = false;
+    isMajorChange = true;
+  };
+
+  if (originalSuggestion.suggestion_title !== newTitle) {
+    isIdentical = false;
+    isMajorChange = true;
+  };
+
+  if (originalSuggestion.suggestion_description !== newDescription) {
+    isIdentical = false;
+  };
+
+  return { hasFailed: false, isIdentical, isMajorChange };
+};
+
+function handleMajorSuggestionChanges(suggestionId: number): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Major suggestion changes detected.',
+    description: `Changing the suggestion's title or time slots will remove any likes or votes it gained.\n Are you sure you want to continue?`,
+    confirmBtnTitle: 'Update suggestion',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: false,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      ConfirmModal.remove();
+      await editHangoutSuggestion(suggestionId);
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
 };
