@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.40] (2025-02-23)
+
+### Features
+
+- Added hangout leader suggestion deletion logic.
+
+
+### Code Refactoring
+
+- Refactored `e.target instanceof HTMLElement` to `e.target instanceof HTMLButtonElement` where applicable.
+- Reduced suggestion dropdown menu text size.
+- Made the button for deleting a different member's suggestion distinct for the hangout leader.
+
+
+### Bug Fixes
+
+- Fixed next stage timer being initiated every time the user navigates to the dashboard section.
+- Fixed `pendingSignInHangoutId` not being removed from cookies if the user accepts being redirected to the hangout.
+- Fixed suggestions not being sorted when fetched, and the `renderSuggestionsSection()` not correctly sorting them.
+
+
 ## [0.4.39] (2025-02-23)
 
 ### Features
