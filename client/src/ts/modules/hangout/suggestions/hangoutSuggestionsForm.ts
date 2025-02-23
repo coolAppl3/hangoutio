@@ -9,7 +9,7 @@ import { AddHangoutSuggestionBody, addHangoutSuggestionService, EditHangoutSugge
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { hangoutSuggestions, hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
+import { hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
 import { Suggestion } from "../hangoutTypes";
 import { ConfirmModal } from "../../global/ConfirmModal";
 
@@ -188,11 +188,12 @@ async function addHangoutSuggestion(): Promise<void> {
       votes_count: 0,
     });
 
+    clearSuggestionsForm();
+    collapseSuggestionsForm();
+
     sortHangoutSuggestions();
     globalHangoutState.data.suggestionsCount++;
 
-    clearSuggestionsForm();
-    collapseSuggestionsForm();
     renderSuggestionsSection();
 
     popup('Suggestion added.', 'success');
@@ -380,9 +381,10 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
       };
     });
 
+    endHangoutSuggestionsFormEdit();
+
     isMajorChange && sortHangoutSuggestions();
     renderSuggestionsSection();
-    endHangoutSuggestionsFormEdit();
 
     popup('Suggestion updated.', 'success');
     LoadingModal.remove();
@@ -672,12 +674,8 @@ function detectSuggestionEdits(): { hasFailed: boolean, isIdentical: boolean, is
   const originalSuggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === hangoutSuggestionFormState.suggestionIdToEdit);
 
   if (!originalSuggestion) {
-    LoadingModal.display();
-
-    renderSuggestionsSection();
     globalHangoutState.data && globalHangoutState.data.suggestionsCount--;
-
-    LoadingModal.remove();
+    renderSuggestionsSection();
 
     return { hasFailed: true, isIdentical: false, isMajorChange: false };
   };

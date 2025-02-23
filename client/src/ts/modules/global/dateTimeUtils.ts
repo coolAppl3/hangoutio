@@ -41,6 +41,10 @@ export function getTotalTimeString(startTimestamp: number, endTimestamp: number)
 };
 
 export function getDateOrdinalSuffix(date: number): string {
+  if (date % 100 >= 11 && date % 100 <= 13) {
+    return 'th';
+  };
+
   if (date % 10 === 1) return 'st';
   if (date % 10 === 2) return 'nd';
   if (date % 10 === 3) return 'rd';
