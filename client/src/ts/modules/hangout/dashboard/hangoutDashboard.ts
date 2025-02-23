@@ -15,11 +15,15 @@ import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSock
 import { createDivElement } from "../../global/domUtils";
 
 interface HangoutDashboardState {
+  nextStageTimerInitiated: boolean,
+
   latestHangoutEvents: HangoutEvent[],
   latestHangoutMessages: HangoutMessage[],
 };
 
 export const hangoutDashboardState: HangoutDashboardState = {
+  nextStageTimerInitiated: false,
+
   latestHangoutEvents: [],
   latestHangoutMessages: [],
 };
