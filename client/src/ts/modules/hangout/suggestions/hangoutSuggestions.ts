@@ -220,10 +220,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
 
   if (!suggestion) {
     popup('Suggestion not found.', 'error');
-    LoadingModal.display();
-
     renderSuggestionsSection();
-    LoadingModal.remove();
 
     return;
   };
@@ -342,8 +339,6 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     hangoutSuggestionState.memberLikesSet.add(suggestion.suggestion_id);
     suggestion.likes_count++
 
-    sortHangoutSuggestions();
-
     displaySuggestionLikeIcon(suggestionElement);
     updateSuggestionLikeBtnAttributes(suggestionElement);
 
@@ -388,10 +383,7 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
         globalHangoutState.data.suggestionsCount--;
       };
 
-      LoadingModal.display();
       renderSuggestionsSection();
-
-      LoadingModal.remove();
       return;
     };
 
@@ -429,8 +421,6 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
 
     hangoutSuggestionState.memberLikesSet.delete(suggestion.suggestion_id);
     suggestion.likes_count--;
-
-    sortHangoutSuggestions();
 
     removeSuggestionLikeIcon(suggestionElement);
     updateSuggestionLikeBtnAttributes(suggestionElement);
@@ -527,7 +517,7 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     return;
   };
 
-  const { hangoutMemberId, hangoutId, hangoutDetails, suggestionsCount } = globalHangoutState.data;
+  const { hangoutMemberId, hangoutId, hangoutDetails } = globalHangoutState.data;
   const suggestionDropdownMenu: HTMLDivElement | null = suggestionElement.querySelector('.dropdown-menu');
 
   if (hangoutDetails.is_concluded) {
@@ -552,7 +542,7 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     hangoutSuggestionState.memberLikesSet.delete(suggestion.suggestion_id);
     hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
 
-    globalHangoutState.data.suggestionsCount = suggestionsCount - 1 < 0 ? 0 : suggestionsCount - 1;
+    globalHangoutState.data.suggestionsCount--;
     renderSuggestionsSection();
 
     popup('Suggestion deleted.', 'success');
@@ -598,21 +588,14 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     if (status === 403) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
-
-        LoadingModal.display();
         renderSuggestionsSection();
 
-        LoadingModal.remove();
         return;
       };
 
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-
-        LoadingModal.display();
         renderSuggestionsSection();
-
-        LoadingModal.remove();
       };
 
       return;
@@ -723,21 +706,14 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
     if (status === 403) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
-
-        LoadingModal.display();
         renderSuggestionsSection();
 
-        LoadingModal.remove();
         return;
       };
 
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-
-        LoadingModal.display();
         renderSuggestionsSection();
-
-        LoadingModal.remove();
       };
 
       return;
