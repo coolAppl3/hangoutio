@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.41] (2025-02-24)
+
+### Features
+
+- Removed DELETE `suggestions/clear` as it won't be used in the app.
+
+
+### Code Refactoring
+
+- Improved the efficiency of the main SQL query in DELETE `suggestions/`.
+- Improved efficiency of DELETE `suggestions/leader`.
+- Refactored out excessive `LoadingModal` usage when rerendering the suggestions section.
+
+
+### Bug Fixes
+
+- Fixed availability section being rerendered after the `LoadingModal` is removed, instead of before, in a few spots.
+- Fixed `getDateOrdinalSuffix()` not handling 11th, 12th, and 13th correctly.
+
+
 ## [0.4.40] (2025-02-23)
 
 ### Features
