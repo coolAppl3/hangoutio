@@ -557,7 +557,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
       current_stage: number,
       account_id: number | null,
       guest_id: number | null,
-      suggestion_id: number,
+      suggestion_found: boolean,
     };
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
@@ -566,18 +566,16 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
-        suggestions.suggestion_id
+        (SELECT 1 FROM suggestions WHERE suggestion_id = ?) AS suggestion_found
       FROM
         hangouts
       INNER JOIN
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
-      LEFT JOIN
-        suggestions ON hangout_members.hangout_member_id = suggestions.hangout_member_id
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
-      LIMIT ${HANGOUT_SUGGESTIONS_LIMIT};`,
-      [hangoutId, +hangoutMemberId]
+      LIMIT 1;`,
+      [+suggestionId, hangoutId, +hangoutMemberId]
     );
 
     if (hangoutMemberRows.length === 0) {
@@ -605,8 +603,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const suggestionFound: boolean = hangoutMemberRows.find((suggestion: HangoutMemberDetails) => suggestion.suggestion_id === +suggestionId) !== undefined;
-    if (!suggestionFound) {
+    if (!hangoutMemberDetails.suggestion_found) {
       res.json({});
       return;
     };
