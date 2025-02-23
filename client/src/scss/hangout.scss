@@ -1375,10 +1375,9 @@
             }
           }
 
-          &-description {
-            @apply overflow-hidden text-sm md:text-base font-medium text-description dark:text-description-dark;
+          p.suggestion-description {
+            @apply whitespace-pre-wrap overflow-hidden text-sm md:text-base font-medium text-description dark:text-description-dark;
           }
-
         }
       }
     }
