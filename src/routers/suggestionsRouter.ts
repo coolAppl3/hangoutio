@@ -449,7 +449,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
       return;
     };
 
-    res.json({});
+    res.json({ isMajorChange });
 
     if (isMajorChange) {
       await dbPool.query(

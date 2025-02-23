@@ -27,7 +27,7 @@ export function addHangoutSuggestionService(requestBody: AddHangoutSuggestionBod
 
 // --- --- ---
 
-interface EditHangoutSuggestionBody {
+export interface EditHangoutSuggestionBody {
   hangoutId: string,
   hangoutMemberId: number,
   suggestionId: number,
@@ -37,7 +37,11 @@ interface EditHangoutSuggestionBody {
   suggestionEndTimestamp: number,
 };
 
-export function editHangoutSuggestionService(requestBody: EditHangoutSuggestionBody): Promise<AxiosResponse> {
+interface EditHangoutSuggestionsData {
+  isMajorChange: boolean,
+};
+
+export function editHangoutSuggestionService(requestBody: EditHangoutSuggestionBody): Promise<AxiosResponse<EditHangoutSuggestionsData>> {
   return axios.patch(suggestionsApiUrl, requestBody);
 };
 
