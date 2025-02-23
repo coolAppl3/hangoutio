@@ -94,7 +94,7 @@ function loadEventListeners(): void {
     });
 
     confirmModal.addEventListener('click', async (e: MouseEvent) => {
-      if (!(e.target instanceof HTMLElement)) {
+      if (!(e.target instanceof HTMLButtonElement)) {
         return;
       };
 
@@ -325,7 +325,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 };
 
 async function handleAvailabilitySlotsContainerClicks(e: MouseEvent): Promise<void> {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 
@@ -645,12 +645,7 @@ async function clearAvailabilitySlots(): Promise<void> {
 };
 
 function getAvailabilitySlotElementId(e: MouseEvent): number | null {
-  if (!(e.target instanceof HTMLElement)) {
-    return null;
-  };
-
-
-  if (e.target.nodeName !== 'BUTTON') {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return null;
   };
 

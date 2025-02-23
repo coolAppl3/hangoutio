@@ -547,7 +547,7 @@ function handleSuggestionDateTimeSelection(dateTimePickerData: DateTimePickerDat
 };
 
 function handleSuggestionsFormClicks(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 

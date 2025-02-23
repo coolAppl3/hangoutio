@@ -293,7 +293,7 @@ function isValidGuestDetails(): boolean {
 };
 
 function updateSignInOption(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 
@@ -402,7 +402,7 @@ function handleAccountLocked(): void {
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -442,7 +442,7 @@ function offerHangoutRedirect(hangoutId: string): void {
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

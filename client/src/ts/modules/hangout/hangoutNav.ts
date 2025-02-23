@@ -26,7 +26,7 @@ function loadEventListeners(): void {
 };
 
 export function navigateHangoutSections(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 
@@ -98,7 +98,7 @@ function hidePhoneNavMenu(): void {
 };
 
 function handlePhoneNavMenuEvents(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 

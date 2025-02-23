@@ -168,7 +168,7 @@ function detectSignedInUser(): boolean {
   });
 
   confirmModal.addEventListener('click', async (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -264,7 +264,7 @@ function handleInvalidRecoveryLink(): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

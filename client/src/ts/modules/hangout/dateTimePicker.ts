@@ -495,7 +495,7 @@ export function createCalendarCell(date: number, forbidden: boolean = false): HT
 };
 
 function navigateDatePicker(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 

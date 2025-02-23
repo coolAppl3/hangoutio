@@ -431,7 +431,7 @@ function isValidGuestDetails(): boolean {
 
 // navigation
 function updateAccountPreferences(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 
@@ -549,7 +549,7 @@ function detectSignedInUser(): void {
   });
 
   confirmModal.addEventListener('click', async (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -585,7 +585,7 @@ function handleUserSignOut(): void {
   });
 
   confirmModal.addEventListener('click', async (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -614,7 +614,7 @@ function handleOngoingHangoutsLimitReached(errMessage: string): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

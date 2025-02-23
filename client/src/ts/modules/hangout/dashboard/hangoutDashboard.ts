@@ -231,7 +231,7 @@ function renderHangoutStageDescriptions(): void {
   hangoutStageDescriptionElement?.setAttribute('data-hangoutStage', `${hangoutDetails.current_stage}`);
 
   hangoutStageDescriptionElement?.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

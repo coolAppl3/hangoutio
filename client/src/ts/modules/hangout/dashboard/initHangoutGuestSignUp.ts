@@ -102,7 +102,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
       });
 
       infoModal.addEventListener('click', (e: MouseEvent) => {
-        if (!(e.target instanceof HTMLElement)) {
+        if (!(e.target instanceof HTMLButtonElement)) {
           return;
         };
 

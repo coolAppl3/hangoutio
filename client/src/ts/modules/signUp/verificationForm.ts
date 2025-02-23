@@ -152,7 +152,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
         });
 
         infoModal.addEventListener('click', (e: MouseEvent) => {
-          if (!(e.target instanceof HTMLElement)) {
+          if (!(e.target instanceof HTMLButtonElement)) {
             return;
           };
 
@@ -262,7 +262,7 @@ function verificationLinkDetected(): boolean {
     });
 
     infoModal.addEventListener('click', (e: MouseEvent) => {
-      if (!(e.target instanceof HTMLElement)) {
+      if (!(e.target instanceof HTMLButtonElement)) {
         return;
       };
 
@@ -370,7 +370,7 @@ function detectOngoingVerification(): void {
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -421,7 +421,7 @@ function offerHangoutRedirect(hangoutId: string): void {
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
