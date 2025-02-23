@@ -277,17 +277,17 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
   };
 
   if (!suggestionValidation.isValidSuggestionTitle(requestData.suggestionTitle)) {
-    res.status(400).json({ message: 'Invalid suggestion title.' });
+    res.status(400).json({ message: 'Invalid suggestion title.', reason: 'invalidTitle' });
     return;
   };
 
   if (!suggestionValidation.isValidSuggestionDescription(requestData.suggestionDescription)) {
-    res.status(400).json({ message: 'Invalid suggestion description.' });
+    res.status(400).json({ message: 'Invalid suggestion description.', reason: 'invalidDescription' });
     return;
   };
 
   if (!suggestionValidation.isValidSuggestionTimeSlot(requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp)) {
-    res.status(400).json({ message: 'Invalid suggestion time slot.' });
+    res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'dateTime' });
     return;
   };
 
@@ -368,7 +368,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     );
 
     if (hangoutMemberRows.length === 0) {
-      res.status(404).json({ message: 'Hangout not found.' });
+      res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotfound' });
       return;
     };
 
@@ -394,12 +394,12 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
 
     const suggestionToEdit: HangoutMemberDetails | undefined = hangoutMemberRows.find((suggestion: HangoutMemberDetails) => suggestion.suggestion_id === requestData.suggestionId);
     if (!suggestionToEdit) {
-      res.status(404).json({ message: 'Suggestion not found.' });
+      res.status(404).json({ message: 'Suggestion not found.', reason: 'suggestionNotFound' });
       return;
     };
 
     if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
-      res.status(400).json({ message: 'Invalid suggestion time slot.' });
+      res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'dateTime' });
       return;
     };
 
@@ -426,7 +426,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     if (isIdentical) {
-      res.status(409).json({ message: 'No suggestion changes found.', reason: 'suggestionIdentical' });
+      res.status(409).json({ message: 'No suggestion changes found.' });
       return;
     };
 
