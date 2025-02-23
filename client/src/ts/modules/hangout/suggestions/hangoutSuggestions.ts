@@ -60,6 +60,8 @@ async function initHangoutSuggestions(): Promise<void> {
 
   await getHangoutSuggestions();
   initHangoutSuggestionsForm();
+
+  sortHangoutSuggestions();
   renderSuggestionsSection();
 
   LoadingModal.remove();
@@ -72,7 +74,7 @@ export function renderSuggestionsSection(): void {
 
 export function sortHangoutSuggestions(): void {
   const sortMode: 'likes' | 'votes' = hangoutSuggestionState.sortingMode
-  hangoutSuggestionState.suggestions.sort((a, b) => a[`${sortMode}_count`] - b[`${sortMode}_count`]);
+  hangoutSuggestionState.suggestions.sort((a, b) => b[`${sortMode}_count`] - a[`${sortMode}_count`]);
 };
 
 function loadEventListeners(): void {
