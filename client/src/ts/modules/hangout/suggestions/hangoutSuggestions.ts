@@ -714,20 +714,8 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
     suggestionDropdownMenu?.classList.remove('expanded');
 
     if (status === 404) {
-      if (errReason === 'suggestionNotFound') {
-        hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
-
-        LoadingModal.display();
-        renderSuggestionsSection();
-
-        LoadingModal.remove();
-        return;
-      };
-
-      if (errReason === 'hangoutNotFound') {
-        LoadingModal.display();
-        setTimeout(() => window.location.reload(), 1000);
-      };
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
 
       return;
     };

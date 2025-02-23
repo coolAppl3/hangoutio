@@ -739,7 +739,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     );
 
     if (hangoutMemberRows.length === 0) {
-      res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
+      res.status(404).json({ message: 'Hangout not found.' });
       return;
     };
 
@@ -754,7 +754,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMemberDetails.is_leader) {
-      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.` });
       return;
     };
 
@@ -769,7 +769,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMemberDetails.suggestion_found) {
-      res.status(404).json({ message: 'Suggestion not found.', reason: 'suggestionNotfound' });
+      res.json({});
       return;
     };
 
