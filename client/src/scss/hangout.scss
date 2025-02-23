@@ -1334,7 +1334,7 @@
                   @apply absolute top-0 right-3 w-fit h-fit hidden z-3 rounded-sm overflow-hidden;
 
                   button {
-                    @apply block w-full p-1 pr-3 bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
+                    @apply block w-full p-1 pr-3 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
 
                     &:last-child {
                       @apply text-danger dark:text-danger-dark;
