@@ -13,7 +13,6 @@ import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
 import { initAvailabilityCalendar, updateAvailabilityCalendar } from "./availabilityCalendar";
 import { createAvailabilitySlotElement } from "./availabilityUtils";
-import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 
 interface HangoutAvailabilityState {
   isLoaded: boolean,
@@ -295,8 +294,6 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 
     if (status === 403) {
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
-      renderDashboardSection();
-
       closeDateTimePicker();
       return;
     };
@@ -314,8 +311,6 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
 
       if (errReason === 'slotLimitReached') {
         globalHangoutState.data.availabilitySlotsCount = HANGOUT_AVAILABILITY_SLOTS_LIMIT;
-        renderDashboardSection();
-
         closeDateTimePicker();
       };
 
@@ -442,9 +437,8 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
 
     if (status === 403) {
       globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-      renderDashboardSection();
-
       closeDateTimePicker();
+
       return;
     };
 
@@ -458,9 +452,7 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
         hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== dateTimePickerData.existingSlotId);
 
         globalHangoutState.data.availabilitySlotsCount--;
-
         renderAvailabilitySection();
-        renderDashboardSection();
       };
 
       return;
@@ -535,8 +527,6 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
 
     if (status === 403) {
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
-      renderDashboardSection();
-
       return;
     };
 
@@ -550,9 +540,7 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
         hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== availabilitySlotId);
 
         globalHangoutState.data.availabilitySlotsCount--;
-
         renderAvailabilitySection();
-        renderDashboardSection();
       };
 
       return;
@@ -624,8 +612,6 @@ async function clearAvailabilitySlots(): Promise<void> {
 
     if (status === 403) {
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
-      renderDashboardSection();
-
       return;
     };
 
@@ -640,7 +626,6 @@ async function clearAvailabilitySlots(): Promise<void> {
         globalHangoutState.data.availabilitySlotsCount = 10;
 
         renderAvailabilitySection();
-        renderDashboardSection();
       };
 
       return;

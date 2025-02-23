@@ -7,7 +7,6 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
-import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
 import { endHangoutSuggestionsFormEdit, hangoutSuggestionFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./hangoutSuggestionsForm";
@@ -388,9 +387,7 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
       };
 
       LoadingModal.display();
-
       renderSuggestionsSection();
-      renderDashboardSection();
 
       LoadingModal.remove();
       return;
@@ -606,14 +603,11 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     if (status === 409) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
-        renderDashboardSection();
-
         return;
       };
 
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-        renderDashboardSection();
       };
 
       return;

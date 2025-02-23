@@ -10,7 +10,6 @@ import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent }
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { hangoutSuggestions, hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
-import { renderDashboardSection } from "../dashboard/hangoutDashboard";
 import { Suggestion } from "../hangoutTypes";
 import { ConfirmModal } from "../../global/ConfirmModal";
 
@@ -229,8 +228,6 @@ async function addHangoutSuggestion(): Promise<void> {
     if (status === 409) {
       if (errReason === 'limitReached') {
         globalHangoutState.data.suggestionsCount = HANGOUT_SUGGESTIONS_LIMIT;
-        renderDashboardSection();
-
         return;
       };
 
@@ -240,21 +237,16 @@ async function addHangoutSuggestion(): Promise<void> {
     if (status === 403) {
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
-        renderDashboardSection();
-
         return;
       };
 
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
-        renderDashboardSection();
-
         return;
       };
 
       if (errReason === 'inVotingStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_VOTING_STAGE;
-        renderDashboardSection();
       };
 
       return;
