@@ -447,7 +447,9 @@ function offerHangoutRedirect(hangoutId: string): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
+      Cookies.remove('pendingSignInHangoutId');
       window.location.href = `hangout?id=${hangoutId}`;
+
       return;
     };
 
