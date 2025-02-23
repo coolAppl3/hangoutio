@@ -20,7 +20,7 @@ function loadEventListeners(): void {
 };
 
 function handleTopNavbarClicks(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLButtonElement)) {
+  if (!(e.target instanceof HTMLElement)) {
     return;
   };
 
