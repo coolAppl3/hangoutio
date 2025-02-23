@@ -293,7 +293,7 @@ function isValidGuestDetails(): boolean {
 };
 
 function updateSignInOption(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 
@@ -402,7 +402,7 @@ function handleAccountLocked(): void {
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -442,12 +442,14 @@ function offerHangoutRedirect(hangoutId: string): void {
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
+      Cookies.remove('pendingSignInHangoutId');
       window.location.href = `hangout?id=${hangoutId}`;
+
       return;
     };
 

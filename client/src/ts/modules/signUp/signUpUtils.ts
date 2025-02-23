@@ -11,7 +11,7 @@ export function displayVerificationExpiryInfoModal(): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

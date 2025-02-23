@@ -65,7 +65,7 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
   });
 
   confirmModal.addEventListener('click', async (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -240,7 +240,7 @@ function handleGuestNotMember(): void {
   });
 
   confirmModal.addEventListener('click', async (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -270,7 +270,7 @@ function handleHangoutsLimitReached(errMessage: string): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

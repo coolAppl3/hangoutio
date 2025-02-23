@@ -1,11 +1,11 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { addHangoutSuggestionLikeService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
+import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
@@ -60,6 +60,8 @@ async function initHangoutSuggestions(): Promise<void> {
 
   await getHangoutSuggestions();
   initHangoutSuggestionsForm();
+
+  sortHangoutSuggestions();
   renderSuggestionsSection();
 
   LoadingModal.remove();
@@ -72,7 +74,7 @@ export function renderSuggestionsSection(): void {
 
 export function sortHangoutSuggestions(): void {
   const sortMode: 'likes' | 'votes' = hangoutSuggestionState.sortingMode
-  hangoutSuggestionState.suggestions.sort((a, b) => a[`${sortMode}_count`] - b[`${sortMode}_count`]);
+  hangoutSuggestionState.suggestions.sort((a, b) => b[`${sortMode}_count`] - a[`${sortMode}_count`]);
 };
 
 function loadEventListeners(): void {
@@ -272,7 +274,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     const isMemberOwnSuggestion: boolean = suggestion.hangout_member_id === hangoutMemberId;
 
     if (!isMemberOwnSuggestion && !isLeader) {
-      popup(`Can't delete other members' suggestions.`, 'error');
+      popup(`You're not the hangout leader.`, 'error');
       return;
     };
 
@@ -298,7 +300,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
         };
 
         if (!isMemberOwnSuggestion) {
-          await deleteHangoutSuggestionAsLeader();
+          await deleteHangoutSuggestionAsLeader(suggestion, suggestionElement);
           return;
         };
 
@@ -542,13 +544,6 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     return;
   };
 
-  if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
-    popup(`Can't alter suggestions after hangout conclusion.`, 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
   try {
     await deleteHangoutSuggestionService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
 
@@ -558,8 +553,6 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
 
     globalHangoutState.data.suggestionsCount = suggestionsCount - 1 < 0 ? 0 : suggestionsCount - 1;
-
-    suggestionDropdownMenu?.classList.remove('expanded');
     renderSuggestionsSection();
 
     popup('Suggestion deleted.', 'success');
@@ -587,6 +580,8 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
+      suggestionDropdownMenu?.classList.remove('expanded');
+
       return;
     };
 
@@ -600,14 +595,24 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
       return;
     };
 
-    if (status === 409) {
+    if (status === 403) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+
+        LoadingModal.display();
+        renderSuggestionsSection();
+
+        LoadingModal.remove();
         return;
       };
 
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+
+        LoadingModal.display();
+        renderSuggestionsSection();
+
+        LoadingModal.remove();
       };
 
       return;
@@ -626,6 +631,139 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
   };
 };
 
-async function deleteHangoutSuggestionAsLeader(): Promise<void> {
-  // TODO: implement
+async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutMemberId, hangoutId, hangoutDetails, suggestionsCount, isLeader } = globalHangoutState.data;
+  const suggestionDropdownMenu: HTMLDivElement | null = suggestionElement.querySelector('.dropdown-menu');
+
+  if (suggestion.hangout_member_id === hangoutMemberId) {
+    await deleteHangoutSuggestion(suggestion, suggestionElement);
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+    popup('Hangout has not reached the suggestions stage yet.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await deleteHangoutSuggestionAsLeaderService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
+
+    hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
+
+    hangoutSuggestionState.memberLikesSet.delete(suggestion.suggestion_id);
+    hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
+
+    renderSuggestionsSection();
+
+    popup('Suggestion deleted.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      suggestionDropdownMenu?.classList.remove('expanded');
+
+      return;
+    };
+
+    popup(errMessage, 'error');
+    suggestionDropdownMenu?.classList.remove('expanded');
+
+    if (status === 404) {
+      if (errReason === 'suggestionNotFound') {
+        hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
+
+        LoadingModal.display();
+        renderSuggestionsSection();
+
+        LoadingModal.remove();
+        return;
+      };
+
+      if (errReason === 'hangoutNotFound') {
+        LoadingModal.display();
+        setTimeout(() => window.location.reload(), 1000);
+      };
+
+      return;
+    };
+
+    if (status === 403) {
+      if (errReason === 'inAvailabilityStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+
+        LoadingModal.display();
+        renderSuggestionsSection();
+
+        LoadingModal.remove();
+        return;
+      };
+
+      if (errReason === 'hangoutConcluded') {
+        globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+
+        LoadingModal.display();
+        renderSuggestionsSection();
+
+        LoadingModal.remove();
+      };
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      if (errReason === 'authSessionDestroyed') {
+        handleAuthSessionDestroyed();
+      };
+    };
+  };
 };

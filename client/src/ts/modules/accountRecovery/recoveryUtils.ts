@@ -12,7 +12,7 @@ export function handleRecoveryExpired(): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -66,7 +66,7 @@ export function handleRecoverySuspension(errResData: unknown): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

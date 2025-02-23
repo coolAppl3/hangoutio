@@ -173,7 +173,7 @@ function displayAvailabilityMarkers(): void {
 };
 
 function navigateCalendar(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 

@@ -15,7 +15,7 @@ export function handleAuthSessionExpired(afterAuthRedirectHref: string = window.
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -46,7 +46,7 @@ export function handleAuthSessionDestroyed(afterAuthRedirectHref: string = windo
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

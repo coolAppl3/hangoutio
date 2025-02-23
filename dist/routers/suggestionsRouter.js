@@ -724,7 +724,7 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
         hangout_members.hangout_member_id = ?
       LIMIT 1;`, [+suggestionId, hangoutId, +hangoutMemberId]);
         if (hangoutMemberRows.length === 0) {
-            res.status(404).json({ message: 'Hangout not found.' });
+            res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
             return;
         }
         ;
@@ -737,7 +737,7 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
         }
         ;
         if (!hangoutMemberDetails.is_leader) {
-            res.status(401).json({ message: 'Not hangout leader.' });
+            res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notLeader' });
             return;
         }
         ;
@@ -752,7 +752,7 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
         }
         ;
         if (!hangoutMemberDetails.suggestion_found) {
-            res.status(404).json({ message: 'Suggestion not found.' });
+            res.status(404).json({ message: 'Suggestion not found.', reason: 'suggestionNotfound' });
             return;
         }
         ;

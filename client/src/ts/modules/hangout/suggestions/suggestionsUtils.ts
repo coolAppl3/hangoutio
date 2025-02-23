@@ -96,7 +96,7 @@ function createDropdownMenuElement(isMemberSuggestion: boolean): HTMLDivElement 
 
   const dropdownMenuList: HTMLDivElement = createDivElement('dropdown-menu-list');
   isMemberSuggestion && dropdownMenuList.appendChild(createBtnElement('edit-btn', 'Edit'));
-  dropdownMenuList.appendChild(createBtnElement('delete-btn', 'Delete'));
+  dropdownMenuList.appendChild(createBtnElement('delete-btn', isMemberSuggestion ? 'Delete' : 'Delete as leader'));
 
   dropdownMenuElement.appendChild(dropdownMenuBtn);
   dropdownMenuElement.appendChild(dropdownMenuList);

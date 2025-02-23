@@ -80,7 +80,7 @@ function displaySignOutModal(): void {
   });
 
   confirmModal.addEventListener('click', async (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

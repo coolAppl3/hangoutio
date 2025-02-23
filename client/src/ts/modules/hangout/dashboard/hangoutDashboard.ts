@@ -15,11 +15,15 @@ import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSock
 import { createDivElement } from "../../global/domUtils";
 
 interface HangoutDashboardState {
+  nextStageTimerInitiated: boolean,
+
   latestHangoutEvents: HangoutEvent[],
   latestHangoutMessages: HangoutMessage[],
 };
 
 export const hangoutDashboardState: HangoutDashboardState = {
+  nextStageTimerInitiated: false,
+
   latestHangoutEvents: [],
   latestHangoutMessages: [],
 };
@@ -227,7 +231,7 @@ function renderHangoutStageDescriptions(): void {
   hangoutStageDescriptionElement?.setAttribute('data-hangoutStage', `${hangoutDetails.current_stage}`);
 
   hangoutStageDescriptionElement?.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 

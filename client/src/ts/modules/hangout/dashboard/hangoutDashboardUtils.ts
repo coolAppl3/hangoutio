@@ -12,6 +12,7 @@ import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { HangoutMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import LoadingModal from "../../global/LoadingModal";
+import { hangoutDashboardState } from "./hangoutDashboard";
 
 export function handleInvalidHangoutId(): void {
   const signedInAs: string | null = Cookies.get('signedInAs');
@@ -28,7 +29,7 @@ export function handleInvalidHangoutId(): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -75,7 +76,7 @@ export function handleHangoutNotFound(): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -93,7 +94,7 @@ export function handleHangoutFull(): void {
   });
 
   infoModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -161,7 +162,7 @@ export async function handleNotSignedIn(hangoutId: string): Promise<void> {
   });
 
   confirmModal.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLButtonElement)) {
       return;
     };
 
@@ -225,6 +226,10 @@ export function getNextHangoutStageTitle(currentStage: number): string {
 };
 
 export function initiateNextStageTimer(): void {
+  if (hangoutDashboardState.nextStageTimerInitiated) {
+    return;
+  };
+
   const nextStageTimeSpan: HTMLSpanElement | null = document.querySelector('#dashboard-next-stage-time');
 
   if (!nextStageTimeSpan) {
@@ -233,6 +238,8 @@ export function initiateNextStageTimer(): void {
 
   const intervalId: number = setInterval(() => updateNextStageTimer(nextStageTimeSpan, intervalId), minuteMilliseconds / 2);
   updateNextStageTimer(nextStageTimeSpan, intervalId);
+
+  hangoutDashboardState.nextStageTimerInitiated = true;
 };
 
 function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: number): void {
@@ -244,6 +251,7 @@ function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: nu
   if (!globalHangoutState.data) {
     nextStageTimeSpan.textContent = 'Failed to load';
     clearInterval(intervalId);
+
     return;
   };
 

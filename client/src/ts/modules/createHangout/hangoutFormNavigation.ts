@@ -29,7 +29,7 @@ function loadEventListeners(): void {
 };
 
 function navigateHangoutForm(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 
