@@ -60,22 +60,6 @@ export function deleteHangoutSuggestionService(requestBody: DeleteHangoutSuggest
 
 // --- --- ---
 
-interface ClearHangoutSuggestionsBody {
-  hangoutMemberId: number,
-  hangoutId: string,
-};
-
-interface ClearHangoutSuggestionsData {
-  deletedSuggestions: number,
-};
-
-export function clearHangoutSuggestionsService(requestBody: ClearHangoutSuggestionsBody): Promise<AxiosResponse<ClearHangoutSuggestionsData>> {
-  const { hangoutMemberId, hangoutId } = requestBody;
-  return axios.delete(`${suggestionsApiUrl}/clear?hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
-};
-
-// --- --- ---
-
 interface DeleteHangoutSuggestionAsLeaderBody {
   suggestionId: number,
   hangoutMemberId: number,
