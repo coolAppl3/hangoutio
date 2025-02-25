@@ -160,18 +160,53 @@ function createLikeIcon(): SVGSVGElement {
 function createDropdownIcon(): SVGSVGElement {
   const dropdownSvgElement: SVGSVGElement = createSvgElement(540, 540);
 
-  const firstDropdownPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  firstDropdownPathElement.setAttribute('d', 'M330 70C330 103.137 303.137 130 270 130C236.863 130 210 103.137 210 70C210 36.8629 236.863 10 270 10C303.137 10 330 36.8629 330 70Z');
+  const firstPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  firstPathElement.setAttribute('d', 'M330 70C330 103.137 303.137 130 270 130C236.863 130 210 103.137 210 70C210 36.8629 236.863 10 270 10C303.137 10 330 36.8629 330 70Z');
 
-  const secondDropdownPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  secondDropdownPathElement.setAttribute('d', 'M330 270C330 303.137 303.137 330 270 330C236.863 330 210 303.137 210 270C210 236.863 236.863 210 270 210C303.137 210 330 236.863 330 270Z');
+  const secondPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  secondPathElement.setAttribute('d', 'M330 270C330 303.137 303.137 330 270 330C236.863 330 210 303.137 210 270C210 236.863 236.863 210 270 210C303.137 210 330 236.863 330 270Z');
 
-  const thirdDropdownPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  thirdDropdownPathElement.setAttribute('d', 'M330 470C330 503.137 303.137 530 270 530C236.863 530 210 503.137 210 470C210 436.863 236.863 410 270 410C303.137 410 330 436.863 330 470Z');
+  const thirdPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  thirdPathElement.setAttribute('d', 'M330 470C330 503.137 303.137 530 270 530C236.863 530 210 503.137 210 470C210 436.863 236.863 410 270 410C303.137 410 330 436.863 330 470Z');
 
-  dropdownSvgElement.appendChild(firstDropdownPathElement);
-  dropdownSvgElement.appendChild(secondDropdownPathElement);
-  dropdownSvgElement.appendChild(thirdDropdownPathElement);
+  dropdownSvgElement.appendChild(firstPathElement);
+  dropdownSvgElement.appendChild(secondPathElement);
+  dropdownSvgElement.appendChild(thirdPathElement);
 
   return dropdownSvgElement;
+};
+
+// --- --- ---
+
+export function createSuggestionsMemberFilterItem(hangoutMemberId: number, displayName: string, isUser: boolean = false): HTMLDivElement {
+  const filterItem: HTMLDivElement = createDivElement('filter-item');
+
+  const checkboxBtn: HTMLButtonElement = createBtnElement('checkbox-btn checked', null);
+  checkboxBtn.setAttribute('data-memberId', `${hangoutMemberId}`);
+  checkboxBtn.setAttribute('aria-label', `Filter out ${displayName}`);
+
+  const checkboxBtnDiv: HTMLDivElement = createDivElement('svg');
+  checkboxBtnDiv.appendChild(createCheckIcon());
+
+  checkboxBtn.appendChild(checkboxBtnDiv);
+
+  filterItem.appendChild(checkboxBtn);
+  filterItem.appendChild(createParagraphElement(null, isUser ? `${displayName} (you)` : displayName));
+
+  return filterItem;
+};
+
+function createCheckIcon(): SVGSVGElement {
+  const checkSvgElement: SVGSVGElement = createSvgElement(601, 601);
+
+  const firstPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  firstPathElement.setAttribute('d', 'M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z');
+
+  const secondPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  secondPathElement.setAttribute('d', 'M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z');
+
+  checkSvgElement.appendChild(firstPathElement);
+  checkSvgElement.appendChild(secondPathElement);
+
+  return checkSvgElement;
 };

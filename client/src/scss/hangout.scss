@@ -1197,13 +1197,23 @@
       &-dropdown {
         @apply overflow-hidden;
 
-        .suggestions-filter-container {
+        .filter-container {
           @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-x-2 gap-y-1;
 
           .filter-item {
             @apply flex justify-start items-center;
 
-            &-title {
+            button {
+
+              .svg {
+
+                svg path {
+                  @apply fill-dark dark:fill-light;
+                }
+              }
+            }
+
+            p {
               @apply text-sm font-medium text-description dark:text-description-dark ml-1 text-nowrap overflow-hidden text-ellipsis;
             }
           }

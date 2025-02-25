@@ -9,6 +9,7 @@ import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
+import { initHangoutSuggestionsFilter } from "./hangoutSuggestionsFilter";
 import { endHangoutSuggestionsFormEdit, hangoutSuggestionFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./hangoutSuggestionsForm";
 import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
@@ -59,7 +60,9 @@ async function initHangoutSuggestions(): Promise<void> {
   LoadingModal.display();
 
   await getHangoutSuggestions();
+
   initHangoutSuggestionsForm();
+  initHangoutSuggestionsFilter();
 
   sortHangoutSuggestions();
   renderSuggestionsSection();
