@@ -392,5 +392,5 @@ function detectLatestSection(): void {
     return;
   };
 
-  setTimeout(() => directlyNavigateHangoutSections(latestHangoutSection), 0);
+  queueMicrotask(() => directlyNavigateHangoutSections(latestHangoutSection));
 };
