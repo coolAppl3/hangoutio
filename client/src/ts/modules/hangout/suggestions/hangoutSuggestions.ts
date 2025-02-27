@@ -9,7 +9,8 @@ import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
-import { endHangoutSuggestionsFormEdit, hangoutSuggestionFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./hangoutSuggestionsForm";
+import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./suggestionFilters";
+import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
 import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
@@ -21,8 +22,6 @@ interface HangoutSuggestionsState {
 
   pageCount: number,
   pageItemsCount: number,
-
-  sortingMode: 'likes' | 'votes',
 };
 
 export const hangoutSuggestionState: HangoutSuggestionsState = {
@@ -34,8 +33,6 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
 
   pageCount: 1,
   pageItemsCount: 0,
-
-  sortingMode: 'likes',
 };
 
 const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
@@ -59,7 +56,9 @@ async function initHangoutSuggestions(): Promise<void> {
   LoadingModal.display();
 
   await getHangoutSuggestions();
+
   initHangoutSuggestionsForm();
+  initHangoutSuggestionsFilter();
 
   sortHangoutSuggestions();
   renderSuggestionsSection();
@@ -70,11 +69,6 @@ async function initHangoutSuggestions(): Promise<void> {
 export function renderSuggestionsSection(): void {
   displayHangoutSuggestions();
   updateRemainingSuggestionsCount();
-};
-
-export function sortHangoutSuggestions(): void {
-  const sortMode: 'likes' | 'votes' = hangoutSuggestionState.sortingMode
-  hangoutSuggestionState.suggestions.sort((a, b) => b[`${sortMode}_count`] - a[`${sortMode}_count`]);
 };
 
 function loadEventListeners(): void {
@@ -143,7 +137,7 @@ async function getHangoutSuggestions(): Promise<void> {
       };
 
       if (errReason === 'notHangoutMember') {
-        setTimeout(() => LoadingModal.display(), 0);
+        LoadingModal.display()
         setTimeout(() => window.location.reload(), 1000);
       };
     };
@@ -162,18 +156,26 @@ function displayHangoutSuggestions(): void {
     return;
   };
 
-  const { isLeader, hangoutDetails } = globalHangoutState.data;
-  const pageCount: number = hangoutSuggestionState.pageCount;
-  const suggestions: Suggestion[] = hangoutSuggestionState.suggestions;
-
   const innerSuggestionsContainer: HTMLDivElement = createDivElement('suggestions-container-inner');
 
+  const { isLeader, hangoutDetails } = globalHangoutState.data;
+  const { suggestions, pageCount } = hangoutSuggestionState;
+
+  const filteredSuggestions: Suggestion[] = filterSuggestions(suggestions);
+
+  if (filteredSuggestions.length === 0) {
+    suggestionsContainer.firstElementChild?.remove();
+    suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions match these filters'));
+
+    return;
+  };
+
   for (let i = (pageCount * 10) - 10; i < (pageCount * 10); i++) {
-    if (i >= suggestions.length) {
+    if (i >= filteredSuggestions.length) {
       break;
     };
 
-    innerSuggestionsContainer.appendChild(createSuggestionElement(suggestions[i], isLeader));
+    innerSuggestionsContainer.appendChild(createSuggestionElement(filteredSuggestions[i], isLeader));
     hangoutSuggestionState.pageItemsCount = (i + 1) % 10 && (i + 1);
   };
 
@@ -292,7 +294,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
       if (e.target.id === 'confirm-modal-confirm-btn') {
         ConfirmModal.remove();
 
-        if (hangoutSuggestionFormState.suggestionIdToEdit === suggestion.suggestion_id) {
+        if (suggestionsFormState.suggestionIdToEdit === suggestion.suggestion_id) {
           endHangoutSuggestionsFormEdit();
         };
 

@@ -5,14 +5,10 @@ export default function themeSwitcher(): void {
   themeBtn?.addEventListener('click', changeTheme);
   themeBtn?.addEventListener('keyup', handleThemeBtnKeyEvents);
 
-  setTimeout(() => document.documentElement.classList.remove('loading'), 0);
+  document.documentElement.classList.remove('loading')
 };
 
 function setTheme(): void {
-  setTimeout(() => {
-    document.querySelector('#transition-pause')?.remove()
-  }, 100);
-
   const darkThemeItem = localStorage.getItem('darkTheme');
   const darkTheme: boolean = darkThemeItem ? JSON.parse(darkThemeItem) : null;
 

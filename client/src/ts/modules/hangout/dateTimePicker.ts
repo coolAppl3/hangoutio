@@ -488,7 +488,7 @@ export function createCalendarCell(date: number, forbidden: boolean = false): HT
 
   if (forbidden) {
     dateCell.classList.add('forbidden');
-    dateCell.setAttribute('disabled', 'disabled');
+    dateCell.setAttribute('disabled', '');
   };
 
   return dateCell;

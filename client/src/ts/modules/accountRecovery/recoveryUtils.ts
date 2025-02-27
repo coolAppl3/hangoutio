@@ -153,8 +153,6 @@ export function progressRecovery(recoveryCode?: string): void {
   accountRecoverySection.className = 'passwordUpdateForm';
 };
 
-
-
 function disableRecoveryEmailInput(): void {
   const recoveryEmailInput: HTMLInputElement | null = document.querySelector('#recovery-email-input');
 
@@ -163,5 +161,5 @@ function disableRecoveryEmailInput(): void {
   };
 
   recoveryEmailInput.parentElement?.classList.add('disabled');
-  recoveryEmailInput.setAttribute('disabled', 'disabled');
+  recoveryEmailInput.setAttribute('disabled', '');
 };

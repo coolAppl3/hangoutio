@@ -9,18 +9,19 @@ import { AddHangoutSuggestionBody, addHangoutSuggestionService, EditHangoutSugge
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
+import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSuggestions";
 import { Suggestion } from "../hangoutTypes";
 import { ConfirmModal } from "../../global/ConfirmModal";
+import { sortHangoutSuggestions } from "./suggestionFilters";
 
-interface HangoutSuggestionFormState {
+interface SuggestionsFormState {
   suggestionIdToEdit: number | null,
 
   suggestionStartTimestamp: number | null,
   suggestionEndTimestamp: number | null,
 };
 
-export const hangoutSuggestionFormState: HangoutSuggestionFormState = {
+export const suggestionsFormState: SuggestionsFormState = {
   suggestionIdToEdit: null,
 
   suggestionEndTimestamp: null,
@@ -89,7 +90,7 @@ async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
     return;
   };
 
-  if (hangoutSuggestionFormState.suggestionIdToEdit) {
+  if (suggestionsFormState.suggestionIdToEdit) {
     const { hasFailed, isIdentical, isMajorChange } = detectSuggestionEdits();
 
     if (hasFailed) {
@@ -105,11 +106,11 @@ async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
     };
 
     if (isMajorChange) {
-      handleMajorSuggestionChanges(hangoutSuggestionFormState.suggestionIdToEdit);
+      handleMajorSuggestionChanges(suggestionsFormState.suggestionIdToEdit);
       return;
     };
 
-    await editHangoutSuggestion(hangoutSuggestionFormState.suggestionIdToEdit);
+    await editHangoutSuggestion(suggestionsFormState.suggestionIdToEdit);
     return;
   };
 
@@ -145,7 +146,7 @@ async function addHangoutSuggestion(): Promise<void> {
   const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
   const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
 
-  const { suggestionStartTimestamp, suggestionEndTimestamp } = hangoutSuggestionFormState;
+  const { suggestionStartTimestamp, suggestionEndTimestamp } = suggestionsFormState;
 
   if (!suggestionStartTimestamp || !suggestionEndTimestamp) {
     ErrorSpan.display(suggestionStartMockInput, 'Suggestion date and time required.');
@@ -289,9 +290,9 @@ async function addHangoutSuggestion(): Promise<void> {
 };
 
 export function prepareHangoutSuggestionEditForm(suggestion: Suggestion): void {
-  hangoutSuggestionFormState.suggestionIdToEdit = suggestion.suggestion_id;
-  hangoutSuggestionFormState.suggestionStartTimestamp = suggestion.suggestion_start_timestamp;
-  hangoutSuggestionFormState.suggestionEndTimestamp = suggestion.suggestion_end_timestamp;
+  suggestionsFormState.suggestionIdToEdit = suggestion.suggestion_id;
+  suggestionsFormState.suggestionStartTimestamp = suggestion.suggestion_start_timestamp;
+  suggestionsFormState.suggestionEndTimestamp = suggestion.suggestion_end_timestamp;
 
   populateSuggestionsForm(suggestion);
   toggleSuggestionsFormUiState();
@@ -303,7 +304,7 @@ export function prepareHangoutSuggestionEditForm(suggestion: Suggestion): void {
 async function editHangoutSuggestion(suggestionId: number): Promise<void> {
   LoadingModal.display();
 
-  if (!globalHangoutState.data || !hangoutSuggestionFormState.suggestionIdToEdit) {
+  if (!globalHangoutState.data || !suggestionsFormState.suggestionIdToEdit) {
     popup('Something went wrong.', 'error');
     LoadingModal.remove();
 
@@ -329,7 +330,7 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
   const isValidSuggestionTitle: boolean = validateSuggestionTitle(suggestionTitleInput);
   const isValidSuggestionDescription: boolean = validateSuggestionDescription(suggestionDescriptionTextarea);
 
-  const { suggestionStartTimestamp, suggestionEndTimestamp } = hangoutSuggestionFormState;
+  const { suggestionStartTimestamp, suggestionEndTimestamp } = suggestionsFormState;
 
   if (!suggestionStartTimestamp || !suggestionEndTimestamp) {
     ErrorSpan.display(suggestionStartMockInput, 'Suggestion date and time required.');
@@ -504,9 +505,9 @@ function populateSuggestionsForm(suggestion: Suggestion): void {
 };
 
 function clearSuggestionsForm(): void {
-  hangoutSuggestionFormState.suggestionIdToEdit = null;
-  hangoutSuggestionFormState.suggestionStartTimestamp = null;
-  hangoutSuggestionFormState.suggestionEndTimestamp = null;
+  suggestionsFormState.suggestionIdToEdit = null;
+  suggestionsFormState.suggestionStartTimestamp = null;
+  suggestionsFormState.suggestionEndTimestamp = null;
 
   if (!suggestionTitleInput || !suggestionDescriptionTextarea) {
     return;
@@ -527,11 +528,11 @@ function clearSuggestionsForm(): void {
 };
 
 function handleSuggestionDateTimeSelection(dateTimePickerData: DateTimePickerData): void {
-  hangoutSuggestionFormState.suggestionStartTimestamp = dateTimePickerData.startTimestamp;
-  hangoutSuggestionFormState.suggestionEndTimestamp = dateTimePickerData.endTimestamp;
+  suggestionsFormState.suggestionStartTimestamp = dateTimePickerData.startTimestamp;
+  suggestionsFormState.suggestionEndTimestamp = dateTimePickerData.endTimestamp;
 
   if (dateTimePickerData.existingSlotId) {
-    hangoutSuggestionFormState.suggestionIdToEdit = dateTimePickerData.existingSlotId;
+    suggestionsFormState.suggestionIdToEdit = dateTimePickerData.existingSlotId;
   };
 
   if (!suggestionStartMockInput || !suggestionEndMockInput) {
@@ -632,7 +633,7 @@ function collapseSuggestionsForm(): void {
 };
 
 export function endHangoutSuggestionsFormEdit(): void {
-  if (!hangoutSuggestionFormState.suggestionIdToEdit) {
+  if (!suggestionsFormState.suggestionIdToEdit) {
     return;
   };
 
@@ -651,7 +652,7 @@ function toggleSuggestionsFormUiState(): void {
     return;
   };
 
-  if (hangoutSuggestionFormState.suggestionIdToEdit) {
+  if (suggestionsFormState.suggestionIdToEdit) {
     suggestionsFormHeader.style.display = 'none';
 
     formSubmitBtn.textContent = 'Update suggestion';
@@ -667,11 +668,11 @@ function toggleSuggestionsFormUiState(): void {
 };
 
 function detectSuggestionEdits(): { hasFailed: boolean, isIdentical: boolean, isMajorChange: boolean } {
-  if (!hangoutSuggestionFormState.suggestionIdToEdit) {
+  if (!suggestionsFormState.suggestionIdToEdit) {
     return { hasFailed: true, isIdentical: false, isMajorChange: false };
   };
 
-  const originalSuggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === hangoutSuggestionFormState.suggestionIdToEdit);
+  const originalSuggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionsFormState.suggestionIdToEdit);
 
   if (!originalSuggestion) {
     globalHangoutState.data && globalHangoutState.data.suggestionsCount--;
@@ -690,12 +691,12 @@ function detectSuggestionEdits(): { hasFailed: boolean, isIdentical: boolean, is
   const newTitle: string = suggestionTitleInput.value;
   const newDescription: string = suggestionDescriptionTextarea.value;
 
-  if (originalSuggestion.suggestion_start_timestamp !== hangoutSuggestionFormState.suggestionStartTimestamp) {
+  if (originalSuggestion.suggestion_start_timestamp !== suggestionsFormState.suggestionStartTimestamp) {
     isIdentical = false;
     isMajorChange = true;
   };
 
-  if (originalSuggestion.suggestion_end_timestamp !== hangoutSuggestionFormState.suggestionEndTimestamp) {
+  if (originalSuggestion.suggestion_end_timestamp !== suggestionsFormState.suggestionEndTimestamp) {
     isIdentical = false;
     isMajorChange = true;
   };
