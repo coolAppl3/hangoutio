@@ -730,7 +730,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
       FROM
         hangouts
       INNER JOIN
-        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id,
+        hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
