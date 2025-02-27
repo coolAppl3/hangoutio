@@ -178,10 +178,10 @@ function createDropdownIcon(): SVGSVGElement {
 
 // --- --- ---
 
-export function createSuggestionsMemberFilterItem(hangoutMemberId: number, displayName: string, isUser: boolean = false): HTMLDivElement {
+export function createSuggestionsMemberFilterItem(hangoutMemberId: number, displayName: string, isFiltered: boolean, isUser: boolean): HTMLDivElement {
   const filterItem: HTMLDivElement = createDivElement('filter-item');
 
-  const checkboxBtn: HTMLButtonElement = createBtnElement('checkbox-btn checked', null);
+  const checkboxBtn: HTMLButtonElement = createBtnElement(`checkbox-btn member-filter-btn ${isFiltered ? 'checked' : ''}`, null);
   checkboxBtn.setAttribute('data-memberId', `${hangoutMemberId}`);
   checkboxBtn.setAttribute('aria-label', `Filter out ${displayName}`);
 

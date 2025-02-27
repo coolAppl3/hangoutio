@@ -1256,7 +1256,7 @@
       class="hidden"
     >
       <div class="container mb-3 mt-2 md:mt-3">
-        <div class="suggestions">
+        <div>
           <form id="suggestions-form">
             <div id="suggestions-form-header">
               <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Add a suggestion</h3>
@@ -1387,15 +1387,17 @@
             </div>
           </div>
 
-          <div class="suggestions-filter">
-            <div class="suggestions-filter-header">
+          <div
+            id="suggestion-filters"
+            class="expanded"
+          >
+            <div id="suggestion-filters-header">
               <button
                 type="button"
-                id="suggestions-filter-btn"
+                id="suggestion-filters-btn"
                 class="btn bg-description dark:bg-description-dark"
                 title="Display filters"
                 aria-label="Display suggestions filters"
-                onclick="this.parentElement.parentElement.classList.toggle('expanded')"
               >
                 <svg
                   width="501"
@@ -1472,7 +1474,7 @@
               </div>
             </div>
 
-            <div class="suggestions-filter-dropdown">
+            <div id="suggestion-filters-dropdown">
               <div
                 id="suggestions-utility-filter-container"
                 class="mb-2"
@@ -1482,10 +1484,10 @@
                 <div class="filter-container">
                   <div class="filter-item">
                     <button
-                      class="checkbox-btn"
+                      class="checkbox-btn suggestion-utility-filter-btn"
                       type="button"
-                      aria-label="Toggle filter by suggestions you've liked"
-                      data-filterBy="liked"
+                      aria-label="Filter by suggestions you've liked"
+                      id="filter-by-liked-btn"
                     >
                       <div class="svg">
                         <svg
@@ -1511,11 +1513,10 @@
 
                   <div class="filter-item">
                     <button
-                      data-member-id="123"
-                      class="checkbox-btn"
+                      class="checkbox-btn suggestion-utility-filter-btn"
                       type="button"
-                      aria-label="Toggle filter by suggestions you've voted for"
-                      data-filterBy="votedFor"
+                      aria-label="Filter by suggestions you've voted for"
+                      id="filter-by-voted-for-btn"
                     >
                       <div class="svg">
                         <svg
@@ -1553,16 +1554,17 @@
               <div class="btn-container flex justify-start items-center sm:block">
                 <button
                   type="button"
-                  class="btn bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1 sm:w-full"
-                  id="suggestions-filter-apply-btn"
+                  class="btn bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1 sm:w-full disabled"
+                  id="suggestion-filters-apply-btn"
+                  disabled
                 >
-                  Apply filter
+                  Apply filters
                 </button>
 
                 <button
                   type="button"
                   class="btn bg-description dark:bg-description-dark text-light dark:text-dark mr-1 sm:mr-0 sm:mb-1 sm:w-full"
-                  id="suggestions-filter-reset-btn"
+                  id="suggestion-filters-reset-btn"
                 >
                   Reset
                 </button>
@@ -1570,7 +1572,7 @@
                 <button
                   type="button"
                   class="btn bg-primary dark:bg-primary-dark border-1 border-light-gray dark:border-light-black text-title dark:text-title-dark sm:w-full"
-                  id="suggestions-filter-cancel-btn"
+                  id="suggestion-filters-cancel-btn"
                 >
                   Cancel
                 </button>
@@ -1580,8 +1582,8 @@
 
           <div id="suggestions-container"></div>
 
-          <div class="suggestions-pagination">
-            <div class="suggestions-pagination-container">
+          <div id="suggestions-pagination">
+            <div id="suggestions-pagination-container">
               <button
                 class="svg w-2 h-2"
                 type="button"
@@ -1695,7 +1697,7 @@
               </button>
             </div>
 
-            <p class="suggestions-pagination-footer">
+            <p id="suggestions-pagination-footer">
               Showing <span id="suggestions-pagination-first">1</span> - <span id="suggestions-pagination-last">6</span> out of
               <span id="suggestions-pagination-total">6</span>
             </p>

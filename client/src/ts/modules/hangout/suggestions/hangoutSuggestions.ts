@@ -9,7 +9,7 @@ import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
-import { initHangoutSuggestionsFilter } from "./hangoutSuggestionsFilter";
+import { filterSuggestions, initHangoutSuggestionsFilter } from "./hangoutSuggestionsFilter";
 import { endHangoutSuggestionsFormEdit, hangoutSuggestionFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./hangoutSuggestionsForm";
 import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
@@ -165,18 +165,26 @@ function displayHangoutSuggestions(): void {
     return;
   };
 
-  const { isLeader, hangoutDetails } = globalHangoutState.data;
-  const pageCount: number = hangoutSuggestionState.pageCount;
-  const suggestions: Suggestion[] = hangoutSuggestionState.suggestions;
-
   const innerSuggestionsContainer: HTMLDivElement = createDivElement('suggestions-container-inner');
 
+  const { isLeader, hangoutDetails } = globalHangoutState.data;
+  const { suggestions, pageCount } = hangoutSuggestionState;
+
+  const filteredSuggestions: Suggestion[] = filterSuggestions(suggestions);
+
+  if (filteredSuggestions.length === 0) {
+    suggestionsContainer.firstElementChild?.remove();
+    suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions match these filters'));
+
+    return;
+  };
+
   for (let i = (pageCount * 10) - 10; i < (pageCount * 10); i++) {
-    if (i >= suggestions.length) {
+    if (i >= filteredSuggestions.length) {
       break;
     };
 
-    innerSuggestionsContainer.appendChild(createSuggestionElement(suggestions[i], isLeader));
+    innerSuggestionsContainer.appendChild(createSuggestionElement(filteredSuggestions[i], isLeader));
     hangoutSuggestionState.pageItemsCount = (i + 1) % 10 && (i + 1);
   };
 
