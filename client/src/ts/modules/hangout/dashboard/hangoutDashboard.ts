@@ -31,8 +31,8 @@ export const hangoutDashboardState: HangoutDashboardState = {
 export async function hangoutDashboard(): Promise<void> {
   await getInitialHangoutData();
 
-  detectLatestSection();
   loadEventListeners();
+  detectLatestSection();
 };
 
 export async function getInitialHangoutData(): Promise<void> {
@@ -392,5 +392,5 @@ function detectLatestSection(): void {
     return;
   };
 
-  queueMicrotask(() => directlyNavigateHangoutSections(latestHangoutSection));
+  setTimeout(() => directlyNavigateHangoutSections(latestHangoutSection), 0);
 };
