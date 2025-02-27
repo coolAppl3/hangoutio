@@ -9,8 +9,8 @@ import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
-import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./hangoutSuggestionsFilter";
-import { endHangoutSuggestionsFormEdit, hangoutSuggestionFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./hangoutSuggestionsForm";
+import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./suggestionFilters";
+import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
 import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
@@ -294,7 +294,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
       if (e.target.id === 'confirm-modal-confirm-btn') {
         ConfirmModal.remove();
 
-        if (hangoutSuggestionFormState.suggestionIdToEdit === suggestion.suggestion_id) {
+        if (suggestionsFormState.suggestionIdToEdit === suggestion.suggestion_id) {
           endHangoutSuggestionsFormEdit();
         };
 

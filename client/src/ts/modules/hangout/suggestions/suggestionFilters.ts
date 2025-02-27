@@ -7,7 +7,7 @@ import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSuggestions";
 import { createSuggestionsMemberFilterItem } from "./suggestionsUtils";
 
-interface HangoutSuggestionsFilterState {
+interface SuggestionFiltersState {
   memberFiltersApplied: boolean,
 
   filterByLiked: boolean,
@@ -19,7 +19,7 @@ interface HangoutSuggestionsFilterState {
   sortingMode: 'likes' | 'votes',
 };
 
-export const hangoutSuggestionsFilterState: HangoutSuggestionsFilterState = {
+export const suggestionFiltersState: SuggestionFiltersState = {
   memberFiltersApplied: false,
 
   filterByLiked: false,
@@ -59,13 +59,13 @@ export function renderMemberFilters(): void {
   const filterContainer: HTMLDivElement = createDivElement('filter-container');
 
   for (const member of hangoutMembers) {
-    const isFiltered: boolean = hangoutSuggestionsFilterState.mainFilteredMembersSet.has(member.hangout_member_id);
+    const isFiltered: boolean = suggestionFiltersState.mainFilteredMembersSet.has(member.hangout_member_id);
     const isUser: boolean = hangoutMemberId === member.hangout_member_id
 
     filterContainer.appendChild(createSuggestionsMemberFilterItem(member.hangout_member_id, member.display_name, isFiltered, isUser));
   };
 
-  const orphanSuggestionsFiltered: boolean = hangoutSuggestionsFilterState.mainFilteredMembersSet.has(0);
+  const orphanSuggestionsFiltered: boolean = suggestionFiltersState.mainFilteredMembersSet.has(0);
   filterContainer.appendChild(createSuggestionsMemberFilterItem(0, 'Previous members', orphanSuggestionsFiltered, false));
 
   suggestionsMembersFilterContainer.firstElementChild?.remove();
@@ -132,18 +132,18 @@ function handleCheckboxClicks(checkboxBtn: HTMLButtonElement): void {
   };
 
   if (isChecked) {
-    hangoutSuggestionsFilterState.tempFilteredMembersSet.delete(+hangoutMemberId);
+    suggestionFiltersState.tempFilteredMembersSet.delete(+hangoutMemberId);
     detectFilterChanges();
 
     return;
   };
 
-  hangoutSuggestionsFilterState.tempFilteredMembersSet.add(+hangoutMemberId);
+  suggestionFiltersState.tempFilteredMembersSet.add(+hangoutMemberId);
   detectFilterChanges();
 };
 
 export function filterSuggestions(suggestions: Suggestion[]): Suggestion[] {
-  const { filterByLiked, filterByVotedFor, memberFiltersApplied, mainFilteredMembersSet } = hangoutSuggestionsFilterState;
+  const { filterByLiked, filterByVotedFor, memberFiltersApplied, mainFilteredMembersSet } = suggestionFiltersState;
   const { memberLikesSet, memberVotesSet } = hangoutSuggestionState;
 
   return suggestions.filter((suggestion: Suggestion) => {
@@ -174,13 +174,13 @@ function applySuggestionFilters(): void {
   LoadingModal.display();
 
   if (allFiltersRemoved()) {
-    hangoutSuggestionsFilterState.mainFilteredMembersSet.clear();
-    hangoutSuggestionsFilterState.tempFilteredMembersSet.clear();
+    suggestionFiltersState.mainFilteredMembersSet.clear();
+    suggestionFiltersState.tempFilteredMembersSet.clear();
 
-    hangoutSuggestionsFilterState.filterByLiked = false;
-    hangoutSuggestionsFilterState.filterByVotedFor = false;
+    suggestionFiltersState.filterByLiked = false;
+    suggestionFiltersState.filterByVotedFor = false;
 
-    hangoutSuggestionsFilterState.memberFiltersApplied = false;
+    suggestionFiltersState.memberFiltersApplied = false;
 
     switchApplyFiltersBtn(false);
     collapseFilterDropdown();
@@ -206,15 +206,15 @@ function applySuggestionFilters(): void {
 
   const { filterByLiked, filterByVotedFor } = getUtilityFilters();
 
-  hangoutSuggestionsFilterState.filterByLiked = filterByLiked;
-  hangoutSuggestionsFilterState.filterByVotedFor = filterByVotedFor;
-  hangoutSuggestionsFilterState.mainFilteredMembersSet = new Set(...[hangoutSuggestionsFilterState.tempFilteredMembersSet]);
+  suggestionFiltersState.filterByLiked = filterByLiked;
+  suggestionFiltersState.filterByVotedFor = filterByVotedFor;
+  suggestionFiltersState.mainFilteredMembersSet = new Set(...[suggestionFiltersState.tempFilteredMembersSet]);
 
-  if (hangoutSuggestionsFilterState.mainFilteredMembersSet.size === 0) {
-    hangoutSuggestionsFilterState.memberFiltersApplied = false;
+  if (suggestionFiltersState.mainFilteredMembersSet.size === 0) {
+    suggestionFiltersState.memberFiltersApplied = false;
 
   } else {
-    hangoutSuggestionsFilterState.memberFiltersApplied = true;
+    suggestionFiltersState.memberFiltersApplied = true;
   };
 
   switchApplyFiltersBtn(false);
@@ -228,7 +228,7 @@ function applySuggestionFilters(): void {
 
 function cancelFilterChanges(): void {
   const { utilityChangesFound, memberChangesFound } = detectFilterChanges();
-  const { filterByLiked, filterByVotedFor } = hangoutSuggestionsFilterState;
+  const { filterByLiked, filterByVotedFor } = suggestionFiltersState;
 
   collapseFilterDropdown();
 
@@ -248,17 +248,17 @@ function cancelFilterChanges(): void {
     : filterByVotedForBtn?.classList.remove('checked');
   //
 
-  hangoutSuggestionsFilterState.tempFilteredMembersSet = new Set(...[hangoutSuggestionsFilterState.mainFilteredMembersSet]);
+  suggestionFiltersState.tempFilteredMembersSet = new Set(...[suggestionFiltersState.mainFilteredMembersSet]);
   detectFilterChanges();
 };
 
 function resetSuggestionFilters(): void {
-  hangoutSuggestionsFilterState.filterByLiked = false;
-  hangoutSuggestionsFilterState.filterByVotedFor = false;
+  suggestionFiltersState.filterByLiked = false;
+  suggestionFiltersState.filterByVotedFor = false;
 
-  hangoutSuggestionsFilterState.tempFilteredMembersSet.clear();
-  hangoutSuggestionsFilterState.mainFilteredMembersSet.clear();
-  hangoutSuggestionsFilterState.memberFiltersApplied = false;
+  suggestionFiltersState.tempFilteredMembersSet.clear();
+  suggestionFiltersState.mainFilteredMembersSet.clear();
+  suggestionFiltersState.memberFiltersApplied = false;
 
   LoadingModal.display();
 
@@ -293,15 +293,15 @@ function getUtilityFilters(): { filterByLiked: boolean, filterByVotedFor: boolea
 };
 
 function detectFilterChanges(): { utilityChangesFound: boolean, memberChangesFound: boolean } {
-  const { mainFilteredMembersSet, tempFilteredMembersSet } = hangoutSuggestionsFilterState;
+  const { mainFilteredMembersSet, tempFilteredMembersSet } = suggestionFiltersState;
   const { filterByLiked, filterByVotedFor } = getUtilityFilters();
 
   let utilityChangesFound: boolean = false;
   let memberChangesFound: boolean = false;
 
   if (
-    hangoutSuggestionsFilterState.filterByLiked !== filterByLiked ||
-    hangoutSuggestionsFilterState.filterByVotedFor !== filterByVotedFor
+    suggestionFiltersState.filterByLiked !== filterByLiked ||
+    suggestionFiltersState.filterByVotedFor !== filterByVotedFor
   ) {
     utilityChangesFound = true;
   };
@@ -324,7 +324,7 @@ function detectFilterChanges(): { utilityChangesFound: boolean, memberChangesFou
 };
 
 function allFiltersRemoved(): boolean {
-  if (hangoutSuggestionsFilterState.tempFilteredMembersSet.size !== 0) {
+  if (suggestionFiltersState.tempFilteredMembersSet.size !== 0) {
     return false;
   };
 
@@ -358,7 +358,7 @@ function collapseFilterDropdown(): void {
 
 // sorting
 export function sortHangoutSuggestions(): void {
-  const sortMode: 'likes' | 'votes' = hangoutSuggestionsFilterState.sortingMode;
+  const sortMode: 'likes' | 'votes' = suggestionFiltersState.sortingMode;
   hangoutSuggestionState.suggestions.sort((a, b) => b[`${sortMode}_count`] - a[`${sortMode}_count`]);
 };
 
@@ -381,7 +381,7 @@ function handleSuggestionsSortClicks(sortBtn: HTMLButtonElement): void {
   collapseSortingContainer();
   suggestionsSortContainerBtn?.firstElementChild && (suggestionsSortContainerBtn.firstElementChild.textContent = `Most ${sortBy}`);
 
-  hangoutSuggestionsFilterState.sortingMode = sortBy;
+  suggestionFiltersState.sortingMode = sortBy;
   sortHangoutSuggestions();
   renderSuggestionsSection();
 
