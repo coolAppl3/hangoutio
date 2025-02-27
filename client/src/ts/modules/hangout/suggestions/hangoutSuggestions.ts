@@ -137,7 +137,7 @@ async function getHangoutSuggestions(): Promise<void> {
       };
 
       if (errReason === 'notHangoutMember') {
-        setTimeout(() => LoadingModal.display(), 0);
+        LoadingModal.display()
         setTimeout(() => window.location.reload(), 1000);
       };
     };
