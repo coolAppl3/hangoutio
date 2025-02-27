@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.43] (2025-02-27)
+
+### Bug Fixes
+
+- Fixed incorrect use of `queueMicrotask()` in `hangoutDashboard.ts` leading to other sections failing to load properly.
+
+
 ## [0.4.42] (2025-02-27)
 
 ### Features
