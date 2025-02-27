@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.42] (2025-02-27)
+
+### Features
+
+- Suggestion filtering and sorting fully implemented.
+
+
+### Code Refactoring
+
+- Simplified some module and state variable names.
+- A few other minor refactors.
+
+
 ## [0.4.41] (2025-02-24)
 
 ### Features
