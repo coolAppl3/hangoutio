@@ -9,9 +9,10 @@ import { AddHangoutSuggestionBody, addHangoutSuggestionService, EditHangoutSugge
 import { DateTimePickerData, displayDateTimePicker, isValidDateTimePickerEvent } from "../dateTimePicker";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { hangoutSuggestionState, renderSuggestionsSection, sortHangoutSuggestions } from "./hangoutSuggestions";
+import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSuggestions";
 import { Suggestion } from "../hangoutTypes";
 import { ConfirmModal } from "../../global/ConfirmModal";
+import { sortHangoutSuggestions } from "./hangoutSuggestionsFilter";
 
 interface HangoutSuggestionFormState {
   suggestionIdToEdit: number | null,

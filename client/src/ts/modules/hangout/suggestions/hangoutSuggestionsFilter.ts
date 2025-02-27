@@ -1,3 +1,4 @@
+import { HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -7,23 +8,27 @@ import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSugge
 import { createSuggestionsMemberFilterItem } from "./suggestionsUtils";
 
 interface HangoutSuggestionsFilterState {
+  memberFiltersApplied: boolean,
+
   filterByLiked: boolean,
   filterByVotedFor: boolean,
 
-  memberFiltersApplied: boolean,
-
   mainFilteredMembersSet: Set<number>,
   tempFilteredMembersSet: Set<number>,
+
+  sortingMode: 'likes' | 'votes',
 };
 
 export const hangoutSuggestionsFilterState: HangoutSuggestionsFilterState = {
+  memberFiltersApplied: false,
+
   filterByLiked: false,
   filterByVotedFor: false,
 
-  memberFiltersApplied: false,
-
   mainFilteredMembersSet: new Set<number>(),
   tempFilteredMembersSet: new Set<number>(),
+
+  sortingMode: 'likes',
 };
 
 const suggestionFiltersElement: HTMLDivElement | null = document.querySelector('#suggestion-filters');
@@ -33,16 +38,19 @@ const suggestionFiltersApplyBtn: HTMLButtonElement | null = document.querySelect
 const filterByLikedBtn: HTMLButtonElement | null = document.querySelector('#filter-by-liked-btn');
 const filterByVotedForBtn: HTMLButtonElement | null = document.querySelector('#filter-by-voted-for-btn');
 
+const suggestionsSortElement: HTMLDivElement | null = document.querySelector('#suggestions-sort');
+const suggestionsSortContainerBtn: HTMLButtonElement | null = document.querySelector('#suggestions-sort-container-btn');
+
 export function initHangoutSuggestionsFilter(): void {
   if (!globalHangoutState.data) {
     return;
   };
 
-  renderMembersFilter();
+  renderMemberFilters();
   loadEventListeners();
 };
 
-export function renderMembersFilter(): void {
+export function renderMemberFilters(): void {
   if (!suggestionsMembersFilterContainer || !globalHangoutState.data) {
     return;
   };
@@ -85,6 +93,26 @@ function handleSuggestionFiltersClicks(e: MouseEvent): void {
 
   if (e.target.id === 'suggestion-filters-apply-btn') {
     applySuggestionFilters();
+    return;
+  };
+
+  if (e.target.id === 'suggestion-filters-reset-btn') {
+    resetSuggestionFilters();
+    return;
+  };
+
+  if (e.target.id === 'suggestion-filters-cancel-btn') {
+    cancelFilterChanges();
+  };
+
+  // sorting buttons
+  if (e.target.id === 'suggestions-sort-container-btn') {
+    e.target.parentElement?.parentElement?.classList.toggle('expanded');
+    return;
+  };
+
+  if (e.target.classList.contains('suggestions-sort-btn')) {
+    handleSuggestionsSortClicks(e.target);
   };
 };
 
@@ -114,62 +142,6 @@ function handleCheckboxClicks(checkboxBtn: HTMLButtonElement): void {
   detectFilterChanges();
 };
 
-function applySuggestionFilters(): void {
-  LoadingModal.display();
-
-  if (allFiltersRemoved()) {
-    hangoutSuggestionsFilterState.mainFilteredMembersSet.clear();
-    hangoutSuggestionsFilterState.tempFilteredMembersSet.clear();
-
-    hangoutSuggestionsFilterState.filterByLiked = false;
-    hangoutSuggestionsFilterState.filterByVotedFor = false;
-
-    hangoutSuggestionsFilterState.memberFiltersApplied = false;
-
-    switchApplyFiltersBtn(false);
-    closeFilterDropdown();
-
-    renderSuggestionsSection();
-
-    popup('Filters removed.', 'success');
-    LoadingModal.remove();
-
-    return;
-  };
-
-  const { utilityChangesFound, memberChangesFound } = detectFilterChanges();
-  if (!utilityChangesFound && !memberChangesFound) {
-    switchApplyFiltersBtn(false);
-    closeFilterDropdown();
-
-    popup('No changes to apply.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
-  const { filterByLiked, filterByVotedFor } = getUtilityFilters();
-
-  hangoutSuggestionsFilterState.filterByLiked = filterByLiked;
-  hangoutSuggestionsFilterState.filterByVotedFor = filterByVotedFor;
-  hangoutSuggestionsFilterState.mainFilteredMembersSet = new Set(...[hangoutSuggestionsFilterState.tempFilteredMembersSet]);
-
-  if (hangoutSuggestionsFilterState.mainFilteredMembersSet.size === 0) {
-    hangoutSuggestionsFilterState.memberFiltersApplied = false;
-
-  } else {
-    hangoutSuggestionsFilterState.memberFiltersApplied = true;
-  };
-
-  switchApplyFiltersBtn(false);
-  closeFilterDropdown();
-
-  renderSuggestionsSection();
-
-  popup('Filters applied.', 'success');
-  LoadingModal.remove();
-};
-
 export function filterSuggestions(suggestions: Suggestion[]): Suggestion[] {
   const { filterByLiked, filterByVotedFor, memberFiltersApplied, mainFilteredMembersSet } = hangoutSuggestionsFilterState;
   const { memberLikesSet, memberVotesSet } = hangoutSuggestionState;
@@ -196,6 +168,117 @@ export function filterSuggestions(suggestions: Suggestion[]): Suggestion[] {
 
     return false;
   });
+};
+
+function applySuggestionFilters(): void {
+  LoadingModal.display();
+
+  if (allFiltersRemoved()) {
+    hangoutSuggestionsFilterState.mainFilteredMembersSet.clear();
+    hangoutSuggestionsFilterState.tempFilteredMembersSet.clear();
+
+    hangoutSuggestionsFilterState.filterByLiked = false;
+    hangoutSuggestionsFilterState.filterByVotedFor = false;
+
+    hangoutSuggestionsFilterState.memberFiltersApplied = false;
+
+    switchApplyFiltersBtn(false);
+    collapseFilterDropdown();
+
+    renderSuggestionsSection();
+
+    popup('Filters removed.', 'success');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { utilityChangesFound, memberChangesFound } = detectFilterChanges();
+  if (!utilityChangesFound && !memberChangesFound) {
+    switchApplyFiltersBtn(false);
+    collapseFilterDropdown();
+
+    popup('No changes to apply.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { filterByLiked, filterByVotedFor } = getUtilityFilters();
+
+  hangoutSuggestionsFilterState.filterByLiked = filterByLiked;
+  hangoutSuggestionsFilterState.filterByVotedFor = filterByVotedFor;
+  hangoutSuggestionsFilterState.mainFilteredMembersSet = new Set(...[hangoutSuggestionsFilterState.tempFilteredMembersSet]);
+
+  if (hangoutSuggestionsFilterState.mainFilteredMembersSet.size === 0) {
+    hangoutSuggestionsFilterState.memberFiltersApplied = false;
+
+  } else {
+    hangoutSuggestionsFilterState.memberFiltersApplied = true;
+  };
+
+  switchApplyFiltersBtn(false);
+  collapseFilterDropdown();
+
+  renderSuggestionsSection();
+
+  popup('Filters applied.', 'success');
+  LoadingModal.remove();
+};
+
+function cancelFilterChanges(): void {
+  const { utilityChangesFound, memberChangesFound } = detectFilterChanges();
+  const { filterByLiked, filterByVotedFor } = hangoutSuggestionsFilterState;
+
+  collapseFilterDropdown();
+
+  if (!utilityChangesFound && memberChangesFound) {
+    return;
+  };
+
+  memberChangesFound && renderMemberFilters();
+
+  filterByLiked
+    ? filterByLikedBtn?.classList.add('checked')
+    : filterByLikedBtn?.classList.remove('checked');
+  //
+
+  filterByVotedFor
+    ? filterByVotedForBtn?.classList.add('checked')
+    : filterByVotedForBtn?.classList.remove('checked');
+  //
+
+  hangoutSuggestionsFilterState.tempFilteredMembersSet = new Set(...[hangoutSuggestionsFilterState.mainFilteredMembersSet]);
+  detectFilterChanges();
+};
+
+function resetSuggestionFilters(): void {
+  hangoutSuggestionsFilterState.filterByLiked = false;
+  hangoutSuggestionsFilterState.filterByVotedFor = false;
+
+  hangoutSuggestionsFilterState.tempFilteredMembersSet.clear();
+  hangoutSuggestionsFilterState.mainFilteredMembersSet.clear();
+  hangoutSuggestionsFilterState.memberFiltersApplied = false;
+
+  LoadingModal.display();
+
+  collapseFilterDropdown();
+  clearUtilityFilters();
+  renderMemberFilters();
+
+  renderSuggestionsSection();
+
+  popup('Filters reset.', 'success');
+  LoadingModal.remove();
+};
+
+function clearUtilityFilters(): void {
+  if (!filterByLikedBtn || !filterByVotedForBtn) {
+    return;
+  };
+
+  filterByLikedBtn.classList.remove('checked');
+  filterByVotedForBtn.classList.remove('checked');
 };
 
 function getUtilityFilters(): { filterByLiked: boolean, filterByVotedFor: boolean } {
@@ -269,6 +352,43 @@ function switchApplyFiltersBtn(enable: boolean): void {
   suggestionFiltersApplyBtn.removeAttribute('disabled');
 };
 
-function closeFilterDropdown(): void {
+function collapseFilterDropdown(): void {
   suggestionFiltersElement?.classList.remove('expanded');
+};
+
+// sorting
+export function sortHangoutSuggestions(): void {
+  const sortMode: 'likes' | 'votes' = hangoutSuggestionsFilterState.sortingMode;
+  hangoutSuggestionState.suggestions.sort((a, b) => b[`${sortMode}_count`] - a[`${sortMode}_count`]);
+};
+
+function handleSuggestionsSortClicks(sortBtn: HTMLButtonElement): void {
+  const sortBy: string | null = sortBtn.getAttribute('data-sortBy');
+
+  if (sortBy !== 'likes' && sortBy !== 'votes') {
+    return;
+  };
+
+  if (sortBy === 'votes' && globalHangoutState.data?.hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+    popup('No votes found to sort by.', 'error');
+    collapseSortingContainer();
+
+    return;
+  };
+
+  LoadingModal.display();
+
+  collapseSortingContainer();
+  suggestionsSortContainerBtn?.firstElementChild && (suggestionsSortContainerBtn.firstElementChild.textContent = `Most ${sortBy}`);
+
+  hangoutSuggestionsFilterState.sortingMode = sortBy;
+  sortHangoutSuggestions();
+  renderSuggestionsSection();
+
+  popup(`Sorted by most ${sortBy}.`, 'success');
+  LoadingModal.remove();
+};
+
+function collapseSortingContainer(): void {
+  suggestionsSortElement?.classList.remove('expanded');
 };

@@ -1151,6 +1151,21 @@
       #suggestions-sort {
         @apply flex justify-start items-center;
 
+        &.expanded {
+
+          #suggestions-sort-container-btn {
+            @apply rounded-bl-[0px] rounded-br-[0px];
+          }
+
+          .btn-container-inner {
+            @apply block;
+          }
+        }
+
+        &-container-btn {
+          @apply relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1;
+        }
+
         p {
           @apply text-sm font-medium text-description dark:text-description-dark mr-1 2xs:hidden;
         }
@@ -1158,18 +1173,7 @@
         .btn-container {
           @apply relative;
 
-          &.expanded {
-
-            #suggestions-sort-btn {
-              @apply rounded-bl-[0px] rounded-br-[0px];
-            }
-
-            .btn-container-inner {
-              @apply block;
-            }
-          }
-
-          button#suggestions-sort-btn {
+          button#suggestions-sort-container-btn {
             @apply flex justify-center items-center px-1 h-4 bg-secondary dark:bg-secondary-dark transition-[filter] hover:brightness-75 rounded-sm;
 
             span {

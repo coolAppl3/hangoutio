@@ -9,7 +9,7 @@ import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
-import { filterSuggestions, initHangoutSuggestionsFilter } from "./hangoutSuggestionsFilter";
+import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./hangoutSuggestionsFilter";
 import { endHangoutSuggestionsFormEdit, hangoutSuggestionFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./hangoutSuggestionsForm";
 import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
@@ -22,8 +22,6 @@ interface HangoutSuggestionsState {
 
   pageCount: number,
   pageItemsCount: number,
-
-  sortingMode: 'likes' | 'votes',
 };
 
 export const hangoutSuggestionState: HangoutSuggestionsState = {
@@ -35,8 +33,6 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
 
   pageCount: 1,
   pageItemsCount: 0,
-
-  sortingMode: 'likes',
 };
 
 const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
@@ -73,11 +69,6 @@ async function initHangoutSuggestions(): Promise<void> {
 export function renderSuggestionsSection(): void {
   displayHangoutSuggestions();
   updateRemainingSuggestionsCount();
-};
-
-export function sortHangoutSuggestions(): void {
-  const sortMode: 'likes' | 'votes' = hangoutSuggestionState.sortingMode
-  hangoutSuggestionState.suggestions.sort((a, b) => b[`${sortMode}_count`] - a[`${sortMode}_count`]);
 };
 
 function loadEventListeners(): void {

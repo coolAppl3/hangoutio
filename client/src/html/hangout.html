@@ -1387,10 +1387,7 @@
             </div>
           </div>
 
-          <div
-            id="suggestion-filters"
-            class="expanded"
-          >
+          <div id="suggestion-filters">
             <div id="suggestion-filters-header">
               <button
                 type="button"
@@ -1432,8 +1429,7 @@
                 <div class="btn-container group/suggestionsSort">
                   <button
                     type="button"
-                    id="suggestions-sort-btn"
-                    onclick="this.parentElement.classList.toggle('expanded')"
+                    id="suggestions-sort-container-btn"
                   >
                     <span>Most likes</span>
 
@@ -1459,12 +1455,14 @@
                   <div class="btn-container-inner">
                     <button
                       type="button"
+                      class="suggestions-sort-btn"
                       data-sortBy="likes"
                     >
                       Most likes
                     </button>
                     <button
                       type="button"
+                      class="suggestions-sort-btn"
                       data-sortBy="votes"
                     >
                       Most votes
