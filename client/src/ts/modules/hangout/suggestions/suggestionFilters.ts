@@ -343,13 +343,13 @@ function switchApplyFiltersBtn(enable: boolean): void {
 
   if (!enable) {
     suggestionFiltersApplyBtn.classList.add('disabled');
-    suggestionFiltersApplyBtn.setAttribute('disabled', '');
+    suggestionFiltersApplyBtn.disabled = true;
 
     return;
   };
 
   suggestionFiltersApplyBtn.classList.remove('disabled');
-  suggestionFiltersApplyBtn.removeAttribute('disabled');
+  suggestionFiltersApplyBtn.disabled = false;
 };
 
 function collapseFilterDropdown(): void {
