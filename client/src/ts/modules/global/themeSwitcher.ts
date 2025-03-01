@@ -5,7 +5,11 @@ export default function themeSwitcher(): void {
   themeBtn?.addEventListener('click', changeTheme);
   themeBtn?.addEventListener('keyup', handleThemeBtnKeyEvents);
 
-  document.documentElement.classList.remove('loading');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove('loading');
+    });
+  });
 };
 
 function setTheme(): void {
