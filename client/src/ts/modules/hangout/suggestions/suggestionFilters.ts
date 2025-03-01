@@ -1,4 +1,4 @@
-import { HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -363,13 +363,21 @@ export function sortHangoutSuggestions(): void {
 };
 
 function handleSuggestionsSortClicks(sortBtn: HTMLButtonElement): void {
+  const current_stage: number | undefined = globalHangoutState.data?.hangoutDetails.current_stage;
   const sortBy: string | null = sortBtn.getAttribute('data-sortBy');
 
   if (sortBy !== 'likes' && sortBy !== 'votes') {
     return;
   };
 
-  if (sortBy === 'votes' && globalHangoutState.data?.hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+  if (sortBy === 'likes' && current_stage !== HANGOUT_AVAILABILITY_STAGE) {
+    popup('No likes found to sort by.', 'error');
+    collapseSortingContainer();
+
+    return;
+  };
+
+  if (sortBy === 'votes' && current_stage !== HANGOUT_VOTING_STAGE) {
     popup('No votes found to sort by.', 'error');
     collapseSortingContainer();
 
