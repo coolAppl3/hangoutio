@@ -1,4 +1,4 @@
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -370,7 +370,7 @@ function handleSuggestionsSortClicks(sortBtn: HTMLButtonElement): void {
     return;
   };
 
-  if (sortBy === 'likes' && current_stage !== HANGOUT_AVAILABILITY_STAGE) {
+  if (sortBy === 'likes' && current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
     popup('No likes found to sort by.', 'error');
     collapseSortingContainer();
 
