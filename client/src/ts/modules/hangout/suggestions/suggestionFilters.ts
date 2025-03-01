@@ -232,7 +232,7 @@ function cancelFilterChanges(): void {
 
   collapseFilterDropdown();
 
-  if (!utilityChangesFound && memberChangesFound) {
+  if (!utilityChangesFound && !memberChangesFound) {
     return;
   };
 
