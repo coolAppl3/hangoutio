@@ -29,7 +29,7 @@ function toggleHangoutPassword(): void {
   if (hangoutFormState.isPasswordProtected) {
     hangoutPasswordToggleBtn?.classList.add('checked');
     hangoutPasswordInput?.parentElement?.classList.remove('disabled');
-    hangoutPasswordInput?.removeAttribute('disabled');
+    hangoutPasswordInput && (hangoutPasswordInput.disabled = false);
 
     return;
   };
@@ -37,7 +37,7 @@ function toggleHangoutPassword(): void {
   if (!hangoutFormState.isPasswordProtected) {
     hangoutPasswordToggleBtn?.classList.remove('checked');
     hangoutPasswordInput?.parentElement?.classList.add('disabled');
-    hangoutPasswordInput?.setAttribute('disabled', '');
+    hangoutPasswordInput && (hangoutPasswordInput.disabled = true);
 
     hangoutPasswordInput && (hangoutPasswordInput.value = '');
     hangoutPasswordInput && ErrorSpan.hide(hangoutPasswordInput);

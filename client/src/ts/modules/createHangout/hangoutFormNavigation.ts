@@ -94,19 +94,19 @@ function displayNavButtons(): void {
   };
 
   previousStepBtn.style.display = 'none';
-  previousStepBtn.setAttribute('disabled', '');
+  previousStepBtn.disabled = true;
 
   nextStepBtn.style.display = 'none';
-  nextStepBtn.setAttribute('disabled', '');
+  nextStepBtn.disabled = true;
 
   if (hangoutFormNavigationState.currentStep > 1) {
     previousStepBtn.style.display = 'flex';
-    previousStepBtn.removeAttribute('disabled');
+    previousStepBtn.disabled = false;
   };
 
   if (hangoutFormNavigationState.currentStep < hangoutFormNavigationState.totalSteps) {
     nextStepBtn.style.display = 'block';
-    nextStepBtn.removeAttribute('disabled');
+    nextStepBtn.disabled = false;
   };
 };
 

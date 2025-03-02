@@ -161,5 +161,5 @@ function disableRecoveryEmailInput(): void {
   };
 
   recoveryEmailInput.parentElement?.classList.add('disabled');
-  recoveryEmailInput.setAttribute('disabled', '');
+  recoveryEmailInput.disabled = true;
 };

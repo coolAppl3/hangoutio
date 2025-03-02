@@ -402,7 +402,7 @@ function validateTimeSlotInput(input: HTMLInputElement): boolean {
 
 function isValidTimeSlotString(slotString: string): boolean {
   const timeRegex: RegExp = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
-  return timeRegex.test(slotString);;
+  return timeRegex.test(slotString);
 };
 
 // --- --- ---
@@ -488,7 +488,7 @@ export function createCalendarCell(date: number, forbidden: boolean = false): HT
 
   if (forbidden) {
     dateCell.classList.add('forbidden');
-    dateCell.setAttribute('disabled', '');
+    dateCell.disabled = true;
   };
 
   return dateCell;

@@ -1,4 +1,5 @@
-import { HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { debounce } from "../../global/debounce";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -17,6 +18,7 @@ interface SuggestionFiltersState {
   tempFilteredMembersSet: Set<number>,
 
   sortingMode: 'likes' | 'votes',
+  searchQuery: string,
 };
 
 export const suggestionFiltersState: SuggestionFiltersState = {
@@ -29,6 +31,7 @@ export const suggestionFiltersState: SuggestionFiltersState = {
   tempFilteredMembersSet: new Set<number>(),
 
   sortingMode: 'likes',
+  searchQuery: '',
 };
 
 const suggestionFiltersElement: HTMLDivElement | null = document.querySelector('#suggestion-filters');
@@ -40,6 +43,8 @@ const filterByVotedForBtn: HTMLButtonElement | null = document.querySelector('#f
 
 const suggestionsSortElement: HTMLDivElement | null = document.querySelector('#suggestions-sort');
 const suggestionsSortContainerBtn: HTMLButtonElement | null = document.querySelector('#suggestions-sort-container-btn');
+
+const suggestionsSearchInput: HTMLInputElement | null = document.querySelector('#suggestions-search-input');
 
 export function initHangoutSuggestionsFilter(): void {
   if (!globalHangoutState.data) {
@@ -74,6 +79,7 @@ export function renderMemberFilters(): void {
 
 function loadEventListeners(): void {
   suggestionFiltersElement?.addEventListener('click', handleSuggestionFiltersClicks);
+  suggestionsSearchInput?.addEventListener('keyup', searchSuggestions);
 };
 
 function handleSuggestionFiltersClicks(e: MouseEvent): void {
@@ -143,10 +149,14 @@ function handleCheckboxClicks(checkboxBtn: HTMLButtonElement): void {
 };
 
 export function filterSuggestions(suggestions: Suggestion[]): Suggestion[] {
-  const { filterByLiked, filterByVotedFor, memberFiltersApplied, mainFilteredMembersSet } = suggestionFiltersState;
+  const { searchQuery, filterByLiked, filterByVotedFor, memberFiltersApplied, mainFilteredMembersSet } = suggestionFiltersState;
   const { memberLikesSet, memberVotesSet } = hangoutSuggestionState;
 
   return suggestions.filter((suggestion: Suggestion) => {
+    if (!suggestion.suggestion_title.toLowerCase().includes(searchQuery)) {
+      return false;
+    };
+
     if (memberFiltersApplied && !mainFilteredMembersSet.has(suggestion.hangout_member_id || 0)) {
       return false;
     };
@@ -169,6 +179,7 @@ export function filterSuggestions(suggestions: Suggestion[]): Suggestion[] {
     return false;
   });
 };
+
 
 function applySuggestionFilters(): void {
   LoadingModal.display();
@@ -232,7 +243,7 @@ function cancelFilterChanges(): void {
 
   collapseFilterDropdown();
 
-  if (!utilityChangesFound && memberChangesFound) {
+  if (!utilityChangesFound && !memberChangesFound) {
     return;
   };
 
@@ -343,13 +354,13 @@ function switchApplyFiltersBtn(enable: boolean): void {
 
   if (!enable) {
     suggestionFiltersApplyBtn.classList.add('disabled');
-    suggestionFiltersApplyBtn.setAttribute('disabled', '');
+    suggestionFiltersApplyBtn.disabled = true;
 
     return;
   };
 
   suggestionFiltersApplyBtn.classList.remove('disabled');
-  suggestionFiltersApplyBtn.removeAttribute('disabled');
+  suggestionFiltersApplyBtn.disabled = false;
 };
 
 function collapseFilterDropdown(): void {
@@ -363,13 +374,21 @@ export function sortHangoutSuggestions(): void {
 };
 
 function handleSuggestionsSortClicks(sortBtn: HTMLButtonElement): void {
+  const current_stage: number | undefined = globalHangoutState.data?.hangoutDetails.current_stage;
   const sortBy: string | null = sortBtn.getAttribute('data-sortBy');
 
   if (sortBy !== 'likes' && sortBy !== 'votes') {
     return;
   };
 
-  if (sortBy === 'votes' && globalHangoutState.data?.hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+  if (sortBy === 'likes' && current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
+    popup('No likes found to sort by.', 'error');
+    collapseSortingContainer();
+
+    return;
+  };
+
+  if (sortBy === 'votes' && current_stage !== HANGOUT_VOTING_STAGE) {
     popup('No votes found to sort by.', 'error');
     collapseSortingContainer();
 
@@ -391,4 +410,21 @@ function handleSuggestionsSortClicks(sortBtn: HTMLButtonElement): void {
 
 function collapseSortingContainer(): void {
   suggestionsSortElement?.classList.remove('expanded');
+};
+
+// search
+function searchSuggestions(): void {
+  if (!suggestionsSearchInput) {
+    return;
+  };
+
+  const searchQuery: string = suggestionsSearchInput.value;
+  debounceSearch(searchQuery);
+};
+
+const debounceSearch = debounce(showSearchResults, 300);
+
+function showSearchResults(searchQuery: string): void {
+  suggestionFiltersState.searchQuery = searchQuery.toLowerCase();
+  renderSuggestionsSection();
 };
