@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.44] (2025-03-02)
+
+### Features
+
+- Added `debounce.ts` as a general global module to be used throughout the app where needed.
+- Added suggestions search logic.
+
+
+### Code Refactoring
+
+- Changed the footer's border color to bg-dark when the light theme is on to blend well.
+- Refactored how the `disabled` attribute is added and removed throughout the app.
+
+
+### Bug Fixes
+
+- Fixed a small bug in how filter changes are cancelled.
+- Fixed theme-related flickering being reintroduced in the last patch.
+  - Nested `requestAnimationFrame()` statements are now used in `themeSwitcher()` to guarantee that transitions start being allowed after the next repaint.
+
+
 ## [0.4.43] (2025-02-27)
 
 ### Bug Fixes
