@@ -11,7 +11,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { Suggestion } from "../hangoutTypes";
 import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./suggestionFilters";
 import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
-import { createSuggestionElement, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
+import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -468,45 +468,6 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
       };
     };
   };
-};
-
-function displaySuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
-  const suggestionLikesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.rating-container span');
-
-  if (!suggestionLikesCountSpan) {
-    return;
-  };
-
-  const suggestionLikesCountString: string | null = suggestionLikesCountSpan.textContent;
-
-  if (!suggestionLikesCountString || !Number.isInteger(+suggestionLikesCountString)) {
-    return;
-  };
-
-  const suggestionLikesCount: number = +suggestionLikesCountString;
-  suggestionLikesCountSpan.textContent = `${suggestionLikesCount + 1}`;
-
-  suggestionElement.classList.remove('like-pending');
-  suggestionElement.classList.add('liked');
-};
-
-function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
-  const suggestionLikesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.rating-container span');
-
-  if (!suggestionLikesCountSpan) {
-    return;
-  };
-
-  const suggestionLikesCountString: string | null = suggestionLikesCountSpan.textContent;
-
-  if (!suggestionLikesCountString || !Number.isInteger(+suggestionLikesCountString)) {
-    return;
-  };
-
-  const suggestionLikesCount: number = +suggestionLikesCountString;
-  suggestionLikesCountSpan.textContent = `${(suggestionLikesCount - 1) < 0 ? 0 : suggestionLikesCount - 1}`;
-
-  suggestionElement.classList.remove('like-pending', 'liked');
 };
 
 async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
