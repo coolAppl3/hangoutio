@@ -24,7 +24,7 @@ export default class LoadingModal {
 
   private static createModalSpinner(): HTMLDivElement {
     const modalSpinner: HTMLDivElement = document.createElement('div');
-    modalSpinner.className = 'spinner';
+    modalSpinner.className = 'loading-modal-spinner';
 
     return modalSpinner;
   };
