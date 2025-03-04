@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
@@ -15,28 +15,33 @@ import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLik
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
+  suggestionsSectionMutationObserverActive: boolean,
 
   suggestions: Suggestion[],
   memberLikesSet: Set<number>,
   memberVotesSet: Set<number>,
 
-  pageCount: number,
-  pageItemsCount: number,
+  maxSuggestionsToRender: number,
+  suggestionsRenderLimit: number,
 };
 
 export const hangoutSuggestionState: HangoutSuggestionsState = {
   isLoaded: false,
+  suggestionsSectionMutationObserverActive: false,
 
   suggestions: [],
   memberLikesSet: new Set<number>(),
   memberVotesSet: new Set<number>(),
 
-  pageCount: 1,
-  pageItemsCount: 0,
+  maxSuggestionsToRender: 10,
+  suggestionsRenderLimit: MAX_HANGOUT_MEMBERS_LIMIT * HANGOUT_SUGGESTIONS_LIMIT,
 };
 
 const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
 const suggestionsContainer: HTMLDivElement | null = document.querySelector('#suggestions-container');
+
+const suggestionsSectionElement: HTMLDivElement | null = document.querySelector('#suggestions-section');
+const renderMoreSuggestionsBtn: HTMLButtonElement | null = document.querySelector('#render-more-suggestions-btn');
 
 export function hangoutSuggestions(): void {
   loadEventListeners();
@@ -54,7 +59,6 @@ async function initHangoutSuggestions(): Promise<void> {
   };
 
   LoadingModal.display();
-
   await getHangoutSuggestions();
 
   initHangoutSuggestionsForm();
@@ -69,6 +73,10 @@ async function initHangoutSuggestions(): Promise<void> {
 export function renderSuggestionsSection(): void {
   displayHangoutSuggestions();
   updateRemainingSuggestionsCount();
+
+  if (!hangoutSuggestionState.suggestionsSectionMutationObserverActive) {
+    initSuggestionsSectionMutationObserver();
+  };
 };
 
 function loadEventListeners(): void {
@@ -81,6 +89,7 @@ function loadEventListeners(): void {
   });
 
   suggestionsContainer?.addEventListener('click', handleSuggestionsContainerClicks);
+  renderMoreSuggestionsBtn?.addEventListener('click', renderMoreSuggestions);
 };
 
 async function getHangoutSuggestions(): Promise<void> {
@@ -146,6 +155,7 @@ async function getHangoutSuggestions(): Promise<void> {
 
 function displayHangoutSuggestions(): void {
   if (!suggestionsContainer || !globalHangoutState.data) {
+    renderMoreSuggestionsBtn?.classList.add('hidden');
     return;
   };
 
@@ -153,13 +163,14 @@ function displayHangoutSuggestions(): void {
     suggestionsContainer.firstElementChild?.remove();
     suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions found'));
 
+    renderMoreSuggestionsBtn?.classList.add('hidden');
     return;
   };
 
   const innerSuggestionsContainer: HTMLDivElement = createDivElement('suggestions-container-inner');
 
   const { isLeader, hangoutDetails } = globalHangoutState.data;
-  const { suggestions, pageCount } = hangoutSuggestionState;
+  const { suggestions, maxSuggestionsToRender } = hangoutSuggestionState;
 
   const filteredSuggestions: Suggestion[] = filterSuggestions(suggestions);
 
@@ -167,16 +178,18 @@ function displayHangoutSuggestions(): void {
     suggestionsContainer.firstElementChild?.remove();
     suggestionsContainer.appendChild(createParagraphElement('no-suggestions', 'No suggestions match these filters'));
 
+    renderMoreSuggestionsBtn?.classList.add('hidden');
     return;
   };
 
-  for (let i = (pageCount * 10) - 10; i < (pageCount * 10); i++) {
-    if (i >= filteredSuggestions.length) {
-      break;
+  for (let i = 0; i < maxSuggestionsToRender; i++) {
+    const suggestion: Suggestion | undefined = filteredSuggestions[i];
+
+    if (!suggestion) {
+      continue;
     };
 
-    innerSuggestionsContainer.appendChild(createSuggestionElement(filteredSuggestions[i], isLeader));
-    hangoutSuggestionState.pageItemsCount = (i + 1) % 10 && (i + 1);
+    innerSuggestionsContainer.appendChild(createSuggestionElement(suggestion, isLeader));
   };
 
   suggestionsContainer.firstElementChild?.remove();
@@ -185,6 +198,13 @@ function displayHangoutSuggestions(): void {
   if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
     suggestionsContainer.classList.add('in-voting-stage');
   };
+
+  if (maxSuggestionsToRender < filteredSuggestions.length) {
+    renderMoreSuggestionsBtn?.classList.remove('hidden');
+    return;
+  };
+
+  renderMoreSuggestionsBtn?.classList.add('hidden');
 };
 
 function updateRemainingSuggestionsCount(): void {
@@ -693,4 +713,32 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
       };
     };
   };
+};
+
+function renderMoreSuggestions(): void {
+  const { maxSuggestionsToRender: suggestionsToRender, suggestionsRenderLimit } = hangoutSuggestionState;
+  hangoutSuggestionState.maxSuggestionsToRender = Math.min(suggestionsRenderLimit, suggestionsToRender + 20);
+
+  displayHangoutSuggestions();
+};
+
+function initSuggestionsSectionMutationObserver(): void {
+  if (!suggestionsSectionElement) {
+    return;
+  };
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === 'class' && suggestionsSectionElement.classList.contains('hidden')) {
+        hangoutSuggestionState.maxSuggestionsToRender = 10;
+        hangoutSuggestionState.suggestionsSectionMutationObserverActive = false;
+
+        observer.disconnect();
+        return;
+      };
+    };
+  });
+
+  observer.observe(suggestionsSectionElement, { attributes: true, attributeFilter: ['class'], subtree: false });
+  hangoutSuggestionState.suggestionsSectionMutationObserverActive = true;
 };
