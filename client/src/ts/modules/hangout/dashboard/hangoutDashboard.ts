@@ -318,9 +318,9 @@ function pushUserAndLeaderToFront(hangoutMembers: HangoutMember[]): void {
   };
 
   const [userMember] = hangoutMembers.splice(userIndex, 1);
-  hangoutMembers.unshift(userMember);
+  userMember && hangoutMembers.unshift(userMember);
 
-  if (userMember.is_leader) {
+  if (userMember?.is_leader) {
     return;
   };
 
@@ -331,7 +331,7 @@ function pushUserAndLeaderToFront(hangoutMembers: HangoutMember[]): void {
   };
 
   const [leaderMember] = hangoutMembers.splice(leaderIndex, 1);
-  hangoutMembers.splice(1, 0, leaderMember);
+  leaderMember && hangoutMembers.splice(1, 0, leaderMember);
 };
 
 function renderLatestMessages(): void {
@@ -349,11 +349,13 @@ function renderLatestMessages(): void {
   const dashboardChatContainerInner: HTMLDivElement = createDivElement(null, 'dashboard-chat-container-inner');
 
   for (let i = 0; i < 2; i++) {
-    if (!hangoutDashboardState.latestHangoutMessages[i]) {
+    const message: HangoutMessage | undefined = hangoutDashboardState.latestHangoutMessages[i];
+
+    if (!message) {
       break;
     };
 
-    dashboardChatContainerInner.insertAdjacentElement('afterbegin', createDashboardMessage(hangoutDashboardState.latestHangoutMessages[i]));
+    dashboardChatContainerInner.insertAdjacentElement('afterbegin', createDashboardMessage(message));
   };
 
   dashboardChatContainer.firstElementChild?.remove();
@@ -374,11 +376,13 @@ function renderLatestEvents(): void {
   const dashboardEventsContainer: HTMLDivElement = createDivElement(null, 'dashboard-events-container');
 
   for (let i = 0; i < 2; i++) {
-    if (!hangoutDashboardState.latestHangoutEvents[i]) {
+    const hangoutEvent: HangoutEvent | undefined = hangoutDashboardState.latestHangoutEvents[i];
+
+    if (!hangoutEvent) {
       break;
     };
 
-    dashboardEventsContainer.insertAdjacentElement('afterbegin', createDashboardEvent(hangoutDashboardState.latestHangoutEvents[i]));
+    dashboardEventsContainer.insertAdjacentElement('afterbegin', createDashboardEvent(hangoutEvent));
   };
 
   dashboardEventsElement.firstElementChild?.remove();

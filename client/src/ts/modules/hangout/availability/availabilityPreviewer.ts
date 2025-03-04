@@ -81,7 +81,11 @@ function findPreviousDateTimestamp(selectedDateTimestamp: number): number | null
   const selectedDate: number = new Date(selectedDateTimestamp).getDate();
 
   for (let i = hangoutAvailabilityState.availabilitySlots.length - 1; i >= 0; i--) {
-    const slot: AvailabilitySlot = hangoutAvailabilityState.availabilitySlots[i];
+    const slot: AvailabilitySlot | undefined = hangoutAvailabilityState.availabilitySlots[i];
+
+    if (!slot) {
+      continue;
+    };
 
     if (slot.slot_start_timestamp >= selectedDateTimestamp) {
       continue;
@@ -106,7 +110,11 @@ function findNextDateTimestamp(selectedDateTimestamp: number): number | null {
   const selectedDate: number = new Date(selectedDateTimestamp).getDate();
 
   for (let i = 0; i < hangoutAvailabilityState.availabilitySlots.length; i++) {
-    const slot: AvailabilitySlot = hangoutAvailabilityState.availabilitySlots[i];
+    const slot: AvailabilitySlot | undefined = hangoutAvailabilityState.availabilitySlots[i];
+
+    if (!slot) {
+      continue
+    };
 
     if (slot.slot_start_timestamp <= selectedDateTimestamp) {
       continue;
@@ -178,7 +186,8 @@ function createAvailabilityPreviewerSlotsContainer(selectedDateTimestamp: number
 
 function createMemberElement(memberSlotData: MemberSlotData): HTMLDivElement {
   const memberElement: HTMLDivElement = createDivElement('member');
-  memberElement.setAttribute('data-member-id', `${memberSlotData.slots[0].hangout_member_id}`);
+  const hangoutMemberId: number | undefined = memberSlotData.slots[0]?.hangout_member_id;
+  hangoutMemberId && memberElement.setAttribute('data-member-id', `${hangoutMemberId}`);
 
   memberElement.appendChild(createParagraphElement('member-name', memberSlotData.display_name));
   memberElement.appendChild(createMemberSlotsContainer(memberSlotData.slots));

@@ -163,11 +163,22 @@ function submitDateAndTime(e: SubmitEvent): void {
   const slotStartString: string = timePickerSlotStartInput.value;
   const slotEndString: string = timePickerSlotEndInput.value;
 
-  const slotStartHours: number = +slotStartString.split(':')[0];
-  const slotStartMinutes: number = +slotStartString.split(':')[1];
+  const slotStartArr: string[] = slotStartString.split(':');
+  const slotEndArr: string[] = slotEndString.split(':');
 
-  const slotEndHours: number = +slotEndString.split(':')[0];
-  const slotEndMinutes: number = +slotEndString.split(':')[1];
+  const slotStartHours: number | null = slotStartArr[0] ? +slotStartArr[0] : null;
+  const slotStartMinutes: number | null = slotStartArr[1] ? +slotStartArr[1] : null;
+
+  if (slotStartHours === null || slotStartMinutes === null) {
+    return;
+  };
+
+  const slotEndHours: number | null = slotEndArr[0] ? +slotEndArr[0] : null;
+  const slotEndMinutes: number | null = slotEndArr[1] ? +slotEndArr[1] : null;
+
+  if (slotEndHours === null || slotEndMinutes === null) {
+    return;
+  };
 
   const startTimestamp: number = new Date(currentYear, currentMonth, selectedDate, slotStartHours, slotStartMinutes).getTime();
   const endTimestamp: number = new Date(currentYear, currentMonth, (timeSlotExtended ? selectedDate + 1 : selectedDate), slotEndHours, slotEndMinutes).getTime();

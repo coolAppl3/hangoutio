@@ -99,11 +99,13 @@ export default class SliderInput {
       xCoordinates = e.clientX;
 
     } else {
-      if (e instanceof TouchEvent) {
-        e.preventDefault();
+      e instanceof TouchEvent && e.preventDefault();
+      const touch: Touch | undefined = e.touches[0];
+
+      if (!touch) {
+        return;
       };
 
-      const touch = e.touches[0];
       xCoordinates = touch.clientX;
     };
 
