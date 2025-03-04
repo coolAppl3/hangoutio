@@ -1580,126 +1580,13 @@
 
           <div id="suggestions-container"></div>
 
-          <div id="suggestions-pagination">
-            <div id="suggestions-pagination-container">
-              <button
-                class="svg w-2 h-2"
-                type="button"
-                id="suggestions-page-first"
-              >
-                <svg
-                  width="600"
-                  height="600"
-                  viewBox="0 0 600 600"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M530 100L330 300L530 500M270 100L70 300L270 500"
-                    class="stroke-description dark:stroke-description-dark"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <button
-                class="svg w-2 h-2"
-                type="button"
-                id="suggestions-page-backwards"
-              >
-                <svg
-                  width="600"
-                  height="600"
-                  viewBox="0 0 600 600"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M400 100L200 300L400 500"
-                    class="stroke-description dark:stroke-description-dark"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <div id="suggestions-pagination-pages">
-                <button
-                  type="button"
-                  class="page-number selected"
-                  data-page-number="1"
-                >
-                  1
-                </button>
-                <button
-                  type="button"
-                  class="page-number"
-                  data-page-number="2"
-                >
-                  2
-                </button>
-                <button
-                  type="button"
-                  class="page-number"
-                  data-page-number="3"
-                >
-                  3
-                </button>
-              </div>
-
-              <button
-                class="svg w-2 h-2"
-                type="button"
-                id="suggestions-page-forwards"
-              >
-                <svg
-                  width="600"
-                  height="600"
-                  viewBox="0 0 600 600"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M200 500L400 300L200 100"
-                    class="stroke-description dark:stroke-description-dark"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <button
-                class="svg w-2 h-2"
-                type="button"
-                id="suggestions-page-last"
-              >
-                <svg
-                  width="600"
-                  height="600"
-                  viewBox="0 0 600 600"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M70 500L270 300L70 100M330 500L530 300L330 100"
-                    class="stroke-description dark:stroke-description-dark"
-                    stroke-width="90"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <p id="suggestions-pagination-footer">
-              Showing <span id="suggestions-pagination-first">1</span> - <span id="suggestions-pagination-last">6</span> out of
-              <span id="suggestions-pagination-total">6</span>
-            </p>
-          </div>
+          <button
+            type="button"
+            class="btn bg-cta dark:bg-cta-dark md:w-full mx-auto hidden"
+            id="render-more-suggestions-btn"
+          >
+            Display more suggestions
+          </button>
         </div>
       </div>
     </section>

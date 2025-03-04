@@ -28,8 +28,8 @@ export function clearVerificationCookies(): void {
 };
 
 export function reloadWithoutQueryString(): void {
-  const hrefWithoutQueryString: string = window.location.href.split('?')[0];
-  window.location.replace(hrefWithoutQueryString);
+  const hrefWithoutQueryString: string | undefined = window.location.href.split('?')[0];
+  hrefWithoutQueryString && window.location.replace(hrefWithoutQueryString);
 };
 
 export function initVerificationTimer(): void {

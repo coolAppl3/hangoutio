@@ -117,6 +117,10 @@
     }
   }
 
+  .spinner {
+    @apply rounded-[100%] border-[6px] border-solid border-primary dark:border-primary-dark border-l-cta dark:border-l-cta-dark animate-spin;
+  }
+
   .link {
     @apply text-blue-700 dark:text-blue-500 underline transition-[filter] hover:brightness-200 dark:hover:brightness-150 cursor-pointer;
   }
@@ -315,19 +319,8 @@
 #loading-modal {
   @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[30] grid place-items-center;
 
-  .spinner {
-    @apply block h-5 w-5 rounded-[100%] border-[6px] border-solid border-primary dark:border-primary-dark border-l-cta dark:border-l-cta-dark;
-    animation: spin 500ms infinite linear forwards;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-
-    100% {
-      transform: rotate(360deg);
-    }
+  .loading-modal-spinner {
+    @apply block h-5 w-5 border-[8px] spinner;
   }
 }
 

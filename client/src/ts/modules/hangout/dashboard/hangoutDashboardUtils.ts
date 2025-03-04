@@ -210,7 +210,8 @@ export function getHangoutStageTitle(currentStage: number): string {
     return 'Failed to load';
   };
 
-  return hangoutStages[currentStage - 1];
+  const hangoutStageTitle: string | undefined = hangoutStages[currentStage - 1];
+  return hangoutStageTitle || 'Failed to load';
 };
 
 export function getNextHangoutStageTitle(currentStage: number): string {
@@ -265,7 +266,13 @@ function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: nu
   };
 
   const hangoutStageArray: number[] = [availability_period, suggestions_period, voting_period];
-  const millisecondsTillNextStage: number = hangoutStageArray[current_stage - 1] - (Date.now() - stage_control_timestamp);
+  const hangoutStageLength: number | undefined = hangoutStageArray[current_stage - 1];
+
+  if (!hangoutStageLength) {
+    return;
+  };
+
+  const millisecondsTillNextStage: number = hangoutStageLength - (Date.now() - stage_control_timestamp);
 
   if (millisecondsTillNextStage < minuteMilliseconds) {
     nextStageTimeSpan.textContent = 'Less than a minute';

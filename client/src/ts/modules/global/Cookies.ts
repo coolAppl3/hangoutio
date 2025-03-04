@@ -33,10 +33,14 @@ export default class Cookies {
     const cookiesArray: string[] = cookies.split('; ');
 
     for (const cookie of cookiesArray) {
-      const mapKey: string = cookie.split('=')[0];
-      const mapValue: string = cookie.split('=')[1];
+      const key: string | undefined = cookie.split('=')[0];
+      const value: string | undefined = cookie.split('=')[1];
 
-      cookieMap.set(mapKey, mapValue);
+      if (!key || !value) {
+        continue;
+      };
+
+      cookieMap.set(key, value);
     };
 
     return cookieMap;

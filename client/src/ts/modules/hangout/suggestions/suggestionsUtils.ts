@@ -30,7 +30,46 @@ export function updateSuggestionDropdownMenuBtnAttributes(suggestionElement: HTM
   dropdownMenuBtn.setAttribute('aria-label', isExpanded ? 'Collapse suggestion options' : 'Expand suggestion options');
 };
 
-// --- --- ---
+export function displaySuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
+  const suggestionLikesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.rating-container span');
+
+  if (!suggestionLikesCountSpan) {
+    return;
+  };
+
+  const suggestionLikesCountString: string | null = suggestionLikesCountSpan.textContent;
+
+  if (!suggestionLikesCountString || !Number.isInteger(+suggestionLikesCountString)) {
+    return;
+  };
+
+  const suggestionLikesCount: number = +suggestionLikesCountString;
+  suggestionLikesCountSpan.textContent = `${suggestionLikesCount + 1}`;
+
+  suggestionElement.classList.remove('like-pending');
+  suggestionElement.classList.add('liked');
+};
+
+export function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): void {
+  const suggestionLikesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.rating-container span');
+
+  if (!suggestionLikesCountSpan) {
+    return;
+  };
+
+  const suggestionLikesCountString: string | null = suggestionLikesCountSpan.textContent;
+
+  if (!suggestionLikesCountString || !Number.isInteger(+suggestionLikesCountString)) {
+    return;
+  };
+
+  const suggestionLikesCount: number = +suggestionLikesCountString;
+  suggestionLikesCountSpan.textContent = `${(suggestionLikesCount - 1) < 0 ? 0 : suggestionLikesCount - 1}`;
+
+  suggestionElement.classList.remove('like-pending', 'liked');
+};
+
+// suggestions-related DOM utils
 
 export function createSuggestionElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionElement: HTMLDivElement = createDivElement('suggestion');
@@ -176,7 +215,7 @@ function createDropdownIcon(): SVGSVGElement {
   return dropdownSvgElement;
 };
 
-// --- --- ---
+// filter-related DOM utils
 
 export function createSuggestionsMemberFilterItem(hangoutMemberId: number, displayName: string, isFiltered: boolean, isUser: boolean): HTMLDivElement {
   const filterItem: HTMLDivElement = createDivElement('filter-item');
