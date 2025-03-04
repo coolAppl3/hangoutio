@@ -59,12 +59,12 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
       [requestData.username]
     );
 
-    if (guestRows.length === 0) {
+    const guestDetails: GuestDetails | undefined = guestRows[0];
+
+    if (!guestDetails) {
       res.status(404).json({ message: 'Guest account not found.' });
       return;
     };
-
-    const guestDetails: GuestDetails = guestRows[0];
 
     const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, guestDetails.hashed_password);
     if (!isCorrectPassword) {

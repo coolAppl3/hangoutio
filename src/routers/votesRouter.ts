@@ -77,14 +77,14 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       [authSessionId]
     );
 
-    if (authSessionRows.length === 0) {
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0]
+
+    if (!authSessionDetails) {
       removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
     };
-
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
@@ -134,14 +134,14 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       }
     );
 
-    if (hangoutMemberRows.length === 0) {
+    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
+
+    if (!hangoutMemberDetails) {
       await connection.rollback();
       res.status(404).json({ message: 'Hangout not found.' });
 
       return;
     };
-
-    const hangoutMemberDetails: HangoutMemberDetails = hangoutMemberRows[0];
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
@@ -208,9 +208,11 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       [requestData.suggestionId, requestData.hangoutMemberId]
     );
 
-    if (suggestionAvailabilityRows.length === 0) {
+    const suggestionAvailabilityDetails: SuggestionAvailabilitySlots | undefined = suggestionAvailabilityRows[0];
+
+    if (!suggestionAvailabilityDetails) {
       await connection.rollback();
-      res.status(409).json({ message: `Your availability doesn't match this suggestions time slot.` });
+      res.status(409).json({ message: `Your availability doesn't match this suggestion's time slot.` });
 
       return;
     };
@@ -221,8 +223,8 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     };
 
     const suggestionTimeSlot: SuggestionTimeSlot = {
-      start: suggestionAvailabilityRows[0].suggestion_start_timestamp,
-      end: suggestionAvailabilityRows[0].suggestion_end_timestamp,
+      start: suggestionAvailabilityDetails.suggestion_start_timestamp,
+      end: suggestionAvailabilityDetails.suggestion_end_timestamp,
     };
 
     interface AvailabilitySlot {
@@ -339,9 +341,9 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
 
-    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+    if (!authSessionDetails || !authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
@@ -383,9 +385,9 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const hangoutMemberDetails: HangoutMemberDetails = hangoutMemberRows[0];
+    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
 
-    if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
+    if (!hangoutMemberDetails || hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'guestHangoutId');
 
@@ -499,9 +501,9 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
 
-    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+    if (!authSessionDetails || !authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
@@ -542,9 +544,9 @@ votesRouter.delete('/clear', async (req: Request, res: Response) => {
       return;
     };
 
-    const hangoutMemberDetails: HangoutMemberDetails = hangoutMemberRows[0];
+    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
 
-    if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
+    if (!hangoutMemberDetails || hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
