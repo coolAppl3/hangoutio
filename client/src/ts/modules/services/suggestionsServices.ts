@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
-import { Suggestion, SuggestionLike, Vote } from "../hangout/hangoutTypes";
+import { Suggestion } from "../hangout/hangoutTypes";
 
 axios.defaults.withCredentials = true;
 

@@ -1,5 +1,3 @@
-import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
-
 interface RecoveryState {
   inPasswordUpdateStage: boolean,
 

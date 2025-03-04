@@ -607,7 +607,7 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
     return;
   };
 
-  const { hangoutMemberId, hangoutId, hangoutDetails, suggestionsCount, isLeader } = globalHangoutState.data;
+  const { hangoutMemberId, hangoutId, hangoutDetails, isLeader } = globalHangoutState.data;
   const suggestionDropdownMenu: HTMLDivElement | null = suggestionElement.querySelector('.dropdown-menu');
 
   if (suggestion.hangout_member_id === hangoutMemberId) {
