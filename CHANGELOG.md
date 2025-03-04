@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.45] (2025-03-04)
+
+### Features
+
+- Abolished the proposed pagination system in favor of a `load more` approach.
+
+
+### Code Refactoring
+
+- Added a spin animation to `tailwind.config.js` and improved how the loading modal's spinner looks and is styled.
+- Implemented `noUncheckedIndexedAccess` in `tsconfig.ts` and refactored client-side code to improve safety.
+  - This change won't be implemented on the backend as it would be redundant.
+
+
 ## [0.4.44] (2025-03-02)
 
 ### Features
