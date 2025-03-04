@@ -9,7 +9,7 @@ import { isValidHangoutId } from "../../global/validation";
 import { getHangoutExistsService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { HangoutMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
+import { ChatMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import LoadingModal from "../../global/LoadingModal";
 import { hangoutDashboardState } from "./hangoutDashboard";
@@ -336,7 +336,7 @@ function getLeaderIcon(): HTMLDivElement {
   return leaderIcon;
 };
 
-export function createDashboardMessage(message: HangoutMessage): HTMLDivElement {
+export function createDashboardMessage(message: ChatMessage): HTMLDivElement {
   const messageElement: HTMLDivElement = createDivElement('message');
 
   const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);

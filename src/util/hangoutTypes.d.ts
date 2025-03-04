@@ -31,7 +31,7 @@ export interface HangoutMemberCountables extends RowDataPacket {
   votes_count: number,
 }
 
-export interface HangoutMessage extends RowDataPacket {
+export interface ChatMessage extends RowDataPacket {
   message_id: number,
   hangout_member_id: number,
   message_content: string,

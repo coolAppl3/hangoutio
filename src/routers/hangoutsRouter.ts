@@ -15,7 +15,7 @@ import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie, setResponseCookie } from '../util/cookieUtils';
 import { createAuthSession, destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, MAX_ONGOING_HANGOUTS_LIMIT } from '../util/constants';
-import { HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutMessage, HangoutsDetails } from '../util/hangoutTypes';
+import { HangoutEvent, HangoutMember, HangoutMemberCountables, ChatMessage, HangoutsDetails } from '../util/hangoutTypes';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -1559,7 +1559,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
       HangoutsDetails[],
       HangoutMember[],
       HangoutMemberCountables[],
-      HangoutMessage[],
+      ChatMessage[],
       HangoutEvent[],
     ];
 
@@ -1637,7 +1637,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
     const hangoutDetails: HangoutsDetails | undefined = hangoutData[0][0];
     const hangoutMembers: HangoutMember[] = hangoutData[1];
     const hangoutMemberCountables: HangoutMemberCountables | undefined = hangoutData[2][0];
-    const latestHangoutChats: HangoutMessage[] = hangoutData[3];
+    const latestChatMessages: ChatMessage[] = hangoutData[3];
     const latestHangoutEvents: HangoutEvent[] = hangoutData[4];
 
     if (!hangoutDetails || !hangoutMemberCountables) {
@@ -1659,7 +1659,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
       hangoutDetails,
       hangoutMembers,
       hangoutMemberCountables,
-      latestHangoutChats,
+      latestChatMessages,
       latestHangoutEvents,
     });
 
