@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
@@ -8,7 +8,7 @@ import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
-import { Suggestion } from "../hangoutTypes";
+import { HangoutsDetails, Suggestion } from "../hangoutTypes";
 import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./suggestionFilters";
 import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
 import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
@@ -169,7 +169,7 @@ function displayHangoutSuggestions(): void {
 
   const innerSuggestionsContainer: HTMLDivElement = createDivElement('suggestions-container-inner');
 
-  const { isLeader, hangoutDetails } = globalHangoutState.data;
+  const isLeader: boolean = globalHangoutState.data.isLeader;
   const { suggestions, maxSuggestionsToRender } = hangoutSuggestionState;
 
   const filteredSuggestions: Suggestion[] = filterSuggestions(suggestions);
@@ -195,11 +195,29 @@ function displayHangoutSuggestions(): void {
   suggestionsContainer.firstElementChild?.remove();
   suggestionsContainer.appendChild(innerSuggestionsContainer);
 
+  const displayRenderMoreSuggestionsBtn: boolean = maxSuggestionsToRender < filteredSuggestions.length;
+  applySuggestionsContainerStyles(displayRenderMoreSuggestionsBtn);
+};
+
+function applySuggestionsContainerStyles(displayRenderMoreSuggestionsBtn: boolean): void {
+  if (!globalHangoutState.data || !suggestionsContainer) {
+    return;
+  };
+
+  const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
+
   if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
     suggestionsContainer.classList.add('in-voting-stage');
   };
 
-  if (maxSuggestionsToRender < filteredSuggestions.length) {
+  if (globalHangoutState.data.votesCount >= HANGOUT_VOTES_LIMIT) {
+    suggestionsContainer.classList.add('votes-limit-reached');
+
+  } else {
+    suggestionsContainer.classList.remove('votes-limit-reached');
+  };
+
+  if (displayRenderMoreSuggestionsBtn) {
     renderMoreSuggestionsBtn?.classList.remove('hidden');
     return;
   };
@@ -222,7 +240,6 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
   };
 
   if (!globalHangoutState.data) {
-    popup('Something went wrong.', 'error');
     return;
   };
 
@@ -249,6 +266,11 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
 
   if (e.target.classList.contains('view-suggestion-btn')) {
     suggestionElement.classList.toggle('expanded');
+    return;
+  };
+
+  if (e.target.classList.contains('add-vote-btn')) {
+    await handleVoteBtnClicks(suggestion.suggestion_id, e.target);
     return;
   };
 
@@ -741,4 +763,26 @@ function initSuggestionsSectionMutationObserver(): void {
 
   observer.observe(suggestionsSectionElement, { attributes: true, attributeFilter: ['class'], subtree: false });
   hangoutSuggestionState.suggestionsSectionMutationObserverActive = true;
+};
+
+async function handleVoteBtnClicks(suggestionId: number, addVoteBtn: HTMLButtonElement): Promise<void> {
+  const isLiked: boolean = hangoutSuggestionState.memberLikesSet.has(suggestionId);
+
+  if (!isLiked) {
+    await addHangoutVote(suggestionId);
+    // TODO: update button
+
+    return;
+  };
+
+  await deleteHangoutVote(suggestionId);
+  // TODO: update button
+};
+
+async function addHangoutVote(suggestionId: number): Promise<void> {
+  // TODO: continue implementation
+};
+
+async function deleteHangoutVote(suggestionId: number): Promise<void> {
+  // TODO: continue implementation
 };

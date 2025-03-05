@@ -179,10 +179,15 @@ function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
   btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
 
-  if (!globalHangoutState.data?.hangoutDetails.is_concluded) {
-    btnContainer.appendChild(createBtnElement('add-vote-btn', isVotedFor ? 'Remove vote' : 'Add vote'));
+  const addVoteBtn: HTMLButtonElement = createBtnElement('add-vote-btn', 'Add vote');
+
+  if (isVotedFor) {
+    addVoteBtn.classList.add('danger');
+    addVoteBtn.setAttribute('data-liked', 'true');
+    addVoteBtn.textContent = 'Remove vote';
   };
 
+  btnContainer.insertAdjacentElement('afterbegin', addVoteBtn);
   return btnContainer;
 };
 

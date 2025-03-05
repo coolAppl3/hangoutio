@@ -1218,8 +1218,19 @@
   }
 
   #suggestions-container {
-    &.in-voting-stage .suggestion .btn-container button.add-vote-btn {
+    &.in-voting-stage .suggestions-container-inner .suggestion .btn-container button.add-vote-btn {
       @apply block;
+    }
+
+    &.votes-limit-reached .suggestions-container-inner .suggestion .btn-container {
+
+      button.add-vote-btn {
+        @apply hidden;
+
+        &.danger {
+          @apply block;
+        }
+      }
     }
 
     &>p.no-suggestions {
@@ -1360,6 +1371,10 @@
             button {
               &.add-vote-btn {
                 @apply btn sm:w-full bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1 hidden;
+
+                &.danger {
+                  @apply bg-secondary dark:bg-secondary-dark border-danger dark:border-danger-dark text-danger dark:text-danger-dark;
+                }
               }
 
               &.view-suggestion-btn {
