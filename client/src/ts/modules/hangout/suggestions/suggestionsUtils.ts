@@ -64,7 +64,7 @@ export function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): voi
   };
 
   const suggestionLikesCount: number = +suggestionLikesCountString;
-  suggestionLikesCountSpan.textContent = `${(suggestionLikesCount - 1) < 0 ? 0 : suggestionLikesCount - 1}`;
+  suggestionLikesCountSpan.textContent = `${Math.max(suggestionLikesCount - 1, 0)}`;
 
   suggestionElement.classList.remove('like-pending', 'liked');
 };
@@ -183,7 +183,6 @@ function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
 
   if (isVotedFor) {
     addVoteBtn.classList.add('danger');
-    addVoteBtn.setAttribute('data-liked', 'true');
     addVoteBtn.textContent = 'Remove vote';
   };
 
