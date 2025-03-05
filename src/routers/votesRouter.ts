@@ -244,7 +244,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
+    await connection.execute<ResultSetHeader>(
       `INSERT INTO votes (
         hangout_member_id,
         suggestion_id,
@@ -254,7 +254,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     );
 
     await connection.commit();
-    res.status(201).json({ voteId: resultSetHeader.insertId });
+    res.status(201).json({});
 
   } catch (err: unknown) {
     console.log(err);
