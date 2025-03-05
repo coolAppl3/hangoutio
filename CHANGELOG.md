@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.46] (2025-03-05)
+
+### Features
+
+- Added `votesServices.ts` and necessary services.
+- Implemented initial structure for voting logic.
+
+
+### Code Refactoring
+
+- Implemented `noUncheckedIndexedAccess` in `tsconfig.ts` and refactored backend code for improved safety.
+- Removed a few unused variables.
+- Renamed `HangoutMessage` interface to `ChatMessage` for better readability.
+- Removed DELETE `votes/clear` as it won't be used.
+- Reworked DELETE `votes/` to no longer use a request body, improved code efficiency, and fixed a few bugs.
+- Changed POST `votes/` to no longer return a vote ID, as iit won't be needed.
+
+
 ## [0.4.45] (2025-03-04)
 
 ### Features
@@ -11,7 +29,6 @@
 
 - Added a spin animation to `tailwind.config.js` and improved how the loading modal's spinner looks and is styled.
 - Implemented `noUncheckedIndexedAccess` in `tsconfig.ts` and refactored client-side code to improve safety.
-  - This change won't be implemented on the backend as it would be redundant.
 
 
 ## [0.4.44] (2025-03-02)

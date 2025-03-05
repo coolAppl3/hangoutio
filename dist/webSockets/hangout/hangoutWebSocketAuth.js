@@ -15,6 +15,10 @@ async function authenticateHandshake(req) {
     let authSessionId = null;
     for (const cookie of cookieHeaderArr) {
         const [cookieName, cookieValue] = cookie.split('=');
+        if (!cookieName || !cookieValue) {
+            continue;
+        }
+        ;
         if (cookieName === 'authSessionId' && (0, authUtils_1.isValidAuthSessionId)(cookieValue)) {
             authSessionId = cookieValue;
             break;
@@ -60,11 +64,11 @@ async function isValidUserData(authSessionId, hangoutMemberId, hangoutId) {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             return false;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!(0, authUtils_1.isValidAuthSessionDetails)(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             return false;
@@ -79,11 +83,11 @@ async function isValidUserData(authSessionId, hangoutMemberId, hangoutId) {
         hangout_members
       WHERE
         hangout_member_id = ?;`, [hangoutMemberId]);
-        if (hangoutMemberRows.length === 0) {
+        const hangoutMemberDetails = hangoutMemberRows[0];
+        if (!hangoutMemberDetails) {
             return false;
         }
         ;
-        const hangoutMemberDetails = hangoutMemberRows[0];
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             return false;
         }

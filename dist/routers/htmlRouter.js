@@ -9,9 +9,12 @@ const path_1 = __importDefault(require("path"));
 exports.htmlRouter = express_1.default.Router();
 exports.htmlRouter.get('/:page', async (req, res, next) => {
     const page = req.params.page;
+    if (!page) {
+        return next();
+    }
+    ;
     if (page.includes('.') && !page.endsWith('.html')) {
-        next();
-        return;
+        return next();
     }
     ;
     const sanitizedPage = path_1.default.basename(page, '.html');
@@ -23,7 +26,7 @@ exports.htmlRouter.get('/:page', async (req, res, next) => {
         ;
         const notFoundPath = path_1.default.join(__dirname, '../../public/errorPages', '404.html');
         res.sendFile(notFoundPath, (fallbackError) => {
-            if (!fallbackError) {
+            if (!fallbackError || res.headersSent) {
                 return;
             }
             ;
