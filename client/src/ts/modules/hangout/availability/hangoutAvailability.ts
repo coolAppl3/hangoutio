@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_CONCLUSION_STAGE } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement } from "../../global/domUtils";
 import { InfoModal } from "../../global/InfoModal";

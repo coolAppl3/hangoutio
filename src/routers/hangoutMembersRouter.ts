@@ -74,14 +74,14 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       [authSessionId]
     );
 
-    if (authSessionRows.length === 0) {
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
       removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
     };
-
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
@@ -116,7 +116,9 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       { userId: authSessionDetails.user_id }
     );
 
-    if (userRows.length === 0) {
+    const userDetails: UserDetails | undefined = userRows[0];
+
+    if (!userDetails) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
@@ -125,8 +127,6 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
       return;
     };
-
-    const userDetails: UserDetails = userRows[0];
 
     if (userDetails.joined_hangouts_counts >= MAX_ONGOING_HANGOUTS_LIMIT) {
       await connection.rollback();
@@ -160,14 +160,14 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       { hangoutId: requestData.hangoutId, userId: authSessionDetails.user_id }
     );
 
-    if (hangoutRows.length === 0) {
+    const hangoutDetails: HangoutDetails | undefined = hangoutRows[0];
+
+    if (!hangoutDetails) {
       await connection.rollback();
       res.status(404).json({ message: 'Hangout not found.' });
 
       return;
     };
-
-    const hangoutDetails: HangoutDetails = hangoutRows[0];
 
     if (hangoutDetails.already_joined) {
       await connection.rollback();
@@ -306,14 +306,14 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       { hangoutId: requestData.hangoutId }
     );
 
-    if (hangoutRows.length === 0) {
+    const hangoutDetails: HangoutDetails | undefined = hangoutRows[0];
+
+    if (!hangoutDetails) {
       await connection.rollback();
       res.status(404).json({ message: 'Hangout not found.' });
 
       return;
     };
-
-    const hangoutDetails: HangoutDetails = hangoutRows[0];
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
@@ -480,14 +480,14 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
       [authSessionId]
     );
 
-    if (authSessionRows.length === 0) {
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
       removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
     };
-
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
@@ -654,14 +654,14 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       [authSessionId]
     );
 
-    if (authSessionRows.length === 0) {
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
       removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
     };
-
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
@@ -695,12 +695,12 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       [requestData.hangoutId, requestData.hangoutMemberId]
     );
 
-    if (hangoutMemberRows.length === 0) {
+    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
+
+    if (!hangoutMemberDetails) {
       res.status(404).json({ message: 'Hangout not found.' });
       return;
     };
-
-    const hangoutMemberDetails: HangoutMemberDetails = hangoutMemberRows[0];
 
     if (hangoutMemberDetails.hangout_id !== requestData.hangoutId) {
       res.status(404).json({ message: 'Hangout not found.' });
@@ -735,13 +735,14 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       };
 
       res.json({});
+      return;
     };
 
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`
+        hangout_member_id = ?;`,
       [requestData.hangoutMemberId]
     );
 
@@ -839,14 +840,14 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
       [authSessionId]
     );
 
-    if (authSessionRows.length === 0) {
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
       removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
     };
-
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
@@ -1021,14 +1022,14 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
       [authSessionId]
     );
 
-    if (authSessionRows.length === 0) {
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
       removeRequestCookie(res, 'authSessionId');
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
 
       return;
     };
-
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);

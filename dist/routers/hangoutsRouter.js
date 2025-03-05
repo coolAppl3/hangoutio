@@ -97,13 +97,13 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -119,14 +119,14 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         accounts
       WHERE
         account_id = :accountId;`, { accountId: authSessionDetails.user_id });
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         if (accountDetails.ongoing_hangouts_count >= constants_1.MAX_ONGOING_HANGOUTS_LIMIT) {
             res.status(409).json({
                 message: `You've reached the limit of ${constants_1.MAX_ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
@@ -374,13 +374,13 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -400,14 +400,14 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         hangout_members
       WHERE
         hangout_member_id = ?;`, [requestData.hangoutMemberId]);
-        if (hangoutMemberRows.length === 0) {
+        const hangoutMemberDetails = hangoutMemberRows[0];
+        if (!hangoutMemberDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        const hangoutMemberDetails = hangoutMemberRows[0];
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -508,13 +508,13 @@ exports.hangoutsRouter.patch('/details/changeMembersLimit', async (req, res) => 
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -541,13 +541,13 @@ exports.hangoutsRouter.patch('/details/changeMembersLimit', async (req, res) => 
         hangouts.hangout_id = :hangoutId AND
         hangout_members.hangout_member_id = :hangoutMemberId
       LIMIT 1;`, { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId });
-        if (hangoutRows.length === 0) {
+        const hangoutDetails = hangoutRows[0];
+        if (!hangoutDetails) {
             await connection.rollback();
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutDetails = hangoutRows[0];
         if (hangoutDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -653,13 +653,13 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -691,13 +691,13 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
         hangouts.hangout_id = ? AND
         hangout_members.hangout_member_id = ?
       LIMIT 1;`, [requestData.hangoutId, requestData.hangoutMemberId]);
-        if (hangoutRows.length === 0) {
+        const hangoutDetails = hangoutRows[0];
+        if (!hangoutDetails) {
             await connection.rollback();
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutDetails = hangoutRows[0];
         if (hangoutDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -815,13 +815,13 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -854,13 +854,13 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         hangouts.hangout_id = :hangoutId AND
         hangout_members.hangout_member_id = :hangoutMemberId
       LIMIT 1;`, { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId });
-        if (hangoutRows.length === 0) {
+        const hangoutDetails = hangoutRows[0];
+        if (!hangoutDetails) {
             await connection.rollback();
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutDetails = hangoutRows[0];
         if (hangoutDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -925,13 +925,13 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         hangouts
       WHERE
         hangout_id = ?;`, [requestData.hangoutId]);
-        if (updateHangoutRows.length === 0) {
+        const newConclusionTimestamp = updateHangoutRows[0]?.new_conclusion_timestamp;
+        if (!newConclusionTimestamp) {
             await connection.rollback();
             res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
-        const newConclusionTimestamp = updateHangoutRows[0].new_conclusion_timestamp;
         await connection.commit();
         res.json({});
         await connection.query(`DELETE FROM
@@ -1004,13 +1004,13 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1028,20 +1028,20 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
       WHERE
         hangout_member_id = ? AND
         hangout_id = ?;`, [requestData.hangoutMemberId, requestData.hangoutId]);
-        if (hangoutMemberRows.length === 0) {
+        const hangoutMemberDetails = hangoutMemberRows[0];
+        if (!hangoutMemberDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutMember = hangoutMemberRows[0];
-        if (hangoutMember[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
+        if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        if (!hangoutMember.is_leader) {
+        if (!hangoutMemberDetails.is_leader) {
             res.status(401).json({ message: 'Not hangout leader.' });
             return;
         }
@@ -1083,12 +1083,12 @@ exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
         hangouts
       WHERE
         hangout_id = :hangoutId;`, { hangoutId });
-        if (hangoutRows.length === 0) {
+        const hangoutDetails = hangoutRows[0];
+        if (!hangoutDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutDetails = hangoutRows[0];
         if (hangoutDetails.is_concluded) {
             res.status(403).json({ message: 'Hangout has already been concluded.' });
             return;
@@ -1141,13 +1141,13 @@ exports.hangoutsRouter.get('/details/initial', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1170,12 +1170,12 @@ exports.hangoutsRouter.get('/details/initial', async (req, res) => {
         hangout_members ON hangouts.hangout_id = hangout_members.hangout_id
       WHERE
         hangouts.hangout_id = ?;`, [hangoutId]);
-        if (hangoutRows.length === 0) {
+        const hangoutInfo = hangoutRows[0];
+        if (!hangoutInfo) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutInfo = hangoutRows[0];
         const isPasswordProtected = Boolean(hangoutInfo.encrypted_password);
         const isFull = hangoutRows.length === hangoutInfo.members_limit;
         const requesterHangoutMemberDetails = hangoutRows.find((member) => member[`${authSessionDetails.user_type}_id`] === authSessionDetails.user_id);
@@ -1262,8 +1262,13 @@ exports.hangoutsRouter.get('/details/initial', async (req, res) => {
         const hangoutDetails = hangoutData[0][0];
         const hangoutMembers = hangoutData[1];
         const hangoutMemberCountables = hangoutData[2][0];
-        const latestHangoutChats = hangoutData[3];
+        const latestChatMessages = hangoutData[3];
         const latestHangoutEvents = hangoutData[4];
+        if (!hangoutDetails || !hangoutMemberCountables) {
+            res.status(500).json({ message: 'Internal server error.' });
+            return;
+        }
+        ;
         let decryptedHangoutPassword = null;
         if (hangoutInfo.encrypted_password && requesterHangoutMemberDetails.is_leader) {
             decryptedHangoutPassword = (0, encryptionUtils_1.decryptPassword)(hangoutInfo.encrypted_password);
@@ -1277,7 +1282,7 @@ exports.hangoutsRouter.get('/details/initial', async (req, res) => {
             hangoutDetails,
             hangoutMembers,
             hangoutMemberCountables,
-            latestHangoutChats,
+            latestChatMessages,
             latestHangoutEvents,
         });
     }

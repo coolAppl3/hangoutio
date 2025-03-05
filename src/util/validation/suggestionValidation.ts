@@ -1,4 +1,4 @@
-import { dayMilliseconds, hourMilliseconds } from "../constants";
+import { hourMilliseconds } from "../constants";
 import { containsInvalidWhitespace } from "../globalUtils";
 
 export function isValidSuggestionTitle(title: string): boolean {

@@ -6,7 +6,7 @@ import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getInitialHangoutDataService, InitialHangoutData } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
-import { HangoutMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
+import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
@@ -18,14 +18,14 @@ interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
 
   latestHangoutEvents: HangoutEvent[],
-  latestHangoutMessages: HangoutMessage[],
+  latestChatMessages: ChatMessage[],
 };
 
 export const hangoutDashboardState: HangoutDashboardState = {
   nextStageTimerInitiated: false,
 
   latestHangoutEvents: [],
-  latestHangoutMessages: [],
+  latestChatMessages: [],
 };
 
 export async function hangoutDashboard(): Promise<void> {
@@ -75,7 +75,7 @@ export async function getInitialHangoutData(): Promise<void> {
       hangoutDetails: initialHangoutData.hangoutDetails,
     };
 
-    hangoutDashboardState.latestHangoutMessages = initialHangoutData.latestHangoutChats;
+    hangoutDashboardState.latestChatMessages = initialHangoutData.latestChatMessages;
     hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents;
 
     renderDashboardSection();
@@ -335,7 +335,7 @@ function pushUserAndLeaderToFront(hangoutMembers: HangoutMember[]): void {
 };
 
 function renderLatestMessages(): void {
-  if (hangoutDashboardState.latestHangoutMessages.length === 0) {
+  if (hangoutDashboardState.latestChatMessages.length === 0) {
     return;
   };
 
@@ -349,7 +349,7 @@ function renderLatestMessages(): void {
   const dashboardChatContainerInner: HTMLDivElement = createDivElement(null, 'dashboard-chat-container-inner');
 
   for (let i = 0; i < 2; i++) {
-    const message: HangoutMessage | undefined = hangoutDashboardState.latestHangoutMessages[i];
+    const message: ChatMessage | undefined = hangoutDashboardState.latestChatMessages[i];
 
     if (!message) {
       break;

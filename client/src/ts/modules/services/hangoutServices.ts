@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
-import { HangoutMessage, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutTypes";
+import { ChatMessage, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutTypes";
 
 axios.defaults.withCredentials = true;
 
@@ -70,7 +70,7 @@ export interface InitialHangoutData {
   hangoutMembers: HangoutMember[],
   hangoutMemberCountables: HangoutMemberCountables,
 
-  latestHangoutChats: HangoutMessage[],
+  latestChatMessages: ChatMessage[],
   latestHangoutEvents: HangoutEvent[],
 };
 

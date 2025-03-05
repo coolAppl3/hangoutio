@@ -4,11 +4,14 @@ import path from "path";
 export const htmlRouter: Router = express.Router();
 
 htmlRouter.get('/:page', async (req: Request, res: Response, next: NextFunction) => {
-  const page: string = req.params.page;
+  const page: string | undefined = req.params.page;
+
+  if (!page) {
+    return next();
+  };
 
   if (page.includes('.') && !page.endsWith('.html')) {
-    next();
-    return;
+    return next();
   };
 
   const sanitizedPage: string = path.basename(page, '.html');
@@ -21,7 +24,7 @@ htmlRouter.get('/:page', async (req: Request, res: Response, next: NextFunction)
 
     const notFoundPath: string = path.join(__dirname, '../../public/errorPages', '404.html');
     res.sendFile(notFoundPath, (fallbackError: Error) => {
-      if (!fallbackError) {
+      if (!fallbackError || res.headersSent) {
         return;
       };
 

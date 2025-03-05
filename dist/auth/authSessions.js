@@ -48,6 +48,11 @@ async function createAuthSession(res, sessionConfig, attemptCount = 1) {
         }
         ;
         const oldestAuthSession = sessionRows.sort((a, b) => a.created_on_timestamp - b.created_on_timestamp)[0];
+        if (!oldestAuthSession) {
+            await connection.rollback();
+            return false;
+        }
+        ;
         const [resultSetHeader] = await connection.execute(`UPDATE
         auth_sessions
       SET

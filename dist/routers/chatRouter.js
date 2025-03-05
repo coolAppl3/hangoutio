@@ -83,13 +83,13 @@ exports.chatRouter.post('/add', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, { authSessionId });
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -105,12 +105,12 @@ exports.chatRouter.post('/add', async (req, res) => {
         hangout_members
       WHERE
         hangout_member_id = ?;`, [requestData.hangoutMemberId]);
-        if (hangoutRows.length === 0) {
+        const hangoutMemberDetails = hangoutRows[0];
+        if (!hangoutMemberDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        const hangoutMemberDetails = hangoutRows[0];
         if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -196,13 +196,13 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, { authSessionId });
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');

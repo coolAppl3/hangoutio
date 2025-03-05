@@ -47,12 +47,12 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
       WHERE
         username = ?
       LIMIT 1;`, [requestData.username]);
-        if (guestRows.length === 0) {
+        const guestDetails = guestRows[0];
+        if (!guestDetails) {
             res.status(404).json({ message: 'Guest account not found.' });
             return;
         }
         ;
-        const guestDetails = guestRows[0];
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, guestDetails.hashed_password);
         if (!isCorrectPassword) {
             res.status(401).json({ message: 'Incorrect password.' });

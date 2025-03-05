@@ -18,6 +18,10 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
   for (const cookie of cookieHeaderArr) {
     const [cookieName, cookieValue] = cookie.split('=');
 
+    if (!cookieName || !cookieValue) {
+      continue;
+    };
+
     if (cookieName === 'authSessionId' && isValidAuthSessionId(cookieValue)) {
       authSessionId = cookieValue;
       break;
@@ -72,11 +76,11 @@ async function isValidUserData(authSessionId: string, hangoutMemberId: number, h
       [authSessionId]
     );
 
-    if (authSessionRows.length === 0) {
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
       return false;
     };
-
-    const authSessionDetails: AuthSessionDetails = authSessionRows[0];
 
     if (!isValidAuthSessionDetails(authSessionDetails)) {
       await destroyAuthSession(authSessionId);
@@ -102,11 +106,11 @@ async function isValidUserData(authSessionId: string, hangoutMemberId: number, h
 
     );
 
-    if (hangoutMemberRows.length === 0) {
+    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
+
+    if (!hangoutMemberDetails) {
       return false;
     };
-
-    const hangoutMemberDetails: HangoutMemberDetails = hangoutMemberRows[0];
 
     if (hangoutMemberDetails[`${authSessionDetails.user_type}_id`] !== authSessionDetails.user_id) {
       return false;

@@ -20,7 +20,7 @@ function isValidHangoutId(hangoutId) {
         return false;
     }
     ;
-    if (hangoutId.substring(33).length !== 13 || !isValidTimestamp(+hangoutId.substring(33))) {
+    if (!isValidTimestamp(+hangoutId.substring(33))) {
         return false;
     }
     ;
@@ -79,7 +79,8 @@ function isValidHangoutPeriods(hangoutPeriods) {
     }
     ;
     for (let i = 0; i < hangoutPeriods.length; i++) {
-        if (!isValidHangoutPeriod(hangoutPeriods[i])) {
+        const period = hangoutPeriods[i];
+        if (!period || !isValidHangoutPeriod(period)) {
             return false;
         }
         ;
@@ -113,19 +114,25 @@ function isValidNewHangoutPeriods(hangoutDetails, existingPeriods, newPeriods) {
     }
     ;
     for (let i = 1; i <= 3; i++) {
+        const newPeriod = newPeriods[i];
+        const existingPeriod = existingPeriods[i];
+        if (!newPeriod || !existingPeriod) {
+            return false;
+        }
+        ;
         if (i < hangoutDetails.currentStage) {
-            if (newPeriods[i] !== existingPeriods[i]) {
+            if (newPeriod !== existingPeriod) {
                 return false;
             }
             ;
             continue;
         }
         ;
-        if (!isValidHangoutPeriod(newPeriods[i])) {
+        if (!isValidHangoutPeriod(newPeriod)) {
             return false;
         }
         ;
-        if (i === hangoutDetails.currentStage && newPeriods[i] <= hangoutDetails.stageControlTimestamp) {
+        if (i === hangoutDetails.currentStage && newPeriod <= hangoutDetails.stageControlTimestamp) {
             return false;
         }
         ;

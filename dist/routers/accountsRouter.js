@@ -206,12 +206,12 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
       WHERE
         accounts.account_id = ?
       LIMIT 1;`, [requestData.accountId]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         if (accountDetails.is_verified) {
             res.status(409).json({ message: 'Account already verified.', reason: 'alreadyVerified' });
             return;
@@ -293,12 +293,12 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
       WHERE
         accounts.account_id = ?
       LIMIT 1;`, [requestData.accountId]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         if (accountDetails.is_verified) {
             res.status(409).json({ message: 'Account already verified.' });
             return;
@@ -402,12 +402,12 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
       WHERE
         email = ?
       LIMIT 1;`, [requestData.email]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         if (accountDetails.failed_sign_in_attempts >= constants_1.FAILED_SIGN_IN_LIMIT) {
             res.status(403).json({ message: 'Account locked.', reason: 'accountLocked' });
             return;
@@ -486,12 +486,12 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
       WHERE
         accounts.email = ?
       LIMIT 1;`, [requestData.email]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             res.status(404).json({ message: 'Account not found.' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         if (!accountDetails.is_verified) {
             res.status(403).json({ message: `Can't recover an unverified account.`, reason: 'accountUnverified' });
             return;
@@ -573,12 +573,12 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
         account_recovery ON accounts.account_id = account_recovery.account_id
       WHERE
         accounts.account_id = ?;`, [requestData.accountId]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             res.status(404).json({ message: 'Account not found.', reason: 'accountNotFound' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         if (!accountDetails.recovery_code) {
             res.status(404).json({ message: 'Recovery request not found or has expired.', reason: 'requestNotFound' });
             return;
@@ -668,12 +668,12 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
       WHERE
         account_id = :accountId
       LIMIT 1;`, { accountId: requestData.accountId });
-        if (recoveryRows.length === 0) {
+        const recoveryDetails = recoveryRows[0];
+        if (!recoveryDetails) {
             res.status(404).json({ message: 'Recovery request not found.' });
             return;
         }
         ;
-        const recoveryDetails = recoveryRows[0];
         if (recoveryDetails.failed_recovery_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 message: 'Recovery suspended.',
@@ -778,13 +778,13 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)('authSessionId');
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -804,14 +804,14 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         accounts
       WHERE
         account_id = ?`, [authSessionDetails.user_id]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             await (0, accountServices_1.handleIncorrectAccountPassword)(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
@@ -899,13 +899,13 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -930,14 +930,14 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
       WHERE
         accounts.account_id = ?;
       LIMIT 1;`, [authSessionDetails.user_id]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             await (0, accountServices_1.handleIncorrectAccountPassword)(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
@@ -1050,13 +1050,13 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         accounts
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1073,14 +1073,14 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         accounts
       WHERE
         account_id = ?;`, [authSessionDetails.user_id]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.currentPassword, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             await (0, accountServices_1.handleIncorrectAccountPassword)(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
@@ -1169,13 +1169,13 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1198,7 +1198,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
       WHERE
         accounts.account_id = ?;`, [authSessionDetails.user_id]);
         const accountDetails = accountRows[0];
-        if (accountRows.length === 0) {
+        if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
@@ -1297,13 +1297,13 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1324,12 +1324,12 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
       WHERE
         account_id = :accountId
       LIMIT 1;`, { accountId: authSessionDetails.user_id });
-        if (emailUpdateRows.length === 0) {
+        const emailUpdateDetails = emailUpdateRows[0];
+        if (!emailUpdateDetails) {
             res.status(404).json({ message: 'Email update request not found.' });
             return;
         }
         ;
-        const emailUpdateDetails = emailUpdateRows[0];
         if (emailUpdateDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 message: 'Request is suspended due to too many failed attempts.',
@@ -1411,13 +1411,13 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         auth_sessions
       WHERE
         sessions_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1443,14 +1443,14 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
       WHERE
         accounts.account_id = ?
       LIMIT 1;`, [authSessionDetails.user_id]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         if (!accountDetails.update_id) {
             res.status(404).json({ message: 'Email update request not found.' });
             return;
@@ -1583,13 +1583,13 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1606,14 +1606,14 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         accounts
       WHERE
         account_id = ?;`, [authSessionDetails.user_id]);
-        if (accountRows.length === 0) {
+        const accountDetails = accountRows[0];
+        if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
             return;
         }
         ;
-        const accountDetails = accountRows[0];
         const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             await (0, accountServices_1.handleIncorrectAccountPassword)(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
@@ -1694,13 +1694,13 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1716,12 +1716,12 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
       WHERE
         username = ?
       LIMIT 1;`, [requestData.requesteeUsername, authSessionDetails.user_id]);
-        if (requesteeRows.length === 0) {
+        const requesteeId = requesteeRows[0]?.requestee_id;
+        if (!requesteeId) {
             res.status(404).json({ message: 'User not found.' });
             return;
         }
         ;
-        const requesteeId = requesteeRows[0].requestee_id;
         if (requesteeId === authSessionDetails.user_id) {
             res.status(409).json({ message: 'Can not add yourself as a friend.' });
             return;
@@ -1746,8 +1746,13 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         requester_id = :accountId AND
         requestee_id = :requesteeId
       LIMIT 1;`, { accountId: authSessionDetails.user_id, requesteeId });
-        const alreadyFriends = friendshipRows[0][0].already_friends === 1;
-        const requestAlreadySent = friendshipRows[1][0].request_already_sent === 1;
+        if (friendshipRows.length !== 2) {
+            res.status(500).json({ message: 'Internal server error.' });
+            return;
+        }
+        ;
+        const alreadyFriends = friendshipRows[0][0] ? friendshipRows[0][0].already_friends === 1 : false;
+        const requestAlreadySent = friendshipRows[1][0] ? friendshipRows[1][0].request_already_sent === 1 : false;
         if (alreadyFriends) {
             res.status(409).json({ message: 'Already friends.' });
             return;
@@ -1819,13 +1824,13 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1840,12 +1845,12 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
         friend_requests
       WHERE
         request_id = ?;`, [requestData.friendRequestId]);
-        if (friendRequestRows.length === 0) {
+        const requesterId = friendRequestRows[0]?.requester_id;
+        if (!requesterId) {
             res.status(404).json({ message: 'Friend request not found.' });
             return;
         }
         ;
-        const requesterId = friendRequestRows[0].requester_id;
         const friendshipTimestamp = Date.now();
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
@@ -1925,13 +1930,13 @@ exports.accountsRouter.delete('/friends/requests/decline', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1992,13 +1997,13 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
         auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
-        if (authSessionRows.length === 0) {
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
             return;
         }
         ;
-        const authSessionDetails = authSessionRows[0];
         if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -2013,12 +2018,12 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
         friendships
       WHERE
         friendship_id = ?;`, [requestData.friendshipId]);
-        if (friendshipRows.length === 0) {
+        const friendId = friendshipRows[0]?.friend_id;
+        if (!friendId) {
             res.status(404).json({ message: 'Friend not found.' });
             return;
         }
         ;
-        const friendId = friendshipRows[0].friend_id;
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         friendships
       WHERE
