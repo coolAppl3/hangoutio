@@ -46,7 +46,7 @@ async function startAccountRecovery(e: SubmitEvent): Promise<void> {
   };
 
   if (!recoveryEmailInput) {
-    popup('Something went wrong', 'error');
+    popup('Something went wrong.', 'error');
     LoadingModal.remove();
 
     return;
