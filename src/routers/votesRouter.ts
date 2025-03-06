@@ -137,7 +137,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
 
     if (!hangoutMemberDetails) {
       await connection.rollback();
-      res.status(404).json({ message: 'Hangout not found.' });
+      res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
 
       return;
     };
@@ -158,27 +158,31 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage !== HANGOUT_VOTING_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the voting stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({
+        message: `Hangout hasn't reached the voting stage yet.`,
+        reason: hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE ? 'inAvailabilityStage' : 'inSuggestionsStage',
+      });
+
       return;
     };
 
     if (!hangoutMemberDetails.suggestion_found) {
       await connection.rollback();
-      res.status(404).json({ message: 'Suggestion not found.' });
+      res.status(404).json({ message: 'Suggestion not found.', reason: 'suggestionNotFound' });
 
       return;
     };
 
     if (hangoutMemberDetails.already_voted) {
       await connection.rollback();
-      res.status(409).json({ message: `You've already voted for this suggestion.` });
+      res.status(409).json({ message: `You've already voted for this suggestion.`, reason: 'alreadyVotedFor' });
 
       return;
     };
 
     if (hangoutMemberDetails.total_votes >= HANGOUT_VOTES_LIMIT) {
       await connection.rollback();
-      res.status(409).json({ message: 'Votes limit reached.' });
+      res.status(409).json({ message: 'Votes limit reached.', reason: 'votesLimitReached' });
 
       return;
     };
