@@ -1218,13 +1218,13 @@
   }
 
   #suggestions-container {
-    &.in-voting-stage .suggestions-container-inner .suggestion .btn-container button.add-vote-btn {
+    &.in-voting-stage .suggestions-container-inner .suggestion .btn-container button.toggle-vote-btn {
       @apply block;
     }
 
     &.votes-limit-reached .suggestions-container-inner .suggestion .btn-container {
 
-      button.add-vote-btn {
+      button.toggle-vote-btn {
         @apply hidden;
 
         &.danger {
@@ -1369,7 +1369,7 @@
             @apply flex justify-start items-center sm:block relative;
 
             button {
-              &.add-vote-btn {
+              &.toggle-vote-btn {
                 @apply btn sm:w-full bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1 hidden;
 
                 &.danger {

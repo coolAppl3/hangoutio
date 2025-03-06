@@ -3,7 +3,6 @@ import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
-import { minuteMilliseconds } from "../../global/clientConstants";
 
 export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement): void {
   const likeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
@@ -71,16 +70,16 @@ export function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): voi
 };
 
 // vote utils
-export function toggleAddVoteBtn(addVoteBtn: HTMLButtonElement, voteAdded: boolean): void {
+export function toggleAddVoteBtn(voteToggleBtn: HTMLButtonElement, voteAdded: boolean): void {
   if (voteAdded) {
-    addVoteBtn.classList.add('danger');
-    addVoteBtn.textContent = 'Remove vote';
+    voteToggleBtn.classList.add('danger');
+    voteToggleBtn.textContent = 'Remove vote';
 
     return;
   };
 
-  addVoteBtn.classList.remove('danger');
-  addVoteBtn.textContent = 'Add vote';
+  voteToggleBtn.classList.remove('danger');
+  voteToggleBtn.textContent = 'Add vote';
 };
 
 // suggestions-related DOM utils
@@ -193,14 +192,14 @@ function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
   btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
 
-  const addVoteBtn: HTMLButtonElement = createBtnElement('add-vote-btn', 'Add vote');
+  const toggleVoteBtn: HTMLButtonElement = createBtnElement('toggle-vote-btn', 'Add vote');
 
   if (isVotedFor) {
-    addVoteBtn.classList.add('danger');
-    addVoteBtn.textContent = 'Remove vote';
+    toggleVoteBtn.classList.add('danger');
+    toggleVoteBtn.textContent = 'Remove vote';
   };
 
-  btnContainer.insertAdjacentElement('afterbegin', addVoteBtn);
+  btnContainer.insertAdjacentElement('afterbegin', toggleVoteBtn);
   return btnContainer;
 };
 
