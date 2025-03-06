@@ -6,7 +6,7 @@ import { createDivElement, createParagraphElement } from "../../global/domUtils"
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
-import { addHangoutVoteService } from "../../services/votesServices";
+import { addHangoutVoteService, deleteHangoutVoteService } from "../../services/votesServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutsDetails, Suggestion } from "../hangoutTypes";
@@ -826,14 +826,6 @@ async function addHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElem
       return;
     };
 
-    if (status === 409 && errReason === 'alreadyVotedFor') {
-      globalHangoutState.data.votesCount++;
-      hangoutSuggestionState.memberVotesSet.add(suggestion.suggestion_id);
-
-      toggleAddVoteBtn(addVoteBtn, true);
-      popup('Vote added', 'success');
-    };
-
     popup(errMessage, 'error');
 
     if (status === 403) {
@@ -884,5 +876,102 @@ async function addHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElem
 };
 
 async function deleteHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElement): Promise<void> {
-  // TODO: continue implementation
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutDetails, hangoutId, hangoutMemberId } = globalHangoutState.data;
+
+  if (hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+    popup('Not in voting stage.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await deleteHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
+
+    globalHangoutState.data.votesCount--;
+    hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
+
+    toggleAddVoteBtn(addVoteBtn, false);
+
+    popup('Vote removed.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 403) {
+      if (errReason === 'inAvailabilityStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        return;
+      };
+
+      if (errReason === 'inSuggestionStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_SUGGESTIONS_STAGE;
+        return;
+      };
+
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      return;
+    };
+
+
+
+    if (status === 404) {
+      LoadingModal.display();
+
+      if (errReason === 'hangoutNotFound') {
+        setTimeout(() => window.location.reload(), 1000);
+        return;
+      };
+
+      hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
+
+      renderSuggestionsSection();
+      LoadingModal.remove();
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionExpired();
+    };
+  };
 };
