@@ -115,10 +115,7 @@ export async function getInitialHangoutData(): Promise<void> {
         return;
       };
 
-      if (errReason === 'notMember') {
-        handleNotHangoutMember(errResData, hangoutId);
-      };
-
+      handleNotHangoutMember(errResData, hangoutId);
       return;
     };
 

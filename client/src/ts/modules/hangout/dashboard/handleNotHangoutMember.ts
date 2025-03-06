@@ -132,20 +132,17 @@ export async function joinHangoutAsAccount(): Promise<void> {
     popup(errMessage, 'error');
 
     if (status == 401) {
+      if (errReason === 'hangoutPassword') {
+        joinHangoutPasswordInput && ErrorSpan.display(joinHangoutPasswordInput, errMessage);
+        return;
+      };
+
       if (errReason === 'authSessionExpired') {
         handleAuthSessionExpired();
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-        return;
-      };
-
-      if (errReason === 'hangoutPassword') {
-        joinHangoutPasswordInput && ErrorSpan.display(joinHangoutPasswordInput, errMessage);
-      };
-
+      handleAuthSessionDestroyed();
       return;
     };
 
@@ -155,29 +152,24 @@ export async function joinHangoutAsAccount(): Promise<void> {
         return;
       };
 
-      if (errReason === 'hangoutConcluded') {
-        handleHangoutConcluded();
-      };
-
+      handleHangoutConcluded();
       return;
     };
 
     if (status === 409) {
+      if (errReason === 'alreadyJoined') {
+        LoadingModal.display();
+        setTimeout(() => window.location.reload(), 1000);
+
+        return;
+      };
+
       if (errReason === 'hangoutsLimitReached') {
         handleHangoutsLimitReached(errMessage);
         return;
       };
 
-      if (errReason === 'hangoutFull') {
-        handleHangoutFull();
-        return;
-      };
-
-      if (errReason === 'alreadyJoined') {
-        LoadingModal.display();
-        setTimeout(() => window.location.reload(), 1000);
-      };
-
+      handleHangoutFull();
       return;
     };
 
@@ -187,14 +179,12 @@ export async function joinHangoutAsAccount(): Promise<void> {
     };
 
     if (status === 400) {
-      if (errReason === 'invalidHangoutId') {
-        handleInvalidHangoutId();
+      if (errReason === 'invalidHangoutPassword') {
+        joinHangoutPasswordInput && ErrorSpan.display(joinHangoutPasswordInput, errMessage);
         return;
       };
 
-      if (errReason === 'invalidHangoutPassword') {
-        joinHangoutPasswordInput && ErrorSpan.display(joinHangoutPasswordInput, errMessage);
-      };
+      handleInvalidHangoutId();
     };
   };
 };

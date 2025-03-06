@@ -176,10 +176,8 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
         return;
       };
 
-      if (errReason === 'notHangoutMember') {
-        LoadingModal.display();
-        setTimeout(() => window.location.reload(), 1000);
-      };
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
     };
   };
 };
@@ -265,14 +263,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
     const errReason: string | undefined = axiosError.response.data.reason;
     const errResData: unknown = axiosError.response.data.resData;
 
-    if (status === 400) {
-      if (errReason === 'invalidSlot') {
-        displayTimePickerError(errMessage, 'start');
-        displayTimePickerError(errMessage, 'end');
-
-        return;
-      };
-
+    if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
       return;
     };
@@ -285,10 +276,7 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-      };
-
+      handleAuthSessionDestroyed();
       return;
     };
 
@@ -309,17 +297,21 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
         return;
       };
 
-      if (errReason === 'slotLimitReached') {
-        globalHangoutState.data.availabilitySlotsCount = HANGOUT_AVAILABILITY_SLOTS_LIMIT;
-        closeDateTimePicker();
-      };
-
+      globalHangoutState.data.availabilitySlotsCount = HANGOUT_AVAILABILITY_SLOTS_LIMIT;
+      closeDateTimePicker();
       return;
     };
 
     if (status === 404) {
       LoadingModal.display();
       setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 400) {
+      displayTimePickerError(errMessage, 'start');
+      displayTimePickerError(errMessage, 'end');
     };
   };
 };
@@ -410,12 +402,7 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
     const errReason: string | undefined = axiosError.response.data.reason;
     const errResData: unknown = axiosError.response.data.resData;
 
-    if (status === 400) {
-      if (errReason === 'invalidSlot') {
-        popup(errMessage, 'error');
-        return;
-      };
-
+    if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
       return;
     };
@@ -428,10 +415,7 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
         return;
       };
 
-      if (errReason === 'invalidStart' || errReason === 'slotIdentical') {
-        displayTimePickerError(errMessage, 'start');
-      };
-
+      displayTimePickerError(errMessage, 'start');
       return;
     };
 
@@ -448,12 +432,10 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
         return;
       };
 
-      if (errReason === 'slotNotFound') {
-        hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== dateTimePickerData.existingSlotId);
+      hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== dateTimePickerData.existingSlotId);
 
-        globalHangoutState.data.availabilitySlotsCount--;
-        renderAvailabilitySection();
-      };
+      globalHangoutState.data.availabilitySlotsCount--;
+      renderAvailabilitySection();
 
       return;
     };
@@ -464,9 +446,12 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-      };
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400) {
+      popup(errMessage, 'error');
     };
   };
 };
@@ -532,17 +517,16 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
 
     if (status === 404) {
       if (errReason === 'hangoutNotFound') {
+        LoadingModal.display();
         setTimeout(() => window.location.reload(), 1000);
+
         return;
       };
 
-      if (errReason === 'slotNotFound') {
-        hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== availabilitySlotId);
+      hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== availabilitySlotId);
 
-        globalHangoutState.data.availabilitySlotsCount--;
-        renderAvailabilitySection();
-      };
-
+      globalHangoutState.data.availabilitySlotsCount--;
+      renderAvailabilitySection();
       return;
     };
 
@@ -552,9 +536,7 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-      };
+      handleAuthSessionDestroyed();
     };
   };
 };
@@ -621,13 +603,10 @@ async function clearAvailabilitySlots(): Promise<void> {
         return;
       };
 
-      if (errReason === 'noSlotsFound') {
-        hangoutAvailabilityState.availabilitySlots.length = 0;
-        globalHangoutState.data.availabilitySlotsCount = HANGOUT_AVAILABILITY_SLOTS_LIMIT;
+      hangoutAvailabilityState.availabilitySlots.length = 0;
+      globalHangoutState.data.availabilitySlotsCount = HANGOUT_AVAILABILITY_SLOTS_LIMIT;
 
-        renderAvailabilitySection();
-      };
-
+      renderAvailabilitySection();
       return;
     };
 
@@ -637,9 +616,7 @@ async function clearAvailabilitySlots(): Promise<void> {
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-      };
+      handleAuthSessionDestroyed();
     };
   };
 };
