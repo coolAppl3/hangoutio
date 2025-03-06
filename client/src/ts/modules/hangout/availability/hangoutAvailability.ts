@@ -671,6 +671,10 @@ function getAvailabilitySlotElementId(e: MouseEvent): number | null {
 };
 
 function displayPersonalAvailabilitySlots(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
   const availabilitySlotsElement: HTMLDivElement | null = document.querySelector('#availability-slots');
 
   if (!availabilitySlotsElement || !availabilitySlotsContainer) {
@@ -678,15 +682,21 @@ function displayPersonalAvailabilitySlots(): void {
     return;
   };
 
-  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
-    availabilitySlotsElement.classList.add('hidden');
-    return;
-  };
-
   const innerContainer: HTMLDivElement = createDivElement(null);
+  let hasAvailabilitySlots: boolean = false;
 
   for (const slot of hangoutAvailabilityState.availabilitySlots) {
+    if (slot.hangout_member_id !== globalHangoutState.data.hangoutMemberId) {
+      continue;
+    };
+
     innerContainer.appendChild(createAvailabilitySlotElement(slot));
+    hasAvailabilitySlots = true;
+  };
+
+  if (!hasAvailabilitySlots) {
+    availabilitySlotsElement.classList.add('hidden');
+    return;
   };
 
   availabilitySlotsContainer.firstElementChild?.remove();
