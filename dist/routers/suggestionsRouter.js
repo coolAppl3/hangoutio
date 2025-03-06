@@ -61,12 +61,12 @@ exports.suggestionsRouter.post('/', async (req, res) => {
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
-        res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+        res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.hangoutMemberId)) {
-        res.status(400).json({ message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
+        res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
