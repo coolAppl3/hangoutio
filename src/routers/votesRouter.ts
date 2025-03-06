@@ -175,7 +175,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.already_voted) {
       await connection.rollback();
-      res.status(409).json({ message: `You've already voted for this suggestion.`, reason: 'alreadyVotedFor' });
+      res.json({});
 
       return;
     };
@@ -346,7 +346,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMemberDetails.vote_id) {
-      res.status(404).json({ message: 'Vote not found.' });
+      res.json({});
       return;
     };
 
