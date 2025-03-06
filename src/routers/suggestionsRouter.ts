@@ -47,12 +47,12 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
+    res.status(400).json({ message: 'Invalid hangout member ID.' });
     return;
   };
 
