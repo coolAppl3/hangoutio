@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.47] (2025-03-06)
+
+### Features
+
+- Users no longer need to be available for a suggestion to vote for it, as it would otherwise be way too restrictive and unintuitive.
+- Added suggestion voting logic.
+
+
+### Code Refactoring
+
+- Refactored some catch blocks on the client end to reduce verbosity.
+
+
+### Bug Fixes
+
+- Fixed other members' availability slots being rendered as the user's own. 
+
+
 ## [0.4.46] (2025-03-05)
 
 ### Features

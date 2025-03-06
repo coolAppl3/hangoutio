@@ -669,7 +669,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ message: 'Invalid account ID.', reason: 'invalidAccountId' });
+    res.status(400).json({ message: 'Invalid account ID.' });
     return;
   };
 
@@ -775,7 +775,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
   };
 
   if (!Number.isInteger(requestData.accountId)) {
-    res.status(400).json({ message: 'Invalid account ID.', reason: 'invalidAccountId' });
+    res.status(400).json({ message: 'Invalid account ID.' });
     return;
   };
 

@@ -3,6 +3,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
+import { minuteMilliseconds } from "../../global/clientConstants";
 
 export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement): void {
   const likeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
@@ -64,9 +65,22 @@ export function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): voi
   };
 
   const suggestionLikesCount: number = +suggestionLikesCountString;
-  suggestionLikesCountSpan.textContent = `${(suggestionLikesCount - 1) < 0 ? 0 : suggestionLikesCount - 1}`;
+  suggestionLikesCountSpan.textContent = `${Math.max(suggestionLikesCount - 1, 0)}`;
 
   suggestionElement.classList.remove('like-pending', 'liked');
+};
+
+// vote utils
+export function toggleAddVoteBtn(addVoteBtn: HTMLButtonElement, voteAdded: boolean): void {
+  if (voteAdded) {
+    addVoteBtn.classList.add('danger');
+    addVoteBtn.textContent = 'Remove vote';
+
+    return;
+  };
+
+  addVoteBtn.classList.remove('danger');
+  addVoteBtn.textContent = 'Add vote';
 };
 
 // suggestions-related DOM utils
@@ -183,7 +197,6 @@ function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
 
   if (isVotedFor) {
     addVoteBtn.classList.add('danger');
-    addVoteBtn.setAttribute('data-liked', 'true');
     addVoteBtn.textContent = 'Remove vote';
   };
 

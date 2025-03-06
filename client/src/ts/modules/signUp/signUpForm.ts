@@ -103,7 +103,7 @@ async function signUp(e: SubmitEvent): Promise<void> {
 
     popup(errMessage, 'error');
 
-    if (status === 403 && errReason === 'signedIn') {
+    if (status === 403) {
       handleSignedInUser();
       return;
     };

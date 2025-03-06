@@ -137,6 +137,11 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
+    if (status === 400 && !errReason) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
     popup(errMessage, 'error');
 
     if (status === 403) {
@@ -155,11 +160,6 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     };
 
     if (status === 409) {
-      if (errReason === 'hangoutFull') {
-        handleHangoutFull();
-        return;
-      };
-
       if (errReason === 'usernameTaken') {
         ErrorSpan.display(userNameInput, errMessage);
         return;
@@ -167,8 +167,10 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
       if (errReason === 'passwordEqualsUsername') {
         ErrorSpan.display(guestPasswordInput, errMessage);
+        return;
       };
 
+      handleHangoutFull();
       return;
     };
 

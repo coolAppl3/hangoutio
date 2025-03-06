@@ -102,7 +102,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     const errReason: string | undefined = axiosError.response.data.reason;
     const errResData: unknown = axiosError.response.data.resData;
 
-    if (status === 400 && errReason === 'invalidAccountId') {
+    if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
       return;
     };
@@ -137,10 +137,7 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
         return;
       };
 
-      if (errReason === 'recoverySuspended') {
-        handleRecoverySuspension(errResData);
-      };
-
+      handleRecoverySuspension(errResData);
       return;
     };
 
@@ -233,9 +230,7 @@ async function resendAccountRecoveryEmail(): Promise<void> {
         return;
       };
 
-      if (errReason === 'limitReached') {
-        recoveryState.recoveryEmailsSent = EMAILS_SENT_LIMIT;
-      };
+      recoveryState.recoveryEmailsSent = EMAILS_SENT_LIMIT;
     };
   };
 };

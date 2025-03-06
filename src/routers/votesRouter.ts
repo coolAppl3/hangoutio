@@ -3,12 +3,11 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import express, { Router, Request, Response } from "express";
 import { undefinedValuesDetected } from "../util/validation/requestValidation";
 import { isValidHangoutId } from "../util/validation/hangoutValidation";
-import * as voteValidation from '../util/validation/voteValidation';
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
-import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_AVAILABILITY_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE } from "../util/constants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE } from "../util/constants";
 
 export const votesRouter: Router = express.Router();
 
@@ -129,8 +128,8 @@ votesRouter.post('/', async (req: Request, res: Response) => {
       {
         suggestionId: requestData.suggestionId,
         hangoutMemberId: requestData.hangoutMemberId,
-        hangoutId: requestData.hangoutMemberId,
-        votesLimit: HANGOUT_VOTES_LIMIT
+        hangoutId: requestData.hangoutId,
+        votesLimit: HANGOUT_VOTES_LIMIT,
       }
     );
 
@@ -138,7 +137,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
 
     if (!hangoutMemberDetails) {
       await connection.rollback();
-      res.status(404).json({ message: 'Hangout not found.' });
+      res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
 
       return;
     };
@@ -159,87 +158,31 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage !== HANGOUT_VOTING_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the voting stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({
+        message: `Hangout hasn't reached the voting stage yet.`,
+        reason: hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE ? 'inAvailabilityStage' : 'inSuggestionsStage',
+      });
+
       return;
     };
 
     if (!hangoutMemberDetails.suggestion_found) {
       await connection.rollback();
-      res.status(404).json({ message: 'Suggestion not found.' });
+      res.status(404).json({ message: 'Suggestion not found.', reason: 'suggestionNotFound' });
 
       return;
     };
 
     if (hangoutMemberDetails.already_voted) {
       await connection.rollback();
-      res.status(409).json({ message: `You've already voted for this suggestion.` });
+      res.json({});
 
       return;
     };
 
     if (hangoutMemberDetails.total_votes >= HANGOUT_VOTES_LIMIT) {
       await connection.rollback();
-      res.status(409).json({ message: 'Votes limit reached.' });
-
-      return;
-    };
-
-    interface SuggestionAvailabilitySlots extends RowDataPacket {
-      suggestion_start_timestamp: number,
-      suggestion_end_timestamp: number,
-      slot_start_timestamp: number,
-      slot_end_timestamp: number,
-    };
-
-    const [suggestionAvailabilityRows] = await connection.execute<SuggestionAvailabilitySlots[]>(
-      `SELECT
-        suggestions.suggestion_start_timestamp,
-        suggestions.suggestion_end_timestamp,
-        availability_slots.slot_start_timestamp,
-        availability_slots.slot_end_timestamp
-      FROM
-        suggestions
-      INNER JOIN
-        availability_slots ON suggestions.hangout_id = availability_slots.hangout_id
-      WHERE
-        suggestions.suggestion_id = ? AND
-        availability_slots.hangout_member_id = ?
-      LIMIT ${HANGOUT_AVAILABILITY_SLOTS_LIMIT};`,
-      [requestData.suggestionId, requestData.hangoutMemberId]
-    );
-
-    const suggestionAvailabilityDetails: SuggestionAvailabilitySlots | undefined = suggestionAvailabilityRows[0];
-
-    if (!suggestionAvailabilityDetails) {
-      await connection.rollback();
-      res.status(409).json({ message: `Your availability doesn't match this suggestion's time slot.` });
-
-      return;
-    };
-
-    interface SuggestionTimeSlot {
-      start: number,
-      end: number,
-    };
-
-    const suggestionTimeSlot: SuggestionTimeSlot = {
-      start: suggestionAvailabilityDetails.suggestion_start_timestamp,
-      end: suggestionAvailabilityDetails.suggestion_end_timestamp,
-    };
-
-    interface AvailabilitySlot {
-      start: number,
-      end: number,
-    };
-
-    const availabilitySlots: AvailabilitySlot[] = suggestionAvailabilityRows.map((row) => ({
-      start: row.slot_start_timestamp,
-      end: row.slot_end_timestamp,
-    }));
-
-    if (!voteValidation.isAvailableForSuggestion(suggestionTimeSlot, availabilitySlots)) {
-      await connection.rollback();
-      res.status(409).json({ message: `Your availability doesn't match this suggestions time slot.` });
+      res.status(409).json({ message: 'Votes limit reached.', reason: 'votesLimitReached' });
 
       return;
     };
@@ -403,7 +346,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMemberDetails.vote_id) {
-      res.status(404).json({ message: 'Vote not found.' });
+      res.json({});
       return;
     };
 

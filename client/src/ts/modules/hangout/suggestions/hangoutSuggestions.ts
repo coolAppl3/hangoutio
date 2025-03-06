@@ -1,17 +1,18 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
+import { addHangoutVoteService, deleteHangoutVoteService } from "../../services/votesServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutsDetails, Suggestion } from "../hangoutTypes";
 import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./suggestionFilters";
 import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
-import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
+import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, toggleAddVoteBtn, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -140,15 +141,14 @@ async function getHangoutSuggestions(): Promise<void> {
     popup(errMessage, 'error');
 
     if (status === 401) {
-      if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired();
-        return;
-      };
-
       if (errReason === 'notHangoutMember') {
         LoadingModal.display()
         setTimeout(() => window.location.reload(), 1000);
+
+        return;
       };
+
+      handleAuthSessionExpired();
     };
   };
 };
@@ -270,7 +270,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.classList.contains('add-vote-btn')) {
-    await handleVoteBtnClicks(suggestion.suggestion_id, e.target);
+    await handleVoteBtnClicks(suggestion, e.target);
     return;
   };
 
@@ -432,17 +432,14 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     };
 
     if (status === 401) {
-      if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired();
+      if (errReason === 'notHangoutMember') {
+        LoadingModal.display();
+        setTimeout(() => window.location.reload(), 1000);
+
         return;
       };
 
-      if (errReason === 'notHangoutMember') {
-        popup(errMessage, 'error');
-        LoadingModal.display();
-
-        setTimeout(() => window.location.reload(), 1000);
-      };
+      handleAuthSessionExpired();
     };
   };
 };
@@ -497,17 +494,14 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
     popup(errMessage, 'error');
 
     if (status === 401) {
-      if (errReason === 'authSessionExpired') {
-        handleAuthSessionExpired();
+      if (errReason === 'notHangoutMember') {
+        LoadingModal.display();
+        setTimeout(() => window.location.reload(), 1000);
+
         return;
       };
 
-      if (errReason === 'notHangoutMember') {
-        popup(errMessage, 'error');
-        LoadingModal.display();
-
-        setTimeout(() => window.location.reload(), 1000);
-      };
+      handleAuthSessionExpired();
     };
   };
 };
@@ -598,10 +592,8 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
         return;
       };
 
-      if (errReason === 'hangoutConcluded') {
-        globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-        renderSuggestionsSection();
-      };
+      globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+      renderSuggestionsSection();
 
       return;
     };
@@ -612,9 +604,7 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-      };
+      handleAuthSessionDestroyed();
     };
   };
 };
@@ -716,10 +706,8 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
         return;
       };
 
-      if (errReason === 'hangoutConcluded') {
-        globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-        renderSuggestionsSection();
-      };
+      globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+      renderSuggestionsSection();
 
       return;
     };
@@ -765,24 +753,225 @@ function initSuggestionsSectionMutationObserver(): void {
   hangoutSuggestionState.suggestionsSectionMutationObserverActive = true;
 };
 
-async function handleVoteBtnClicks(suggestionId: number, addVoteBtn: HTMLButtonElement): Promise<void> {
-  const isLiked: boolean = hangoutSuggestionState.memberLikesSet.has(suggestionId);
+async function handleVoteBtnClicks(suggestion: Suggestion, addVoteBtn: HTMLButtonElement): Promise<void> {
+  const isVotedFor: boolean = hangoutSuggestionState.memberVotesSet.has(suggestion.suggestion_id);
 
-  if (!isLiked) {
-    await addHangoutVote(suggestionId);
-    // TODO: update button
+  if (!isVotedFor) {
+    await addHangoutVote(suggestion, addVoteBtn);
+    return;
+  };
+
+  await deleteHangoutVote(suggestion, addVoteBtn);
+};
+
+async function addHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElement): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
 
     return;
   };
 
-  await deleteHangoutVote(suggestionId);
-  // TODO: update button
+  const { hangoutDetails, votesCount, hangoutId, hangoutMemberId } = globalHangoutState.data;
+
+  if (hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+    popup('Not in voting stage.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (votesCount >= HANGOUT_VOTES_LIMIT) {
+    popup(`Vote limit of ${HANGOUT_VOTES_LIMIT} reached.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await addHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
+
+    globalHangoutState.data.votesCount++;
+    hangoutSuggestionState.memberVotesSet.add(suggestion.suggestion_id);
+
+    toggleAddVoteBtn(addVoteBtn, true);
+
+    popup('Vote added', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 403) {
+      if (errReason === 'inAvailabilityStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        return;
+      };
+
+      if (errReason === 'inSuggestionStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_SUGGESTIONS_STAGE;
+        return;
+      };
+
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      return;
+    };
+
+    if (status === 409) {
+      globalHangoutState.data.votesCount = HANGOUT_VOTES_LIMIT;
+      return;
+    };
+
+    if (status === 404) {
+      LoadingModal.display();
+
+      if (errReason === 'hangoutNotFound') {
+        setTimeout(() => window.location.reload(), 1000);
+        return;
+      };
+
+      hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
+
+      renderSuggestionsSection();
+      LoadingModal.remove();
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionExpired();
+    };
+  };
 };
 
-async function addHangoutVote(suggestionId: number): Promise<void> {
-  // TODO: continue implementation
-};
+async function deleteHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElement): Promise<void> {
+  LoadingModal.display();
 
-async function deleteHangoutVote(suggestionId: number): Promise<void> {
-  // TODO: continue implementation
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutDetails, hangoutId, hangoutMemberId } = globalHangoutState.data;
+
+  if (hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+    popup('Not in voting stage.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await deleteHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
+
+    globalHangoutState.data.votesCount--;
+    hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
+
+    toggleAddVoteBtn(addVoteBtn, false);
+
+    popup('Vote removed.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 403) {
+      if (errReason === 'inAvailabilityStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        return;
+      };
+
+      if (errReason === 'inSuggestionStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_SUGGESTIONS_STAGE;
+        return;
+      };
+
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      return;
+    };
+
+
+
+    if (status === 404) {
+      LoadingModal.display();
+
+      if (errReason === 'hangoutNotFound') {
+        setTimeout(() => window.location.reload(), 1000);
+        return;
+      };
+
+      hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
+
+      renderSuggestionsSection();
+      LoadingModal.remove();
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionExpired();
+    };
+  };
 };

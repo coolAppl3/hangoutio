@@ -217,7 +217,6 @@ async function resendVerificationEmail(): Promise<void> {
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -235,7 +234,7 @@ async function resendVerificationEmail(): Promise<void> {
       return;
     };
 
-    if (status === 403 && errReason === 'emailLimitReached') {
+    if (status === 403) {
       signUpState.verificationEmailsSent = 3;
     };
   };

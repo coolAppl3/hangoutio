@@ -44,12 +44,12 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
+    res.status(400).json({ message: 'Invalid hangout member ID.' });
     return;
   };
 
@@ -176,7 +176,9 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     if (existingAvailabilitySlots.length >= HANGOUT_AVAILABILITY_SLOTS_LIMIT) {
       await connection.rollback();
-      res.status(409).json({ message: `Availability slots limit of ${HANGOUT_AVAILABILITY_SLOTS_LIMIT} reached.`, reason: 'slotLimitReached' });
+      res.status(409).json({
+        message: `Availability slots limit of ${HANGOUT_AVAILABILITY_SLOTS_LIMIT} reached.`, reason: 'slotLimitReached',
+      });
 
       return;
     };

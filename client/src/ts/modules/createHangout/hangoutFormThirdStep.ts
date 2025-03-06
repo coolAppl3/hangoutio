@@ -152,7 +152,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
 
     popup(errMessage, 'error');
 
-    if (status === 409 && errReason === 'hangoutsLimitReached') {
+    if (status === 409) {
       handleOngoingHangoutsLimitReached(errMessage);
       return;
     };
@@ -163,10 +163,7 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-      };
-
+      handleAuthSessionDestroyed();
       return;
     };
 

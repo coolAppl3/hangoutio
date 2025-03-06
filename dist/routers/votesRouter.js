@@ -31,7 +31,6 @@ const db_1 = require("../db/db");
 const express_1 = __importDefault(require("express"));
 const requestValidation_1 = require("../util/validation/requestValidation");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
-const voteValidation = __importStar(require("../util/validation/voteValidation"));
 const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const authUtils = __importStar(require("../auth/authUtils"));
 const cookieUtils_1 = require("../util/cookieUtils");
@@ -121,13 +120,13 @@ exports.votesRouter.post('/', async (req, res) => {
       LIMIT 1;`, {
             suggestionId: requestData.suggestionId,
             hangoutMemberId: requestData.hangoutMemberId,
-            hangoutId: requestData.hangoutMemberId,
-            votesLimit: constants_1.HANGOUT_VOTES_LIMIT
+            hangoutId: requestData.hangoutId,
+            votesLimit: constants_1.HANGOUT_VOTES_LIMIT,
         });
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
             await connection.rollback();
-            res.status(404).json({ message: 'Hangout not found.' });
+            res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
             return;
         }
         ;
@@ -145,62 +144,28 @@ exports.votesRouter.post('/', async (req, res) => {
         }
         ;
         if (hangoutMemberDetails.current_stage !== constants_1.HANGOUT_VOTING_STAGE) {
-            res.status(403).json({ message: `Hangout hasn't reached the voting stage yet.`, reason: 'inAvailabilityStage' });
+            res.status(403).json({
+                message: `Hangout hasn't reached the voting stage yet.`,
+                reason: hangoutMemberDetails.current_stage === constants_1.HANGOUT_AVAILABILITY_STAGE ? 'inAvailabilityStage' : 'inSuggestionsStage',
+            });
             return;
         }
         ;
         if (!hangoutMemberDetails.suggestion_found) {
             await connection.rollback();
-            res.status(404).json({ message: 'Suggestion not found.' });
+            res.status(404).json({ message: 'Suggestion not found.', reason: 'suggestionNotFound' });
             return;
         }
         ;
         if (hangoutMemberDetails.already_voted) {
             await connection.rollback();
-            res.status(409).json({ message: `You've already voted for this suggestion.` });
+            res.json({});
             return;
         }
         ;
         if (hangoutMemberDetails.total_votes >= constants_1.HANGOUT_VOTES_LIMIT) {
             await connection.rollback();
-            res.status(409).json({ message: 'Votes limit reached.' });
-            return;
-        }
-        ;
-        ;
-        const [suggestionAvailabilityRows] = await connection.execute(`SELECT
-        suggestions.suggestion_start_timestamp,
-        suggestions.suggestion_end_timestamp,
-        availability_slots.slot_start_timestamp,
-        availability_slots.slot_end_timestamp
-      FROM
-        suggestions
-      INNER JOIN
-        availability_slots ON suggestions.hangout_id = availability_slots.hangout_id
-      WHERE
-        suggestions.suggestion_id = ? AND
-        availability_slots.hangout_member_id = ?
-      LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [requestData.suggestionId, requestData.hangoutMemberId]);
-        const suggestionAvailabilityDetails = suggestionAvailabilityRows[0];
-        if (!suggestionAvailabilityDetails) {
-            await connection.rollback();
-            res.status(409).json({ message: `Your availability doesn't match this suggestion's time slot.` });
-            return;
-        }
-        ;
-        ;
-        const suggestionTimeSlot = {
-            start: suggestionAvailabilityDetails.suggestion_start_timestamp,
-            end: suggestionAvailabilityDetails.suggestion_end_timestamp,
-        };
-        ;
-        const availabilitySlots = suggestionAvailabilityRows.map((row) => ({
-            start: row.slot_start_timestamp,
-            end: row.slot_end_timestamp,
-        }));
-        if (!voteValidation.isAvailableForSuggestion(suggestionTimeSlot, availabilitySlots)) {
-            await connection.rollback();
-            res.status(409).json({ message: `Your availability doesn't match this suggestions time slot.` });
+            res.status(409).json({ message: 'Votes limit reached.', reason: 'votesLimitReached' });
             return;
         }
         ;
@@ -328,7 +293,7 @@ exports.votesRouter.delete('/', async (req, res) => {
         }
         ;
         if (!hangoutMemberDetails.vote_id) {
-            res.status(404).json({ message: 'Vote not found.' });
+            res.json({});
             return;
         }
         ;

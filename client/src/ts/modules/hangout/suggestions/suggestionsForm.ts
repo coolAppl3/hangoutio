@@ -220,7 +220,7 @@ async function addHangoutSuggestion(): Promise<void> {
     const errMessage: string = axiosError.response.data.message;
     const errReason: string | undefined = axiosError.response.data.reason;
 
-    if (status === 400 && (errReason === 'hangoutId' || errReason === 'hangoutMemberId')) {
+    if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
       return;
     };
@@ -228,11 +228,7 @@ async function addHangoutSuggestion(): Promise<void> {
     popup(errMessage, 'error');
 
     if (status === 409) {
-      if (errReason === 'limitReached') {
-        globalHangoutState.data.suggestionsCount = HANGOUT_SUGGESTIONS_LIMIT;
-        return;
-      };
-
+      globalHangoutState.data.suggestionsCount = HANGOUT_SUGGESTIONS_LIMIT;
       return;
     };
 
@@ -260,10 +256,7 @@ async function addHangoutSuggestion(): Promise<void> {
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-      };
-
+      handleAuthSessionDestroyed();
       return;
     };
 
@@ -418,53 +411,43 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
     popup(errMessage, 'error');
 
     if (status === 404) {
-      if (errReason === 'suggestionNotfound') {
-        globalHangoutState.data.suggestionsCount--;
-        hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((suggestion: Suggestion) => suggestion.suggestion_id !== suggestionId);
-
-        endHangoutSuggestionsFormEdit();
-        renderSuggestionsSection();
+      if (errReason === 'hangoutNotFound') {
+        LoadingModal.display();
+        setTimeout(() => window.location.reload(), 100);
 
         return;
       };
 
-      if (errReason === 'hangoutNotFound') {
-        LoadingModal.display();
-        setTimeout(() => window.location.reload(), 100);
-      };
+      globalHangoutState.data.suggestionsCount--;
+      hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((suggestion: Suggestion) => suggestion.suggestion_id !== suggestionId);
+
+      endHangoutSuggestionsFormEdit();
+      renderSuggestionsSection();
 
       return;
     };
 
     if (status === 403) {
+      endHangoutSuggestionsFormEdit();
+
       if (errReason === 'hangoutConcluded') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
-        endHangoutSuggestionsFormEdit();
-
         return;
       };
 
-      if (errReason === 'inAvailabilityStage') {
-        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
-        endHangoutSuggestionsFormEdit();
-      };
-
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
       return;
     };
 
     if (status === 401) {
+      endHangoutSuggestionsFormEdit();
+
       if (errReason === 'authSessionExpired') {
         handleAuthSessionExpired();
-        endHangoutSuggestionsFormEdit();
-
         return;
       };
 
-      if (errReason === 'authSessionDestroyed') {
-        handleAuthSessionDestroyed();
-        endHangoutSuggestionsFormEdit();
-      };
-
+      handleAuthSessionDestroyed();
       return;
     };
 

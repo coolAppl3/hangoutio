@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isAvailableForSuggestion = void 0;
 const constants_1 = require("../constants");
-;
 ;
 function isAvailableForSuggestion(suggestionTimeSlot, availabilitySlots) {
     if (availabilitySlots.length === 0) {
@@ -18,18 +16,17 @@ function isAvailableForSuggestion(suggestionTimeSlot, availabilitySlots) {
     ;
     return false;
 }
-exports.isAvailableForSuggestion = isAvailableForSuggestion;
 ;
 function intersectsWithAvailabilitySlot(suggestionTimeSlot, availabilitySlot) {
-    if (suggestionTimeSlot.start >= availabilitySlot.start && availabilitySlot.end - suggestionTimeSlot.start >= constants_1.hourMilliseconds) {
+    if (suggestionTimeSlot.start >= availabilitySlot.start && availabilitySlot.end - suggestionTimeSlot.start >= constants_1.minuteMilliseconds) {
         return true;
     }
     ;
-    if (suggestionTimeSlot.end <= availabilitySlot.end && suggestionTimeSlot.end - availabilitySlot.start >= constants_1.hourMilliseconds) {
+    if (suggestionTimeSlot.end <= availabilitySlot.end && suggestionTimeSlot.end - availabilitySlot.start >= constants_1.minuteMilliseconds) {
         return true;
     }
     ;
-    if (availabilitySlot.start >= suggestionTimeSlot.start && suggestionTimeSlot.end - availabilitySlot.start >= constants_1.hourMilliseconds) {
+    if (availabilitySlot.start >= suggestionTimeSlot.start && suggestionTimeSlot.end - availabilitySlot.start >= constants_1.minuteMilliseconds) {
         return true;
     }
     ;
