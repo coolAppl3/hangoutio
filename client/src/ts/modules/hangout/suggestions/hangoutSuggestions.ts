@@ -12,7 +12,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { HangoutsDetails, Suggestion } from "../hangoutTypes";
 import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions, suggestionFiltersState } from "./suggestionFilters";
 import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
-import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, toggleAddVoteBtn, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
+import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes, updateSuggestionVoteValues } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -270,7 +270,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.classList.contains('toggle-vote-btn')) {
-    await handleVoteBtnClicks(suggestion, e.target);
+    await handleVoteBtnClicks(suggestion, suggestionElement);
     return;
   };
 
@@ -758,18 +758,18 @@ function initSuggestionsSectionMutationObserver(): void {
   hangoutSuggestionState.suggestionsSectionMutationObserverActive = true;
 };
 
-async function handleVoteBtnClicks(suggestion: Suggestion, toggleVoteBtn: HTMLButtonElement): Promise<void> {
+async function handleVoteBtnClicks(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   const isVotedFor: boolean = hangoutSuggestionState.memberVotesSet.has(suggestion.suggestion_id);
 
   if (!isVotedFor) {
-    await addHangoutVote(suggestion, toggleVoteBtn);
+    await addHangoutVote(suggestion, suggestionElement);
     return;
   };
 
-  await removeHangoutVote(suggestion, toggleVoteBtn);
+  await removeHangoutVote(suggestion, suggestionElement);
 };
 
-async function addHangoutVote(suggestion: Suggestion, toggleVoteBtn: HTMLButtonElement): Promise<void> {
+async function addHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   LoadingModal.display();
 
   if (!globalHangoutState.data) {
@@ -799,9 +799,10 @@ async function addHangoutVote(suggestion: Suggestion, toggleVoteBtn: HTMLButtonE
     await addHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
 
     globalHangoutState.data.votesCount++;
+    suggestion.votes_count++;
     hangoutSuggestionState.memberVotesSet.add(suggestion.suggestion_id);
 
-    toggleAddVoteBtn(toggleVoteBtn, true);
+    updateSuggestionVoteValues(suggestionElement, suggestion.votes_count, true);
 
     popup('Vote added.', 'success');
     LoadingModal.remove();
@@ -880,7 +881,7 @@ async function addHangoutVote(suggestion: Suggestion, toggleVoteBtn: HTMLButtonE
   };
 };
 
-async function removeHangoutVote(suggestion: Suggestion, toggleVoteBtn: HTMLButtonElement): Promise<void> {
+async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   LoadingModal.display();
 
   if (!globalHangoutState.data) {
@@ -903,9 +904,10 @@ async function removeHangoutVote(suggestion: Suggestion, toggleVoteBtn: HTMLButt
     await removeHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
 
     globalHangoutState.data.votesCount--;
+    suggestion.votes_count--;
     hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
 
-    toggleAddVoteBtn(toggleVoteBtn, false);
+    updateSuggestionVoteValues(suggestionElement, suggestion.votes_count, false);
 
     if (suggestionFiltersState.filterByVotedFor) {
       renderSuggestionsSection();

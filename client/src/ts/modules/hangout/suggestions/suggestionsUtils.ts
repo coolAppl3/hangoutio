@@ -3,6 +3,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
+import { HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 
 export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement): void {
   const likeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
@@ -70,16 +71,25 @@ export function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): voi
 };
 
 // vote utils
-export function toggleAddVoteBtn(voteToggleBtn: HTMLButtonElement, voteAdded: boolean): void {
+export function updateSuggestionVoteValues(suggestionElement: HTMLDivElement, newVotesCount: number, voteAdded: boolean): void {
+  const votesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.votes-count-span');
+  const toggleVoteBtn: HTMLButtonElement | null = suggestionElement.querySelector('.toggle-vote-btn');
+
+  votesCountSpan && (votesCountSpan.textContent = `${newVotesCount}`);
+
+  if (!toggleVoteBtn) {
+    return;
+  };
+
   if (voteAdded) {
-    voteToggleBtn.classList.add('danger');
-    voteToggleBtn.textContent = 'Remove vote';
+    toggleVoteBtn.classList.add('danger');
+    toggleVoteBtn.textContent = 'Remove vote';
 
     return;
   };
 
-  voteToggleBtn.classList.remove('danger');
-  voteToggleBtn.textContent = 'Add vote';
+  toggleVoteBtn.classList.remove('danger');
+  toggleVoteBtn.textContent = 'Add vote'
 };
 
 // suggestions-related DOM utils
@@ -177,10 +187,10 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   suggestionDetailsContainer.appendChild(secondItem);
   suggestionDetailsContainer.appendChild(thirdItem);
 
-  if (suggestion.is_edited) {
+  if (globalHangoutState.data?.hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
     const fourthItem: HTMLDivElement = createDivElement(null);
-    fourthItem.appendChild(createSpanElement(null, 'Has been edited'));
-    fourthItem.appendChild(createSpanElement(null, 'Yes'));
+    fourthItem.appendChild(createSpanElement(null, 'Votes count'));
+    fourthItem.appendChild(createSpanElement('votes-count-span', `${suggestion.votes_count}`));
 
     suggestionDetailsContainer.appendChild(fourthItem);
   };
