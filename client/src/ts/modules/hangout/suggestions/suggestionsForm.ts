@@ -13,6 +13,7 @@ import { hangoutSuggestionState, renderSuggestionsSection } from "./hangoutSugge
 import { Suggestion } from "../hangoutTypes";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { sortHangoutSuggestions } from "./suggestionFilters";
+import { directlyNavigateHangoutSections } from "../hangoutNav";
 
 interface SuggestionsFormState {
   suggestionIdToEdit: number | null,
@@ -549,18 +550,29 @@ function handleSuggestionsFormClicks(e: MouseEvent): void {
     return;
   };
 
-  if (e.target.id === 'suggestions-form-expand-btn') {
+  if (e.target.id === 'suggestions-form-header-btn') {
     if (!globalHangoutState.data) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    if (globalHangoutState.data.hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
-      popup('Not in suggestions stage.', 'error');
+    const { hangoutDetails, suggestionsCount } = globalHangoutState.data;
+
+    if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+      popup('Not in suggestions stage yet.', 'error');
       return;
     };
 
-    if (globalHangoutState.data.suggestionsCount === HANGOUT_SUGGESTIONS_LIMIT) {
+    if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
+      return;
+    };
+
+    if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
+      directlyNavigateHangoutSections('conclusion');
+      return;
+    };
+
+    if (suggestionsCount === HANGOUT_SUGGESTIONS_LIMIT) {
       popup(`Suggestions limit of ${HANGOUT_SUGGESTIONS_LIMIT} reached.`, 'error');
       return;
     };

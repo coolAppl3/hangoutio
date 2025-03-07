@@ -3,7 +3,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
-import { HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 
 export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement): void {
   const likeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
@@ -92,8 +92,48 @@ export function updateSuggestionVoteValues(suggestionElement: HTMLDivElement, ne
   toggleVoteBtn.textContent = 'Add vote'
 };
 
-// suggestions-related DOM utils
+export function updateSuggestionsFormHeader(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
 
+  const currentStage: number = globalHangoutState.data.hangoutDetails.current_stage;
+
+  if (currentStage <= HANGOUT_SUGGESTIONS_STAGE) {
+    return;
+  };
+
+  const suggestionsFormHeader: HTMLDivElement | null = document.querySelector('#suggestions-form-header');
+  const setStage: string | null | undefined = suggestionsFormHeader?.getAttribute('data-currentStage');
+
+  if (setStage && currentStage === +setStage) {
+    return;
+  };
+
+  const titleElement: HTMLHeadingElement | null | undefined = suggestionsFormHeader?.querySelector('.title');
+  const descriptionElement: HTMLParagraphElement | null | undefined = suggestionsFormHeader?.querySelector('.description');
+  const suggestionsFormHeaderBtn: HTMLButtonElement | null | undefined = suggestionsFormHeader?.querySelector('button.btn');
+
+  if (!suggestionsFormHeader || !titleElement || !descriptionElement || !suggestionsFormHeaderBtn) {
+    return;
+  };
+
+  suggestionsFormHeader.setAttribute('data-currentStage', `${currentStage}`);
+  descriptionElement.classList.add('hidden');
+
+  if (currentStage === HANGOUT_VOTING_STAGE) {
+    titleElement.textContent = 'Vote on your favorite suggestions.';
+    suggestionsFormHeaderBtn.classList.add('hidden');
+
+    return;
+  };
+
+  titleElement.textContent = 'Hangout has been concluded!';
+  suggestionsFormHeaderBtn.textContent = 'View winning suggestion';
+  suggestionsFormHeaderBtn.classList.remove('hidden');
+};
+
+// suggestions-related DOM utils
 export function createSuggestionElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionElement: HTMLDivElement = createDivElement('suggestion');
   suggestionElement.setAttribute('data-suggestionId', `${suggestion.suggestion_id || 0}`);

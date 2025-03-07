@@ -1259,22 +1259,23 @@
         <div>
           <form id="suggestions-form">
             <div id="suggestions-form-header">
-              <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Add a suggestion</h3>
-              <p class="text-sm md:text-base font-bold text-description dark:text-description-dark mb-[4px]">
-                Share your ideas with everyone and contribute to the hangout.
-              </p>
-              <p class="w-full text-sm md:text-base font-bold text-description dark:text-description-dark">
+              <h3 class="title">Add a suggestion</h3>
+              <p class="description">Share your ideas with everyone and contribute to the hangout.</p>
+
+              <p class="suggestions-count">
                 Remaining suggestions:
-                <span
-                  id="suggestions-remaining-span"
-                  class="text-title dark:text-title-dark"
-                ></span>
+                <span id="suggestions-remaining-span"></span>
+              </p>
+
+              <p class="votes-count">
+                Remaining votes:
+                <span id="votes-remaining-span"></span>
               </p>
 
               <button
                 type="button"
                 class="btn bg-cta dark:bg-cta-dark mt-2 md:w-full"
-                id="suggestions-form-expand-btn"
+                id="suggestions-form-header-btn"
               >
                 Add suggestion
               </button>

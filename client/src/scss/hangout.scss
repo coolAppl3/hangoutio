@@ -1117,9 +1117,49 @@
       #suggestions-form-header {
         @apply mb-2;
 
-        #suggestions-form-expand-btn {
+        #suggestions-form-header-btn {
           @apply hidden;
         }
+      }
+    }
+
+    &-header {
+      &[data-currentStage="3"] {
+        p.votes-count {
+          @apply block;
+        }
+
+        p.suggestions-count {
+          @apply hidden;
+        }
+      }
+
+      &[data-currentStage="4"] {
+
+        p.suggestions-count,
+        p.votes-count {
+          @apply hidden;
+        }
+      }
+
+      h3 {
+        @apply w-full text-lg font-medium text-title dark:text-title-dark mb-1;
+      }
+
+      p {
+        @apply text-sm md:text-base font-bold text-description dark:text-description-dark;
+
+        &.description {
+          @apply mb-[4px];
+        }
+
+        span {
+          @apply text-title dark:text-title-dark;
+        }
+      }
+
+      p.votes-count {
+        @apply hidden;
       }
     }
 

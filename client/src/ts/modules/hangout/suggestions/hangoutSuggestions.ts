@@ -12,7 +12,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { HangoutsDetails, Suggestion } from "../hangoutTypes";
 import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions, suggestionFiltersState } from "./suggestionFilters";
 import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
-import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes, updateSuggestionVoteValues } from "./suggestionsUtils";
+import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes, updateSuggestionsFormHeader, updateSuggestionVoteValues } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -38,8 +38,10 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
   suggestionsRenderLimit: MAX_HANGOUT_MEMBERS_LIMIT * HANGOUT_SUGGESTIONS_LIMIT,
 };
 
-const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
 const suggestionsContainer: HTMLDivElement | null = document.querySelector('#suggestions-container');
+
+const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
+const votesRemainingSpan: HTMLSpanElement | null = document.querySelector('#votes-remaining-span');
 
 const suggestionsSectionElement: HTMLDivElement | null = document.querySelector('#suggestions-section');
 const renderMoreSuggestionsBtn: HTMLButtonElement | null = document.querySelector('#render-more-suggestions-btn');
@@ -74,6 +76,8 @@ async function initHangoutSuggestions(): Promise<void> {
 export function renderSuggestionsSection(): void {
   displayHangoutSuggestions();
   updateRemainingSuggestionsCount();
+  updateRemainingVotesCount();
+  updateSuggestionsFormHeader();
 
   if (!hangoutSuggestionState.suggestionsSectionMutationObserverActive) {
     initSuggestionsSectionMutationObserver();
@@ -226,12 +230,21 @@ function applySuggestionsContainerStyles(displayRenderMoreSuggestionsBtn: boolea
 };
 
 function updateRemainingSuggestionsCount(): void {
-  if (!suggestionsRemainingSpan || !globalHangoutState.data) {
+  if (!globalHangoutState.data || !suggestionsRemainingSpan) {
     return;
   };
 
   const suggestionsCount: number = HANGOUT_SUGGESTIONS_LIMIT - globalHangoutState.data.suggestionsCount;
   suggestionsRemainingSpan.textContent = `${suggestionsCount}`;
+};
+
+function updateRemainingVotesCount(): void {
+  if (!globalHangoutState.data || !votesRemainingSpan) {
+    return;
+  };
+
+  const votesCount: number = HANGOUT_VOTES_LIMIT - globalHangoutState.data.votesCount;
+  votesRemainingSpan.textContent = `${votesCount}`;
 };
 
 async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
@@ -803,6 +816,7 @@ async function addHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDiv
     hangoutSuggestionState.memberVotesSet.add(suggestion.suggestion_id);
 
     updateSuggestionVoteValues(suggestionElement, suggestion.votes_count, true);
+    updateRemainingVotesCount();
 
     popup('Vote added.', 'success');
     LoadingModal.remove();
@@ -908,6 +922,7 @@ async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTML
     hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
 
     updateSuggestionVoteValues(suggestionElement, suggestion.votes_count, false);
+    updateRemainingVotesCount();
 
     if (suggestionFiltersState.filterByVotedFor) {
       renderSuggestionsSection();
