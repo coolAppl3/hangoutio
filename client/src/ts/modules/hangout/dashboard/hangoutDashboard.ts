@@ -372,14 +372,8 @@ function renderLatestEvents(): void {
 
   const dashboardEventsContainer: HTMLDivElement = createDivElement(null, 'dashboard-events-container');
 
-  for (let i = 0; i < 2; i++) {
-    const hangoutEvent: HangoutEvent | undefined = hangoutDashboardState.latestHangoutEvents[i];
-
-    if (!hangoutEvent) {
-      break;
-    };
-
-    dashboardEventsContainer.insertAdjacentElement('afterbegin', createDashboardEvent(hangoutEvent));
+  for (const event of hangoutDashboardState.latestHangoutEvents) {
+    dashboardEventsContainer.appendChild(createDashboardEvent(event));
   };
 
   dashboardEventsElement.firstElementChild?.remove();
