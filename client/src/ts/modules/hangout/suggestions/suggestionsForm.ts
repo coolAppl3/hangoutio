@@ -85,8 +85,13 @@ async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
     return;
   };
 
-  if (globalHangoutState.data.hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
-    popup('Hangout is not in suggestions stage.', 'error');
+  if (globalHangoutState.data.hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    return;
+  };
+
+  if (globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+    popup('Hangout is not in suggestions stage yet.', 'error');
     return;
   };
 
@@ -306,8 +311,15 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
 
   const { hangoutId, hangoutMemberId, hangoutDetails } = globalHangoutState.data;
 
-  if (hangoutDetails.current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
-    popup('Hangout is not in suggestions stage.', 'error');
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+    popup('Hangout is not in the suggestions stage yet.', 'error');
     LoadingModal.remove();
 
     return;
