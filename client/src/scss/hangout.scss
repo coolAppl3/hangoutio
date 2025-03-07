@@ -236,7 +236,8 @@
     }
   }
 
-  label {
+  label,
+  span.mock-span {
     @apply text-title dark:text-title-dark text-sm leading-[2rem] font-bold block mb-[4px];
   }
 
@@ -1116,9 +1117,49 @@
       #suggestions-form-header {
         @apply mb-2;
 
-        #suggestions-form-expand-btn {
+        #suggestions-form-header-btn {
           @apply hidden;
         }
+      }
+    }
+
+    &-header {
+      &[data-currentStage="3"] {
+        p.votes-count {
+          @apply block;
+        }
+
+        p.suggestions-count {
+          @apply hidden;
+        }
+      }
+
+      &[data-currentStage="4"] {
+
+        p.suggestions-count,
+        p.votes-count {
+          @apply hidden;
+        }
+      }
+
+      h3 {
+        @apply w-full text-lg font-medium text-title dark:text-title-dark mb-1;
+      }
+
+      p {
+        @apply text-sm md:text-base font-bold text-description dark:text-description-dark;
+
+        &.description {
+          @apply mb-[4px];
+        }
+
+        span {
+          @apply text-title dark:text-title-dark;
+        }
+      }
+
+      p.votes-count {
+        @apply hidden;
       }
     }
 
@@ -1218,13 +1259,13 @@
   }
 
   #suggestions-container {
-    &.in-voting-stage .suggestions-container-inner .suggestion .btn-container button.add-vote-btn {
+    &.in-voting-stage .suggestions-container-inner .suggestion .btn-container button.toggle-vote-btn {
       @apply block;
     }
 
     &.votes-limit-reached .suggestions-container-inner .suggestion .btn-container {
 
-      button.add-vote-btn {
+      button.toggle-vote-btn {
         @apply hidden;
 
         &.danger {
@@ -1288,7 +1329,7 @@
         }
 
         &-details {
-          @apply mb-2 overflow-hidden;
+          @apply mb-2 overflow-hidden relative;
 
           &-header {
             @apply flex justify-start items-start mb-2;
@@ -1369,7 +1410,7 @@
             @apply flex justify-start items-center sm:block relative;
 
             button {
-              &.add-vote-btn {
+              &.toggle-vote-btn {
                 @apply btn sm:w-full bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1 hidden;
 
                 &.danger {
@@ -1381,6 +1422,10 @@
                 @apply btn sm:w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
               }
             }
+          }
+
+          .is-edited-span {
+            @apply absolute bottom-0 right-0 text-xs leading-[1] py-[4px] px-1 rounded-[6rem] bg-description dark:bg-description-dark text-title-dark dark:text-title font-bold sm:hidden;
           }
         }
 

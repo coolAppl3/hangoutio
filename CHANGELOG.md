@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.4.48] (2025-03-08)
+
+### Features
+
+- Suggestion cards now show their votes count if the hangout is in the voting stage.
+  - Logic concerning flagging edited suggestions was reworked as a result.
+- Added logic to update the suggestions form header to reflect the current stage, and display the remaining votes count.
+
+
+### Bug Fixes
+
+- Fixed suggestions, when filtered by likes or votes, not being filtered out after being unliked or having their vote removed, leading to unintuitive behavior for the user.
+- Fixed flawed logic causing inconsistencies in when `dateTimePicker` slots can start on the hangout conclusion date.
+- Fixed a few bugs with how the hangout stage affected suggestions being editable.
+- Fixed label elements for mock inputs violating recommended practices in `hangout.html`.
+
+
+### Code Refactoring
+
+- Reordered latest events in the hangout dashboard to show the latest one first.
+- Refactored `authUtils.ts` to improve efficiency.
+
+
 ## [0.4.47] (2025-03-06)
 
 ### Features

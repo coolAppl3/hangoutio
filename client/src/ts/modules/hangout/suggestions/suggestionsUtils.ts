@@ -3,7 +3,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState } from "./hangoutSuggestions";
-import { minuteMilliseconds } from "../../global/clientConstants";
+import { HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 
 export function updateSuggestionLikeBtnAttributes(suggestionElement: HTMLDivElement): void {
   const likeBtn: HTMLButtonElement | null = suggestionElement.querySelector('button.like-suggestion-btn');
@@ -71,20 +71,69 @@ export function removeSuggestionLikeIcon(suggestionElement: HTMLDivElement): voi
 };
 
 // vote utils
-export function toggleAddVoteBtn(addVoteBtn: HTMLButtonElement, voteAdded: boolean): void {
+export function updateSuggestionVoteValues(suggestionElement: HTMLDivElement, newVotesCount: number, voteAdded: boolean): void {
+  const votesCountSpan: HTMLSpanElement | null = suggestionElement.querySelector('.votes-count-span');
+  const toggleVoteBtn: HTMLButtonElement | null = suggestionElement.querySelector('.toggle-vote-btn');
+
+  votesCountSpan && (votesCountSpan.textContent = `${newVotesCount}`);
+
+  if (!toggleVoteBtn) {
+    return;
+  };
+
   if (voteAdded) {
-    addVoteBtn.classList.add('danger');
-    addVoteBtn.textContent = 'Remove vote';
+    toggleVoteBtn.classList.add('danger');
+    toggleVoteBtn.textContent = 'Remove vote';
 
     return;
   };
 
-  addVoteBtn.classList.remove('danger');
-  addVoteBtn.textContent = 'Add vote';
+  toggleVoteBtn.classList.remove('danger');
+  toggleVoteBtn.textContent = 'Add vote'
+};
+
+export function updateSuggestionsFormHeader(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const currentStage: number = globalHangoutState.data.hangoutDetails.current_stage;
+
+  if (currentStage <= HANGOUT_SUGGESTIONS_STAGE) {
+    return;
+  };
+
+  const suggestionsFormHeader: HTMLDivElement | null = document.querySelector('#suggestions-form-header');
+  const setStage: string | null | undefined = suggestionsFormHeader?.getAttribute('data-currentStage');
+
+  if (setStage && currentStage === +setStage) {
+    return;
+  };
+
+  const titleElement: HTMLHeadingElement | null | undefined = suggestionsFormHeader?.querySelector('.title');
+  const descriptionElement: HTMLParagraphElement | null | undefined = suggestionsFormHeader?.querySelector('.description');
+  const suggestionsFormHeaderBtn: HTMLButtonElement | null | undefined = suggestionsFormHeader?.querySelector('button.btn');
+
+  if (!suggestionsFormHeader || !titleElement || !descriptionElement || !suggestionsFormHeaderBtn) {
+    return;
+  };
+
+  suggestionsFormHeader.setAttribute('data-currentStage', `${currentStage}`);
+  descriptionElement.classList.add('hidden');
+
+  if (currentStage === HANGOUT_VOTING_STAGE) {
+    titleElement.textContent = 'Vote on your favorite suggestions.';
+    suggestionsFormHeaderBtn.classList.add('hidden');
+
+    return;
+  };
+
+  titleElement.textContent = 'Hangout has been concluded!';
+  suggestionsFormHeaderBtn.textContent = 'View winning suggestion';
+  suggestionsFormHeaderBtn.classList.remove('hidden');
 };
 
 // suggestions-related DOM utils
-
 export function createSuggestionElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionElement: HTMLDivElement = createDivElement('suggestion');
   suggestionElement.setAttribute('data-suggestionId', `${suggestion.suggestion_id || 0}`);
@@ -120,6 +169,7 @@ function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolea
   suggestionDetailsElement.appendChild(suggestionDetailsHeaderElement);
   suggestionDetailsElement.appendChild(createSuggestionDetailsContainer(suggestion));
   suggestionDetailsElement.appendChild(createBtnContainer(isVotedFor));
+  suggestion.is_edited && suggestionDetailsElement.appendChild(createSpanElement('is-edited-span', 'Edited'));
 
   return suggestionDetailsElement;
 };
@@ -178,10 +228,10 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   suggestionDetailsContainer.appendChild(secondItem);
   suggestionDetailsContainer.appendChild(thirdItem);
 
-  if (suggestion.is_edited) {
+  if (globalHangoutState.data?.hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
     const fourthItem: HTMLDivElement = createDivElement(null);
-    fourthItem.appendChild(createSpanElement(null, 'Has been edited'));
-    fourthItem.appendChild(createSpanElement(null, 'Yes'));
+    fourthItem.appendChild(createSpanElement(null, 'Votes count'));
+    fourthItem.appendChild(createSpanElement('votes-count-span', `${suggestion.votes_count}`));
 
     suggestionDetailsContainer.appendChild(fourthItem);
   };
@@ -193,14 +243,14 @@ function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
   btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
 
-  const addVoteBtn: HTMLButtonElement = createBtnElement('add-vote-btn', 'Add vote');
+  const toggleVoteBtn: HTMLButtonElement = createBtnElement('toggle-vote-btn', 'Add vote');
 
   if (isVotedFor) {
-    addVoteBtn.classList.add('danger');
-    addVoteBtn.textContent = 'Remove vote';
+    toggleVoteBtn.classList.add('danger');
+    toggleVoteBtn.textContent = 'Remove vote';
   };
 
-  btnContainer.insertAdjacentElement('afterbegin', addVoteBtn);
+  btnContainer.insertAdjacentElement('afterbegin', toggleVoteBtn);
   return btnContainer;
 };
 

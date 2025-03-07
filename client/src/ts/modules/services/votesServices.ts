@@ -25,7 +25,7 @@ interface DeleteHangoutVoteBody {
   hangoutId: string,
 };
 
-export async function deleteHangoutVoteService(requestBody: DeleteHangoutVoteBody): Promise<AxiosResponse> {
+export async function removeHangoutVoteService(requestBody: DeleteHangoutVoteBody): Promise<AxiosResponse> {
   const { suggestionId, hangoutMemberId, hangoutId } = requestBody;
   return axios.delete(`${votesApiUrl}?suggestionId=${suggestionId}&hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
 };

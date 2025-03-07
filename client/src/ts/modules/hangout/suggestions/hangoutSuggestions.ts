@@ -6,13 +6,13 @@ import { createDivElement, createParagraphElement } from "../../global/domUtils"
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
-import { addHangoutVoteService, deleteHangoutVoteService } from "../../services/votesServices";
+import { addHangoutVoteService, removeHangoutVoteService } from "../../services/votesServices";
 import { hangoutAvailabilityState, initHangoutAvailability } from "../availability/hangoutAvailability";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutsDetails, Suggestion } from "../hangoutTypes";
-import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions } from "./suggestionFilters";
+import { filterSuggestions, initHangoutSuggestionsFilter, sortHangoutSuggestions, suggestionFiltersState } from "./suggestionFilters";
 import { endHangoutSuggestionsFormEdit, suggestionsFormState, initHangoutSuggestionsForm, prepareHangoutSuggestionEditForm } from "./suggestionsForm";
-import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, toggleAddVoteBtn, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes } from "./suggestionsUtils";
+import { createSuggestionElement, displaySuggestionLikeIcon, removeSuggestionLikeIcon, updateSuggestionDropdownMenuBtnAttributes, updateSuggestionLikeBtnAttributes, updateSuggestionsFormHeader, updateSuggestionVoteValues } from "./suggestionsUtils";
 
 interface HangoutSuggestionsState {
   isLoaded: boolean,
@@ -38,8 +38,10 @@ export const hangoutSuggestionState: HangoutSuggestionsState = {
   suggestionsRenderLimit: MAX_HANGOUT_MEMBERS_LIMIT * HANGOUT_SUGGESTIONS_LIMIT,
 };
 
-const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
 const suggestionsContainer: HTMLDivElement | null = document.querySelector('#suggestions-container');
+
+const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#suggestions-remaining-span');
+const votesRemainingSpan: HTMLSpanElement | null = document.querySelector('#votes-remaining-span');
 
 const suggestionsSectionElement: HTMLDivElement | null = document.querySelector('#suggestions-section');
 const renderMoreSuggestionsBtn: HTMLButtonElement | null = document.querySelector('#render-more-suggestions-btn');
@@ -74,6 +76,8 @@ async function initHangoutSuggestions(): Promise<void> {
 export function renderSuggestionsSection(): void {
   displayHangoutSuggestions();
   updateRemainingSuggestionsCount();
+  updateRemainingVotesCount();
+  updateSuggestionsFormHeader();
 
   if (!hangoutSuggestionState.suggestionsSectionMutationObserverActive) {
     initSuggestionsSectionMutationObserver();
@@ -226,12 +230,21 @@ function applySuggestionsContainerStyles(displayRenderMoreSuggestionsBtn: boolea
 };
 
 function updateRemainingSuggestionsCount(): void {
-  if (!suggestionsRemainingSpan || !globalHangoutState.data) {
+  if (!globalHangoutState.data || !suggestionsRemainingSpan) {
     return;
   };
 
   const suggestionsCount: number = HANGOUT_SUGGESTIONS_LIMIT - globalHangoutState.data.suggestionsCount;
   suggestionsRemainingSpan.textContent = `${suggestionsCount}`;
+};
+
+function updateRemainingVotesCount(): void {
+  if (!globalHangoutState.data || !votesRemainingSpan) {
+    return;
+  };
+
+  const votesCount: number = HANGOUT_VOTES_LIMIT - globalHangoutState.data.votesCount;
+  votesRemainingSpan.textContent = `${votesCount}`;
 };
 
 async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
@@ -269,8 +282,8 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
     return;
   };
 
-  if (e.target.classList.contains('add-vote-btn')) {
-    await handleVoteBtnClicks(suggestion, e.target);
+  if (e.target.classList.contains('toggle-vote-btn')) {
+    await handleVoteBtnClicks(suggestion, suggestionElement);
     return;
   };
 
@@ -462,6 +475,11 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
 
     hangoutSuggestionState.memberLikesSet.delete(suggestion.suggestion_id);
     suggestion.likes_count--;
+
+    if (suggestionFiltersState.filterByLiked) {
+      renderSuggestionsSection();
+      return;
+    };
 
     removeSuggestionLikeIcon(suggestionElement);
     updateSuggestionLikeBtnAttributes(suggestionElement);
@@ -753,18 +771,18 @@ function initSuggestionsSectionMutationObserver(): void {
   hangoutSuggestionState.suggestionsSectionMutationObserverActive = true;
 };
 
-async function handleVoteBtnClicks(suggestion: Suggestion, addVoteBtn: HTMLButtonElement): Promise<void> {
+async function handleVoteBtnClicks(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   const isVotedFor: boolean = hangoutSuggestionState.memberVotesSet.has(suggestion.suggestion_id);
 
   if (!isVotedFor) {
-    await addHangoutVote(suggestion, addVoteBtn);
+    await addHangoutVote(suggestion, suggestionElement);
     return;
   };
 
-  await deleteHangoutVote(suggestion, addVoteBtn);
+  await removeHangoutVote(suggestion, suggestionElement);
 };
 
-async function addHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElement): Promise<void> {
+async function addHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   LoadingModal.display();
 
   if (!globalHangoutState.data) {
@@ -794,11 +812,13 @@ async function addHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElem
     await addHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
 
     globalHangoutState.data.votesCount++;
+    suggestion.votes_count++;
     hangoutSuggestionState.memberVotesSet.add(suggestion.suggestion_id);
 
-    toggleAddVoteBtn(addVoteBtn, true);
+    updateSuggestionVoteValues(suggestionElement, suggestion.votes_count, true);
+    updateRemainingVotesCount();
 
-    popup('Vote added', 'success');
+    popup('Vote added.', 'success');
     LoadingModal.remove();
 
   } catch (err: unknown) {
@@ -875,7 +895,7 @@ async function addHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElem
   };
 };
 
-async function deleteHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonElement): Promise<void> {
+async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   LoadingModal.display();
 
   if (!globalHangoutState.data) {
@@ -895,12 +915,18 @@ async function deleteHangoutVote(suggestion: Suggestion, addVoteBtn: HTMLButtonE
   };
 
   try {
-    await deleteHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
+    await removeHangoutVoteService({ suggestionId: suggestion.suggestion_id, hangoutMemberId, hangoutId });
 
     globalHangoutState.data.votesCount--;
+    suggestion.votes_count--;
     hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
 
-    toggleAddVoteBtn(addVoteBtn, false);
+    updateSuggestionVoteValues(suggestionElement, suggestion.votes_count, false);
+    updateRemainingVotesCount();
+
+    if (suggestionFiltersState.filterByVotedFor) {
+      renderSuggestionsSection();
+    };
 
     popup('Vote removed.', 'success');
     LoadingModal.remove();

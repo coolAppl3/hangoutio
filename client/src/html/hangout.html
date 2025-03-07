@@ -1259,22 +1259,23 @@
         <div>
           <form id="suggestions-form">
             <div id="suggestions-form-header">
-              <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Add a suggestion</h3>
-              <p class="text-sm md:text-base font-bold text-description dark:text-description-dark mb-[4px]">
-                Share your ideas with everyone and contribute to the hangout.
-              </p>
-              <p class="w-full text-sm md:text-base font-bold text-description dark:text-description-dark">
+              <h3 class="title">Add a suggestion</h3>
+              <p class="description">Share your ideas with everyone and contribute to the hangout.</p>
+
+              <p class="suggestions-count">
                 Remaining suggestions:
-                <span
-                  id="suggestions-remaining-span"
-                  class="text-title dark:text-title-dark"
-                ></span>
+                <span id="suggestions-remaining-span"></span>
+              </p>
+
+              <p class="votes-count">
+                Remaining votes:
+                <span id="votes-remaining-span"></span>
               </p>
 
               <button
                 type="button"
                 class="btn bg-cta dark:bg-cta-dark mt-2 md:w-full"
-                id="suggestions-form-expand-btn"
+                id="suggestions-form-header-btn"
               >
                 Add suggestion
               </button>
@@ -1299,7 +1300,7 @@
                 class="grid grid-cols-2 gap-x-2 sm:grid-cols-1 sm:gap-x-0"
               >
                 <div class="form-group">
-                  <label for="suggestion-start-mock-input">Start</label>
+                  <span class="mock-span">Start</span>
                   <p
                     id="suggestion-start-mock-input"
                     tabindex="0"
@@ -1314,7 +1315,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="suggestion-end-mock-input">End</label>
+                  <span class="mock-span">End</span>
                   <p
                     id="suggestion-end-mock-input"
                     tabindex="0"
@@ -1370,21 +1371,19 @@
             <div class="h-line my-2"></div>
           </form>
 
-          <div class="suggestions-search mb-2">
-            <div class="form-group !mb-0">
-              <label for="suggestions-search-input">Search suggestions</label>
-              <input
-                type="text"
-                id="suggestions-search-input"
-                autocomplete="name"
-                placeholder="Example: Boardgames Night"
-                class="placeholder-description/50 dark:placeholder-description-dark/50"
-              />
-              <span
-                class="error-span"
-                data-target="suggestions-search-input"
-              ></span>
-            </div>
+          <div class="suggestions-search form-group">
+            <label for="suggestions-search-input">Search suggestions</label>
+            <input
+              type="text"
+              id="suggestions-search-input"
+              autocomplete="name"
+              placeholder="Example: Boardgames Night"
+              class="placeholder-description/50 dark:placeholder-description-dark/50"
+            />
+            <span
+              class="error-span"
+              data-target="suggestions-search-input"
+            ></span>
           </div>
 
           <div id="suggestion-filters">
@@ -1578,7 +1577,9 @@
             </div>
           </div>
 
-          <div id="suggestions-container"></div>
+          <div id="suggestions-container">
+            <p class="no-suggestions">No suggestions found</p>
+          </div>
 
           <button
             type="button"

@@ -1,4 +1,4 @@
-import { HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
 import { debounce } from "../../global/debounce";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
@@ -381,14 +381,14 @@ function handleSuggestionsSortClicks(sortBtn: HTMLButtonElement): void {
     return;
   };
 
-  if (sortBy === 'likes' && current_stage !== HANGOUT_SUGGESTIONS_STAGE) {
+  if (sortBy === 'likes' && current_stage === HANGOUT_AVAILABILITY_STAGE) {
     popup('No likes found to sort by.', 'error');
     collapseSortingContainer();
 
     return;
   };
 
-  if (sortBy === 'votes' && current_stage !== HANGOUT_VOTING_STAGE) {
+  if (sortBy === 'votes' && (current_stage === HANGOUT_AVAILABILITY_STAGE || current_stage === HANGOUT_SUGGESTIONS_STAGE)) {
     popup('No votes found to sort by.', 'error');
     collapseSortingContainer();
 
