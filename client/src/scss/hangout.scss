@@ -236,7 +236,8 @@
     }
   }
 
-  label {
+  label,
+  span.mock-span {
     @apply text-title dark:text-title-dark text-sm leading-[2rem] font-bold block mb-[4px];
   }
 
