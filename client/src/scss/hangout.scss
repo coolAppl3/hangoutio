@@ -1288,7 +1288,7 @@
         }
 
         &-details {
-          @apply mb-2 overflow-hidden;
+          @apply mb-2 overflow-hidden relative;
 
           &-header {
             @apply flex justify-start items-start mb-2;
@@ -1381,6 +1381,10 @@
                 @apply btn sm:w-full bg-description dark:bg-description-dark text-title-dark dark:text-title;
               }
             }
+          }
+
+          .is-edited-span {
+            @apply absolute bottom-0 right-0 text-xs leading-[1] py-[4px] px-1 rounded-[6rem] bg-description dark:bg-description-dark text-title-dark dark:text-title font-bold sm:hidden;
           }
         }
 

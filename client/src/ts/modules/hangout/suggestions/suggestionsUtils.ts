@@ -129,6 +129,7 @@ function createSuggestionDetailsElement(suggestion: Suggestion, isLeader: boolea
   suggestionDetailsElement.appendChild(suggestionDetailsHeaderElement);
   suggestionDetailsElement.appendChild(createSuggestionDetailsContainer(suggestion));
   suggestionDetailsElement.appendChild(createBtnContainer(isVotedFor));
+  suggestion.is_edited && suggestionDetailsElement.appendChild(createSpanElement('is-edited-span', 'Edited'));
 
   return suggestionDetailsElement;
 };
