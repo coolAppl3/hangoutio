@@ -1,7 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
 import { handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_SUGGESTIONS_LIMIT } from "../../global/clientConstants";
 import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getInitialHangoutDataService, InitialHangoutData } from "../../services/hangoutServices";
@@ -10,7 +9,7 @@ import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../ha
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent } from "./hangoutDashboardUtils";
+import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
 
@@ -27,6 +26,8 @@ export const hangoutDashboardState: HangoutDashboardState = {
   latestHangoutEvents: [],
   latestChatMessages: [],
 };
+
+const hangoutStageDescriptionElement: HTMLDivElement | null = document.querySelector('#hangout-stage-description');
 
 export async function hangoutDashboard(): Promise<void> {
   await getInitialHangoutData();
@@ -136,6 +137,18 @@ export async function getInitialHangoutData(): Promise<void> {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-dashboard', renderDashboardSection);
+
+  hangoutStageDescriptionElement?.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.classList.contains('hangout-description-btn')) {
+      console.log(e.target);
+      navigateHangoutSections(e);
+      return;
+    };
+  });
 };
 
 export function renderDashboardSection(): void {
@@ -215,57 +228,6 @@ function displayHangoutPassword(): void {
   };
 
   hangoutPasswordValueSpan.textContent = 'Not set';
-};
-
-function renderHangoutStageDescriptions(): void {
-  if (!globalHangoutState.data) {
-    return;
-  };
-
-  const { hangoutDetails, availabilitySlotsCount, suggestionsCount, votesCount } = globalHangoutState.data;
-
-  const hangoutStageDescriptionElement: HTMLDivElement | null = document.querySelector('#hangout-stage-description');
-  hangoutStageDescriptionElement?.setAttribute('data-hangoutStage', `${hangoutDetails.current_stage}`);
-
-  hangoutStageDescriptionElement?.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLButtonElement)) {
-      return;
-    };
-
-    if (e.target.hasAttribute('data-goTo')) {
-      navigateHangoutSections(e);
-    };
-  });
-
-  const slotsAddedSpan: HTMLSpanElement | null = document.querySelector('#dashboard-slots-added');
-  const slotsRemainingSpan: HTMLSpanElement | null = document.querySelector('#dashboard-slots-remaining');
-
-  if (slotsAddedSpan && slotsRemainingSpan) {
-    slotsAddedSpan.textContent = availabilitySlotsCount === 1 ? '1 slot' : `${availabilitySlotsCount} slots`;
-
-    const slotsRemainingCount: number = HANGOUT_AVAILABILITY_SLOTS_LIMIT - availabilitySlotsCount;
-    slotsRemainingSpan.textContent = slotsRemainingCount === 1 ? '1 slot' : `${slotsRemainingCount} slots`;
-  };
-
-  const suggestionsAddedSpan: HTMLSpanElement | null = document.querySelector('#dashboard-suggestions-added');
-  const suggestionsRemainingSpan: HTMLSpanElement | null = document.querySelector('#dashboard-suggestions-remaining');
-
-  if (suggestionsAddedSpan && suggestionsRemainingSpan) {
-    suggestionsAddedSpan.textContent = suggestionsCount === 1 ? '1 suggestion' : `${suggestionsCount} suggestions`;
-
-    const suggestionsRemainingCount: number = HANGOUT_SUGGESTIONS_LIMIT - suggestionsCount;
-    suggestionsRemainingSpan.textContent = suggestionsRemainingCount === 1 ? '1 suggestion' : `${suggestionsRemainingCount} suggestions`;
-  };
-
-  const votesAddedSpan: HTMLSpanElement | null = document.querySelector('#dashboard-votes-added');
-  const votesRemainingSpan: HTMLSpanElement | null = document.querySelector('#dashboard-votes-remaining');
-
-  if (votesAddedSpan && votesRemainingSpan) {
-    votesAddedSpan.textContent = votesCount === 1 ? '1 vote' : `${votesCount} votes`;
-
-    const votesRemainingCount: number = HANGOUT_SUGGESTIONS_LIMIT - votesCount;
-    votesRemainingSpan.textContent = votesRemainingCount === 1 ? '1 vote' : `${votesRemainingCount} votes`;
-  };
 };
 
 function renderMembersSection(): void {
