@@ -144,7 +144,6 @@ function loadEventListeners(): void {
     };
 
     if (e.target.classList.contains('hangout-description-btn')) {
-      console.log(e.target);
       navigateHangoutSections(e);
       return;
     };
