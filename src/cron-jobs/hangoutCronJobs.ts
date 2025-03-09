@@ -14,16 +14,16 @@ export async function progressHangouts(): Promise<void> {
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
-          hangout_id
-        FROM
-          hangouts
-        WHERE
-          (:currentTimestamp - stage_control_timestamp) >= availability_period AND current_stage = ${HANGOUT_AVAILABILITY_STAGE}
-          OR
-          (:currentTimestamp - stage_control_timestamp) >= suggestions_period AND current_stage = ${HANGOUT_SUGGESTIONS_STAGE}
-          OR
-          (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${HANGOUT_VOTING_STAGE}
-        LIMIT 100;`,
+        hangout_id
+      FROM
+        hangouts
+      WHERE
+        (:currentTimestamp - stage_control_timestamp) >= availability_period AND current_stage = ${HANGOUT_AVAILABILITY_STAGE}
+        OR
+        (:currentTimestamp - stage_control_timestamp) >= suggestions_period AND current_stage = ${HANGOUT_SUGGESTIONS_STAGE}
+        OR
+        (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${HANGOUT_VOTING_STAGE}
+      LIMIT 100;`,
       { currentTimestamp }
     );
 
