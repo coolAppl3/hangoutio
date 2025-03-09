@@ -298,7 +298,9 @@ export function closeDateTimePicker(): void {
 
 function resetDateTimePicker(): void {
   dateTimePickerState.data = null;
+
   dateTimePickerElement?.setAttribute('data-stage', 'date');
+  timePickerExtendSlotCheckbox?.classList.remove('checked');
 
   const timePickerSelectedDateSpan: HTMLSpanElement | null = document.querySelector('#time-picker-selected-date');
   timePickerSelectedDateSpan && (timePickerSelectedDateSpan.textContent = '');

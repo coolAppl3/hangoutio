@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
-import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from "../../global/clientConstants";
+import { dayMilliseconds, HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
 import { createBtnElement, createDivElement, createParagraphElement, createSpanElement, createSvgElement } from "../../global/domUtils";
@@ -372,4 +372,109 @@ export async function copyToClipboard(text: string): Promise<void> {
     console.log(err);
     popup('Failed to copy to clipboard.', 'error');
   };
+};
+
+export function renderHangoutStageDescriptions(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { hangoutDetails, availabilitySlotsCount, suggestionsCount, votesCount } = globalHangoutState.data;
+  const hangoutStageDescriptionElement: HTMLDivElement | null = document.querySelector('#hangout-stage-description');
+
+  if (!hangoutStageDescriptionElement) {
+    return;
+  };
+
+  const setStage: string | null = hangoutStageDescriptionElement.getAttribute('data-currentStage');
+  if (setStage && +setStage === hangoutDetails.current_stage) {
+    return;
+  };
+
+  hangoutStageDescriptionElement.setAttribute('date-currentStage', `${hangoutDetails.current_stage}`);
+  let hangoutStageDescriptionContainer: HTMLDivElement | null = null;
+
+  if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+    hangoutStageDescriptionContainer = createHangoutStageDescriptionContainer(
+      `Add your availability slots and let everyone know when you're free.`,
+      'Slots',
+      availabilitySlotsCount,
+      HANGOUT_AVAILABILITY_SLOTS_LIMIT - availabilitySlotsCount,
+      'View availability slots',
+      'availability'
+    );
+  };
+
+  if (hangoutDetails.current_stage === HANGOUT_SUGGESTIONS_STAGE) {
+    hangoutStageDescriptionContainer = createHangoutStageDescriptionContainer(
+      'Share your suggestions with everyone.',
+      'Suggestions',
+      suggestionsCount,
+      HANGOUT_SUGGESTIONS_LIMIT - suggestionsCount,
+      'View suggestions',
+      'suggestions'
+    );
+  };
+
+  if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
+    hangoutStageDescriptionContainer = createHangoutStageDescriptionContainer(
+      'Vote for the suggestions you like best.',
+      'Suggestions',
+      votesCount,
+      HANGOUT_VOTES_LIMIT - votesCount,
+      'View suggestions',
+      'suggestions'
+    );
+  };
+
+  if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
+    hangoutStageDescriptionContainer = createDivElement(null, 'hangout-stage-description-container');
+
+    const descriptionBtn: HTMLButtonElement = createBtnElement('hangout-description-btn', 'Learn more');
+    descriptionBtn.setAttribute('data-goTo', 'conclusion');
+
+    hangoutStageDescriptionContainer.appendChild(createParagraphElement(null, 'Hangout has been concluded!'));
+    hangoutStageDescriptionContainer.appendChild(descriptionBtn);
+  };
+
+  if (!hangoutStageDescriptionContainer) {
+    return;
+  };
+
+  hangoutStageDescriptionElement.firstElementChild?.remove();
+  hangoutStageDescriptionElement.appendChild(hangoutStageDescriptionContainer);
+};
+
+function createHangoutStageDescriptionContainer(
+  title: string,
+  labelType: string,
+  firstValue: number,
+  secondValue: number,
+  btnTitle: string,
+  btnGoToValue: string
+): HTMLDivElement {
+  const hangoutStageDescriptionContainer: HTMLDivElement = createDivElement(null, 'hangout-stage-description-container');
+
+  hangoutStageDescriptionContainer.appendChild(createParagraphElement(null, title));
+
+  const innerContainer: HTMLDivElement = createDivElement('inner-container');
+  innerContainer.appendChild(createDetailsElement(`${labelType} added`, `${firstValue}`));
+  innerContainer.appendChild(createDetailsElement('Remaining', `${secondValue}`));
+
+  const descriptionBtn: HTMLButtonElement = createBtnElement('hangout-description-btn', btnTitle);
+  descriptionBtn.setAttribute('data-goTo', btnGoToValue);
+
+  hangoutStageDescriptionContainer.appendChild(innerContainer);
+  hangoutStageDescriptionContainer.appendChild(descriptionBtn);
+
+  return hangoutStageDescriptionContainer;
+};
+
+function createDetailsElement(label: string, value: string): HTMLDivElement {
+  const detailsElement: HTMLDivElement = createDivElement(null);
+
+  detailsElement.appendChild(createSpanElement(null, label));
+  detailsElement.appendChild(createSpanElement(null, value));
+
+  return detailsElement;
 };

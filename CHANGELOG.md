@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.49] (2025-03-09)
+
+### Features
+
+- Set `touch-action: manipulation;` globally to prevent touch-related interactivity delays.
+
+
+### Code Refactoring
+
+- Reworked the dashboard hangout description to be dynamically set, and slightly reworked it, for better efficiency.
+
+
+### Bug Fixes
+
+- Fixed the slot extension button not being reset when the date-time picker is closed.
+- Fixed flawed logic leading to inconsistencies in displayed availability slots when using `availabilityPreviewer.ts`.
+
+
 ## [0.4.48] (2025-03-08)
 
 ### Features

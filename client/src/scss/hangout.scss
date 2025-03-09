@@ -43,7 +43,7 @@
 
   html {
     font-size: 62.5%;
-    @apply font-main font-normal leading-[1.4];
+    @apply font-main font-normal leading-[1.4] touch-manipulation;
 
     &.loading {
 
@@ -873,31 +873,31 @@
   &-content {
 
     #hangout-stage-description {
-      &>div {
-        @apply hidden;
-      }
 
-      &[data-hangoutStage="1"] {
-        &>div:nth-child(1) {
-          @apply block;
+      &-container {
+
+        p {
+          @apply text-base font-medium text-title dark:text-title-dark mb-1;
         }
-      }
 
-      &[data-hangoutStage="2"] {
-        &>div:nth-child(2) {
-          @apply block;
+        .inner-container {
+          @apply grid grid-cols-2 gap-2 mb-2;
+
+          div {
+            @apply flex flex-col justify-center items-start;
+
+            span {
+              @apply text-sm md:text-base font-medium text-description dark:text-description-dark;
+
+              &:last-child {
+                @apply text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium;
+              }
+            }
+          }
         }
-      }
 
-      &[data-hangoutStage="3"] {
-        &>div:nth-child(3) {
-          @apply block;
-        }
-      }
-
-      &[data-hangoutStage="4"] {
-        &>div:nth-child(4) {
-          @apply block;
+        button {
+          @apply btn bg-cta dark:bg-cta-dark text-title sm:w-full;
         }
       }
     }

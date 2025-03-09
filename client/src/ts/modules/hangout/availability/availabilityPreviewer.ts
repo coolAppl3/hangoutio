@@ -162,7 +162,11 @@ function createAvailabilityPreviewerSlotsContainer(selectedDateTimestamp: number
       continue;
     };
 
-    if (slot.slot_start_timestamp < selectedDateTimestamp || slot.slot_start_timestamp - selectedDateTimestamp >= dayMilliseconds) {
+    if (Math.abs(slot.slot_start_timestamp - selectedDateTimestamp) >= dayMilliseconds) {
+      continue;
+    };
+
+    if (new Date(slot.slot_start_timestamp).getDate() !== new Date(selectedDateTimestamp).getDate()) {
       continue;
     };
 
