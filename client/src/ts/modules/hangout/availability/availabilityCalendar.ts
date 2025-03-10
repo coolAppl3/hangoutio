@@ -3,14 +3,12 @@ import popup from "../../global/popup";
 import { globalHangoutState } from "../globalHangoutState";
 import { createCalendarCell, generateAndAppendEmptyCalendarCells, getMonthNumberOfDays } from "../dateTimePicker";
 import { hangoutAvailabilityState } from "./hangoutAvailability";
-import { calculateHangoutConclusionTimestamp } from "./availabilityUtils";
 import { displayAvailabilityPreviewer } from "./availabilityPreviewer";
 import { createDivElement } from "../../global/domUtils";
 
 interface AvailabilityCalendarState {
   hasBeenInitiated: boolean,
   data: null | {
-    conclusionTimestamp: number,
     conclusionDate: number,
 
     initialMonth: number,
@@ -35,19 +33,16 @@ export function initAvailabilityCalendar(): void {
     return;
   };
 
-  const hangoutConclusionTimestamp: number | null = calculateHangoutConclusionTimestamp();
-
-  if (!hangoutConclusionTimestamp) {
+  if (!globalHangoutState.data) {
     popup('Something went wrong.', 'error');
     return;
   };
 
-  const dateObj: Date = new Date(hangoutConclusionTimestamp);
+  const dateObj: Date = new Date(globalHangoutState.data.conclusionTimestamp);
 
   availabilityCalendarState = {
     hasBeenInitiated: true,
     data: {
-      conclusionTimestamp: hangoutConclusionTimestamp,
       conclusionDate: dateObj.getDate(),
 
       initialMonth: dateObj.getMonth(),

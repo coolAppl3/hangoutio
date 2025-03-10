@@ -3,8 +3,8 @@ import { createBtnElement, createDivElement } from "../global/domUtils";
 import ErrorSpan from "../global/ErrorSpan";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { calculateHangoutConclusionTimestamp } from "./availability/availabilityUtils";
 import { getDateOrdinalSuffix, getMonthName, getTime } from "../global/dateTimeUtils";
+import { globalHangoutState } from "./globalHangoutState";
 
 interface DateTimePickerState {
   hasBeenInitiated: boolean,
@@ -14,7 +14,6 @@ interface DateTimePickerState {
     purpose: 'availabilitySlot' | 'suggestionSlot',
     existingSlotId: number | null,
 
-    conclusionTimestamp: number,
     conclusionDate: number,
 
     initialYear: number,
@@ -37,10 +36,15 @@ let dateTimePickerState: DateTimePickerState = {
 };
 
 export function displayDateTimePicker(purpose: 'availabilitySlot' | 'suggestionSlot', existingSlotId: number | null = null): void {
-  const hangoutConclusionTimestamp: number | null = calculateHangoutConclusionTimestamp();
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    return;
+  };
+
+  const hangoutConclusionTimestamp: number = globalHangoutState.data.conclusionTimestamp;
   const dateTimePicker: HTMLDivElement | null = document.querySelector('#date-time-picker');
 
-  if (!hangoutConclusionTimestamp || !dateTimePicker) {
+  if (!dateTimePicker) {
     popup('Something went wrong.', 'error');
     return;
   };
@@ -61,7 +65,6 @@ export function displayDateTimePicker(purpose: 'availabilitySlot' | 'suggestionS
       purpose,
       existingSlotId,
 
-      conclusionTimestamp: hangoutConclusionTimestamp,
       conclusionDate,
 
       initialMonth: conclusionMonth,
@@ -384,11 +387,11 @@ function isValidTimeSlot(startTimestamp: number, endTimestamp: number): boolean 
 };
 
 function slotStartsBeforeHangoutConclusion(startTimestamp: number): boolean {
-  if (!dateTimePickerState.data) {
+  if (!globalHangoutState.data) {
     return false;
   };
 
-  const hangoutConclusionTimestamp: number = dateTimePickerState.data.conclusionTimestamp;
+  const hangoutConclusionTimestamp: number = globalHangoutState.data.conclusionTimestamp;
 
   if (startTimestamp <= hangoutConclusionTimestamp) {
     const minimumTimeString: string = getTime(new Date(hangoutConclusionTimestamp));

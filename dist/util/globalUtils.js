@@ -4,7 +4,7 @@ exports.containsInvalidWhitespace = exports.getDateAndTimeString = void 0;
 function getDateAndTimeString(timestamp) {
     const dateObj = new Date(timestamp);
     const date = dateObj.getDate();
-    const ordinalSuffix = getOrdinalSuffix(date);
+    const ordinalSuffix = getDateOrdinalSuffix(date);
     return `${getMonthName(dateObj)} ${date}${ordinalSuffix}, ${getTime(dateObj)}`;
 }
 exports.getDateAndTimeString = getDateAndTimeString;
@@ -17,15 +17,20 @@ function getTime(date) {
     return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(date);
 }
 ;
-function getOrdinalSuffix(date) {
-    if (date % 10 === 1 && date % 100 !== 11)
+function getDateOrdinalSuffix(date) {
+    if (date % 100 >= 11 && date % 100 <= 13) {
+        return 'th';
+    }
+    ;
+    if (date % 10 === 1)
         return 'st';
-    if (date % 10 === 2 && date % 100 !== 12)
+    if (date % 10 === 2)
         return 'nd';
-    if (date % 10 === 3 && date % 100 !== 13)
+    if (date % 10 === 3)
         return 'rd';
     return 'th';
 }
+;
 function containsInvalidWhitespace(string) {
     if (string.trim() !== string) {
         return true;

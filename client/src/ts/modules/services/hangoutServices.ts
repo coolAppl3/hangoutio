@@ -66,6 +66,8 @@ export interface InitialHangoutData {
   isPasswordProtected: boolean,
   decryptedHangoutPassword: string | null,
 
+  conclusionTimestamp: number,
+
   hangoutDetails: HangoutsDetails,
   hangoutMembers: HangoutMember[],
   hangoutMemberCountables: HangoutMemberCountables,
