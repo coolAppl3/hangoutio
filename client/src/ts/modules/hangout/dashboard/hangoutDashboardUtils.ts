@@ -289,18 +289,6 @@ function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: nu
   nextStageTimeSpan.textContent = timeTillNextStageString;
 };
 
-export function getHangoutConclusionDate(): string {
-  if (!globalHangoutState.data) {
-    return 'Failed to load';
-  };
-
-  const { created_on_timestamp, availability_period, suggestions_period, voting_period } = globalHangoutState.data.hangoutDetails
-  const conclusionTimestamp: number = created_on_timestamp + availability_period + suggestions_period + voting_period;
-
-  const conclusionDateAndTimeString: string = getDateAndTimeString(conclusionTimestamp);
-  return conclusionDateAndTimeString;
-};
-
 export function createHangoutMemberElement(hangoutMember: HangoutMember): HTMLButtonElement {
   const memberItem: HTMLButtonElement = createBtnElement('member-item', null);
   memberItem.setAttribute('data-memberId', `${hangoutMember.hangout_member_id}`);

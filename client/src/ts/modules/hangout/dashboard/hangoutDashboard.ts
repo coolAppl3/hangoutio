@@ -7,11 +7,12 @@ import { getInitialHangoutDataService, InitialHangoutData } from "../../services
 import { globalHangoutState } from "../globalHangoutState";
 import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
-import { handleIrrecoverableError } from "../globalHangoutUtils";
+import { calculateHangoutConclusionTimestamp, handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, getHangoutConclusionDate, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
+import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, copyToClipboard, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
+import { getDateAndTimeString } from "../../global/dateTimeUtils";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
@@ -73,6 +74,7 @@ export async function getInitialHangoutData(): Promise<void> {
       suggestionsCount: initialHangoutData.hangoutMemberCountables.suggestions_count,
       votesCount: initialHangoutData.hangoutMemberCountables.votes_count,
 
+      conclusionTimestamp: initialHangoutData.conclusionTimestamp,
       hangoutDetails: initialHangoutData.hangoutDetails,
     };
 
@@ -176,7 +178,7 @@ function renderMainDashboardContent(): void {
   nextStageSpan && (nextStageSpan.textContent = getNextHangoutStageTitle(hangoutDetails.current_stage));
 
   const hangoutConclusionSpan: HTMLSpanElement | null = document.querySelector('#dashboard-conclusion-time');
-  hangoutConclusionSpan && (hangoutConclusionSpan.textContent = getHangoutConclusionDate());
+  hangoutConclusionSpan && (hangoutConclusionSpan.textContent = getDateAndTimeString(globalHangoutState.data.conclusionTimestamp));
 
   const memberLimitSpan: HTMLSpanElement | null = document.querySelector('#dashboard-member-limit');
   memberLimitSpan && (memberLimitSpan.textContent = `${hangoutDetails.members_limit} members`);

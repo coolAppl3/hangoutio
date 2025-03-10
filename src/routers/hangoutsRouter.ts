@@ -1663,15 +1663,21 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
       decryptedHangoutPassword = decryptPassword(hangoutInfo.encrypted_password);
     };
 
+    const { created_on_timestamp, availability_period, suggestions_period, voting_period } = hangoutDetails;
+    const conclusionTimestamp: number = created_on_timestamp + availability_period + suggestions_period + voting_period;
+
     res.json({
       hangoutMemberId: requesterHangoutMemberDetails.hangout_member_id,
       isLeader: requesterHangoutMemberDetails.is_leader,
       isPasswordProtected,
       decryptedHangoutPassword,
 
+      conclusionTimestamp,
+
       hangoutDetails,
       hangoutMembers,
       hangoutMemberCountables,
+
       latestChatMessages,
       latestHangoutEvents,
     });

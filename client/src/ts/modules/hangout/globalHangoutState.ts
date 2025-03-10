@@ -18,6 +18,7 @@ interface GlobalHangoutState {
     suggestionsCount: number,
     votesCount: number,
 
+    conclusionTimestamp: number,
     hangoutDetails: HangoutsDetails,
   },
 };
