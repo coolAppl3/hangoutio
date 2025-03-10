@@ -112,18 +112,20 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
     interface AccountDetails extends RowDataPacket {
       display_name: string,
-      ongoing_hangouts_count: number,
+      hangout_id: string,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        display_name,
-        (SELECT COUNT(*) FROM hangout_members WHERE account_id = :accountId) AS ongoing_hangouts_count
+        accounts.display_name,
+        hangout_members.hangout_id
       FROM
         accounts
+      LEFT JOIN
+        hangout_members on accounts.account_id = hangout_members.account_id
       WHERE
-        account_id = :accountId;`,
-      { accountId: authSessionDetails.user_id }
+        accounts.account_id = ?;`,
+      [authSessionDetails.user_id]
     );
 
     const accountDetails: AccountDetails | undefined = accountRows[0];
@@ -136,7 +138,24 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       return;
     };
 
-    if (accountDetails.ongoing_hangouts_count >= MAX_ONGOING_HANGOUTS_LIMIT) {
+    const accountHangoutIds: string[] = accountRows.map((row: AccountDetails) => row.hangout_id);
+
+    interface OngoingHangoutsDetails extends RowDataPacket {
+      ongoing_hangouts_count: number,
+    };
+
+    const [ongoingHangoutRows] = await dbPool.query<OngoingHangoutsDetails[]>(
+      `SELECT
+        COUNT(*) as ongoing_hangouts_count
+      FROM
+        hangouts
+      WHERE
+        hangout_id IN (?) AND
+        is_concluded = ?;`,
+      [accountHangoutIds, false]
+    );
+
+    if (ongoingHangoutRows[0] && ongoingHangoutRows[0].ongoing_hangouts_count >= MAX_ONGOING_HANGOUTS_LIMIT) {
       res.status(409).json({
         message: `You've reached the limit of ${MAX_ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
         reason: 'hangoutsLimitReached',
