@@ -42,10 +42,10 @@ export async function progressHangouts(): Promise<void> {
           ELSE is_concluded
         END,
         current_stage = current_stage + 1,
-        stage_control_timestamp = :currentTimestamp
+        stage_control_timestamp = ?
       WHERE
-        hangout_id IN (:hangoutIdsToProgress);`,
-      { currentTimestamp, hangoutIdsToProgress }
+        hangout_id IN (?);`,
+      [currentTimestamp, hangoutIdsToProgress]
     );
 
     interface HangoutMemberDetails extends RowDataPacket {
