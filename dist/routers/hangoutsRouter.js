@@ -113,12 +113,14 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         ;
         ;
         const [accountRows] = await db_1.dbPool.execute(`SELECT
-        display_name,
-        (SELECT COUNT(*) FROM hangout_members WHERE account_id = :accountId) AS ongoing_hangouts_count
+        accounts.display_name,
+        hangout_members.hangout_id
       FROM
         accounts
+      LEFT JOIN
+        hangout_members on accounts.account_id = hangout_members.account_id
       WHERE
-        account_id = :accountId;`, { accountId: authSessionDetails.user_id });
+        accounts.account_id = ?;`, [authSessionDetails.user_id]);
         const accountDetails = accountRows[0];
         if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
@@ -127,7 +129,16 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
             return;
         }
         ;
-        if (accountDetails.ongoing_hangouts_count >= constants_1.MAX_ONGOING_HANGOUTS_LIMIT) {
+        const accountHangoutIds = accountRows.map((row) => row.hangout_id);
+        ;
+        const [ongoingHangoutRows] = await db_1.dbPool.query(`SELECT
+        COUNT(*) as ongoing_hangouts_count
+      FROM
+        hangouts
+      WHERE
+        hangout_id IN (?) AND
+        is_concluded = ?;`, [accountHangoutIds, false]);
+        if (ongoingHangoutRows[0] && ongoingHangoutRows[0].ongoing_hangouts_count >= constants_1.MAX_ONGOING_HANGOUTS_LIMIT) {
             res.status(409).json({
                 message: `You've reached the limit of ${constants_1.MAX_ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
                 reason: 'hangoutsLimitReached',
@@ -834,12 +845,8 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         await connection.beginTransaction();
         ;
         const [hangoutRows] = await connection.execute(`SELECT
-        hangouts.availability_period,
-        hangouts.suggestions_period,
-        hangouts.voting_period,
         hangouts.current_stage,
         hangouts.stage_control_timestamp,
-        hangouts.created_on_timestamp,
         hangouts.is_concluded,
         hangout_members.hangout_member_id,
         hangout_members.account_id,
@@ -893,15 +900,15 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         hangouts
       SET
         availability_period = CASE
-          WHEN current_stage = ${constants_1.HANGOUT_AVAILABILITY_STAGE} THEN availability_period = :updatedCurrentStagePeriod
+          WHEN current_stage = ${constants_1.HANGOUT_AVAILABILITY_STAGE} THEN :updatedCurrentStagePeriod
           ELSE availability_period
         END,
         suggestions_period = CASE
-          WHEN current_stage = ${constants_1.HANGOUT_SUGGESTIONS_STAGE} THEN suggestions_period = :updatedCurrentStagePeriod
+          WHEN current_stage = ${constants_1.HANGOUT_SUGGESTIONS_STAGE} THEN :updatedCurrentStagePeriod
           ELSE suggestions_period
         END,
         voting_period = CASE
-          WHEN current_stage = ${constants_1.HANGOUT_VOTING_STAGE} THEN voting_period = :updatedCurrentStagePeriod
+          WHEN current_stage = ${constants_1.HANGOUT_VOTING_STAGE} THEN :updatedCurrentStagePeriod
           ELSE voting_period
         END,
         is_concluded = CASE
@@ -918,23 +925,22 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
             return;
         }
         ;
+        await connection.commit();
+        res.json({});
         ;
-        const [updateHangoutRows] = await connection.execute(`SELECT
-        (created_on_timestamp + availability_period + suggestions_period + voting_period) AS new_conclusion_timestamp
+        const [updatedHangoutRows] = await db_1.dbPool.execute(`SELECT
+        (created_on_timestamp + availability_period + suggestions_period + voting_period) AS new_conclusion_timestamp,
+        is_concluded
       FROM
         hangouts
       WHERE
         hangout_id = ?;`, [requestData.hangoutId]);
-        const newConclusionTimestamp = updateHangoutRows[0]?.new_conclusion_timestamp;
-        if (!newConclusionTimestamp) {
-            await connection.rollback();
-            res.status(500).json({ message: 'Internal server error.' });
+        const updatedHangoutDetails = updatedHangoutRows[0];
+        if (!updatedHangoutDetails) {
             return;
         }
         ;
-        await connection.commit();
-        res.json({});
-        await connection.query(`DELETE FROM
+        await db_1.dbPool.query(`DELETE FROM
         availability_slots
       WHERE
         slot_start_timestamp < :newConclusionTimestamp AND
@@ -944,10 +950,12 @@ exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) 
         suggestions
       WHERE
         suggestion_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;`, { newConclusionTimestamp, hangoutId: requestData.hangoutId });
-        const newConclusionDateAndTime = (0, globalUtils_1.getDateAndTimeString)(newConclusionTimestamp);
-        const eventDescription = `Hangout has been manually progressed, and will now be concluded on ${newConclusionDateAndTime} as a result.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
+        hangout_id = :hangoutId;`, { newConclusionTimestamp: updatedHangoutDetails.new_conclusion_timestamp, hangoutId: requestData.hangoutId });
+        const conclusionDateString = (0, globalUtils_1.getDateAndTimeString)(updatedHangoutDetails.new_conclusion_timestamp);
+        const eventDescription = updatedHangoutDetails.is_concluded
+            ? 'Hangout has been manually concluded.'
+            : `Hangout has been manually progressed, and will now be concluded on ${conclusionDateString} as a result.`;
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription, currentTimestamp);
     }
     catch (err) {
         console.log(err);
@@ -1274,11 +1282,14 @@ exports.hangoutsRouter.get('/details/initial', async (req, res) => {
             decryptedHangoutPassword = (0, encryptionUtils_1.decryptPassword)(hangoutInfo.encrypted_password);
         }
         ;
+        const { created_on_timestamp, availability_period, suggestions_period, voting_period } = hangoutDetails;
+        const conclusionTimestamp = created_on_timestamp + availability_period + suggestions_period + voting_period;
         res.json({
             hangoutMemberId: requesterHangoutMemberDetails.hangout_member_id,
             isLeader: requesterHangoutMemberDetails.is_leader,
             isPasswordProtected,
             decryptedHangoutPassword,
+            conclusionTimestamp,
             hangoutDetails,
             hangoutMembers,
             hangoutMemberCountables,

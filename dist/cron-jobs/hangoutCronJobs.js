@@ -9,16 +9,16 @@ async function progressHangouts() {
     try {
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
-          hangout_id
-        FROM
-          hangouts
-        WHERE
-          (:currentTimestamp - stage_control_timestamp) >= availability_period AND current_stage = ${constants_1.HANGOUT_AVAILABILITY_STAGE}
-          OR
-          (:currentTimestamp - stage_control_timestamp) >= suggestions_period AND current_stage = ${constants_1.HANGOUT_SUGGESTIONS_STAGE}
-          OR
-          (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${constants_1.HANGOUT_VOTING_STAGE}
-        LIMIT 100;`, { currentTimestamp });
+        hangout_id
+      FROM
+        hangouts
+      WHERE
+        (:currentTimestamp - stage_control_timestamp) >= availability_period AND current_stage = ${constants_1.HANGOUT_AVAILABILITY_STAGE}
+        OR
+        (:currentTimestamp - stage_control_timestamp) >= suggestions_period AND current_stage = ${constants_1.HANGOUT_SUGGESTIONS_STAGE}
+        OR
+        (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${constants_1.HANGOUT_VOTING_STAGE}
+      LIMIT 100;`, { currentTimestamp });
         if (hangoutRows.length === 0) {
             return;
         }
@@ -32,9 +32,9 @@ async function progressHangouts() {
           ELSE is_concluded
         END,
         current_stage = current_stage + 1,
-        stage_control_timestamp = :currentTimestamp
+        stage_control_timestamp = ?
       WHERE
-        hangout_id IN (:hangoutIdsToProgress);`, { currentTimestamp, hangoutIdsToProgress });
+        hangout_id IN (?);`, [currentTimestamp, hangoutIdsToProgress]);
         ;
         const [hangoutMemberRows] = await db_1.dbPool.query(`SELECT
         hangout_member_id

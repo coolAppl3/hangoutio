@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.50] (2025-03-10)
+
+### Features
+
+- Added `conclusionTimestamp` to `globalHangoutState` to have it available throughout the hangout.
+
+
+### Bug Fixes
+
+- Fixed faulty conditioning in PATCH `hangout/details/steps/progressForward` incorrectly updating the hangout periods.
+  - Also removed a few unused variable, and slightly improved efficiency.
+- Reworked POST `hangouts/create/accountLeader` to fix it relying on concluded hangouts being archived, which was abolished many patches ago.
+
+
 ## [0.4.49] (2025-03-09)
 
 ### Features
