@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.51] (2025-03-12)
+
+### Features
+
+- Added initial layout for the settings section in `hangout.html`.
+- Added an option for `SliderInput.ts` to be disabled if needed.
+- Implemented initial hangout settings section logic.
+
+
+### Bug Fixes
+
+- Fixed resizing not being detected correctly to update the slider's DomRect in `SliderInput.ts`.
+
+
 ## [0.4.50] (2025-03-10)
 
 ### Features

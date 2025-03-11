@@ -3,6 +3,7 @@ export default class SliderInput {
   private readonly keyword: string;
   private readonly sliderMinValue: number;
   private readonly sliderMaxValue: number;
+  private readonly disabled: boolean;
 
   private actualInput: HTMLInputElement | null;
   private slider: HTMLDivElement | null;
@@ -19,9 +20,10 @@ export default class SliderInput {
   private boundDragSlider: (e: MouseEvent | TouchEvent) => void;
   private boundStopDrag: () => void;
 
-  public constructor(inputId: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, startingValue: number = sliderMinValue) {
+  public constructor(inputId: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, startingValue: number = sliderMinValue, disabled: boolean = false) {
     this.inputId = inputId;
     this.keyword = keyword;
+    this.disabled = disabled;
 
     if (sliderMinValue >= 0 && sliderMaxValue > sliderMinValue) {
       this.sliderMinValue = sliderMinValue;
@@ -47,6 +49,12 @@ export default class SliderInput {
     this.boundStopDrag = this.stopDrag.bind(this);
 
     this.adjustSliderWidth();
+
+    if (this.disabled) {
+      this.actualInput?.parentElement?.classList.add('disabled');
+      return;
+    };
+
     this.loadEventListeners();
   };
 
@@ -56,7 +64,7 @@ export default class SliderInput {
 
   private loadEventListeners(): void {
     document.addEventListener('updateDOMRect', () => { setTimeout(() => this.updateSliderDomRect(), 200) });
-    document.addEventListener('resize', this.updateSliderDomRect.bind(this));
+    window.addEventListener('resize', this.updateSliderDomRect.bind(this));
 
     if ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) {
       this.isTouchDevice = true;
