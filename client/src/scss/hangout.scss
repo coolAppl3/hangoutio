@@ -197,6 +197,21 @@
 
   &.form-group-slider {
 
+    &.disabled {
+      @apply opacity-50 cursor-default;
+
+      .slider-input {
+
+        &-pane {
+          @apply cursor-default;
+
+          &-thumb {
+            @apply cursor-default;
+          }
+        }
+      }
+    }
+
     label {
       span {
         @apply text-description dark:text-description-dark text-sm font-bold;
