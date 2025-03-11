@@ -56,7 +56,7 @@ export default class SliderInput {
 
   private loadEventListeners(): void {
     document.addEventListener('updateDOMRect', () => { setTimeout(() => this.updateSliderDomRect(), 200) });
-    document.addEventListener('resize', this.updateSliderDomRect.bind(this));
+    window.addEventListener('resize', this.updateSliderDomRect.bind(this));
 
     if ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) {
       this.isTouchDevice = true;
