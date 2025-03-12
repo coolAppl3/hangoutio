@@ -227,7 +227,7 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
     ;
     const { availabilityPeriod, suggestionsPeriod, votingPeriod } = requestData;
     if (!hangoutValidation.isValidHangoutPeriods([availabilityPeriod, suggestionsPeriod, votingPeriod])) {
-        res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutSteps' });
+        res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutStages' });
         return;
     }
     ;
@@ -622,7 +622,7 @@ exports.hangoutsRouter.patch('/details/changeMembersLimit', async (req, res) => 
     }
     ;
 });
-exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
+exports.hangoutsRouter.patch('/details/stages/update', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
@@ -784,7 +784,7 @@ exports.hangoutsRouter.patch('/details/steps/update', async (req, res) => {
     }
     ;
 });
-exports.hangoutsRouter.patch('/details/steps/progressForward', async (req, res) => {
+exports.hangoutsRouter.patch('/details/stages/progressForward', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
