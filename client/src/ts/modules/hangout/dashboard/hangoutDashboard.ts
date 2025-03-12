@@ -180,7 +180,7 @@ function renderMainDashboardContent(): void {
   const hangoutConclusionSpan: HTMLSpanElement | null = document.querySelector('#dashboard-conclusion-time');
   hangoutConclusionSpan && (hangoutConclusionSpan.textContent = getDateAndTimeString(globalHangoutState.data.conclusionTimestamp));
 
-  const membersLimitSpan: HTMLSpanElement | null = document.querySelector('#dashboard-member-limit');
+  const membersLimitSpan: HTMLSpanElement | null = document.querySelector('#dashboard-members-limit');
   membersLimitSpan && (membersLimitSpan.textContent = `${hangoutDetails.members_limit} members`);
 
   const dashboardViewMembersBtn: HTMLButtonElement | null = document.querySelector('#dashboard-view-members-btn');
