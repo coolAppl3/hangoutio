@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.52] (2025-03-13)
+
+### Features
+
+- Further implemented settings section logic, and prepared the structure for the rest of the logic.
+
+ 
+### Code Refactoring
+
+- Renamed PATCH `hangouts/details/steps/update` and PATCH `hangouts//details/steps/update` to `hangouts/details/stages/update` and `hangouts//details/stages/update` respectively.
+
+
 ## [0.4.51] (2025-03-12)
 
 ### Features
