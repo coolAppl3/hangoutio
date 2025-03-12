@@ -15,12 +15,13 @@ export default class SliderInput {
   private isDragging: boolean;
   private isTouchDevice: boolean;
 
+  private sliderInitialValue: number;
   private sliderValue: number;
 
   private boundDragSlider: (e: MouseEvent | TouchEvent) => void;
   private boundStopDrag: () => void;
 
-  public constructor(inputId: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, startingValue: number = sliderMinValue, disabled: boolean = false) {
+  public constructor(inputId: string, keyword: string, sliderMinValue: number, sliderMaxValue: number, initialValue: number = sliderMinValue, disabled: boolean = false) {
     this.inputId = inputId;
     this.keyword = keyword;
     this.disabled = disabled;
@@ -43,12 +44,13 @@ export default class SliderInput {
     this.isDragging = false;
     this.isTouchDevice = false;
 
-    this.sliderValue = startingValue;
+    this.sliderInitialValue = initialValue;
+    this.sliderValue = initialValue;
 
     this.boundDragSlider = this.dragSlider.bind(this);
     this.boundStopDrag = this.stopDrag.bind(this);
 
-    this.adjustSliderWidth();
+    this.updateSliderWidth();
 
     if (this.disabled) {
       this.actualInput?.parentElement?.classList.add('disabled');
@@ -62,8 +64,21 @@ export default class SliderInput {
     return this.sliderValue;
   }
 
+  public get initialValue(): number {
+    return this.sliderInitialValue;
+  };
+
+  public resetValues(): void {
+    this.sliderValue = this.sliderInitialValue;
+
+    this.updateSliderWidth();
+    this.updateSliderTextValue();
+
+    document.dispatchEvent(new CustomEvent(`${this.inputId}_valueChange`));
+  };
+
   private loadEventListeners(): void {
-    document.addEventListener('updateDOMRect', () => { setTimeout(() => this.updateSliderDomRect(), 200) });
+    document.addEventListener('updateDOMRect', () => setTimeout(() => this.updateSliderDomRect(), 200));
     window.addEventListener('resize', this.updateSliderDomRect.bind(this));
 
     if ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) {
@@ -142,7 +157,7 @@ export default class SliderInput {
     document.dispatchEvent(new CustomEvent(`${this.inputId}_valueChange`));
   };
 
-  public updateSliderDomRect(): void {
+  private updateSliderDomRect(): void {
     this.sliderDomRect = this.slider?.getBoundingClientRect();
   };
 
@@ -190,7 +205,7 @@ export default class SliderInput {
     };
 
     this.sliderValue--;
-    this.adjustSliderWidth();
+    this.updateSliderWidth();
   };
 
   private stepForward(): void {
@@ -199,10 +214,10 @@ export default class SliderInput {
     };
 
     this.sliderValue++;
-    this.adjustSliderWidth();
+    this.updateSliderWidth();
   };
 
-  private adjustSliderWidth(): void {
+  private updateSliderWidth(): void {
     const newWidth: number = this.sliderValue * (100 / this.sliderMaxValue);
     if (this.sliderThumb instanceof HTMLDivElement) {
       this.sliderThumb.style.width = `${newWidth}%`;
