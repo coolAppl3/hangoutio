@@ -271,7 +271,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
   const { availabilityPeriod, suggestionsPeriod, votingPeriod }: RequestData = requestData;
   if (!hangoutValidation.isValidHangoutPeriods([availabilityPeriod, suggestionsPeriod, votingPeriod])) {
-    res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutSteps' });
+    res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutStages' });
     return;
   };
 
