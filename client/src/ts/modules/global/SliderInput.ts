@@ -68,6 +68,16 @@ export default class SliderInput {
     return this.sliderInitialValue;
   };
 
+  public updateValue(newValue: number): void {
+    this.sliderValue = newValue;
+    this.sliderInitialValue = newValue;
+
+    this.updateSliderWidth();
+    this.updateSliderTextValue();
+
+    document.dispatchEvent(new CustomEvent(`${this.inputId}_valueChange`));
+  };
+
   public resetValues(): void {
     this.sliderValue = this.sliderInitialValue;
 
