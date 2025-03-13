@@ -583,7 +583,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 });
 
-hangoutsRouter.patch('/details/changeMembersLimit', async (req: Request, res: Response) => {
+hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutId: string,
     hangoutMemberId: number,
