@@ -50,6 +50,65 @@ export async function createHangoutAsGuestService(requestBody: CreateHangoutAsGu
 
 // --- --- ---
 
+export interface UpdateHangoutPasswordBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+  newPassword: string | null,
+};
+
+export async function updateHangoutPasswordService(requestBody: UpdateHangoutPasswordBody): Promise<AxiosErrorResponseData> {
+  return axios.patch(`${hangoutsApiUrl}/details/updatePassword`, requestBody);
+};
+
+// --- --- ---
+
+export interface UpdateHangoutMembersLimitBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+  newMembersLimit: number,
+};
+
+export async function updateHangoutMembersLimitService(requestBody: UpdateHangoutMembersLimitBody): Promise<AxiosResponse> {
+  return axios.patch(`${hangoutsApiUrl}/details/changeMembersLimit`, requestBody);
+};
+
+// --- --- ---
+
+export interface UpdateHangoutStagesBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+  newAvailabilityPeriod: number,
+  newSuggestionsPeriod: number,
+  newVotingPeriod: number,
+};
+
+export interface UpdateHangoutStagesData {
+  newConclusionTimestamp: number,
+};
+
+export async function updateHangoutStagesService(requestBody: UpdateHangoutStagesBody): Promise<AxiosResponse<UpdateHangoutStagesData>> {
+  return axios.patch(`${hangoutsApiUrl}/details/stages/update`, requestBody);
+};
+
+// --- --- ---
+
+export interface ProgressHangoutStagBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+};
+
+export async function progressHangoutStageService(requestBody: ProgressHangoutStagBody): Promise<AxiosResponse> {
+  return axios.patch(`${hangoutsApiUrl}/details/stages/progressForward`, requestBody);
+};
+
+// --- --- ---
+
+export async function deleteHangoutService(hangoutMemberId: number, hangoutId: string): Promise<AxiosResponse> {
+  return axios.delete(`${hangoutsApiUrl}?hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
+};
+
+// --- --- ---
+
 interface HangoutExistsData {
   isPasswordProtected: boolean,
 };
