@@ -1262,11 +1262,6 @@ hangoutsRouter.patch('/details/stages/progressForward', async (req: Request, res
 });
 
 hangoutsRouter.delete('/', async (req: Request, res: Response) => {
-  interface RequestData {
-    hangoutId: string,
-    hangoutMemberId: number,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -1281,21 +1276,21 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const hangoutMemberId = req.query.hangoutMemberId;
+  const hangoutId = req.query.hangoutId;
 
-  const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof hangoutMemberId !== 'string' || typeof hangoutId !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!hangoutValidation.isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.' });
+  if (!Number.isInteger(+hangoutMemberId)) {
+    res.status(400).json({ message: 'Invalid hangout member ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ message: 'Invalid hangout member ID.' });
+  if (!hangoutValidation.isValidHangoutId(hangoutId)) {
+    res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
 
@@ -1351,7 +1346,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
       WHERE
         hangout_member_id = ? AND
         hangout_id = ?;`,
-      [requestData.hangoutMemberId, requestData.hangoutId]
+      [+hangoutMemberId, +hangoutId]
     );
 
     const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
@@ -1379,7 +1374,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
         hangouts
       WHERE
         hangout_id = ?;`,
-      [requestData.hangoutId]
+      [hangoutId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
