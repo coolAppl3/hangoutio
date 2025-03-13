@@ -3,7 +3,7 @@ import SliderInput from "../global/SliderInput";
 import { hangoutFormState } from "./hangoutFormState";
 
 const membersLimitSlider: SliderInput = new SliderInput(
-  'member-limit-input',
+  'members-limit-input',
   'member',
   MIN_HANGOUT_MEMBERS_LIMIT,
   MAX_HANGOUT_MEMBERS_LIMIT,
