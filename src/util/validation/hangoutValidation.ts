@@ -85,17 +85,17 @@ export function isValidHangoutPeriods(hangoutPeriods: number[]): boolean {
   return true;
 };
 
-function isValidHangoutPeriod(hangoutStep: number): boolean {
-  if (!Number.isInteger(hangoutStep) || hangoutStep <= 0) {
+function isValidHangoutPeriod(hangoutStage: number): boolean {
+  if (!Number.isInteger(hangoutStage) || hangoutStage <= 0) {
     return false;
   };
 
-  if (hangoutStep % dayMilliseconds !== 0) {
+  if (hangoutStage % dayMilliseconds !== 0) {
     return false;
   };
 
-  const hangoutStepDays: number = hangoutStep / dayMilliseconds;
-  if (hangoutStepDays < MIN_HANGOUT_PERIOD_DAYS || hangoutStepDays > MAX_HANGOUT_PERIOD_DAYS) {
+  const hangoutStageDays: number = hangoutStage / dayMilliseconds;
+  if (hangoutStageDays < MIN_HANGOUT_PERIOD_DAYS || hangoutStageDays > MAX_HANGOUT_PERIOD_DAYS) {
     return false;
   };
 
@@ -107,16 +107,16 @@ interface HangoutStageDetails {
   stageControlTimestamp: number,
 };
 
-export function isValidNewHangoutPeriods(hangoutDetails: HangoutStageDetails, existingPeriods: number[], newPeriods: number[]): boolean {
-  for (let i = 1; i <= 3; i++) {
-    const newPeriod: number | undefined = newPeriods[i];
+export function isValidNewHangoutPeriods(hangoutStageDetails: HangoutStageDetails, existingPeriods: number[], newPeriods: number[]): boolean {
+  for (let i = 0; i < 3; i++) {
     const existingPeriod: number | undefined = existingPeriods[i];
+    const newPeriod: number | undefined = newPeriods[i];
 
-    if (!newPeriod || !existingPeriod) {
+    if (!existingPeriod || !newPeriod) {
       return false;
     };
 
-    if (i < hangoutDetails.currentStage) {
+    if (i + 1 < hangoutStageDetails.currentStage) {
       if (newPeriod !== existingPeriod) {
         return false;
       };
@@ -128,7 +128,7 @@ export function isValidNewHangoutPeriods(hangoutDetails: HangoutStageDetails, ex
       return false;
     };
 
-    if (i === hangoutDetails.currentStage && newPeriod <= Date.now() - hangoutDetails.stageControlTimestamp) {
+    if (i + 1 === hangoutStageDetails.currentStage && newPeriod <= Date.now() - hangoutStageDetails.stageControlTimestamp) {
       return false;
     };
   };
