@@ -102,16 +102,12 @@ function isValidHangoutPeriod(hangoutStep: number): boolean {
   return true;
 };
 
-interface HangoutDetails {
+interface HangoutStageDetails {
   currentStage: number,
   stageControlTimestamp: number,
 };
 
-export function isValidNewHangoutPeriods(hangoutDetails: HangoutDetails, existingPeriods: number[], newPeriods: number[]): boolean {
-  if (hangoutDetails.currentStage === HANGOUT_CONCLUSION_STAGE) {
-    return false;
-  };
-
+export function isValidNewHangoutPeriods(hangoutDetails: HangoutStageDetails, existingPeriods: number[], newPeriods: number[]): boolean {
   for (let i = 1; i <= 3; i++) {
     const newPeriod: number | undefined = newPeriods[i];
     const existingPeriod: number | undefined = existingPeriods[i];
@@ -132,7 +128,7 @@ export function isValidNewHangoutPeriods(hangoutDetails: HangoutDetails, existin
       return false;
     };
 
-    if (i === hangoutDetails.currentStage && newPeriod <= hangoutDetails.stageControlTimestamp) {
+    if (i === hangoutDetails.currentStage && newPeriod <= Date.now() - hangoutDetails.stageControlTimestamp) {
       return false;
     };
   };
