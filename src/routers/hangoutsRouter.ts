@@ -924,7 +924,7 @@ hangoutsRouter.patch('/details/stages/update', async (req: Request, res: Respons
 
     if (!hangoutDetails.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
 
       return;
     };
@@ -942,7 +942,7 @@ hangoutsRouter.patch('/details/stages/update', async (req: Request, res: Respons
       [requestData.newAvailabilityPeriod, requestData.newSuggestionsPeriod, requestData.newSuggestionsPeriod]
     )) {
       await connection.rollback();
-      res.status(409).json({ message: 'Invalid hangout stages configuration.' });
+      res.status(409).json({ message: 'Invalid new hangout stages configuration.' });
 
       return;
     };
