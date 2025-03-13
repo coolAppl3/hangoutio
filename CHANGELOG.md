@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.53] (2025-03-13)
+
+### Features
+
+- Added a number of hangout-related services to `hangoutServices.ts`.
+- Added the ability to directly update the slider value for `SliderInput.ts`.
+- Added logic to update the duration of hangout stages.
+
+
+### Code Refactoring
+
+- Renamed PATCH `hangouts/details/changeMembersLimit` to `hangouts//details/updateMembersLimit`.
+- Refactored DELETE `hangouts/` to not use a request body.
+- Renamed `settingsUtils.ts` to `hangoutSettingsUtils.ts` to avoid potential future name collisions.
+
+
+### Bug Fixes
+
+- Fixed a few bugs with how new hangout periods are validated.
+
+
 ## [0.4.52] (2025-03-13)
 
 ### Features

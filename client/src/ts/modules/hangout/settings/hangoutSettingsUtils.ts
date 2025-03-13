@@ -1,4 +1,4 @@
-import { dayMilliseconds, MIN_HANGOUT_PERIOD_DAYS } from "../../global/clientConstants";
+import { dayMilliseconds, HANGOUT_CONCLUSION_STAGE, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_PERIOD_DAYS } from "../../global/clientConstants";
 import { hangoutSettingsState } from "./hangoutSettings";
 
 const stagesSettingsApplyBtn: HTMLButtonElement | null = document.querySelector('#stages-settings-apply-btn');
@@ -37,7 +37,7 @@ export function updateSettingsButtons(): void {
   };
 };
 
-function toggleStagesSettingsButtons(): void {
+export function toggleStagesSettingsButtons(): void {
   if (!stagesSettingsApplyBtn || !stagesSettingsResetBtn) {
     return;
   };
@@ -56,7 +56,7 @@ function toggleStagesSettingsButtons(): void {
   stagesSettingsResetBtn.classList.add('hidden');
 };
 
-function toggleMembersLimitSettingsButtons(): void {
+export function toggleMembersLimitSettingsButtons(): void {
   if (!membersLimitSettingsApplyBtn || !membersLimitSettingsResetBtn) {
     return;
   };
@@ -111,4 +111,55 @@ export function resetMembersLimitSliderValues(): void {
 
   hangoutSettingsState.sliders.membersLimitSlider.resetValues();
   hangoutSettingsState.unsavedMembersLimitChanges = false;
+};
+
+interface HangoutStageDetails {
+  currentStage: number,
+  stageControlTimestamp: number,
+};
+
+export function isValidNewHangoutPeriods(hangoutStageDetails: HangoutStageDetails, existingPeriods: number[], newPeriods: number[]): boolean {
+  for (let i = 0; i < 3; i++) {
+    const existingPeriod: number | undefined = existingPeriods[i];
+    const newPeriod: number | undefined = newPeriods[i];
+
+    if (!newPeriod || !existingPeriod) {
+      return false;
+    };
+
+    if (i + 1 < hangoutStageDetails.currentStage) {
+      if (newPeriod !== existingPeriod) {
+        return false;
+      };
+
+      continue;
+    };
+
+    if (!isValidHangoutPeriod(newPeriod)) {
+      return false;
+    };
+
+    if (i + 1 === hangoutStageDetails.currentStage && newPeriod <= Date.now() - hangoutStageDetails.stageControlTimestamp) {
+      return false;
+    };
+  };
+
+  return true;
+};
+
+function isValidHangoutPeriod(hangoutStage: number): boolean {
+  if (hangoutStage <= 0) {
+    return false;
+  };
+
+  if (hangoutStage % dayMilliseconds !== 0) {
+    return false;
+  };
+
+  const hangoutStageDays: number = hangoutStage / dayMilliseconds;
+  if (hangoutStageDays < MIN_HANGOUT_PERIOD_DAYS || hangoutStageDays > MAX_HANGOUT_PERIOD_DAYS) {
+    return false;
+  };
+
+  return true;
 };

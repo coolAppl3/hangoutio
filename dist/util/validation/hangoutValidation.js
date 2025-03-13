@@ -90,17 +90,17 @@ function isValidHangoutPeriods(hangoutPeriods) {
 }
 exports.isValidHangoutPeriods = isValidHangoutPeriods;
 ;
-function isValidHangoutPeriod(hangoutStep) {
-    if (!Number.isInteger(hangoutStep) || hangoutStep <= 0) {
+function isValidHangoutPeriod(hangoutStage) {
+    if (!Number.isInteger(hangoutStage) || hangoutStage <= 0) {
         return false;
     }
     ;
-    if (hangoutStep % constants_1.dayMilliseconds !== 0) {
+    if (hangoutStage % constants_1.dayMilliseconds !== 0) {
         return false;
     }
     ;
-    const hangoutStepDays = hangoutStep / constants_1.dayMilliseconds;
-    if (hangoutStepDays < constants_1.MIN_HANGOUT_PERIOD_DAYS || hangoutStepDays > constants_1.MAX_HANGOUT_PERIOD_DAYS) {
+    const hangoutStageDays = hangoutStage / constants_1.dayMilliseconds;
+    if (hangoutStageDays < constants_1.MIN_HANGOUT_PERIOD_DAYS || hangoutStageDays > constants_1.MAX_HANGOUT_PERIOD_DAYS) {
         return false;
     }
     ;
@@ -108,19 +108,15 @@ function isValidHangoutPeriod(hangoutStep) {
 }
 ;
 ;
-function isValidNewHangoutPeriods(hangoutDetails, existingPeriods, newPeriods) {
-    if (hangoutDetails.currentStage === constants_1.HANGOUT_CONCLUSION_STAGE) {
-        return false;
-    }
-    ;
-    for (let i = 1; i <= 3; i++) {
-        const newPeriod = newPeriods[i];
+function isValidNewHangoutPeriods(hangoutStageDetails, existingPeriods, newPeriods) {
+    for (let i = 0; i < 3; i++) {
         const existingPeriod = existingPeriods[i];
-        if (!newPeriod || !existingPeriod) {
+        const newPeriod = newPeriods[i];
+        if (!existingPeriod || !newPeriod) {
             return false;
         }
         ;
-        if (i < hangoutDetails.currentStage) {
+        if (i + 1 < hangoutStageDetails.currentStage) {
             if (newPeriod !== existingPeriod) {
                 return false;
             }
@@ -132,7 +128,7 @@ function isValidNewHangoutPeriods(hangoutDetails, existingPeriods, newPeriods) {
             return false;
         }
         ;
-        if (i === hangoutDetails.currentStage && newPeriod <= hangoutDetails.stageControlTimestamp) {
+        if (i + 1 === hangoutStageDetails.currentStage && newPeriod <= Date.now() - hangoutStageDetails.stageControlTimestamp) {
             return false;
         }
         ;
