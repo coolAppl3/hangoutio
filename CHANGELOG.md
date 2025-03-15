@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.55] (2025-03-15)
+
+### Features
+
+- Added confirmation logic for progressing hangouts.
+- Suggestions can no longer be deleted after the suggestions stage ends.
+
+
+### Bug Fixes
+
+- Fixed areas where the hangout's stage would be set to `concluded` without updating the `is_concluded` value on the global state.
+- Fixed areas where the hangout's stage is updated thanks to an error message, but the section isn't rerendered.
+
+
 ## [0.4.54] (2025-03-15)
 
 ### Features
