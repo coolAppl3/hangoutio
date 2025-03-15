@@ -860,6 +860,8 @@ async function addHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDiv
       };
 
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
       return;
     };
 
@@ -970,6 +972,8 @@ async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTML
       };
 
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
       return;
     };
 
