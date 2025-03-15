@@ -3,7 +3,8 @@ export default class SliderInput {
   private readonly keyword: string;
   private readonly sliderMinValue: number;
   private readonly sliderMaxValue: number;
-  private readonly disabled: boolean;
+
+  private disabled: boolean;
 
   private actualInput: HTMLInputElement | null;
   private slider: HTMLDivElement | null;
@@ -87,6 +88,11 @@ export default class SliderInput {
     document.dispatchEvent(new CustomEvent(`${this.inputId}_valueChange`));
   };
 
+  public disable(): void {
+    this.disabled = true;
+    this.slider?.parentElement?.classList.add('disabled');
+  };
+
   private loadEventListeners(): void {
     document.addEventListener('updateDOMRect', () => setTimeout(() => this.updateSliderDomRect(), 200));
     window.addEventListener('resize', this.updateSliderDomRect.bind(this));
@@ -104,6 +110,10 @@ export default class SliderInput {
   };
 
   private startDrag(): void {
+    if (this.disabled) {
+      return;
+    };
+
     this.isDragging = true;
     document.body.style.userSelect = 'none';
 
@@ -119,6 +129,10 @@ export default class SliderInput {
   };
 
   private dragSlider(e: MouseEvent | TouchEvent): void {
+    if (this.disabled) {
+      return;
+    };
+
     if (!this.isDragging) {
       return;
     };
@@ -151,6 +165,10 @@ export default class SliderInput {
   };
 
   private stopDrag(): void {
+    if (this.disabled) {
+      return;
+    };
+
     this.isDragging = false;
     document.body.style.userSelect = 'auto';
 
