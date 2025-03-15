@@ -1009,7 +1009,7 @@ hangoutsRouter.patch('/details/stages/update', async (req: Request, res: Respons
   };
 });
 
-hangoutsRouter.patch('/details/stages/progressForward', async (req: Request, res: Response) => {
+hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutId: string,
     hangoutMemberId: number,

@@ -98,7 +98,7 @@ export interface ProgressHangoutStagBody {
 };
 
 export async function progressHangoutStageService(requestBody: ProgressHangoutStagBody): Promise<AxiosResponse> {
-  return axios.patch(`${hangoutsApiUrl}/details/stages/progressForward`, requestBody);
+  return axios.patch(`${hangoutsApiUrl}/details/stages/progress`, requestBody);
 };
 
 // --- --- ---
