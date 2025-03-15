@@ -1142,7 +1142,7 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
 
     if (!hangoutDetails.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.' });
+      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
 
       return;
     };
@@ -1198,17 +1198,24 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
       return;
     };
 
-    await connection.commit();
-    res.json({});
-
     interface UpdatedHangoutDetails extends RowDataPacket {
-      new_conclusion_timestamp: number,
+      availability_period: number,
+      suggestions_period: number,
+      voting_period: number,
+      conclusion_timestamp: number,
+      stage_control_timestamp: number,
+      current_stage: number,
       is_concluded: boolean,
     };
 
-    const [updatedHangoutRows] = await dbPool.execute<UpdatedHangoutDetails[]>(
+    const [updatedHangoutRows] = await connection.execute<UpdatedHangoutDetails[]>(
       `SELECT
-        (created_on_timestamp + availability_period + suggestions_period + voting_period) AS new_conclusion_timestamp,
+        availability_period,
+        suggestions_period,
+        voting_period,
+        (created_on_timestamp + availability_period + suggestions_period + voting_period) AS conclusion_timestamp,
+        stage_control_timestamp,
+        current_stage,
         is_concluded
       FROM
         hangouts
@@ -1220,8 +1227,14 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
     const updatedHangoutDetails: UpdatedHangoutDetails | undefined = updatedHangoutRows[0];
 
     if (!updatedHangoutDetails) {
+      await connection.rollback();
+      res.status(500).json({ message: 'Internal server error.' });
+
       return;
     };
+
+    await connection.commit();
+    res.json(updatedHangoutDetails);
 
     await dbPool.query(
       `DELETE FROM
@@ -1235,10 +1248,10 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
       WHERE
         suggestion_start_timestamp < :newConclusionTimestamp AND
         hangout_id = :hangoutId;`,
-      { newConclusionTimestamp: updatedHangoutDetails.new_conclusion_timestamp, hangoutId: requestData.hangoutId }
+      { newConclusionTimestamp: updatedHangoutDetails.conclusion_timestamp, hangoutId: requestData.hangoutId }
     );
 
-    const conclusionDateString: string = getDateAndTimeString(updatedHangoutDetails.new_conclusion_timestamp);
+    const conclusionDateString: string = getDateAndTimeString(updatedHangoutDetails.conclusion_timestamp);
     const eventDescription: string = updatedHangoutDetails.is_concluded
       ? 'Hangout has been manually concluded.'
       : `Hangout has been manually progressed, and will now be concluded on ${conclusionDateString} as a result.`;
