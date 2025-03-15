@@ -537,15 +537,22 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
   const { hangoutMemberId, hangoutId, hangoutDetails } = globalHangoutState.data;
   const suggestionDropdownMenu: HTMLDivElement | null = suggestionElement.querySelector('.dropdown-menu');
 
-  if (hangoutDetails.is_concluded) {
-    popup('Hangout has already been concluded.', 'error');
+  if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+    popup('Hangout has not reached the suggestions stage yet.', 'error');
     LoadingModal.remove();
 
     return;
   };
 
-  if (hangoutDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-    popup('Hangout has not reached the suggestions stage yet.', 'error');
+  if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
+    popup(`Suggestions can't be deleted after the suggestions stage ends.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
     LoadingModal.remove();
 
     return;
@@ -610,9 +617,17 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
         return;
       };
 
-      globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-      renderSuggestionsSection();
+      if (errReason === 'inVotingStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_VOTING_STAGE;
+        renderSuggestionsSection();
 
+        return;
+      };
+
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderSuggestionsSection();
       return;
     };
 
@@ -645,8 +660,8 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
     return;
   };
 
-  if (hangoutDetails.is_concluded) {
-    popup('Hangout has already been concluded.', 'error');
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
     LoadingModal.remove();
 
     return;
@@ -659,8 +674,15 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
     return;
   };
 
-  if (!isLeader) {
-    popup(`You're not the hangout leader.`, 'error');
+  if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
+    popup(`Suggestions can't be deleted after the suggestions stage ends.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
     LoadingModal.remove();
 
     return;
@@ -724,9 +746,17 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
         return;
       };
 
-      globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
-      renderSuggestionsSection();
+      if (errReason === 'inVotingStage') {
+        globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_VOTING_STAGE;
+        renderSuggestionsSection();
 
+        return;
+      };
+
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderSuggestionsSection();
       return;
     };
 
@@ -851,15 +881,22 @@ async function addHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDiv
     if (status === 403) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        renderSuggestionsSection();
+
         return;
       };
 
       if (errReason === 'inSuggestionStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_SUGGESTIONS_STAGE;
+        renderSuggestionsSection();
+
         return;
       };
 
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderSuggestionsSection();
       return;
     };
 
@@ -961,19 +998,24 @@ async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTML
     if (status === 403) {
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        renderSuggestionsSection();
+
         return;
       };
 
       if (errReason === 'inSuggestionStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_SUGGESTIONS_STAGE;
+        renderSuggestionsSection();
+
         return;
       };
 
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderSuggestionsSection();
       return;
     };
-
-
 
     if (status === 404) {
       LoadingModal.display();

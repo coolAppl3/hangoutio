@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
+import { ConfirmModal } from "../../global/ConfirmModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
@@ -39,6 +40,7 @@ export const hangoutSettingsState: HangoutSettingsState = {
 
 const settingsSectionElement: HTMLElement | null = document.querySelector('#settings-section');
 const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector('#hangout-settings-password-form');
+const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
 
 export function hangoutSettings(): void {
   loadEventListeners();
@@ -126,7 +128,7 @@ function initHangoutSettings(): void {
 function renderHangoutSettingsSection(): void {
   updateSliderValues();
   disablePassedStagesSliders();
-  disableProgressBtnIfConcluded();
+  updateProgressBtn();
 
   if (!hangoutSettingsState.settingsSectionMutationObserverActive) {
     initSettingsSectionMutationObserver();
@@ -160,13 +162,21 @@ function disablePassedStagesSliders(): void {
   current_stage > HANGOUT_VOTING_STAGE && votingPeriodSlider.disable();
 };
 
-function disableProgressBtnIfConcluded(): void {
-  if (!globalHangoutState.data?.hangoutDetails.is_concluded) {
+function updateProgressBtn(): void {
+  if (!globalHangoutState.data || !progressHangoutBtn) {
     return;
   };
 
-  const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
-  progressHangoutBtn?.classList.add('hidden');
+  const { current_stage, is_concluded } = globalHangoutState.data.hangoutDetails;
+
+  if (current_stage === HANGOUT_VOTING_STAGE) {
+    progressHangoutBtn.textContent = 'Conclude hangout';
+    return;
+  };
+
+  if (is_concluded) {
+    progressHangoutBtn.classList.add('hidden');
+  };
 };
 
 async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
@@ -185,7 +195,7 @@ async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.id === 'progress-hangout-btn') {
-    await progressHangoutStage();
+    confirmProgressHangoutAction();
     return;
   };
 
@@ -327,9 +337,10 @@ async function updateHangoutStages(): Promise<void> {
     };
 
     if (status === 403) {
-      globalHangoutState.data.hangoutDetails.is_concluded = true;
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
 
+      renderHangoutSettingsSection();
       return;
     };
 
@@ -384,13 +395,6 @@ async function progressHangoutStage(): Promise<void> {
     return;
   };
 
-  if (hangoutDetails.current_stage === HANGOUT_SUGGESTIONS_STAGE && hangoutSuggestionState.suggestions.length === 0) {
-    LoadingModal.remove();
-    handleProgressionAttemptWithoutSuggestions();
-
-    return;
-  };
-
   try {
     const updatedHangoutDetails: ProgressHangoutStageData = (await progressHangoutStageService({ hangoutId, hangoutMemberId })).data;
 
@@ -404,7 +408,7 @@ async function progressHangoutStage(): Promise<void> {
 
     renderHangoutSettingsSection();
 
-    popup('Hangout progressed.', 'success');
+    popup(`Hangout ${hangoutDetails.is_concluded ? 'concluded' : 'progressed'}.`, 'success');
     LoadingModal.remove();
 
   } catch (err: unknown) {
@@ -440,9 +444,10 @@ async function progressHangoutStage(): Promise<void> {
     };
 
     if (status === 403) {
-      hangoutDetails.is_concluded = true;
       hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      hangoutDetails.is_concluded = true;
 
+      renderHangoutSettingsSection();
       return;
     };
 
@@ -498,4 +503,50 @@ function initSettingsSectionMutationObserver(): void {
 
   observer.observe(settingsSectionElement, { attributes: true, attributeFilter: ['class'], subtree: false });
   hangoutSettingsState.settingsSectionMutationObserverActive = true;
+};
+
+function confirmProgressHangoutAction(): void {
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    return;
+  };
+
+  const { is_concluded, current_stage } = globalHangoutState.data.hangoutDetails;
+
+  if (is_concluded) {
+    return;
+  };
+
+  if (current_stage === HANGOUT_SUGGESTIONS_STAGE && hangoutSuggestionState.suggestions.length === 0) {
+    handleProgressionAttemptWithoutSuggestions();
+    return;
+  };
+
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: current_stage === HANGOUT_VOTING_STAGE
+      ? 'Are you sure you want to conclude the hangout?'
+      : 'Are you sure you want to progress the hangout?',
+    description: 'This action is irreversible.',
+    confirmBtnTitle: 'Confirm',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: false,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      await progressHangoutStage();
+      ConfirmModal.remove();
+
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
 };

@@ -8,7 +8,7 @@ import { isValidHangoutId } from "../util/validation/hangoutValidation";
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE } from "../util/constants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
 import { Suggestion, SuggestionLike, Vote } from "../util/hangoutTypes";
 import { isSqlError } from "../util/isSqlError";
 
@@ -593,13 +593,18 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.is_concluded) {
-      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_VOTING_STAGE) {
+      res.status(403).json({ message: `Suggestions can't be deleted after the suggestions stage ends.`, reason: 'inVotingStage' });
+      return;
+    };
+
+    if (hangoutMemberDetails.is_concluded) {
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
       return;
     };
 
@@ -758,13 +763,18 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.is_concluded) {
-      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
+      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
       return;
     };
 
-    if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+    if (hangoutMemberDetails.current_stage === HANGOUT_VOTING_STAGE) {
+      res.status(403).json({ message: `Suggestions can't be deleted after the suggestions stage ends.`, reason: 'inVotingStage' });
+      return;
+    };
+
+    if (hangoutMemberDetails.is_concluded) {
+      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
       return;
     };
 
