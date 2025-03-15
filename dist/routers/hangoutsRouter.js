@@ -784,7 +784,7 @@ exports.hangoutsRouter.patch('/details/stages/update', async (req, res) => {
     }
     ;
 });
-exports.hangoutsRouter.patch('/details/stages/progressForward', async (req, res) => {
+exports.hangoutsRouter.patch('/details/stages/progress', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
@@ -878,7 +878,7 @@ exports.hangoutsRouter.patch('/details/stages/progressForward', async (req, res)
         ;
         if (!hangoutDetails.is_leader) {
             await connection.rollback();
-            res.status(401).json({ message: 'Not hangout leader.' });
+            res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
             return;
         }
         ;
@@ -925,11 +925,14 @@ exports.hangoutsRouter.patch('/details/stages/progressForward', async (req, res)
             return;
         }
         ;
-        await connection.commit();
-        res.json({});
         ;
-        const [updatedHangoutRows] = await db_1.dbPool.execute(`SELECT
-        (created_on_timestamp + availability_period + suggestions_period + voting_period) AS new_conclusion_timestamp,
+        const [updatedHangoutRows] = await connection.execute(`SELECT
+        availability_period,
+        suggestions_period,
+        voting_period,
+        (created_on_timestamp + availability_period + suggestions_period + voting_period) AS conclusion_timestamp,
+        stage_control_timestamp,
+        current_stage,
         is_concluded
       FROM
         hangouts
@@ -937,9 +940,13 @@ exports.hangoutsRouter.patch('/details/stages/progressForward', async (req, res)
         hangout_id = ?;`, [requestData.hangoutId]);
         const updatedHangoutDetails = updatedHangoutRows[0];
         if (!updatedHangoutDetails) {
+            await connection.rollback();
+            res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
+        await connection.commit();
+        res.json(updatedHangoutDetails);
         await db_1.dbPool.query(`DELETE FROM
         availability_slots
       WHERE
@@ -950,8 +957,8 @@ exports.hangoutsRouter.patch('/details/stages/progressForward', async (req, res)
         suggestions
       WHERE
         suggestion_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;`, { newConclusionTimestamp: updatedHangoutDetails.new_conclusion_timestamp, hangoutId: requestData.hangoutId });
-        const conclusionDateString = (0, globalUtils_1.getDateAndTimeString)(updatedHangoutDetails.new_conclusion_timestamp);
+        hangout_id = :hangoutId;`, { newConclusionTimestamp: updatedHangoutDetails.conclusion_timestamp, hangoutId: requestData.hangoutId });
+        const conclusionDateString = (0, globalUtils_1.getDateAndTimeString)(updatedHangoutDetails.conclusion_timestamp);
         const eventDescription = updatedHangoutDetails.is_concluded
             ? 'Hangout has been manually concluded.'
             : `Hangout has been manually progressed, and will now be concluded on ${conclusionDateString} as a result.`;

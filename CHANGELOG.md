@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.54] (2025-03-15)
+
+### Features
+
+- Updated PATCH `hangouts/details/stages/progress` now returns updated data, and made tiny improvements.
+- Added hangout progression logic.
+- Added a public function to disable a slider in `SliderInput.ts`.
+- Added further rendering logic to `hangoutSettings.ts`.
+
+
+### Code Refactoring
+
+- Renamed PATCH `hangouts/details/stages/progressForward` to `hangouts/details/stages/progress`.
+
+
 ## [0.4.53] (2025-03-13)
 
 ### Features
