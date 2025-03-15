@@ -1,4 +1,4 @@
-import { dayMilliseconds, HANGOUT_CONCLUSION_STAGE, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_PERIOD_DAYS } from "../../global/clientConstants";
+import { dayMilliseconds, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_PERIOD_DAYS } from "../../global/clientConstants";
 import { InfoModal } from "../../global/InfoModal";
 import { hangoutSettingsState } from "./hangoutSettings";
 
