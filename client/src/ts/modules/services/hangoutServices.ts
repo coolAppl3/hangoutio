@@ -97,8 +97,18 @@ export interface ProgressHangoutStagBody {
   hangoutMemberId: number,
 };
 
-export async function progressHangoutStageService(requestBody: ProgressHangoutStagBody): Promise<AxiosResponse> {
-  return axios.patch(`${hangoutsApiUrl}/details/stages/progressForward`, requestBody);
+export interface ProgressHangoutStageData {
+  availability_period: number,
+  suggestions_period: number,
+  voting_period: number,
+  conclusion_timestamp: number,
+  stage_control_timestamp: number,
+  current_stage: number,
+  is_concluded: boolean,
+};
+
+export async function progressHangoutStageService(requestBody: ProgressHangoutStagBody): Promise<AxiosResponse<ProgressHangoutStageData>> {
+  return axios.patch(`${hangoutsApiUrl}/details/stages/progress`, requestBody);
 };
 
 // --- --- ---

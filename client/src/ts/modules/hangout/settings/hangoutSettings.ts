@@ -4,10 +4,11 @@ import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, 
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
-import { UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
+import { ProgressHangoutStageData, progressHangoutStageService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
-import { calculateStepMinimumSliderValue, isValidNewHangoutPeriods, resetMembersLimitSliderValues, resetSliderValues, resetStageSliderValues, toggleStagesSettingsButtons, updateSettingsButtons } from "./hangoutSettingsUtils";
+import { hangoutSuggestionState } from "../suggestions/hangoutSuggestions";
+import { calculateStepMinimumSliderValue, handleProgressionAttemptWithoutSuggestions, isValidNewHangoutPeriods, resetMembersLimitSliderValues, resetSliderValues, resetStageSliderValues, toggleStagesSettingsButtons, updateSettingsButtons } from "./hangoutSettingsUtils";
 
 interface HangoutSettingsState {
   isLoaded: boolean,
@@ -124,6 +125,8 @@ function initHangoutSettings(): void {
 
 function renderHangoutSettingsSection(): void {
   updateSliderValues();
+  disablePassedStagesSliders();
+  disableProgressBtnIfConcluded();
 
   if (!hangoutSettingsState.settingsSectionMutationObserverActive) {
     initSettingsSectionMutationObserver();
@@ -136,12 +139,34 @@ function updateSliderValues(): void {
   };
 
   const { availability_period, suggestions_period, voting_period, members_limit } = globalHangoutState.data.hangoutDetails;
-  const { availabilityPeriodSlider, suggestionsPeriodSlider, votingPeriodSlider, membersLimitSlider } = hangoutSettingsState.sliders
+  const { availabilityPeriodSlider, suggestionsPeriodSlider, votingPeriodSlider, membersLimitSlider } = hangoutSettingsState.sliders;
 
   availabilityPeriodSlider.updateValue(Math.ceil(availability_period / dayMilliseconds));
   suggestionsPeriodSlider.updateValue(Math.ceil(suggestions_period / dayMilliseconds));
   votingPeriodSlider.updateValue(Math.ceil(voting_period / dayMilliseconds));
   membersLimitSlider.updateValue(members_limit);
+};
+
+function disablePassedStagesSliders(): void {
+  if (!globalHangoutState.data || !hangoutSettingsState.sliders) {
+    return;
+  };
+
+  const current_stage: number = globalHangoutState.data.hangoutDetails.current_stage;
+  const { availabilityPeriodSlider, suggestionsPeriodSlider, votingPeriodSlider } = hangoutSettingsState.sliders;
+
+  current_stage > HANGOUT_AVAILABILITY_STAGE && availabilityPeriodSlider.disable();
+  current_stage > HANGOUT_SUGGESTIONS_STAGE && suggestionsPeriodSlider.disable();
+  current_stage > HANGOUT_VOTING_STAGE && votingPeriodSlider.disable();
+};
+
+function disableProgressBtnIfConcluded(): void {
+  if (!globalHangoutState.data?.hangoutDetails.is_concluded) {
+    return;
+  };
+
+  const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
+  progressHangoutBtn?.classList.add('hidden');
 };
 
 async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
@@ -160,7 +185,7 @@ async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.id === 'progress-hangout-btn') {
-    await progressHangout();
+    await progressHangoutStage();
     return;
   };
 
@@ -333,8 +358,117 @@ async function updateHangoutStages(): Promise<void> {
   };
 };
 
-async function progressHangout(): Promise<void> {
-  // TODO: implement
+async function progressHangoutStage(): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data || !hangoutSettingsState.sliders) {
+    popup('Something went wrong', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.current_stage === HANGOUT_SUGGESTIONS_STAGE && hangoutSuggestionState.suggestions.length === 0) {
+    LoadingModal.remove();
+    handleProgressionAttemptWithoutSuggestions();
+
+    return;
+  };
+
+  try {
+    const updatedHangoutDetails: ProgressHangoutStageData = (await progressHangoutStageService({ hangoutId, hangoutMemberId })).data;
+
+    globalHangoutState.data.conclusionTimestamp = updatedHangoutDetails.conclusion_timestamp;
+    hangoutDetails.availability_period = updatedHangoutDetails.availability_period;
+    hangoutDetails.suggestions_period = updatedHangoutDetails.suggestions_period;
+    hangoutDetails.voting_period = updatedHangoutDetails.voting_period;
+    hangoutDetails.stage_control_timestamp = updatedHangoutDetails.stage_control_timestamp;
+    hangoutDetails.current_stage = updatedHangoutDetails.current_stage;
+    hangoutDetails.is_concluded = updatedHangoutDetails.is_concluded;
+
+    renderHangoutSettingsSection();
+
+    popup('Hangout progressed.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 409) {
+      handleProgressionAttemptWithoutSuggestions();
+      return;
+    };
+
+    if (status === 403) {
+      hangoutDetails.is_concluded = true;
+      hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+
+      return;
+    };
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'notHangoutLeader') {
+        globalHangoutState.data.isLeader = false;
+        directlyNavigateHangoutSections('dashboard');
+
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
 };
 
 async function updateHangoutMembersLimit(): Promise<void> {

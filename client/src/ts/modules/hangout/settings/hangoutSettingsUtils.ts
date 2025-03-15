@@ -1,4 +1,5 @@
-import { dayMilliseconds, HANGOUT_CONCLUSION_STAGE, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_PERIOD_DAYS } from "../../global/clientConstants";
+import { dayMilliseconds, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_PERIOD_DAYS } from "../../global/clientConstants";
+import { InfoModal } from "../../global/InfoModal";
 import { hangoutSettingsState } from "./hangoutSettings";
 
 const stagesSettingsApplyBtn: HTMLButtonElement | null = document.querySelector('#stages-settings-apply-btn');
@@ -162,4 +163,12 @@ function isValidHangoutPeriod(hangoutStage: number): boolean {
   };
 
   return true;
+};
+
+export function handleProgressionAttemptWithoutSuggestions(): void {
+  InfoModal.display({
+    title: 'No suggestions added yet.',
+    description: `You can't progress the hangout into the voting stage without any suggestions.`,
+    btnTitle: 'Okay',
+  }, { simple: true });
 };
