@@ -1,7 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
-import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
@@ -126,6 +125,8 @@ function initHangoutSettings(): void {
 
 function renderHangoutSettingsSection(): void {
   updateSliderValues();
+  disablePassedStagesSliders();
+  disableProgressBtnIfConcluded();
 
   if (!hangoutSettingsState.settingsSectionMutationObserverActive) {
     initSettingsSectionMutationObserver();
@@ -138,12 +139,34 @@ function updateSliderValues(): void {
   };
 
   const { availability_period, suggestions_period, voting_period, members_limit } = globalHangoutState.data.hangoutDetails;
-  const { availabilityPeriodSlider, suggestionsPeriodSlider, votingPeriodSlider, membersLimitSlider } = hangoutSettingsState.sliders
+  const { availabilityPeriodSlider, suggestionsPeriodSlider, votingPeriodSlider, membersLimitSlider } = hangoutSettingsState.sliders;
 
   availabilityPeriodSlider.updateValue(Math.ceil(availability_period / dayMilliseconds));
   suggestionsPeriodSlider.updateValue(Math.ceil(suggestions_period / dayMilliseconds));
   votingPeriodSlider.updateValue(Math.ceil(voting_period / dayMilliseconds));
   membersLimitSlider.updateValue(members_limit);
+};
+
+function disablePassedStagesSliders(): void {
+  if (!globalHangoutState.data || !hangoutSettingsState.sliders) {
+    return;
+  };
+
+  const current_stage: number = globalHangoutState.data.hangoutDetails.current_stage;
+  const { availabilityPeriodSlider, suggestionsPeriodSlider, votingPeriodSlider } = hangoutSettingsState.sliders;
+
+  current_stage > HANGOUT_AVAILABILITY_STAGE && availabilityPeriodSlider.disable();
+  current_stage > HANGOUT_SUGGESTIONS_STAGE && suggestionsPeriodSlider.disable();
+  current_stage > HANGOUT_VOTING_STAGE && votingPeriodSlider.disable();
+};
+
+function disableProgressBtnIfConcluded(): void {
+  if (!globalHangoutState.data?.hangoutDetails.is_concluded) {
+    return;
+  };
+
+  const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
+  progressHangoutBtn?.classList.add('hidden');
 };
 
 async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
