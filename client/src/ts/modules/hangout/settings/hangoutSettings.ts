@@ -5,7 +5,7 @@ import { ConfirmModal } from "../../global/ConfirmModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
-import { ProgressHangoutStageData, progressHangoutStageService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
+import { ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { hangoutSuggestionState } from "../suggestions/hangoutSuggestions";
@@ -40,7 +40,9 @@ export const hangoutSettingsState: HangoutSettingsState = {
 
 const settingsSectionElement: HTMLElement | null = document.querySelector('#settings-section');
 const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector('#hangout-settings-password-form');
+
 const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
+const membersCountSpan: HTMLSpanElement | null = document.querySelector('#settings-member-count-span');
 
 export function hangoutSettings(): void {
   loadEventListeners();
@@ -129,6 +131,7 @@ function renderHangoutSettingsSection(): void {
   updateSliderValues();
   disablePassedStagesSliders();
   updateProgressBtn();
+  updateMembersCount();
 
   if (!hangoutSettingsState.settingsSectionMutationObserverActive) {
     initSettingsSectionMutationObserver();
@@ -177,6 +180,14 @@ function updateProgressBtn(): void {
   if (is_concluded) {
     progressHangoutBtn.classList.add('hidden');
   };
+};
+
+function updateMembersCount(): void {
+  if (!hangoutSettingsState.sliders || !membersCountSpan) {
+    return;
+  };
+
+  membersCountSpan.textContent = `${hangoutSettingsState.sliders.membersLimitSlider.value}`;
 };
 
 async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
@@ -477,7 +488,106 @@ async function progressHangoutStage(): Promise<void> {
 };
 
 async function updateHangoutMembersLimit(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!globalHangoutState.data || !hangoutSettingsState.sliders) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, hangoutDetails, hangoutMembers } = globalHangoutState.data;
+
+  const currentMembersCount: number = hangoutMembers.length;
+  const currentMembersLimit: number = hangoutDetails.members_limit;
+  const newMembersLimit: number = hangoutSettingsState.sliders.membersLimitSlider.value;
+
+  if (newMembersLimit === currentMembersLimit) {
+    updateSettingsButtons();
+
+    popup(`Members limit is already set to ${currentMembersLimit}.`, 'success');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (newMembersLimit < currentMembersCount) {
+    popup(`New members limit can't be lower than the number of existing members.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await updateHangoutMembersLimitService({ hangoutId, hangoutMemberId, newMembersLimit });
+
+    hangoutDetails.members_limit = newMembersLimit;
+    hangoutSettingsState.sliders.membersLimitSlider.updateValue(newMembersLimit);
+
+    updateMembersCount();
+
+    popup('Members limit updated.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong/.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 403) {
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderHangoutSettingsSection();
+      return;
+    };
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'notHangoutLeader') {
+        globalHangoutState.data.isLeader = false;
+        directlyNavigateHangoutSections('dashboard');
+
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
 };
 
 async function updateHangoutPassword(): Promise<void> {

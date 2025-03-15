@@ -1567,12 +1567,17 @@
         <div id="members-settings">
           <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Hangout members</h3>
           <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-            Members count: <span class="text-title dark:text-title-dark">1</span>
+            Members count:
+            <span
+              id="settings-member-count-span"
+              class="text-title dark:text-title-dark"
+              >1</span
+            >
           </p>
 
           <div class="max-w-[50rem] sm:max-w-full">
             <div class="form-group form-group-slider">
-              <label for="members-limit-input">Members Limit: <span data-slider-text="members-limit-input">10 members</span></label>
+              <label for="members-limit-input">Members limit: <span data-slider-text="members-limit-input">10 members</span></label>
               <span class="extra-info">Maximum number of members allowed.</span>
               <input
                 type="range"
