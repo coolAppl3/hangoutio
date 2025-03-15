@@ -718,7 +718,7 @@ hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Re
 
     if (!hangoutDetails.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.' });
+      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
 
       return;
     };
@@ -732,7 +732,7 @@ hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Re
 
     if (hangoutDetails.members_limit === requestData.newMembersLimit) {
       await connection.rollback();
-      res.status(409).json({ message: `Hangout already has this members limit.` });
+      res.json({});
 
       return;
     };
