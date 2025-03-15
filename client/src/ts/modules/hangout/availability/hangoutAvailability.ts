@@ -284,7 +284,9 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
       globalHangoutState.data.hangoutDetails.is_concluded = true;
 
+      renderAvailabilitySection();
       closeDateTimePicker();
+
       return;
     };
 
@@ -422,7 +424,10 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
     };
 
     if (status === 403) {
-      globalHangoutState.data.hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderAvailabilitySection();
       closeDateTimePicker();
 
       return;
@@ -516,6 +521,7 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
       globalHangoutState.data.hangoutDetails.is_concluded = true;
 
+      renderAvailabilitySection();
       return;
     };
 
@@ -600,6 +606,7 @@ async function clearAvailabilitySlots(): Promise<void> {
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
       globalHangoutState.data.hangoutDetails.is_concluded = true;
 
+      renderAvailabilitySection();
       return;
     };
 

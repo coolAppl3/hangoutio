@@ -243,16 +243,20 @@ async function addHangoutSuggestion(): Promise<void> {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
         globalHangoutState.data.hangoutDetails.is_concluded = true;
 
+        renderSuggestionsSection();
         return;
       };
 
       if (errReason === 'inAvailabilityStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+        renderSuggestionsSection();
+
         return;
       };
 
       if (errReason === 'inVotingStage') {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_VOTING_STAGE;
+        renderSuggestionsSection();
       };
 
       return;
@@ -449,10 +453,13 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
         globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
         globalHangoutState.data.hangoutDetails.is_concluded = true;
 
+        renderSuggestionsSection();
         return;
       };
 
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_AVAILABILITY_STAGE;
+      renderSuggestionsSection();
+
       return;
     };
 

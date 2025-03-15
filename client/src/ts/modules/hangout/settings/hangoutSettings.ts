@@ -340,6 +340,7 @@ async function updateHangoutStages(): Promise<void> {
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
       globalHangoutState.data.hangoutDetails.is_concluded = true;
 
+      renderHangoutSettingsSection();
       return;
     };
 
@@ -446,6 +447,7 @@ async function progressHangoutStage(): Promise<void> {
       hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
       hangoutDetails.is_concluded = true;
 
+      renderHangoutSettingsSection();
       return;
     };
 
