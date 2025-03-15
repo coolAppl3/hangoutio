@@ -337,8 +337,8 @@ async function updateHangoutStages(): Promise<void> {
     };
 
     if (status === 403) {
-      globalHangoutState.data.hangoutDetails.is_concluded = true;
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
 
       return;
     };
@@ -443,8 +443,8 @@ async function progressHangoutStage(): Promise<void> {
     };
 
     if (status === 403) {
-      hangoutDetails.is_concluded = true;
       hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      hangoutDetails.is_concluded = true;
 
       return;
     };
