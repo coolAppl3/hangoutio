@@ -508,8 +508,10 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
         hangouts.encrypted_password
       FROM
         hangout_members
+      LEFT JOIN
+        hangouts ON hangout_members.hangout_id = hangouts.hangout_id
       WHERE
-        hangout_member_id = ?;`,
+        hangout_members.hangout_member_id = ?;`,
       [requestData.hangoutMemberId]
     );
 
