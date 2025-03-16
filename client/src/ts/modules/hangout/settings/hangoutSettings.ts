@@ -2,6 +2,7 @@ import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
+import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
@@ -44,7 +45,9 @@ const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector
 
 const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
 const membersCountSpan: HTMLSpanElement | null = document.querySelector('#settings-member-count-span');
+
 const settingsPasswordPreviewer: HTMLSpanElement | null = document.querySelector('#settings-password-previewer');
+const deleteHangoutPassword: HTMLButtonElement | null = document.querySelector('#delete-hangout-password-btn');
 
 export function hangoutSettings(): void {
   loadEventListeners();
@@ -134,7 +137,7 @@ function renderHangoutSettingsSection(): void {
   disablePassedStagesSliders();
   updateProgressBtn();
   updateMembersCount();
-  updateHangoutPasswordPreviewer();
+  updateHangoutPasswordElements();
 
   if (!hangoutSettingsState.settingsSectionMutationObserverActive) {
     initSettingsSectionMutationObserver();
@@ -193,8 +196,8 @@ function updateMembersCount(): void {
   membersCountSpan.textContent = `${hangoutSettingsState.sliders.membersLimitSlider.value}`;
 };
 
-function updateHangoutPasswordPreviewer(): void {
-  if (!globalHangoutState.data || !settingsPasswordPreviewer) {
+function updateHangoutPasswordElements(): void {
+  if (!globalHangoutState.data || !settingsPasswordPreviewer || !deleteHangoutPassword) {
     return;
   };
 
@@ -204,11 +207,17 @@ function updateHangoutPasswordPreviewer(): void {
     settingsPasswordPreviewer.classList.add('empty');
     settingsPasswordPreviewer.firstElementChild && (settingsPasswordPreviewer.firstElementChild.textContent = 'Not set');
 
+    deleteHangoutPassword.classList.add('disabled');
+    deleteHangoutPassword.disabled = true;
+
     return;
   };
 
   settingsPasswordPreviewer.classList.remove('empty');
   settingsPasswordPreviewer.firstElementChild && (settingsPasswordPreviewer.firstElementChild.textContent = '*************');
+
+  deleteHangoutPassword.classList.remove('disabled');
+  deleteHangoutPassword.disabled = false;
 };
 
 async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
@@ -252,7 +261,7 @@ async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.id === 'settings-password-reveal-btn') {
-    // TODO: implement
+    revealHangoutPassword();
     return;
   };
 
@@ -696,7 +705,7 @@ async function handleCopyHangoutPassword(): Promise<void> {
   const { isLeader, decryptedHangoutPassword } = globalHangoutState.data;
 
   if (!isLeader) {
-    popup('Not hangout leader.', 'error');
+    popup(`You're not the hangout leader.`, 'error');
     directlyNavigateHangoutSections('dashboard');
 
     return;
@@ -704,10 +713,39 @@ async function handleCopyHangoutPassword(): Promise<void> {
 
   if (!decryptedHangoutPassword) {
     popup('Hangout is not password protected.', 'error');
-    updateHangoutPasswordPreviewer();
+    updateHangoutPasswordElements();
 
     return;
   };
 
   await copyToClipboard(decryptedHangoutPassword);
+};
+
+function revealHangoutPassword(): void {
+  if (!globalHangoutState.data) {
+    popup('Failed to reveal hangout password.', 'error');
+    return;
+  };
+
+  const { isLeader, decryptedHangoutPassword } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    directlyNavigateHangoutSections('dashboard');
+
+    return;
+  };
+
+  if (!decryptedHangoutPassword) {
+    popup('Hangout is not password protected.', 'error');
+    updateHangoutPasswordElements();
+
+    return;
+  };
+
+  InfoModal.display({
+    title: 'Hangout password is: ',
+    description: decryptedHangoutPassword,
+    btnTitle: 'Hide',
+  }, { simple: true });
 };
