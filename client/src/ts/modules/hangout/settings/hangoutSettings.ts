@@ -2,11 +2,13 @@ import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
+import ErrorSpan from "../../global/ErrorSpan";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
-import { ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
+import { validateNewPassword, validatePassword } from "../../global/validation";
+import { ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
@@ -41,7 +43,9 @@ export const hangoutSettingsState: HangoutSettingsState = {
 };
 
 const settingsSectionElement: HTMLElement | null = document.querySelector('#settings-section');
+
 const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector('#hangout-settings-password-form');
+const settingsPasswordInput: HTMLInputElement | null = document.querySelector('#hangout-settings-password-input');
 
 const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
 const membersCountSpan: HTMLSpanElement | null = document.querySelector('#settings-member-count-span');
@@ -57,7 +61,10 @@ function loadEventListeners(): void {
   document.addEventListener('loadSection-settings', initHangoutSettings);
 
   settingsSectionElement?.addEventListener('click', handleHangoutSettingsClicks);
-  updateHangoutPasswordForm?.addEventListener('submit', updateHangoutPassword);
+  updateHangoutPasswordForm?.addEventListener('submit', async (e: SubmitEvent) => {
+    e.preventDefault();
+    updateHangoutPassword();
+  });
 };
 
 function initHangoutSettings(): void {
@@ -129,6 +136,8 @@ function initHangoutSettings(): void {
   document.addEventListener('members-limit-input_valueChange', updateSettingsButtons);
 
   renderHangoutSettingsSection();
+  setActiveValidation();
+
   LoadingModal.remove();
 };
 
@@ -266,12 +275,12 @@ async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.id === 'hangout-settings-password-input-reveal-btn') {
-    // TODO: implement
+    togglePasswordInputReveal(e.target);
     return;
   };
 
   if (e.target.id === 'delete-hangout-password-btn') {
-    // TODO: implement
+    confirmPasswordDelete();
   };
 };
 
@@ -625,8 +634,117 @@ async function updateHangoutMembersLimit(): Promise<void> {
   };
 };
 
-async function updateHangoutPassword(): Promise<void> {
-  // TODO: implement
+async function updateHangoutPassword(deletePassword: boolean = false): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data || !settingsPasswordInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    LoadingModal.remove();
+
+    directlyNavigateHangoutSections('dashboard');
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidNewPassword: boolean = deletePassword ? true : validatePassword(settingsPasswordInput);
+
+  if (!isValidNewPassword) {
+    popup('Invalid new hangout password.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const newPassword: string | null = deletePassword ? null : settingsPasswordInput.value;
+
+  try {
+    await updateHangoutPasswordService({ hangoutId, hangoutMemberId, newPassword });
+    globalHangoutState.data.decryptedHangoutPassword = newPassword;
+
+    clearUpdatePasswordForm();
+    updateHangoutPasswordElements();
+
+    popup(deletePassword ? 'Password removed.' : 'Password updated.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400 && !errReason) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 403) {
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderHangoutSettingsSection();
+      return;
+    };
+
+    if (status === 400) {
+      ErrorSpan.display(settingsPasswordInput, errMessage);
+      return;
+    };
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'notHangoutLeader') {
+        globalHangoutState.data.isLeader = false;
+        directlyNavigateHangoutSections('dashboard');
+
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
 };
 
 function initSettingsSectionMutationObserver(): void {
@@ -748,4 +866,62 @@ function revealHangoutPassword(): void {
     description: decryptedHangoutPassword,
     btnTitle: 'Hide',
   }, { simple: true });
+};
+
+function confirmPasswordDelete(): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Are you sure you want to remove the hangout password?',
+    description: 'This action will make your hangout less secure.',
+    confirmBtnTitle: 'Remove password',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      await updateHangoutPassword(true);
+      ConfirmModal.remove();
+
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
+};
+
+function setActiveValidation(): void {
+  settingsPasswordInput?.addEventListener('keyup', () => validateNewPassword(settingsPasswordInput));
+};
+
+function clearUpdatePasswordForm(): void {
+  if (!settingsPasswordInput) {
+    return;
+  };
+
+  settingsPasswordInput.blur();
+  ErrorSpan.hide(settingsPasswordInput);
+  settingsPasswordInput.value = '';
+};
+
+function togglePasswordInputReveal(revealBtn: HTMLButtonElement): void {
+  if (!revealBtn.previousElementSibling) {
+    return;
+  };
+
+  if (revealBtn.classList.contains('revealed')) {
+    revealBtn.classList.remove('revealed');
+    revealBtn.previousElementSibling.setAttribute('type', 'password');
+
+    return;
+  };
+
+  revealBtn.classList.add('revealed');
+  revealBtn.previousElementSibling.setAttribute('type', 'text');
 };
