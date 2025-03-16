@@ -7,6 +7,7 @@ import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
 import { ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
+import { copyToClipboard } from "../globalHangoutUtils";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { hangoutSuggestionState } from "../suggestions/hangoutSuggestions";
 import { calculateStepMinimumSliderValue, handleProgressionAttemptWithoutSuggestions, isValidNewHangoutPeriods, resetMembersLimitSliderValues, resetSliderValues, resetStageSliderValues, toggleStagesSettingsButtons, updateSettingsButtons } from "./hangoutSettingsUtils";
@@ -43,6 +44,7 @@ const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector
 
 const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
 const membersCountSpan: HTMLSpanElement | null = document.querySelector('#settings-member-count-span');
+const settingsPasswordPreviewer: HTMLSpanElement | null = document.querySelector('#settings-password-previewer');
 
 export function hangoutSettings(): void {
   loadEventListeners();
@@ -132,6 +134,7 @@ function renderHangoutSettingsSection(): void {
   disablePassedStagesSliders();
   updateProgressBtn();
   updateMembersCount();
+  updateHangoutPasswordPreviewer();
 
   if (!hangoutSettingsState.settingsSectionMutationObserverActive) {
     initSettingsSectionMutationObserver();
@@ -190,6 +193,24 @@ function updateMembersCount(): void {
   membersCountSpan.textContent = `${hangoutSettingsState.sliders.membersLimitSlider.value}`;
 };
 
+function updateHangoutPasswordPreviewer(): void {
+  if (!globalHangoutState.data || !settingsPasswordPreviewer) {
+    return;
+  };
+
+  const decryptedHangoutPassword: string | null = globalHangoutState.data.decryptedHangoutPassword;
+
+  if (!decryptedHangoutPassword) {
+    settingsPasswordPreviewer.classList.add('empty');
+    settingsPasswordPreviewer.firstElementChild && (settingsPasswordPreviewer.firstElementChild.textContent = 'Not set');
+
+    return;
+  };
+
+  settingsPasswordPreviewer.classList.remove('empty');
+  settingsPasswordPreviewer.firstElementChild && (settingsPasswordPreviewer.firstElementChild.textContent = '*************');
+};
+
 async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
   if (!(e.target instanceof HTMLButtonElement)) {
     return;
@@ -226,6 +247,11 @@ async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.id === 'settings-password-copy-btn') {
+    await handleCopyHangoutPassword();
+    return;
+  };
+
+  if (e.target.id === 'settings-password-reveal-btn') {
     // TODO: implement
     return;
   };
@@ -659,4 +685,29 @@ function confirmProgressHangoutAction(): void {
       ConfirmModal.remove();
     };
   });
+};
+
+async function handleCopyHangoutPassword(): Promise<void> {
+  if (!globalHangoutState.data) {
+    popup('Failed to copy hangout password.', 'error');
+    return;
+  };
+
+  const { isLeader, decryptedHangoutPassword } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup('Not hangout leader.', 'error');
+    directlyNavigateHangoutSections('dashboard');
+
+    return;
+  };
+
+  if (!decryptedHangoutPassword) {
+    popup('Hangout is not password protected.', 'error');
+    updateHangoutPasswordPreviewer();
+
+    return;
+  };
+
+  await copyToClipboard(decryptedHangoutPassword);
 };

@@ -1453,6 +1453,25 @@
 
 }
 
+// hangout settings --- ---
+#settings-section {
+
+  #settings-password-previewer {
+
+    &.empty {
+      @apply max-w-fit;
+
+      span {
+        @apply mr-0 mb-0;
+      }
+
+      button {
+        @apply hidden;
+      }
+    }
+  }
+}
+
 // hangout loading skeleton --- ---
 #hangout-loading-skeleton {
   @apply py-3;
