@@ -349,9 +349,9 @@ async function updateHangoutStages(): Promise<void> {
     globalHangoutState.data.conclusionTimestamp = newConclusionTimestamp;
     hangoutSettingsState.unsavedStageChanges = false;
 
-    availabilityPeriodSlider.updateValue(Math.ceil(availabilityPeriodSlider.value));
-    suggestionsPeriodSlider.updateValue(Math.ceil(suggestionsPeriodSlider.value));
-    votingPeriodSlider.updateValue(Math.ceil(votingPeriodSlider.value));
+    hangoutDetails.availability_period = newAvailabilityPeriod;
+    hangoutDetails.suggestions_period = newSuggestionsPeriod;
+    hangoutDetails.voting_period = newVotingPeriod;
 
     renderHangoutSettingsSection();
     toggleStagesSettingsButtons();
