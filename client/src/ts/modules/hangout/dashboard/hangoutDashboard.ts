@@ -30,7 +30,7 @@ export const hangoutDashboardState: HangoutDashboardState = {
   latestChatMessages: [],
 };
 
-const hangoutStageDescriptionElement: HTMLDivElement | null = document.querySelector('#hangout-stage-description');
+const hangoutDashboardSection: HTMLElement | null = document.querySelector('#dashboard-section');
 
 export async function hangoutDashboard(): Promise<void> {
   await getInitialHangoutData();
@@ -141,17 +141,7 @@ export async function getInitialHangoutData(): Promise<void> {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-dashboard', renderDashboardSection);
-
-  hangoutStageDescriptionElement?.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLButtonElement)) {
-      return;
-    };
-
-    if (e.target.classList.contains('hangout-description-btn')) {
-      navigateHangoutSections(e);
-      return;
-    };
-  });
+  hangoutDashboardSection?.addEventListener('click', handleDashboardSectionClick);
 };
 
 export function renderDashboardSection(): void {
@@ -345,4 +335,45 @@ function detectLatestSection(): void {
   };
 
   setTimeout(() => directlyNavigateHangoutSections(latestHangoutSection), 0);
+};
+
+function handleDashboardSectionClick(e: MouseEvent): void {
+  if (!(e.target instanceof HTMLButtonElement)) {
+    return;
+  };
+
+  if (e.target.classList.contains('hangout-description-btn')) {
+    navigateHangoutSections(e);
+    return;
+  };
+
+  if (e.target.id === 'dashboard-hangout-password-btn') {
+    handleCopyHangoutPassword();
+    return;
+  };
+};
+
+async function handleCopyHangoutPassword(): Promise<void> {
+  if (!globalHangoutState.data) {
+    popup('Failed to copy hangout password.', 'error');
+    return;
+  };
+
+  const { isLeader, decryptedHangoutPassword } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    displayHangoutPassword();
+
+    return;
+  };
+
+  if (!decryptedHangoutPassword) {
+    popup('Hangout is not password protected.', 'error');
+    displayHangoutPassword();
+
+    return;
+  };
+
+  await copyToClipboard(decryptedHangoutPassword);
 };
