@@ -342,7 +342,7 @@ function handleDashboardSectionClick(e: MouseEvent): void {
     return;
   };
 
-  if (e.target.classList.contains('hangout-description-btn')) {
+  if (e.target.hasAttribute('data-goTo')) {
     navigateHangoutSections(e);
     return;
   };
