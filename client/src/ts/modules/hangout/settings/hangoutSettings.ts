@@ -353,7 +353,7 @@ async function updateHangoutStages(): Promise<void> {
     suggestionsPeriodSlider.updateValue(Math.ceil(suggestionsPeriodSlider.value));
     votingPeriodSlider.updateValue(Math.ceil(votingPeriodSlider.value));
 
-    renderHangoutSettingsSection
+    renderHangoutSettingsSection();
     toggleStagesSettingsButtons();
 
     popup('Hangout stages updated.', 'success');
