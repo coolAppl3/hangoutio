@@ -9,13 +9,14 @@ import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../ha
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { copyToClipboard, handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
+import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
+  nextStageTimerIntervalId: number,
 
   latestHangoutEvents: HangoutEvent[],
   latestChatMessages: ChatMessage[],
@@ -23,12 +24,13 @@ interface HangoutDashboardState {
 
 export const hangoutDashboardState: HangoutDashboardState = {
   nextStageTimerInitiated: false,
+  nextStageTimerIntervalId: 0,
 
   latestHangoutEvents: [],
   latestChatMessages: [],
 };
 
-const hangoutStageDescriptionElement: HTMLDivElement | null = document.querySelector('#hangout-stage-description');
+const hangoutDashboardSection: HTMLElement | null = document.querySelector('#dashboard-section');
 
 export async function hangoutDashboard(): Promise<void> {
   await getInitialHangoutData();
@@ -139,17 +141,7 @@ export async function getInitialHangoutData(): Promise<void> {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-dashboard', renderDashboardSection);
-
-  hangoutStageDescriptionElement?.addEventListener('click', (e: MouseEvent) => {
-    if (!(e.target instanceof HTMLButtonElement)) {
-      return;
-    };
-
-    if (e.target.classList.contains('hangout-description-btn')) {
-      navigateHangoutSections(e);
-      return;
-    };
-  });
+  hangoutDashboardSection?.addEventListener('click', handleDashboardSectionClick);
 };
 
 export function renderDashboardSection(): void {
@@ -186,7 +178,7 @@ function renderMainDashboardContent(): void {
   const dashboardViewMembersBtn: HTMLButtonElement | null = document.querySelector('#dashboard-view-members-btn');
   dashboardViewMembersBtn?.addEventListener('click', navigateHangoutSections);
 
-  initiateNextStageTimer();
+  initNextStageTimer();
   displayHangoutPassword();
 };
 
@@ -195,7 +187,7 @@ function displayHangoutPassword(): void {
     return;
   };
 
-  const { isLeader, isPasswordProtected, decryptedHangoutPassword } = globalHangoutState.data;
+  const { isLeader, isPasswordProtected } = globalHangoutState.data;
 
   const hangoutPasswordStateSpan: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-state');
   const hangoutPasswordValueSpan: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-value');
@@ -206,29 +198,21 @@ function displayHangoutPassword(): void {
   };
 
   if (!isLeader) {
-    isPasswordProtected && (hangoutPasswordValueSpan.textContent = 'Yes');
+    hangoutPasswordValueSpan.textContent = isPasswordProtected ? 'Yes' : 'No';
     return;
   };
 
   hangoutPasswordStateSpan.textContent = 'Hangout password';
 
-  if (isPasswordProtected) {
-    hangoutPasswordBtn.classList.remove('hidden');
-    hangoutPasswordValueSpan.textContent = '*************';
-
-    hangoutPasswordBtn.addEventListener('click', async () => {
-      if (!decryptedHangoutPassword) {
-        popup('Hangout is not password protected.', 'error');
-        return;
-      };
-
-      await copyToClipboard(decryptedHangoutPassword);
-    });
+  if (!isPasswordProtected) {
+    hangoutPasswordBtn.classList.add('hidden');
+    hangoutPasswordValueSpan.textContent = 'Not set';
 
     return;
   };
 
-  hangoutPasswordValueSpan.textContent = 'Not set';
+  hangoutPasswordBtn.classList.remove('hidden');
+  hangoutPasswordValueSpan.textContent = '*************';
 };
 
 function renderMembersSection(): void {
@@ -351,4 +335,45 @@ function detectLatestSection(): void {
   };
 
   setTimeout(() => directlyNavigateHangoutSections(latestHangoutSection), 0);
+};
+
+function handleDashboardSectionClick(e: MouseEvent): void {
+  if (!(e.target instanceof HTMLButtonElement)) {
+    return;
+  };
+
+  if (e.target.hasAttribute('data-goTo')) {
+    navigateHangoutSections(e);
+    return;
+  };
+
+  if (e.target.id === 'dashboard-hangout-password-btn') {
+    handleCopyHangoutPassword();
+    return;
+  };
+};
+
+async function handleCopyHangoutPassword(): Promise<void> {
+  if (!globalHangoutState.data) {
+    popup('Failed to copy hangout password.', 'error');
+    return;
+  };
+
+  const { isLeader, decryptedHangoutPassword } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    displayHangoutPassword();
+
+    return;
+  };
+
+  if (!decryptedHangoutPassword) {
+    popup('Hangout is not password protected.', 'error');
+    displayHangoutPassword();
+
+    return;
+  };
+
+  await copyToClipboard(decryptedHangoutPassword);
 };

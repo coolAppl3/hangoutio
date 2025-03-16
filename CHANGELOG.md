@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.57] (2025-03-17)
+
+### Features
+
+- Added logic to update the next stage timer when the hangout stages are updated.
+- Improved hangout dashboard navigation logic.
+
+
+### Code Refactoring
+
+- Renamed `initiateNextStageTimer()` to `initNextStageTimer()`.
+
+
+### Bug Fixes
+
+- Fixed a bug with how the settings section is rerendered when updating the hangout stages.
+- Fixed the hangout's dashboard password data not showing or updating correctly.
+- Fixed the hangout's dashboard password copy button having an event listener attached to it every time the dashboard is rendered,, and improved the overall logic around it.
+
+
 ## [0.4.56] (2025-03-16)
 
 ### Features

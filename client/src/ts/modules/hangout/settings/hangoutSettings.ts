@@ -9,6 +9,8 @@ import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
 import { validateNewPassword, validatePassword } from "../../global/validation";
 import { ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
+import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
+import { initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../globalHangoutState";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
@@ -349,12 +351,16 @@ async function updateHangoutStages(): Promise<void> {
     globalHangoutState.data.conclusionTimestamp = newConclusionTimestamp;
     hangoutSettingsState.unsavedStageChanges = false;
 
-    availabilityPeriodSlider.updateValue(Math.ceil(availabilityPeriodSlider.value));
-    suggestionsPeriodSlider.updateValue(Math.ceil(suggestionsPeriodSlider.value));
-    votingPeriodSlider.updateValue(Math.ceil(votingPeriodSlider.value));
+    hangoutDetails.availability_period = newAvailabilityPeriod;
+    hangoutDetails.suggestions_period = newSuggestionsPeriod;
+    hangoutDetails.voting_period = newVotingPeriod;
 
-    renderHangoutSettingsSection
+    renderHangoutSettingsSection();
     toggleStagesSettingsButtons();
+
+    hangoutDashboardState.nextStageTimerInitiated = false;
+    clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
+    initNextStageTimer();
 
     popup('Hangout stages updated.', 'success');
     LoadingModal.remove();
@@ -462,6 +468,10 @@ async function progressHangoutStage(): Promise<void> {
     hangoutDetails.is_concluded = updatedHangoutDetails.is_concluded;
 
     renderHangoutSettingsSection();
+
+    hangoutDashboardState.nextStageTimerInitiated = false;
+    clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
+    initNextStageTimer();
 
     popup(`Hangout ${hangoutDetails.is_concluded ? 'concluded' : 'progressed'}.`, 'success');
     LoadingModal.remove();
@@ -681,7 +691,9 @@ async function updateHangoutPassword(deletePassword: boolean = false): Promise<v
 
   try {
     await updateHangoutPasswordService({ hangoutId, hangoutMemberId, newPassword });
+
     globalHangoutState.data.decryptedHangoutPassword = newPassword;
+    globalHangoutState.data.isPasswordProtected = !deletePassword;
 
     clearUpdatePasswordForm();
     updateHangoutPasswordElements();
