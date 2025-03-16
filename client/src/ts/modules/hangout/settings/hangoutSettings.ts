@@ -547,6 +547,13 @@ async function updateHangoutMembersLimit(): Promise<void> {
   const currentMembersLimit: number = hangoutDetails.members_limit;
   const newMembersLimit: number = hangoutSettingsState.sliders.membersLimitSlider.value;
 
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
   if (newMembersLimit === currentMembersLimit) {
     updateSettingsButtons();
 
