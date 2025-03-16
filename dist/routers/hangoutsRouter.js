@@ -371,7 +371,7 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
     }
     ;
     if (requestData.newPassword && !(0, userValidation_1.isValidNewPassword)(requestData.newPassword)) {
-        res.status(400).json({ message: 'Invalid new hangout password.' });
+        res.status(400).json({ message: 'Invalid new hangout password.', reason: 'invalidPassword' });
         return;
     }
     ;
@@ -409,8 +409,10 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         hangouts.encrypted_password
       FROM
         hangout_members
+      LEFT JOIN
+        hangouts ON hangout_members.hangout_id = hangouts.hangout_id
       WHERE
-        hangout_member_id = ?;`, [requestData.hangoutMemberId]);
+        hangout_members.hangout_member_id = ?;`, [requestData.hangoutMemberId]);
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
@@ -432,17 +434,17 @@ exports.hangoutsRouter.patch('/details/updatePassword', async (req, res) => {
         }
         ;
         if (!hangoutMemberDetails.is_leader) {
-            res.status(401).json({ message: 'Not hangout leader.' });
+            res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
             return;
         }
         ;
         if (hangoutMemberDetails.is_concluded) {
-            res.status(403).json({ message: `Can't change password after hangout conclusion.` });
+            res.status(403).json({ message: `Hangout has already been concluded.` });
             return;
         }
         ;
         if (!hangoutMemberDetails.encrypted_password && !requestData.newPassword) {
-            res.status(409).json({ message: 'Hangout already has no password', reason: 'passwordAlreadyNull' });
+            res.json({});
             return;
         }
         ;
@@ -569,7 +571,7 @@ exports.hangoutsRouter.patch('/details/updateMembersLimit', async (req, res) => 
         ;
         if (!hangoutDetails.is_leader) {
             await connection.rollback();
-            res.status(401).json({ message: 'Not hangout leader.' });
+            res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
             return;
         }
         ;
@@ -581,7 +583,7 @@ exports.hangoutsRouter.patch('/details/updateMembersLimit', async (req, res) => 
         ;
         if (hangoutDetails.members_limit === requestData.newMembersLimit) {
             await connection.rollback();
-            res.status(409).json({ message: `Hangout already has this members limit.` });
+            res.json({});
             return;
         }
         ;

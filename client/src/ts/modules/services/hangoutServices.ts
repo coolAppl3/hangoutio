@@ -69,7 +69,7 @@ export interface UpdateHangoutMembersLimitBody {
 };
 
 export async function updateHangoutMembersLimitService(requestBody: UpdateHangoutMembersLimitBody): Promise<AxiosResponse> {
-  return axios.patch(`${hangoutsApiUrl}/details/changeMembersLimit`, requestBody);
+  return axios.patch(`${hangoutsApiUrl}/details/updateMembersLimit`, requestBody);
 };
 
 // --- --- ---

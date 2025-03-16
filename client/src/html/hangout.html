@@ -1567,12 +1567,17 @@
         <div id="members-settings">
           <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Hangout members</h3>
           <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
-            Members count: <span class="text-title dark:text-title-dark">1</span>
+            Members count:
+            <span
+              id="settings-member-count-span"
+              class="text-title dark:text-title-dark"
+              >1</span
+            >
           </p>
 
           <div class="max-w-[50rem] sm:max-w-full">
             <div class="form-group form-group-slider">
-              <label for="members-limit-input">Members Limit: <span data-slider-text="members-limit-input">10 members</span></label>
+              <label for="members-limit-input">Members limit: <span data-slider-text="members-limit-input">10 members</span></label>
               <span class="extra-info">Maximum number of members allowed.</span>
               <input
                 type="range"
@@ -1634,16 +1639,16 @@
           >
             <span
               id="settings-password-span"
-              class="text-title dark:text-title-dark leading-[1] mr-1 mb-[-6px]"
+              class="text-title dark:text-title-dark leading-[1] mr-2 mb-[-6px]"
               >*************</span
             >
 
             <button
               id="settings-password-copy-btn"
               type="button"
-              class="svg w-2 h-2 group"
-              aria-label="Copy hangout password"
-              title="Copy"
+              class="svg w-2 h-2 group ml-auto relative after:absolute after:left-0 after:right-0 after:w-full after:h-full after:z-1"
+              aria-label="Copy hangout password to clipboard"
+              title="Copy to clipboard"
             >
               <svg
                 width="500"
@@ -1662,6 +1667,29 @@
                 ></path>
               </svg>
             </button>
+
+            <button
+              class="password-icon svg w-2 h-2 group ml-1 relative after:absolute after:left-0 after:right-0 after:w-full after:h-full after:z-1"
+              id="settings-password-reveal-btn"
+              type="button"
+              aria-label="Reveal hangout password"
+              title="Reveal password"
+            >
+              <svg
+                width="500"
+                height="500"
+                viewBox="0 0 500 500"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M485.416 267.826C450.744 307.575 358.471 400 250.091 400C141.71 400 49.4376 307.575 14.7649 267.826C5.74504 257.485 5.74504 242.515 14.7649 232.174C49.4376 192.425 141.71 100 250.091 100C358.471 100 450.744 192.425 485.416 232.174C494.436 242.515 494.436 257.485 485.416 267.826ZM250.091 326C292.064 326 326.091 291.974 326.091 250C326.091 208.026 292.064 174 250.091 174C243.954 174 237.988 174.727 232.273 176.1C230.721 176.473 230.286 178.459 231.391 179.611C237.342 185.81 241 194.228 241 203.5C241 222.554 225.554 238 206.5 238C196.426 238 187.36 233.682 181.052 226.796C179.974 225.619 177.965 225.924 177.492 227.448C175.281 234.574 174.091 242.148 174.091 250C174.091 291.974 208.117 326 250.091 326ZM250.091 350C305.319 350 350.091 305.228 350.091 250C350.091 194.772 305.319 150 250.091 150C194.862 150 150.091 194.772 150.091 250C150.091 305.228 194.862 350 250.091 350Z"
+                ></path>
+              </svg>
+            </button>
           </div>
 
           <form id="hangout-settings-password-form">
@@ -1673,7 +1701,7 @@
                 autocomplete="new-password"
               />
               <button
-                class="password-icon svg w-2 h-2 group"
+                class="password-icon svg w-2 h-2 group before:absolute before:left-0 before:right-0 before:w-full before:h-full before:z-3"
                 id="hangout-settings-password-input-reveal-btn"
                 type="button"
                 aria-label="Reveal password"

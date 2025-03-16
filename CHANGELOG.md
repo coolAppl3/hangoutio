@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.56] (2025-03-16)
+
+### Features
+
+- Added logic to update members limit.
+- Added logic to copy the hangout password in the settings section.
+- Added logic to reveal the hangout password.
+- Added logic to update and remove the hangout password.
+
+
+### Code Refactoring
+
+- Moved `copyToClipboard()` to `globalHangoutUtils.ts`.
+
+
+### Bug Fixes
+
+- Fixed `updateHangoutMembersLimitService()` in `hangoutServices.ts` having an invalid endpoint.
+- Fixed invalid SQL query in PATCH `hangouts/details/updatePassword`.
+
+
 ## [0.4.55] (2025-03-15)
 
 ### Features
