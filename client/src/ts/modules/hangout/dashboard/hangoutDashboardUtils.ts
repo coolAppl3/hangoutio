@@ -241,6 +241,7 @@ export function initiateNextStageTimer(): void {
   updateNextStageTimer(nextStageTimeSpan, intervalId);
 
   hangoutDashboardState.nextStageTimerInitiated = true;
+  hangoutDashboardState.nextStageTimerIntervalId = intervalId;
 };
 
 function updateNextStageTimer(nextStageTimeSpan: HTMLSpanElement, intervalId: number): void {

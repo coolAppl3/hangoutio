@@ -16,6 +16,7 @@ import { getDateAndTimeString } from "../../global/dateTimeUtils";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
+  nextStageTimerIntervalId: number,
 
   latestHangoutEvents: HangoutEvent[],
   latestChatMessages: ChatMessage[],
@@ -23,6 +24,7 @@ interface HangoutDashboardState {
 
 export const hangoutDashboardState: HangoutDashboardState = {
   nextStageTimerInitiated: false,
+  nextStageTimerIntervalId: 0,
 
   latestHangoutEvents: [],
   latestChatMessages: [],
