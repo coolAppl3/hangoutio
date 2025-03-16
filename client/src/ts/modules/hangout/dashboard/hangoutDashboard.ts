@@ -197,7 +197,7 @@ function displayHangoutPassword(): void {
     return;
   };
 
-  const { isLeader, isPasswordProtected, decryptedHangoutPassword } = globalHangoutState.data;
+  const { isLeader, isPasswordProtected } = globalHangoutState.data;
 
   const hangoutPasswordStateSpan: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-state');
   const hangoutPasswordValueSpan: HTMLSpanElement | null = document.querySelector('#dashboard-hangout-password-value');
@@ -208,29 +208,21 @@ function displayHangoutPassword(): void {
   };
 
   if (!isLeader) {
-    isPasswordProtected && (hangoutPasswordValueSpan.textContent = 'Yes');
+    hangoutPasswordValueSpan.textContent = isPasswordProtected ? 'Yes' : 'No';
     return;
   };
 
   hangoutPasswordStateSpan.textContent = 'Hangout password';
 
-  if (isPasswordProtected) {
-    hangoutPasswordBtn.classList.remove('hidden');
-    hangoutPasswordValueSpan.textContent = '*************';
-
-    hangoutPasswordBtn.addEventListener('click', async () => {
-      if (!decryptedHangoutPassword) {
-        popup('Hangout is not password protected.', 'error');
-        return;
-      };
-
-      await copyToClipboard(decryptedHangoutPassword);
-    });
+  if (!isPasswordProtected) {
+    hangoutPasswordBtn.classList.add('hidden');
+    hangoutPasswordValueSpan.textContent = 'Not set';
 
     return;
   };
 
-  hangoutPasswordValueSpan.textContent = 'Not set';
+  hangoutPasswordBtn.classList.remove('hidden');
+  hangoutPasswordValueSpan.textContent = '*************';
 };
 
 function renderMembersSection(): void {

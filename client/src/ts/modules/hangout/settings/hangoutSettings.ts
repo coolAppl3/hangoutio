@@ -691,7 +691,9 @@ async function updateHangoutPassword(deletePassword: boolean = false): Promise<v
 
   try {
     await updateHangoutPasswordService({ hangoutId, hangoutMemberId, newPassword });
+
     globalHangoutState.data.decryptedHangoutPassword = newPassword;
+    globalHangoutState.data.isPasswordProtected = !deletePassword;
 
     clearUpdatePasswordForm();
     updateHangoutPasswordElements();
