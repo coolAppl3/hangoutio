@@ -449,7 +449,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 
   if (requestData.newPassword && !isValidNewPassword(requestData.newPassword)) {
-    res.status(400).json({ message: 'Invalid new hangout password.' });
+    res.status(400).json({ message: 'Invalid new hangout password.', reason: 'invalidPassword' });
     return;
   };
 
@@ -539,17 +539,17 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     };
 
     if (!hangoutMemberDetails.is_leader) {
-      res.status(401).json({ message: 'Not hangout leader.' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
       return;
     };
 
     if (hangoutMemberDetails.is_concluded) {
-      res.status(403).json({ message: `Can't change password after hangout conclusion.` });
+      res.status(403).json({ message: `Hangout has already been concluded.` });
       return;
     };
 
     if (!hangoutMemberDetails.encrypted_password && !requestData.newPassword) {
-      res.status(409).json({ message: 'Hangout already has no password', reason: 'passwordAlreadyNull' });
+      res.json({});
       return;
     };
 
