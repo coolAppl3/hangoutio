@@ -1,5 +1,5 @@
 import { hangoutDashboardState, renderDashboardSection } from "../../modules/hangout/dashboard/hangoutDashboard";
-import { initiateNextStageTimer } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
+import { initNextStageTimer } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { HangoutEvent } from "../../modules/hangout/hangoutTypes";
 
@@ -115,7 +115,7 @@ function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
   hangoutDetails.stage_control_timestamp = newStageControlTimestamp;
 
   renderDashboardSection();
-  initiateNextStageTimer();
+  initNextStageTimer();
 };
 
 function isValidWebSocketData(messageContent: unknown): messageContent is WebSocketData {

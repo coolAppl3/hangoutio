@@ -10,7 +10,7 @@ import SliderInput from "../../global/SliderInput";
 import { validateNewPassword, validatePassword } from "../../global/validation";
 import { ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
-import { initiateNextStageTimer } from "../dashboard/hangoutDashboardUtils";
+import { initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../globalHangoutState";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
@@ -360,7 +360,7 @@ async function updateHangoutStages(): Promise<void> {
 
     hangoutDashboardState.nextStageTimerInitiated = false;
     clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
-    initiateNextStageTimer();
+    initNextStageTimer();
 
     popup('Hangout stages updated.', 'success');
     LoadingModal.remove();
@@ -471,7 +471,7 @@ async function progressHangoutStage(): Promise<void> {
 
     hangoutDashboardState.nextStageTimerInitiated = false;
     clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
-    initiateNextStageTimer();
+    initNextStageTimer();
 
     popup(`Hangout ${hangoutDetails.is_concluded ? 'concluded' : 'progressed'}.`, 'success');
     LoadingModal.remove();

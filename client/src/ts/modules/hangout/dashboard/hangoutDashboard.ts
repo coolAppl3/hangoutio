@@ -9,7 +9,7 @@ import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../ha
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { copyToClipboard, handleIrrecoverableError } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { getHangoutStageTitle, getNextHangoutStageTitle, initiateNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
+import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
@@ -178,7 +178,7 @@ function renderMainDashboardContent(): void {
   const dashboardViewMembersBtn: HTMLButtonElement | null = document.querySelector('#dashboard-view-members-btn');
   dashboardViewMembersBtn?.addEventListener('click', navigateHangoutSections);
 
-  initiateNextStageTimer();
+  initNextStageTimer();
   displayHangoutPassword();
 };
 

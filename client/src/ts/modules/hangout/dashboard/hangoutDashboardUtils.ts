@@ -226,7 +226,7 @@ export function getNextHangoutStageTitle(currentStage: number): string {
   return getHangoutStageTitle(currentStage + 1);
 };
 
-export function initiateNextStageTimer(): void {
+export function initNextStageTimer(): void {
   if (hangoutDashboardState.nextStageTimerInitiated) {
     return;
   };
