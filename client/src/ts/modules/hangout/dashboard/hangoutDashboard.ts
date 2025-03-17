@@ -7,7 +7,7 @@ import { getInitialHangoutDataService, InitialHangoutData } from "../../services
 import { globalHangoutState } from "../globalHangoutState";
 import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
-import { copyToClipboard, handleIrrecoverableError } from "../globalHangoutUtils";
+import { copyToClipboard } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
@@ -154,7 +154,7 @@ export function renderDashboardSection(): void {
 
 function renderMainDashboardContent(): void {
   if (!globalHangoutState.data) {
-    handleIrrecoverableError();
+    popup('Something went wrong.', 'error');
     return;
   };
 
