@@ -1361,7 +1361,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
       WHERE
         hangout_member_id = ? AND
         hangout_id = ?;`,
-      [+hangoutMemberId, +hangoutId]
+      [+hangoutMemberId, hangoutId]
     );
 
     const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
