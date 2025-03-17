@@ -432,7 +432,7 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
     if (status === 404) {
       if (errReason === 'hangoutNotFound') {
         LoadingModal.display();
-        setTimeout(() => window.location.reload(), 100);
+        setTimeout(() => window.location.reload(), 1000);
 
         return;
       };

@@ -800,7 +800,7 @@ async function deleteHangout(): Promise<void> {
     await deleteHangoutService(hangoutMemberId, hangoutId);
 
     popup('Hangout deleted.', 'success');
-    setTimeout(() => window.location.href = 'home', 100);
+    setTimeout(() => window.location.href = 'home', 1000);
 
   } catch (err: unknown) {
     console.log(err);
