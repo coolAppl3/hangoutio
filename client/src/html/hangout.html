@@ -746,105 +746,140 @@
             <div class="dashboard-grid-content w-full">
               <!-- main -->
               <div class="dashboard-grid-content-main max-h-fit mb-2 p-2 row-span-8 bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple">
-                <!-- main content -->
-                <div>
+                <!-- header -->
+                <div class="content-header flex justify-between items-center mb-2 relative z-3">
                   <h3
                     id="hangout-title"
-                    class="text-xl font-medium text-title dark:text-title-dark mb-2"
+                    class="text-xl font-medium text-title dark:text-title-dark text-pretty overflow-hidden"
                   ></h3>
 
-                  <!-- summary -->
-                  <div class="grid grid-cols-3 gap-2 sm:grid-cols-2 xs:grid-cols-1">
-                    <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Current stage</span>
-                      <span
-                        id="dashboard-current-stage"
-                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
-                      ></span>
-                    </div>
-
-                    <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Time remaining</span>
-                      <span
-                        id="dashboard-next-stage-time"
-                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
-                      ></span>
-                    </div>
-
-                    <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Next stage</span>
-                      <span
-                        id="dashboard-next-stage"
-                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
-                      ></span>
-                    </div>
-
-                    <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Hangout conclusion</span>
-                      <span
-                        id="dashboard-conclusion-time"
-                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
-                      ></span>
-                    </div>
-
-                    <div class="flex flex-col justify-start items-start">
-                      <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Members limit</span>
-                      <span
-                        id="dashboard-members-limit"
-                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
-                      ></span>
-                    </div>
-
-                    <div class="flex flex-col justify-start items-start">
-                      <span
-                        class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]"
-                        id="dashboard-hangout-password-state"
-                        >Password protected</span
+                  <div id="dashboard-dropdown">
+                    <button
+                      id="dashboard-dropdown-menu-btn"
+                      class="svg w-2 h-2 ml-1 transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1"
+                      type="button"
+                      title="Expand menu"
+                      aria-label="Expand dashboard menu"
+                    >
+                      <svg
+                        width="540"
+                        height="540"
+                        viewBox="0 0 540 540"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
-                      <div class="flex justify-between items-center">
-                        <span
-                          id="dashboard-hangout-password-value"
-                          class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
-                        ></span>
+                        <path
+                          d="M330 70C330 103.137 303.137 130 270 130C236.863 130 210 103.137 210 70C210 36.8629 236.863 10 270 10C303.137 10 330 36.8629 330 70Z"
+                          class="fill-title dark:fill-title-dark"
+                        ></path>
+                        <path
+                          d="M330 270C330 303.137 303.137 330 270 330C236.863 330 210 303.137 210 270C210 236.863 236.863 210 270 210C303.137 210 330 236.863 330 270Z"
+                          class="fill-title dark:fill-title-dark"
+                        ></path>
+                        <path
+                          d="M330 470C330 503.137 303.137 530 270 530C236.863 530 210 503.137 210 470C210 436.863 236.863 410 270 410C303.137 410 330 436.863 330 470Z"
+                          class="fill-title dark:fill-title-dark"
+                        ></path>
+                      </svg>
+                    </button>
 
-                        <button
-                          id="dashboard-hangout-password-btn"
-                          type="button"
-                          class="svg w-2 h-2 ml-[1.8rem] group mt-[-5px] hidden relative after:absolute after:left-0 after:top-0 after:w-full after:h-full after:z-1"
-                          aria-label="Copy hangout password"
-                          title="Copy"
-                        >
-                          <svg
-                            width="500"
-                            height="500"
-                            viewBox="0 0 500 500"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M200 40C177.909 40 160 57.9086 160 80V300C160 322.091 177.909 340 200 340H420C442.091 340 460 322.091 460 300V80C460 57.9086 442.091 40 420 40H200Z"
-                              class="fill-title dark:fill-title-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                            />
-                            <path
-                              d="M80 160H140V190H80C74.4771 190 70 194.477 70 200V420C70 425.523 74.4772 430 80 430H300C305.523 430 310 425.523 310 420V360H340V420C340 442.091 322.091 460 300 460H80C57.9086 460 40 442.091 40 420V200C40 177.909 57.9086 160 80 160Z"
-                              class="fill-title dark:fill-title-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                            />
-                          </svg>
-                        </button>
-                      </div>
+                    <div id="dashboard-dropdown-menu">
+                      <button id="copy-invite-link-btn">Copy invitation link</button>
+                      <button id="leave-hangout-btn">Leave hangout</button>
                     </div>
                   </div>
-
-                  <!-- members button -->
-                  <button
-                    type="button"
-                    data-goTo="members"
-                    class="btn mt-2 bg-description dark:bg-description-dark text-title-dark dark:text-title hidden xl:block sm:w-full"
-                    id="dashboard-view-members-btn"
-                  >
-                    View hangout members
-                  </button>
                 </div>
+
+                <!-- summary -->
+                <div class="grid grid-cols-3 gap-2 sm:grid-cols-2 xs:grid-cols-1">
+                  <div class="flex flex-col justify-start items-start">
+                    <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Current stage</span>
+                    <span
+                      id="dashboard-current-stage"
+                      class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                    ></span>
+                  </div>
+
+                  <div class="flex flex-col justify-start items-start">
+                    <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Time remaining</span>
+                    <span
+                      id="dashboard-next-stage-time"
+                      class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                    ></span>
+                  </div>
+
+                  <div class="flex flex-col justify-start items-start">
+                    <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Next stage</span>
+                    <span
+                      id="dashboard-next-stage"
+                      class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                    ></span>
+                  </div>
+
+                  <div class="flex flex-col justify-start items-start">
+                    <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Hangout conclusion</span>
+                    <span
+                      id="dashboard-conclusion-time"
+                      class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                    ></span>
+                  </div>
+
+                  <div class="flex flex-col justify-start items-start">
+                    <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Members limit</span>
+                    <span
+                      id="dashboard-members-limit"
+                      class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                    ></span>
+                  </div>
+
+                  <div class="flex flex-col justify-start items-start">
+                    <span
+                      class="text-sm md:text-base font-medium text-description dark:text-description-dark mb-[4px]"
+                      id="dashboard-hangout-password-state"
+                      >Password protected</span
+                    >
+                    <div class="flex justify-between items-center">
+                      <span
+                        id="dashboard-hangout-password-value"
+                        class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                      ></span>
+
+                      <button
+                        id="dashboard-hangout-password-btn"
+                        type="button"
+                        class="svg w-2 h-2 ml-[1.8rem] group mt-[-5px] hidden relative after:absolute after:left-0 after:top-0 after:w-full after:h-full after:z-1"
+                        aria-label="Copy hangout password"
+                        title="Copy"
+                      >
+                        <svg
+                          width="500"
+                          height="500"
+                          viewBox="0 0 500 500"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M200 40C177.909 40 160 57.9086 160 80V300C160 322.091 177.909 340 200 340H420C442.091 340 460 322.091 460 300V80C460 57.9086 442.091 40 420 40H200Z"
+                            class="fill-title dark:fill-title-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
+                          />
+                          <path
+                            d="M80 160H140V190H80C74.4771 190 70 194.477 70 200V420C70 425.523 74.4772 430 80 430H300C305.523 430 310 425.523 310 420V360H340V420C340 442.091 322.091 460 300 460H80C57.9086 460 40 442.091 40 420V200C40 177.909 57.9086 160 80 160Z"
+                            class="fill-title dark:fill-title-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- members button -->
+                <button
+                  type="button"
+                  data-goTo="members"
+                  class="btn mt-2 bg-description dark:bg-description-dark text-title-dark dark:text-title hidden xl:block sm:w-full"
+                  id="dashboard-view-members-btn"
+                >
+                  View hangout members
+                </button>
 
                 <div class="h-line my-2"></div>
 
