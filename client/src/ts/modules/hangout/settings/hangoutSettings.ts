@@ -1049,7 +1049,9 @@ function confirmDeleteHangout(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
+      deleteHangout();
       ConfirmModal.remove();
+
       return;
     };
 
