@@ -1043,7 +1043,7 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
         hangout_members
       WHERE
         hangout_member_id = ? AND
-        hangout_id = ?;`, [+hangoutMemberId, +hangoutId]);
+        hangout_id = ?;`, [+hangoutMemberId, hangoutId]);
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
@@ -1058,7 +1058,7 @@ exports.hangoutsRouter.delete('/', async (req, res) => {
         }
         ;
         if (!hangoutMemberDetails.is_leader) {
-            res.status(401).json({ message: 'Not hangout leader.' });
+            res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
             return;
         }
         ;
