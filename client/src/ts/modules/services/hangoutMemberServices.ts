@@ -33,3 +33,9 @@ interface JoinHangoutAsGuestData {
 export async function joinHangoutAsGuestService(requestBody: JoinHangoutAsGuestBody): Promise<AxiosResponse<JoinHangoutAsGuestData>> {
   return axios.post(`${hangoutMembersApiUrl}/joinHangout/guest`, requestBody);
 };
+
+// --- --- ---
+
+export async function leaveHangoutService(hangoutMemberId: number, hangoutId: string): Promise<AxiosResponse> {
+  return axios.delete(`${hangoutMembersApiUrl}/leave?hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
+};

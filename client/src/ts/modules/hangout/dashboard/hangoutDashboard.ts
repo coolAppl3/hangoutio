@@ -1,18 +1,21 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
-import { handleAuthSessionExpired } from "../../global/authUtils";
+import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getInitialHangoutDataService, InitialHangoutData } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../hangoutTypes";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
-import { copyToClipboard, handleIrrecoverableError } from "../globalHangoutUtils";
+import { copyToClipboard } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
+import { ConfirmModal } from "../../global/ConfirmModal";
+import LoadingModal from "../../global/LoadingModal";
+import { leaveHangoutService } from "../../services/hangoutMemberServices";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
@@ -154,7 +157,7 @@ export function renderDashboardSection(): void {
 
 function renderMainDashboardContent(): void {
   if (!globalHangoutState.data) {
-    handleIrrecoverableError();
+    popup('Something went wrong.', 'error');
     return;
   };
 
@@ -337,7 +340,7 @@ function detectLatestSection(): void {
   setTimeout(() => directlyNavigateHangoutSections(latestHangoutSection), 0);
 };
 
-function handleDashboardSectionClick(e: MouseEvent): void {
+async function handleDashboardSectionClick(e: MouseEvent): Promise<void> {
   if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
@@ -350,6 +353,20 @@ function handleDashboardSectionClick(e: MouseEvent): void {
   if (e.target.id === 'dashboard-hangout-password-btn') {
     handleCopyHangoutPassword();
     return;
+  };
+
+  if (e.target.id === 'dashboard-dropdown-menu-btn') {
+    e.target.parentElement?.classList.toggle('expanded');
+    return;
+  };
+
+  if (e.target.id === 'copy-invite-link-btn') {
+    await copyToClipboard(window.location.href);
+    return;
+  };
+
+  if (e.target.id === 'leave-hangout-btn') {
+    confirmLeaveHangout();
   };
 };
 
@@ -376,4 +393,94 @@ async function handleCopyHangoutPassword(): Promise<void> {
   };
 
   await copyToClipboard(decryptedHangoutPassword);
+};
+
+function confirmLeaveHangout(): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Are you sure you want to leave this hangout?',
+    description: null,
+    confirmBtnTitle: 'Leave hangout',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      await leaveHangout();
+      ConfirmModal.remove();
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
+};
+
+async function leaveHangout(): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutMemberId, hangoutId } = globalHangoutState.data;
+
+  try {
+    await leaveHangoutService(hangoutMemberId, hangoutId);
+
+    popup('Left hangout.', 'success');
+    setTimeout(() => window.location.href = 'home', 1000);
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
 };

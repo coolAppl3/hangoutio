@@ -598,11 +598,6 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 });
 
 hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
-  interface RequestData {
-    hangoutMemberId: number,
-    hangoutId: string,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -617,20 +612,20 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const hangoutMemberId = req.query.hangoutMemberId;
+  const hangoutId = req.query.hangoutId;
 
-  const expectedKeys: string[] = ['hangoutMemberId', 'hangoutId'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof hangoutMemberId !== 'string' || typeof hangoutId !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberId)) {
+  if (!Number.isInteger(+hangoutMemberId)) {
     res.status(400).json({ message: 'Invalid hangout member ID.' });
     return;
   };
 
-  if (!isValidHangoutId(requestData.hangoutId)) {
+  if (!isValidHangoutId(hangoutId)) {
     res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
@@ -692,7 +687,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
         hangout_members
       WHERE
         hangout_member_id = ?;`,
-      [requestData.hangoutId, requestData.hangoutMemberId]
+      [hangoutId, +hangoutMemberId]
     );
 
     const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
@@ -702,7 +697,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       return;
     };
 
-    if (hangoutMemberDetails.hangout_id !== requestData.hangoutId) {
+    if (hangoutMemberDetails.hangout_id !== hangoutId) {
       res.status(404).json({ message: 'Hangout not found.' });
       return;
     };
@@ -721,7 +716,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
           hangouts
         WHERE
           hangout_id = ?;`,
-        [requestData.hangoutId]
+        [hangoutId]
       );
 
       if (resultSetHeader.affectedRows === 0) {
@@ -743,7 +738,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
         hangout_members
       WHERE
         hangout_member_id = ?;`,
-      [requestData.hangoutMemberId]
+      [+hangoutMemberId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -757,7 +752,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
     };
 
     res.json({});
-    await addHangoutEvent(requestData.hangoutId, `${hangoutMemberDetails.display_name} left the hangout.`);
+    await addHangoutEvent(hangoutId, `${hangoutMemberDetails.display_name} left the hangout.`);
 
   } catch (err: unknown) {
     console.log(err);

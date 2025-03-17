@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.58] (2025-03-18)
+
+### Features
+
+- Added logic to delete the hangout in the hangout settings section.
+- Added a dropdown menu to the hangout dashboard.
+- Added logic to leave a hangout.
+- Hangout settings will now first initiate the availability and suggestions sections before being initiated. 
+
+
+### Code Refactoring
+
+- Removed `handleIrrecoverableError()` as the vision for it was pivoted from many patches ago.
+
+
+### Bug Fixes
+
+- Fixed DELETE `hangoutMembers/leave` using a request body.
+- Fixed the hangout's loading skeleton being placed below the footer in `hangout.html`.
+- Fixed incorrect timeout value being used in a two locations.
+
+
 ## [0.4.57] (2025-03-17)
 
 ### Features

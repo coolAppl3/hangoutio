@@ -480,7 +480,6 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
     ;
 });
 exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
-    ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
         res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -493,19 +492,19 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
         return;
     }
     ;
-    const requestData = req.body;
-    const expectedKeys = ['hangoutMemberId', 'hangoutId'];
-    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+    const hangoutMemberId = req.query.hangoutMemberId;
+    const hangoutId = req.query.hangoutId;
+    if (typeof hangoutMemberId !== 'string' || typeof hangoutId !== 'string') {
         res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberId)) {
+    if (!Number.isInteger(+hangoutMemberId)) {
         res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
         res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
@@ -545,14 +544,14 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
       FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`, [requestData.hangoutId, requestData.hangoutMemberId]);
+        hangout_member_id = ?;`, [hangoutId, +hangoutMemberId]);
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        if (hangoutMemberDetails.hangout_id !== requestData.hangoutId) {
+        if (hangoutMemberDetails.hangout_id !== hangoutId) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
@@ -568,7 +567,7 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
             const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
           hangouts
         WHERE
-          hangout_id = ?;`, [requestData.hangoutId]);
+          hangout_id = ?;`, [hangoutId]);
             if (resultSetHeader.affectedRows === 0) {
                 res.status(500).json({ message: 'Internal server error.' });
                 return;
@@ -586,7 +585,7 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`, [requestData.hangoutMemberId]);
+        hangout_member_id = ?;`, [+hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
             return;
@@ -598,7 +597,7 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
         }
         ;
         res.json({});
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, `${hangoutMemberDetails.display_name} left the hangout.`);
+        await (0, addHangoutEvent_1.addHangoutEvent)(hangoutId, `${hangoutMemberDetails.display_name} left the hangout.`);
     }
     catch (err) {
         console.log(err);

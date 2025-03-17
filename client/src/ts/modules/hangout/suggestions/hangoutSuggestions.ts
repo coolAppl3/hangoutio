@@ -50,7 +50,7 @@ export function hangoutSuggestions(): void {
   loadEventListeners();
 };
 
-async function initHangoutSuggestions(): Promise<void> {
+export async function initHangoutSuggestions(): Promise<void> {
   if (hangoutSuggestionState.isLoaded) {
     renderSuggestionsSection();
     return;
