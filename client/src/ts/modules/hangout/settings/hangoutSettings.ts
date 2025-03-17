@@ -14,7 +14,7 @@ import { initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../globalHangoutState";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
-import { hangoutSuggestionState } from "../suggestions/hangoutSuggestions";
+import { hangoutSuggestionState, initHangoutSuggestions } from "../suggestions/hangoutSuggestions";
 import { calculateStepMinimumSliderValue, handleProgressionAttemptWithoutSuggestions, isValidNewHangoutPeriods, resetMembersLimitSliderValues, resetSliderValues, resetStageSliderValues, toggleStagesSettingsButtons, updateSettingsButtons } from "./hangoutSettingsUtils";
 
 interface HangoutSettingsState {
@@ -60,7 +60,13 @@ export function hangoutSettings(): void {
 };
 
 function loadEventListeners(): void {
-  document.addEventListener('loadSection-settings', initHangoutSettings);
+  document.addEventListener('loadSection-settings', async () => {
+    if (!hangoutSuggestionState.isLoaded) {
+      await initHangoutSuggestions();
+    };
+
+    initHangoutSettings();
+  });
 
   settingsSectionElement?.addEventListener('click', handleHangoutSettingsClicks);
   updateHangoutPasswordForm?.addEventListener('submit', async (e: SubmitEvent) => {
