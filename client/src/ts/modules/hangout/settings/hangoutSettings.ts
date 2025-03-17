@@ -8,7 +8,7 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
 import { validateNewPassword, validatePassword } from "../../global/validation";
-import { ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
+import { deleteHangoutService, ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
 import { initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../globalHangoutState";
@@ -283,6 +283,11 @@ async function handleHangoutSettingsClicks(e: MouseEvent): Promise<void> {
 
   if (e.target.id === 'delete-hangout-password-btn') {
     confirmPasswordDelete();
+    return;
+  };
+
+  if (e.target.id === 'delete-hangout-btn') {
+    confirmDeleteHangout();
   };
 };
 
@@ -766,6 +771,83 @@ async function updateHangoutPassword(deletePassword: boolean = false): Promise<v
   };
 };
 
+async function deleteHangout(): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, isLeader } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    directlyNavigateHangoutSections('dashboard');
+
+    return;
+  };
+
+  try {
+    await deleteHangoutService(hangoutMemberId, hangoutId);
+
+    popup('Hangout deleted.', 'success');
+    setTimeout(() => window.location.href = 'home', 100);
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'notHangoutLeader') {
+        globalHangoutState.data.isLeader = false;
+        directlyNavigateHangoutSections('dashboard');
+
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
+};
+
 function initSettingsSectionMutationObserver(): void {
   if (!settingsSectionElement) {
     return;
@@ -943,4 +1025,30 @@ function togglePasswordInputReveal(revealBtn: HTMLButtonElement): void {
 
   revealBtn.classList.add('revealed');
   revealBtn.previousElementSibling.setAttribute('type', 'text');
+};
+
+function confirmDeleteHangout(): void {
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Are you sure you want to delete this hangout?',
+    description: 'This action is irreversible.',
+    confirmBtnTitle: 'Delete hangout',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      ConfirmModal.remove();
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
 };
