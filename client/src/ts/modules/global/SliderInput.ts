@@ -13,7 +13,6 @@ export default class SliderInput {
 
   private sliderDomRect: DOMRect | undefined;
 
-  private isDragging: boolean;
   private isTouchDevice: boolean;
 
   private sliderInitialValue: number;
@@ -42,7 +41,6 @@ export default class SliderInput {
 
     this.sliderDomRect = this.slider?.getBoundingClientRect();
 
-    this.isDragging = false;
     this.isTouchDevice = false;
 
     this.sliderInitialValue = initialValue;
@@ -109,14 +107,14 @@ export default class SliderInput {
     this.slider?.addEventListener('keyup', this.handleSliderKeyEvents.bind(this));
   };
 
-  private startDrag(): void {
+  private startDrag(e: MouseEvent | TouchEvent): void {
     if (this.disabled) {
       return;
     };
 
-    this.isDragging = true;
-    document.body.style.userSelect = 'none';
+    this.dragSlider(e);
 
+    document.body.style.userSelect = 'none';
     this.sliderThumb?.classList.add('active');
 
     if (this.isTouchDevice) {
@@ -130,10 +128,6 @@ export default class SliderInput {
 
   private dragSlider(e: MouseEvent | TouchEvent): void {
     if (this.disabled) {
-      return;
-    };
-
-    if (!this.isDragging) {
       return;
     };
 
@@ -156,10 +150,10 @@ export default class SliderInput {
       xCoordinates = touch.clientX;
     };
 
-    const desktopOffset: number = this.isTouchDevice ? 0 : 4;
+    const offset: number = 2;
 
     const difference: number = (xCoordinates - this.sliderDomRect.left);
-    const slidePercentage: number = ((Math.min(difference, this.sliderDomRect.width) / this.sliderDomRect.width) * 100 + desktopOffset) | 0;
+    const slidePercentage: number = ((Math.min(difference, this.sliderDomRect.width) / this.sliderDomRect.width) * 100 + offset) | 0;
 
     this.updateSliderValues(slidePercentage);
   };
@@ -169,9 +163,7 @@ export default class SliderInput {
       return;
     };
 
-    this.isDragging = false;
     document.body.style.userSelect = 'auto';
-
     this.sliderThumb?.classList.remove('active');
 
     if (this.isTouchDevice) {

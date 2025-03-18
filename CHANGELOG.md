@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.59] (2025-03-18)
+
+### Features
+
+- Slightly reworked `SliderInput.ts` to allow for its value to be changed with a single click, instead of dragging being the only option.
+- Slightly improved the look of text in the password previewer located in the hangout settings section.
+
+
+### Bug Fixes
+
+- Fixed the dashboard dropdown menu not closing after one of the buttons are clicked.
+
+
 ## [0.4.58] (2025-03-18)
 
 ### Features
