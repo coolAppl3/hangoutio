@@ -84,8 +84,6 @@ export async function progressHangouts(): Promise<void> {
   };
 };
 
-concludeNoSuggestionHangouts();
-
 export async function concludeNoSuggestionHangouts(): Promise<void> {
   const currentTimestamp: number = Date.now();
 
