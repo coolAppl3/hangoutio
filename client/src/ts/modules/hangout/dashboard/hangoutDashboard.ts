@@ -34,6 +34,7 @@ export const hangoutDashboardState: HangoutDashboardState = {
 };
 
 const hangoutDashboardSection: HTMLElement | null = document.querySelector('#dashboard-section');
+const dashboardDropdownElement: HTMLDivElement | null = document.querySelector('#dashboard-dropdown');
 
 export async function hangoutDashboard(): Promise<void> {
   await getInitialHangoutData();
@@ -356,16 +357,19 @@ async function handleDashboardSectionClick(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.id === 'dashboard-dropdown-menu-btn') {
-    e.target.parentElement?.classList.toggle('expanded');
+    dashboardDropdownElement?.classList.toggle('expanded');
     return;
   };
 
   if (e.target.id === 'copy-invite-link-btn') {
+    dashboardDropdownElement?.classList.remove('expanded');
     await copyToClipboard(window.location.href);
+
     return;
   };
 
   if (e.target.id === 'leave-hangout-btn') {
+    dashboardDropdownElement?.classList.remove('expanded');
     confirmLeaveHangout();
   };
 };
