@@ -231,7 +231,7 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   suggestionDetailsContainer.appendChild(secondItem);
   suggestionDetailsContainer.appendChild(thirdItem);
 
-  if (globalHangoutState.data?.hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
+  if (globalHangoutState.data && globalHangoutState.data.hangoutDetails.current_stage >= HANGOUT_VOTING_STAGE) {
     const fourthItem: HTMLDivElement = createDivElement(null);
     fourthItem.appendChild(createSpanElement(null, 'Votes count'));
     fourthItem.appendChild(createSpanElement('votes-count-span', `${suggestion.votes_count}`));
