@@ -65,7 +65,7 @@ function loadEventListeners(): void {
       await initHangoutSuggestions();
     };
 
-    initHangoutSettings();
+    await initHangoutSettings();
   });
 
   settingsSectionElement?.addEventListener('click', handleHangoutSettingsClicks);
