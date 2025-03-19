@@ -212,6 +212,9 @@ function applySuggestionsContainerStyles(displayRenderMoreSuggestionsBtn: boolea
 
   if (hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
     suggestionsContainer.classList.add('in-voting-stage');
+
+  } else {
+    suggestionsContainer.classList.remove('in-voting-stage');
   };
 
   if (globalHangoutState.data.votesCount >= HANGOUT_VOTES_LIMIT) {
