@@ -386,6 +386,11 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     return;
   };
 
+  if (globalHangoutState.data.hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    return;
+  };
+
   if (hangoutSuggestionState.memberLikesSet.has(suggestion.suggestion_id)) {
     return;
   };
@@ -463,6 +468,11 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
 async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionElement: HTMLDivElement): Promise<void> {
   if (!globalHangoutState.data) {
     popup('Failed to like suggestion.', 'error');
+    return;
+  };
+
+  if (globalHangoutState.data.hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
     return;
   };
 

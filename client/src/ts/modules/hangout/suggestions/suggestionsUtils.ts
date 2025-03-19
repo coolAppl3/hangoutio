@@ -183,6 +183,11 @@ function createRatingContainer(likesCount: number, isLiked: boolean): HTMLDivEle
   likeSuggestionBtn.appendChild(createLikeIcon());
   likeSuggestionBtn.appendChild(createDivElement('like-spinner'));
 
+  if (globalHangoutState.data?.hangoutDetails.is_concluded) {
+    likeSuggestionBtn.classList.add('disabled');
+    likeSuggestionBtn.disabled = true;
+  };
+
   ratingContainer.appendChild(createSpanElement('suggestion-likes-count', `${likesCount}`));
   ratingContainer.appendChild(likeSuggestionBtn);
 
