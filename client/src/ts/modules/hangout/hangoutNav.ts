@@ -1,3 +1,6 @@
+import popup from "../global/popup";
+import { globalHangoutState } from "./globalHangoutState";
+
 const hangoutDesktopNav: HTMLElement | null = document.querySelector('#hangout-desktop-nav');
 
 const hangoutPhoneNav: HTMLElement | null = document.querySelector('#hangout-phone-nav');
@@ -16,6 +19,7 @@ const hangoutNavState: HangoutNavState = {
 
 export function hangoutNav(): void {
   loadEventListeners();
+  updateHangoutSettingsNavButtons();
 };
 
 function loadEventListeners(): void {
@@ -37,6 +41,11 @@ export function navigateHangoutSections(e: MouseEvent): void {
   };
 
   if (navigateTo === hangoutNavState.selectedSection) {
+    return;
+  };
+
+  if (!globalHangoutState.data?.isLeader && navigateTo === 'settings') {
+    popup(`You're not the hangout leader.`, 'error');
     return;
   };
 
@@ -108,4 +117,20 @@ function handlePhoneNavMenuEvents(e: MouseEvent): void {
   };
 
   navigateHangoutSections(e);
+};
+
+function updateHangoutSettingsNavButtons(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const isLeader: boolean = globalHangoutState.data.isLeader;
+  const settingsNavButtons: NodeListOf<HTMLButtonElement> = document.querySelectorAll('button[data-goTo="settings"]');
+
+  if (!isLeader) {
+    settingsNavButtons.forEach((btn: HTMLButtonElement) => btn.classList.add('hidden'));
+    return;
+  };
+
+  settingsNavButtons.forEach((btn: HTMLButtonElement) => btn.classList.remove('hidden'));
 };

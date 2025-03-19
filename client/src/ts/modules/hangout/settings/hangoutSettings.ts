@@ -92,9 +92,10 @@ function initHangoutSettings(): void {
   const { current_stage, stage_control_timestamp, availability_period, suggestions_period, voting_period, members_limit } = hangoutDetails;
 
   if (!isLeader) {
-    popup('Only the hangout leader can edit the hangout.', 'error');
+    popup(`You're not the hangout leader.`, 'error');
     directlyNavigateHangoutSections('dashboard');
 
+    LoadingModal.remove();
     return;
   };
 
