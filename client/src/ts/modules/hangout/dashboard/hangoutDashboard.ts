@@ -84,6 +84,8 @@ export async function getInitialHangoutData(): Promise<void> {
       hangoutDetails: initialHangoutData.hangoutDetails,
     };
 
+    console.log('leader status set')
+
     hangoutDashboardState.latestChatMessages = initialHangoutData.latestChatMessages;
     hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents;
 

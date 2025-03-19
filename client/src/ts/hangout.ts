@@ -12,8 +12,8 @@ import { hangoutSettings } from './modules/hangout/settings/hangoutSettings';
 topNavbar();
 botNavbar();
 
-hangoutNav();
 await hangoutDashboard();
+hangoutNav();
 hangoutAvailability();
 hangoutSuggestions();
 hangoutSettings();
