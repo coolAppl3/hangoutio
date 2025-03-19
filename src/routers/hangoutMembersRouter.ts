@@ -503,6 +503,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
       guest_id: number | null,
       display_name: string,
       is_leader: boolean,
+      hangout_is_concluded: boolean,
     };
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMember[]>(
@@ -511,13 +512,14 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
         account_id,
         guest_id,
         display_name,
-        is_leader
+        is_leader,
+        (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
         hangout_members
       WHERE
-        hangout_id = ?
+        hangout_id = :hangoutId
       LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT};`,
-      [requestData.hangoutId]
+      { hangoutId: requestData.hangoutId }
     );
 
     if (hangoutMemberRows.length === 0) {
@@ -546,6 +548,21 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
       return;
     };
 
+    if (!hangoutMember.hangout_is_concluded) {
+      await dbPool.query(
+        `DELETE FROM
+          votes
+        WHERE
+          hangout_member_id = :hangoutMemberId;
+        
+        DELETE FROM
+          suggestion_likes
+        WHERE
+          hangout_member_id = :hangoutMemberId;`,
+        { hangoutMemberId: requestData.memberToKickId }
+      );
+    };
+
     if (!memberToKick.account_id) {
       const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
         `DELETE FROM
@@ -562,9 +579,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
       res.json({});
 
-      const eventDescription: string = `${memberToKick.display_name} was kicked.`;
-      await addHangoutEvent(requestData.hangoutId, eventDescription);
-
+      await addHangoutEvent(requestData.hangoutId, `${memberToKick.display_name} was kicked.`);
       return;
     };
 
@@ -582,9 +597,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
     };
 
     res.json({});
-
-    const eventDescription: string = `${memberToKick.display_name} was kicked.`;
-    await addHangoutEvent(requestData.hangoutId, eventDescription);
+    await addHangoutEvent(requestData.hangoutId, `${memberToKick.display_name} was kicked.`);
 
   } catch (err: unknown) {
     console.log(err);
@@ -673,6 +686,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       display_name: string,
       is_leader: boolean,
       hangout_member_count: number,
+      hangout_is_concluded: boolean,
     };
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
@@ -682,12 +696,13 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
         guest_id,
         display_name,
         is_leader,
-        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = ?) AS hangout_member_count
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS hangout_member_count,
+        (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`,
-      [hangoutId, +hangoutMemberId]
+        hangout_member_id = :hangoutMemberId;`,
+      { hangoutId, hangoutMemberId: +hangoutMemberId }
     );
 
     const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
@@ -733,6 +748,21 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       return;
     };
 
+    if (!hangoutMemberDetails.hangout_is_concluded) {
+      await dbPool.query(
+        `DELETE FROM
+          votes
+        WHERE
+          hangout_member_id = :hangoutMemberId;
+        
+        DELETE FROM
+          suggestion_likes
+        WHERE
+          hangout_member_id = :hangoutMemberId;`,
+        { hangoutMemberId }
+      );
+    };
+
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
       `DELETE FROM
         hangout_members
@@ -752,6 +782,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
     };
 
     res.json({});
+
     await addHangoutEvent(hangoutId, `${hangoutMemberDetails.display_name} left the hangout.`);
 
   } catch (err: unknown) {

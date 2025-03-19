@@ -17,8 +17,7 @@ async function progressHangouts() {
         OR
         (:currentTimestamp - stage_control_timestamp) >= suggestions_period AND current_stage = ${constants_1.HANGOUT_SUGGESTIONS_STAGE}
         OR
-        (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${constants_1.HANGOUT_VOTING_STAGE}
-      LIMIT 100;`, { currentTimestamp });
+        (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${constants_1.HANGOUT_VOTING_STAGE};`, { currentTimestamp });
         if (hangoutRows.length === 0) {
             return;
         }
@@ -65,7 +64,6 @@ async function progressHangouts() {
 }
 exports.progressHangouts = progressHangouts;
 ;
-concludeNoSuggestionHangouts();
 async function concludeNoSuggestionHangouts() {
     const currentTimestamp = Date.now();
     try {

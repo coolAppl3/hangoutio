@@ -22,8 +22,7 @@ export async function progressHangouts(): Promise<void> {
         OR
         (:currentTimestamp - stage_control_timestamp) >= suggestions_period AND current_stage = ${HANGOUT_SUGGESTIONS_STAGE}
         OR
-        (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${HANGOUT_VOTING_STAGE}
-      LIMIT 100;`,
+        (:currentTimestamp - stage_control_timestamp) >= voting_period AND current_stage = ${HANGOUT_VOTING_STAGE};`,
       { currentTimestamp }
     );
 
@@ -83,8 +82,6 @@ export async function progressHangouts(): Promise<void> {
     console.log(err);
   };
 };
-
-concludeNoSuggestionHangouts();
 
 export async function concludeNoSuggestionHangouts(): Promise<void> {
   const currentTimestamp: number = Date.now();

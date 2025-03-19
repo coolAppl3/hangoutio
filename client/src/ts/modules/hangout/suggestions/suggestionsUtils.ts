@@ -136,7 +136,7 @@ export function updateSuggestionsFormHeader(): void {
 // suggestions-related DOM utils
 export function createSuggestionElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionElement: HTMLDivElement = createDivElement('suggestion');
-  suggestionElement.setAttribute('data-suggestionId', `${suggestion.suggestion_id || 0}`);
+  suggestionElement.setAttribute('data-suggestionId', `${suggestion.suggestion_id}`);
 
   if (suggestion.hangout_member_id === globalHangoutState.data?.hangoutMemberId) {
     suggestionElement.classList.add('user');
@@ -183,6 +183,11 @@ function createRatingContainer(likesCount: number, isLiked: boolean): HTMLDivEle
   likeSuggestionBtn.appendChild(createLikeIcon());
   likeSuggestionBtn.appendChild(createDivElement('like-spinner'));
 
+  if (globalHangoutState.data?.hangoutDetails.is_concluded) {
+    likeSuggestionBtn.classList.add('disabled');
+    likeSuggestionBtn.disabled = true;
+  };
+
   ratingContainer.appendChild(createSpanElement('suggestion-likes-count', `${likesCount}`));
   ratingContainer.appendChild(likeSuggestionBtn);
 
@@ -200,7 +205,7 @@ function createDropdownMenuElement(isMemberSuggestion: boolean): HTMLDivElement 
   const dropdownMenuList: HTMLDivElement = createDivElement('dropdown-menu-list');
   isMemberSuggestion && dropdownMenuList.appendChild(createBtnElement('edit-btn', 'Edit'));
 
-  if (globalHangoutState.data?.hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+  if (globalHangoutState.data?.hangoutDetails.current_stage === HANGOUT_SUGGESTIONS_STAGE) {
     dropdownMenuList.appendChild(createBtnElement('delete-btn', isMemberSuggestion ? 'Delete' : 'Delete as leader'));
   };
 
@@ -231,7 +236,7 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   suggestionDetailsContainer.appendChild(secondItem);
   suggestionDetailsContainer.appendChild(thirdItem);
 
-  if (globalHangoutState.data?.hangoutDetails.current_stage === HANGOUT_VOTING_STAGE) {
+  if (globalHangoutState.data && globalHangoutState.data.hangoutDetails.current_stage >= HANGOUT_VOTING_STAGE) {
     const fourthItem: HTMLDivElement = createDivElement(null);
     fourthItem.appendChild(createSpanElement(null, 'Votes count'));
     fourthItem.appendChild(createSpanElement('votes-count-span', `${suggestion.votes_count}`));

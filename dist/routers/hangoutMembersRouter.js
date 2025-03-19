@@ -410,12 +410,13 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         account_id,
         guest_id,
         display_name,
-        is_leader
+        is_leader,
+        (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
         hangout_members
       WHERE
-        hangout_id = ?
-      LIMIT ${constants_1.MAX_HANGOUT_MEMBERS_LIMIT};`, [requestData.hangoutId]);
+        hangout_id = :hangoutId
+      LIMIT ${constants_1.MAX_HANGOUT_MEMBERS_LIMIT};`, { hangoutId: requestData.hangoutId });
         if (hangoutMemberRows.length === 0) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
@@ -440,6 +441,18 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
             return;
         }
         ;
+        if (!hangoutMember.hangout_is_concluded) {
+            await db_1.dbPool.query(`DELETE FROM
+          votes
+        WHERE
+          hangout_member_id = :hangoutMemberId;
+        
+        DELETE FROM
+          suggestion_likes
+        WHERE
+          hangout_member_id = :hangoutMemberId;`, { hangoutMemberId: requestData.memberToKickId });
+        }
+        ;
         if (!memberToKick.account_id) {
             const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
           guests
@@ -451,8 +464,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
             }
             ;
             res.json({});
-            const eventDescription = `${memberToKick.display_name} was kicked.`;
-            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
+            await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, `${memberToKick.display_name} was kicked.`);
             return;
         }
         ;
@@ -466,8 +478,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         }
         ;
         res.json({});
-        const eventDescription = `${memberToKick.display_name} was kicked.`;
-        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription);
+        await (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, `${memberToKick.display_name} was kicked.`);
     }
     catch (err) {
         console.log(err);
@@ -540,11 +551,12 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
         guest_id,
         display_name,
         is_leader,
-        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = ?) AS hangout_member_count
+        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS hangout_member_count,
+        (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`, [hangoutId, +hangoutMemberId]);
+        hangout_member_id = :hangoutMemberId;`, { hangoutId, hangoutMemberId: +hangoutMemberId });
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
@@ -580,6 +592,18 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
             ;
             res.json({});
             return;
+        }
+        ;
+        if (!hangoutMemberDetails.hangout_is_concluded) {
+            await db_1.dbPool.query(`DELETE FROM
+          votes
+        WHERE
+          hangout_member_id = :hangoutMemberId;
+        
+        DELETE FROM
+          suggestion_likes
+        WHERE
+          hangout_member_id = :hangoutMemberId;`, { hangoutMemberId });
         }
         ;
         const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM

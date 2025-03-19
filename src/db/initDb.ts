@@ -225,8 +225,8 @@ async function createHangoutMembersTable(): Promise<void> {
         display_name VARCHAR(40) NOT NULL,
         is_leader BOOLEAN NOT NULL,
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE,
-        FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
-        FOREIGN KEY (guest_id) REFERENCES guests(guest_id) ON DELETE CASCADE,
+        FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE SET NULL,
+        FOREIGN KEY (guest_id) REFERENCES guests(guest_id) ON DELETE SET NULL,
         UNIQUE (hangout_id, account_id),
         UNIQUE (hangout_id, guest_id)
       );`
@@ -284,10 +284,10 @@ async function createSuggestionLikesTable(): Promise<void> {
       `CREATE TABLE IF NOT EXISTS suggestion_likes (
         suggestion_like_id INT PRIMARY KEY AUTO_INCREMENT,
         suggestion_id INT NOT NULL,
-        hangout_member_id INT NOT NULL,
+        hangout_member_id INT,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
         FOREIGN KEY (suggestion_id) REFERENCES suggestions(suggestion_id) ON DELETE CASCADE,
-        FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
+        FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE SET NULL,
         UNIQUE (hangout_member_id, suggestion_id)
       );`
     );
@@ -303,9 +303,9 @@ async function createVotesTable(): Promise<void> {
       `CREATE TABLE IF NOT EXISTS votes (
         vote_id INT PRIMARY KEY AUTO_INCREMENT,
         suggestion_id INT NOT NULL,
-        hangout_member_id INT NOT NULL,
+        hangout_member_id INT,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
-        FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE CASCADE,
+        FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE SET NULL,
         FOREIGN KEY (suggestion_id) REFERENCES suggestions(suggestion_id) ON DELETE CASCADE,
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE,
         UNIQUE (hangout_member_id, suggestion_id)

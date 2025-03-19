@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.4.60] (2025-03-19)
+
+### Features
+
+- Users will no longer be able to like or unlike a suggestion after the hangout is concluded.
+
+
+### Code Refactoring
+
+- Removed the limit of 100 maximum hangouts to progress using `progressHangouts()` in `hangoutCronJob.ts`.
+  - A limit will be reintroduced after release if proven necessary.
+- Reworked suggestion likes and votes to not be delete if a member leaves a hangout, or is kicked, but the hangout is concluded.
+  - This is done in preparation for implementing hangout conclusion logic.
+
+
+### Bug Fixes
+
+- Removed function call that was accidentally leftover from testing in `hangoutCronJobs.ts`.
+- Fixed the votes count for suggestions not showing up after the hangout is concluded.
+- Fixed the vote toggle button remaining visible when the hangout is concluded, and the suggestions section is rerendered upon user navigation.
+- Fixed hangout members being able to access the settings section even if they're not the hangout leader.
+
+
 ## [0.4.59] (2025-03-18)
 
 ### Features
