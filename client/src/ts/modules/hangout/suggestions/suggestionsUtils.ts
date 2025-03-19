@@ -200,7 +200,7 @@ function createDropdownMenuElement(isMemberSuggestion: boolean): HTMLDivElement 
   const dropdownMenuList: HTMLDivElement = createDivElement('dropdown-menu-list');
   isMemberSuggestion && dropdownMenuList.appendChild(createBtnElement('edit-btn', 'Edit'));
 
-  if (globalHangoutState.data?.hangoutDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+  if (globalHangoutState.data?.hangoutDetails.current_stage === HANGOUT_SUGGESTIONS_STAGE) {
     dropdownMenuList.appendChild(createBtnElement('delete-btn', isMemberSuggestion ? 'Delete' : 'Delete as leader'));
   };
 
