@@ -136,7 +136,7 @@ export function updateSuggestionsFormHeader(): void {
 // suggestions-related DOM utils
 export function createSuggestionElement(suggestion: Suggestion, isLeader: boolean): HTMLDivElement {
   const suggestionElement: HTMLDivElement = createDivElement('suggestion');
-  suggestionElement.setAttribute('data-suggestionId', `${suggestion.suggestion_id || 0}`);
+  suggestionElement.setAttribute('data-suggestionId', `${suggestion.suggestion_id}`);
 
   if (suggestion.hangout_member_id === globalHangoutState.data?.hangoutMemberId) {
     suggestionElement.classList.add('user');
