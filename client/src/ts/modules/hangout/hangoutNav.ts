@@ -79,10 +79,6 @@ export function directlyNavigateHangoutSections(navigateTo: string): void {
   hangoutPhoneNav?.setAttribute('data-selected', navigateTo);
   hidePhoneNavMenu();
 
-  if (navigateTo === 'dashboard') {
-    return;
-  };
-
   document.dispatchEvent(new CustomEvent(`loadSection-${navigateTo}`));
 };
 

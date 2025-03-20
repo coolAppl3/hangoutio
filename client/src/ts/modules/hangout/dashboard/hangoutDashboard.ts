@@ -336,7 +336,7 @@ function renderLatestEvents(): void {
 function detectLatestSection(): void {
   const latestHangoutSection: string | null = sessionStorage.getItem('latestHangoutSection');
 
-  if (!latestHangoutSection) {
+  if (!latestHangoutSection || latestHangoutSection === 'dashboard') {
     return;
   };
 
