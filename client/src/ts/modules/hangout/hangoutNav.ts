@@ -40,27 +40,17 @@ export function navigateHangoutSections(e: MouseEvent): void {
     return;
   };
 
-  if (navigateTo === hangoutNavState.selectedSection) {
-    return;
-  };
-
-  if (!globalHangoutState.data?.isLeader && navigateTo === 'settings') {
+  if (navigateTo === 'settings' && !globalHangoutState.data?.isLeader) {
     popup(`You're not the hangout leader.`, 'error');
     return;
   };
 
-  document.querySelector(`#${navigateTo}-section`)?.classList.remove('hidden');
-  document.querySelector(`#${hangoutNavState.selectedSection}-section`)?.classList.add('hidden');
-  window.scrollTo({ top: 0 });
+  if (navigateTo === 'conclusion' && !globalHangoutState.data?.hangoutDetails.is_concluded) {
+    popup(`Hangout hasn't been concluded yet.`, 'error');
+    return;
+  };
 
-  hangoutNavState.selectedSection = navigateTo;
-  sessionStorage.setItem('latestHangoutSection', navigateTo);
-
-  hangoutDesktopNav?.setAttribute('data-selected', navigateTo);
-  hangoutPhoneNav?.setAttribute('data-selected', navigateTo);
-  hidePhoneNavMenu();
-
-  document.dispatchEvent(new CustomEvent(`loadSection-${navigateTo}`));
+  directlyNavigateHangoutSections(navigateTo);
 };
 
 export function directlyNavigateHangoutSections(navigateTo: string): void {
