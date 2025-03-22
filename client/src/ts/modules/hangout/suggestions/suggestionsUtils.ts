@@ -128,8 +128,8 @@ export function updateSuggestionsFormHeader(): void {
     return;
   };
 
-  titleElement.textContent = 'Hangout has been concluded!';
-  suggestionsFormHeaderBtn.textContent = 'View winning suggestion';
+  titleElement.textContent = 'Hangout has been concluded.';
+  suggestionsFormHeaderBtn.textContent = 'Learn more';
   suggestionsFormHeaderBtn.classList.remove('hidden');
 };
 
