@@ -203,13 +203,13 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       `UPDATE
         hangouts
       SET
-        voting_period = (${currentTimestamp} - created_on_timestamp - availability_period - suggestions_period),
-        current_stage = ${HANGOUT_CONCLUSION_STAGE},
+        voting_period = (? - stage_control_timestamp),
+        current_stage = ?,
         stage_control_timestamp = ?,
         is_concluded = ?
       WHERE
         hangout_id IN (?);`,
-      [currentTimestamp, true, hangoutIdsToProgress]
+      [currentTimestamp, HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]
     );
 
     interface HangoutMemberDetails extends RowDataPacket {
