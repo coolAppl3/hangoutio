@@ -43,7 +43,7 @@
 
   html {
     font-size: 62.5%;
-    @apply font-main font-normal leading-[1.4] touch-manipulation;
+    @apply font-main font-normal leading-[1.4] touch-manipulation bg-dark;
 
     &.loading {
 
