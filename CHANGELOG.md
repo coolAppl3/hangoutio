@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.62] (2025-03-22)
+
+### Features
+
+- Added a cron job to progress hangouts in the voting stage with a single suggestion.
+
+
+### Code Refactoring
+
+- Slightly improved the logic in `concludeNoSuggestionHangouts()` under `hangoutCronJobs.ts`.
+- Improved the no-suggestion conclusion hangout event.
+- Removed an unnecessary step in PATCH `hangouts/details/stages/progress`, which was meant to delete availability slots and suggestions with a start timestamp less than the conclusion timestamp, as progressing the hangout would only lower the conclusion timestamp.
+
+
+### Bug Fixes
+
+- Fixed pages with short content having issues with the html element's background color not matching the footer's.
+
+
 ## [0.4.61] (2025-03-22)
 
 ### Features
