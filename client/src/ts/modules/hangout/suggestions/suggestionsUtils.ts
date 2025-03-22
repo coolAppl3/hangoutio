@@ -122,7 +122,7 @@ export function updateSuggestionsFormHeader(): void {
   descriptionElement.classList.add('hidden');
 
   if (currentStage === HANGOUT_VOTING_STAGE) {
-    titleElement.textContent = 'Vote on your favorite suggestions.';
+    titleElement.textContent = 'Vote for the suggestions you like best.';
     suggestionsFormHeaderBtn.classList.add('hidden');
 
     return;
