@@ -36,6 +36,7 @@ function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
         (0, hangoutWebSocketServer_1.clearExpiredHangoutWebSockets)();
         await hangoutCronJobs.progressHangouts();
+        await hangoutCronJobs.concludeSingleSuggestionHangouts();
         await hangoutCronJobs.concludeNoSuggestionHangouts();
         await accountCronJobs.removeUnverifiedAccounts();
         await accountCronJobs.removeExpiredRecoveryRequests();

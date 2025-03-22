@@ -949,17 +949,6 @@ exports.hangoutsRouter.patch('/details/stages/progress', async (req, res) => {
         ;
         await connection.commit();
         res.json(updatedHangoutDetails);
-        await db_1.dbPool.query(`DELETE FROM
-        availability_slots
-      WHERE
-        slot_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;
-
-      DELETE FROM
-        suggestions
-      WHERE
-        suggestion_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;`, { newConclusionTimestamp: updatedHangoutDetails.conclusion_timestamp, hangoutId: requestData.hangoutId });
         const conclusionDateString = (0, globalUtils_1.getDateAndTimeString)(updatedHangoutDetails.conclusion_timestamp);
         const eventDescription = updatedHangoutDetails.is_concluded
             ? 'Hangout has been manually concluded.'

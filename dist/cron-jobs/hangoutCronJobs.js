@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteNoMemberHangouts = exports.concludeNoSuggestionHangouts = exports.progressHangouts = void 0;
+exports.deleteNoMemberHangouts = exports.concludeNoSuggestionHangouts = exports.concludeSingleSuggestionHangouts = exports.progressHangouts = void 0;
 const db_1 = require("../db/db");
 const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
@@ -64,6 +64,73 @@ async function progressHangouts() {
 }
 exports.progressHangouts = progressHangouts;
 ;
+async function concludeSingleSuggestionHangouts() {
+    const currentTimestamp = Date.now();
+    try {
+        ;
+        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        hangout_id
+      FROM
+        hangouts
+      WHERE
+        current_stage = ${constants_1.HANGOUT_VOTING_STAGE} AND
+        (SELECT COUNT(*) FROM suggestions WHERE suggestions.hangout_id = hangouts.hangout_id) = 1;`);
+        if (hangoutRows.length === 0) {
+            return;
+        }
+        ;
+        const hangoutIdsToProgress = hangoutRows.map((hangout) => hangout.hangout_id);
+        await db_1.dbPool.query(`UPDATE
+        hangouts
+      SET
+        voting_period = (? - stage_control_timestamp),
+        current_stage = ?,
+        stage_control_timestamp = ?,
+        is_concluded = ?
+      WHERE
+        hangout_id IN (?);`, [currentTimestamp, constants_1.HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]);
+        ;
+        const [hangoutMemberRows] = await db_1.dbPool.query(`SELECT
+        hangout_member_id
+      FROM
+        hangout_members
+      WHERE
+        hangout_id IN (?);`, [hangoutIdsToProgress]);
+        const webSocketData = {
+            type: 'hangoutStageUpdate',
+            reason: 'singleSuggestionConclusion',
+            data: { newStageControlTimestamp: currentTimestamp },
+        };
+        for (const member of hangoutMemberRows) {
+            const ws = hangoutWebSocketServer_1.hangoutClients.get(member.hangout_member_id)?.ws;
+            if (!ws) {
+                continue;
+            }
+            ;
+            ws.send(JSON.stringify(webSocketData), (err) => err && console.log(err));
+        }
+        ;
+        const eventDescription = 'The hangout reached the voting stage with a single suggestion, marking it as the winning suggestion without any votes.';
+        let hangoutEventRowValuesString = '';
+        for (const id of hangoutIdsToProgress) {
+            hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
+        }
+        ;
+        hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
+        await db_1.dbPool.execute(`INSERT INTO hangout_events (
+        hangout_id,
+        event_description,
+        event_timestamp
+      ) VALUES ${hangoutEventRowValuesString};`);
+    }
+    catch (err) {
+        console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
+        console.log(err);
+    }
+    ;
+}
+exports.concludeSingleSuggestionHangouts = concludeSingleSuggestionHangouts;
+;
 async function concludeNoSuggestionHangouts() {
     const currentTimestamp = Date.now();
     try {
@@ -85,12 +152,12 @@ async function concludeNoSuggestionHangouts() {
         await db_1.dbPool.query(`UPDATE
         hangouts
       SET
-        voting_period = (${currentTimestamp} - created_on_timestamp - availability_period - suggestions_period),
-        current_stage = ${constants_1.HANGOUT_CONCLUSION_STAGE},
+        voting_period = (? - stage_control_timestamp),
+        current_stage = ?,
         stage_control_timestamp = ?,
         is_concluded = ?
       WHERE
-        hangout_id IN (?);`, [currentTimestamp, true, hangoutIdsToProgress]);
+        hangout_id IN (?);`, [currentTimestamp, constants_1.HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]);
         ;
         const [hangoutMemberRows] = await db_1.dbPool.query(`SELECT
         hangout_member_id
@@ -112,7 +179,7 @@ async function concludeNoSuggestionHangouts() {
             ws.send(JSON.stringify(webSocketData), (err) => err && console.log(err));
         }
         ;
-        const eventDescription = 'Hangout reached the voting stage without any suggestions and was therefore automatically concluded.';
+        const eventDescription = 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion.';
         let hangoutEventRowValuesString = '';
         for (const id of hangoutIdsToProgress) {
             hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
