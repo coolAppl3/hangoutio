@@ -1238,21 +1238,6 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
     await connection.commit();
     res.json(updatedHangoutDetails);
 
-    await dbPool.query(
-      `DELETE FROM
-        availability_slots
-      WHERE
-        slot_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;
-
-      DELETE FROM
-        suggestions
-      WHERE
-        suggestion_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;`,
-      { newConclusionTimestamp: updatedHangoutDetails.conclusion_timestamp, hangoutId: requestData.hangoutId }
-    );
-
     const conclusionDateString: string = getDateAndTimeString(updatedHangoutDetails.conclusion_timestamp);
     const eventDescription: string = updatedHangoutDetails.is_concluded
       ? 'Hangout has been manually concluded.'
