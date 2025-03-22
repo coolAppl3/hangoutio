@@ -11,7 +11,7 @@ import { copyToClipboard } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
-import { createDivElement } from "../../global/domUtils";
+import { createDivElement, createSpanElement } from "../../global/domUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import LoadingModal from "../../global/LoadingModal";
@@ -226,11 +226,8 @@ function renderMembersSection(): void {
 
   const { hangoutDetails, hangoutMembers } = globalHangoutState.data;
 
-  const currentMembersSpan: HTMLSpanElement | null = document.querySelector('#dashboard-current-members');
-  currentMembersSpan && (currentMembersSpan.textContent = `${hangoutMembers.length}`);
-
-  const membersLimitSpan: HTMLSpanElement | null = document.querySelector('#dashboard-members-limit');
-  membersLimitSpan && (membersLimitSpan.textContent = `${hangoutDetails.members_limit}`);
+  const membersSpotsDetails: HTMLParagraphElement | null = document.querySelector('#dashboard-members-spots-details');
+  membersSpotsDetails && (membersSpotsDetails.textContent = `${hangoutMembers.length} out of ${hangoutDetails.members_limit} spots taken.`);
 
   listHangoutMembers();
 };
