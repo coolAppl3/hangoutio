@@ -242,7 +242,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
     };
 
-    const eventDescription: string = 'Hangout reached the voting stage without any suggestions and was therefore automatically concluded.';
+    const eventDescription: string = 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion.';
     let hangoutEventRowValuesString: string = '';
 
     for (const id of hangoutIdsToProgress) {
