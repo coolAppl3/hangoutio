@@ -7,13 +7,15 @@ import { hangoutDashboard } from './modules/hangout/dashboard/hangoutDashboard';
 import { hangoutAvailability } from './modules/hangout/availability/hangoutAvailability';
 import { hangoutSuggestions } from './modules/hangout/suggestions/hangoutSuggestions';
 import { hangoutSettings } from './modules/hangout/settings/hangoutSettings';
+import { hangoutConclusion } from './modules/hangout/conclusion/hangoutConclusion';
 
 // initializing imports
 topNavbar();
 botNavbar();
 
-hangoutNav();
 await hangoutDashboard();
+hangoutNav();
 hangoutAvailability();
 hangoutSuggestions();
+hangoutConclusion();
 hangoutSettings();

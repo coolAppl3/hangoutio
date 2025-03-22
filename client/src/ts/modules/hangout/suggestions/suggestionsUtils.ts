@@ -122,14 +122,14 @@ export function updateSuggestionsFormHeader(): void {
   descriptionElement.classList.add('hidden');
 
   if (currentStage === HANGOUT_VOTING_STAGE) {
-    titleElement.textContent = 'Vote on your favorite suggestions.';
+    titleElement.textContent = 'Vote for the suggestions you like best.';
     suggestionsFormHeaderBtn.classList.add('hidden');
 
     return;
   };
 
-  titleElement.textContent = 'Hangout has been concluded!';
-  suggestionsFormHeaderBtn.textContent = 'View winning suggestion';
+  titleElement.textContent = 'Hangout has been concluded.';
+  suggestionsFormHeaderBtn.textContent = 'Learn more';
   suggestionsFormHeaderBtn.classList.remove('hidden');
 };
 
@@ -218,33 +218,30 @@ function createDropdownMenuElement(isMemberSuggestion: boolean): HTMLDivElement 
 function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElement {
   const suggestionDetailsContainer: HTMLDivElement = createDivElement('suggestion-details-container');
 
-  const firstItem: HTMLDivElement = createDivElement(null);
-  firstItem.appendChild(createSpanElement(null, 'Start'));
-  firstItem.appendChild(createSpanElement(null, getDateAndTimeString(suggestion.suggestion_start_timestamp)));
-
-  const secondItem: HTMLDivElement = createDivElement(null);
-  secondItem.appendChild(createSpanElement(null, 'End'));
-  secondItem.appendChild(createSpanElement(null, getDateAndTimeString(suggestion.suggestion_end_timestamp)));
-
-  const thirdItem: HTMLDivElement = createDivElement(null);
-  thirdItem.appendChild(createSpanElement(null, 'Suggested by'));
+  suggestionDetailsContainer.appendChild(createDetailsElement('Start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
+  suggestionDetailsContainer.appendChild(createDetailsElement('End', getDateAndTimeString(suggestion.suggestion_end_timestamp)));
 
   const suggestionMemberDisplayName: string | null | undefined = !suggestion.hangout_member_id ? null : globalHangoutState.data?.hangoutMembersMap.get(suggestion.hangout_member_id);
-  thirdItem.appendChild(createSpanElement(null, suggestionMemberDisplayName ? suggestionMemberDisplayName : 'Former member'));
-
-  suggestionDetailsContainer.appendChild(firstItem);
-  suggestionDetailsContainer.appendChild(secondItem);
-  suggestionDetailsContainer.appendChild(thirdItem);
+  suggestionDetailsContainer.appendChild(createDetailsElement('Suggested by', suggestionMemberDisplayName ? suggestionMemberDisplayName : 'Former member'));
 
   if (globalHangoutState.data && globalHangoutState.data.hangoutDetails.current_stage >= HANGOUT_VOTING_STAGE) {
-    const fourthItem: HTMLDivElement = createDivElement(null);
-    fourthItem.appendChild(createSpanElement(null, 'Votes count'));
-    fourthItem.appendChild(createSpanElement('votes-count-span', `${suggestion.votes_count}`));
+    const detailsElement: HTMLDivElement = createDivElement(null);
+    detailsElement.appendChild(createSpanElement(null, 'Votes'));
+    detailsElement.appendChild(createSpanElement('votes-count-span', `${suggestion.votes_count}`));
 
-    suggestionDetailsContainer.appendChild(fourthItem);
+    suggestionDetailsContainer.appendChild(detailsElement);
   };
 
   return suggestionDetailsContainer;
+};
+
+function createDetailsElement(title: string, value: string): HTMLDivElement {
+  const detailsElement: HTMLDivElement = createDivElement(null);
+
+  detailsElement.appendChild(createSpanElement(null, title));
+  detailsElement.appendChild(createSpanElement(null, value));
+
+  return detailsElement;
 };
 
 function createBtnContainer(isVotedFor: boolean): HTMLDivElement {

@@ -90,7 +90,7 @@ function loadEventListeners(): void {
       await initHangoutAvailability();
     };
 
-    initHangoutSuggestions();
+    await initHangoutSuggestions();
   });
 
   suggestionsContainer?.addEventListener('click', handleSuggestionsContainerClicks);

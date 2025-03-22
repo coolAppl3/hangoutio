@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.4.61] (2025-03-22)
+
+### Features
+
+- Changed "Votes count" to "Votes" in suggestion cards to avoid overly specific language.
+- Hangout conclusion section and logic implemented.
+
+
+### Code Refactoring
+
+- Added a small abstraction to improve readability in `suggestionUtils.ts`.
+- Updated the suggestions form header to better align with the possibility of a failed hangout conclusion.
+
+
+### Bug Fixes
+
+- Fixed `hangoutNav()` being called before the hangout data is fetched, leading to the settings navigation buttons behind hidden for the hangout leader.
+- Fixed `directlyNavigateHangoutSections()` not dispatching a render event if the destination is the dashboard.
+- Fixed users being able to navigate to the conclusion section before the hangout has been concluded.
+- Fixed an ID collision causing rendering issues with the hangout members side panel in the hangout's dashboard, and simplified its rendering logic.
+- Fixed an inconsistency between the hangout dashboard and suggestion sections in terms of the message shown to the user inviting them to vote for suggestions.
+- Fixed latest hangout detection not taking into account different hangouts, leading to unnecessary confusion for users.
+
+
 ## [0.4.60] (2025-03-19)
 
 ### Features
