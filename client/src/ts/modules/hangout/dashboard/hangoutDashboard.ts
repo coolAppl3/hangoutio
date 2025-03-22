@@ -330,8 +330,16 @@ function renderLatestEvents(): void {
 
 function detectLatestSection(): void {
   const latestHangoutSection: string | null = sessionStorage.getItem('latestHangoutSection');
+  const latestHangoutSectionHangoutId: string | null = sessionStorage.getItem('latestHangoutSection_hangoutId');
 
   if (!latestHangoutSection || latestHangoutSection === 'dashboard') {
+    return;
+  };
+
+  if (latestHangoutSectionHangoutId !== globalHangoutState.data?.hangoutId) {
+    sessionStorage.removeItem('latestHangoutSection');
+    sessionStorage.removeItem('latestHangoutSection_hangoutId');
+
     return;
   };
 

@@ -63,7 +63,9 @@ export function directlyNavigateHangoutSections(navigateTo: string): void {
   window.scrollTo({ top: 0 });
 
   hangoutNavState.selectedSection = navigateTo;
+
   sessionStorage.setItem('latestHangoutSection', navigateTo);
+  sessionStorage.setItem('latestHangoutSection_hangoutId', globalHangoutState.data?.hangoutId || 'null');
 
   hangoutDesktopNav?.setAttribute('data-selected', navigateTo);
   hangoutPhoneNav?.setAttribute('data-selected', navigateTo);
