@@ -10,6 +10,7 @@ export function initCronJobs(): void {
     clearExpiredHangoutWebSockets();
 
     await hangoutCronJobs.progressHangouts();
+    await hangoutCronJobs.concludeSingleSuggestionHangouts();
     await hangoutCronJobs.concludeNoSuggestionHangouts();
 
     await accountCronJobs.removeUnverifiedAccounts();

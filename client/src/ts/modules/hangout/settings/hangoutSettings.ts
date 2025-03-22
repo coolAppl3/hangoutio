@@ -15,7 +15,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { hangoutSuggestionState, initHangoutSuggestions } from "../suggestions/hangoutSuggestions";
-import { calculateStepMinimumSliderValue, handleProgressionAttemptWithoutSuggestions, isValidNewHangoutPeriods, resetMembersLimitSliderValues, resetSliderValues, resetStageSliderValues, toggleStagesSettingsButtons, updateSettingsButtons } from "./hangoutSettingsUtils";
+import { calculateStepMinimumSliderValue, handleNoSuggestionProgressionAttempt, isValidNewHangoutPeriods, resetMembersLimitSliderValues, resetSliderValues, resetStageSliderValues, toggleStagesSettingsButtons, updateSettingsButtons } from "./hangoutSettingsUtils";
 
 interface HangoutSettingsState {
   isLoaded: boolean,
@@ -516,7 +516,7 @@ async function progressHangoutStage(): Promise<void> {
     popup(errMessage, 'error');
 
     if (status === 409) {
-      handleProgressionAttemptWithoutSuggestions();
+      handleNoSuggestionProgressionAttempt();
       return;
     };
 
@@ -889,7 +889,7 @@ function confirmProgressHangoutAction(): void {
   };
 
   if (current_stage === HANGOUT_SUGGESTIONS_STAGE && hangoutSuggestionState.suggestions.length === 0) {
-    handleProgressionAttemptWithoutSuggestions();
+    handleNoSuggestionProgressionAttempt();
     return;
   };
 

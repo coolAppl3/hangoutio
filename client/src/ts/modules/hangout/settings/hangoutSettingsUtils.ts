@@ -165,7 +165,7 @@ function isValidHangoutPeriod(hangoutStage: number): boolean {
   return true;
 };
 
-export function handleProgressionAttemptWithoutSuggestions(): void {
+export function handleNoSuggestionProgressionAttempt(): void {
   InfoModal.display({
     title: 'No suggestions added yet.',
     description: `You can't progress the hangout into the voting stage without any suggestions.`,

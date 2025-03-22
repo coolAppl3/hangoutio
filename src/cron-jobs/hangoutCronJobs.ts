@@ -83,6 +83,96 @@ export async function progressHangouts(): Promise<void> {
   };
 };
 
+export async function concludeSingleSuggestionHangouts(): Promise<void> {
+  const currentTimestamp: number = Date.now();
+
+  try {
+    interface HangoutDetails extends RowDataPacket {
+      hangout_id: string,
+    };
+
+    const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
+      `SELECT
+        hangout_id
+      FROM
+        hangouts
+      WHERE
+        current_stage = ${HANGOUT_VOTING_STAGE} AND
+        (SELECT COUNT(*) FROM suggestions WHERE suggestions.hangout_id = hangouts.hangout_id) = 1;`
+    );
+
+    if (hangoutRows.length === 0) {
+      return;
+    };
+
+    const hangoutIdsToProgress: string[] = hangoutRows.map((hangout: HangoutDetails) => hangout.hangout_id);
+
+    await dbPool.query<ResultSetHeader>(
+      `UPDATE
+        hangouts
+      SET
+        voting_period = (? - stage_control_timestamp),
+        current_stage = ?,
+        stage_control_timestamp = ?,
+        is_concluded = ?
+      WHERE
+        hangout_id IN (?);`,
+      [currentTimestamp, HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]
+    );
+
+    interface HangoutMemberDetails extends RowDataPacket {
+      hangout_member_id: number,
+    };
+
+    const [hangoutMemberRows] = await dbPool.query<HangoutMemberDetails[]>(
+      `SELECT
+        hangout_member_id
+      FROM
+        hangout_members
+      WHERE
+        hangout_id IN (?);`,
+      [hangoutIdsToProgress]
+    );
+
+    const webSocketData = {
+      type: 'hangoutStageUpdate',
+      reason: 'singleSuggestionConclusion',
+      data: { newStageControlTimestamp: currentTimestamp },
+    };
+
+    for (const member of hangoutMemberRows) {
+      const ws: WebSocket | undefined = hangoutClients.get(member.hangout_member_id)?.ws;
+
+      if (!ws) {
+        continue;
+      };
+
+      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
+    };
+
+    const eventDescription: string = 'The hangout reached the voting stage with a single suggestion, marking it as the winning suggestion without any votes.';
+    let hangoutEventRowValuesString: string = '';
+
+    for (const id of hangoutIdsToProgress) {
+      hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
+    };
+
+    hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
+
+    await dbPool.execute(
+      `INSERT INTO hangout_events (
+        hangout_id,
+        event_description,
+        event_timestamp
+      ) VALUES ${hangoutEventRowValuesString};`
+    );
+
+  } catch (err: any) {
+    console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
+    console.log(err);
+  };
+};
+
 export async function concludeNoSuggestionHangouts(): Promise<void> {
   const currentTimestamp: number = Date.now();
 
@@ -113,13 +203,13 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       `UPDATE
         hangouts
       SET
-        voting_period = (${currentTimestamp} - created_on_timestamp - availability_period - suggestions_period),
-        current_stage = ${HANGOUT_CONCLUSION_STAGE},
+        voting_period = (? - stage_control_timestamp),
+        current_stage = ?,
         stage_control_timestamp = ?,
         is_concluded = ?
       WHERE
         hangout_id IN (?);`,
-      [currentTimestamp, true, hangoutIdsToProgress]
+      [currentTimestamp, HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]
     );
 
     interface HangoutMemberDetails extends RowDataPacket {
@@ -152,7 +242,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
     };
 
-    const eventDescription: string = 'Hangout reached the voting stage without any suggestions and was therefore automatically concluded.';
+    const eventDescription: string = 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion.';
     let hangoutEventRowValuesString: string = '';
 
     for (const id of hangoutIdsToProgress) {
