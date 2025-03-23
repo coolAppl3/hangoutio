@@ -100,14 +100,16 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     await connection.execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;`);
     await connection.beginTransaction();
 
-    interface UserDetails extends RowDataPacket {
+    interface AccountDetails extends RowDataPacket {
       display_name: string,
+      username: string,
       joined_hangouts_counts: number,
     };
 
-    const [userRows] = await connection.execute<UserDetails[]>(
+    const [userRows] = await connection.execute<AccountDetails[]>(
       `SELECT
         display_name,
+        username,
         (SELECT COUNT(*) FROM hangout_members WHERE account_id = :userId) AS joined_hangouts_count
       FROM
         accounts
@@ -116,9 +118,9 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       { userId: authSessionDetails.user_id }
     );
 
-    const userDetails: UserDetails | undefined = userRows[0];
+    const accountDetails: AccountDetails | undefined = userRows[0];
 
-    if (!userDetails) {
+    if (!accountDetails) {
       await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
@@ -128,7 +130,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       return;
     };
 
-    if (userDetails.joined_hangouts_counts >= MAX_ONGOING_HANGOUTS_LIMIT) {
+    if (accountDetails.joined_hangouts_counts >= MAX_ONGOING_HANGOUTS_LIMIT) {
       await connection.rollback();
       res.status(409).json({
         message: `You've reached the limit of ${MAX_ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
@@ -205,13 +207,14 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     await connection.execute(
       `INSERT INTO hangout_members (
         hangout_id,
+        username,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      ) VALUES (${generatePlaceHolders(6)});`,
-      [requestData.hangoutId, 'account', authSessionDetails.user_id, null, userDetails.display_name, false]
+      ) VALUES (${generatePlaceHolders(7)});`,
+      [requestData.hangoutId, accountDetails.username, 'account', authSessionDetails.user_id, null, accountDetails.display_name, false]
     );
 
     await connection.commit();
@@ -342,13 +345,9 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     };
 
     const [guestRows] = await connection.execute<RowDataPacket[]>(
-      `SELECT
-        1 AS username_taken
-      FROM
-        guests
-      WHERE
-        username = ?
-      LIMIT 1;`,
+      `(SELECT 1 AS taken_status FROM accounts WHERE username = 'someUsername' LIMIT 1)
+      UNION ALL
+      (SELECT 1 AS taken_status FROM guests WHERE username = 'someUsername' LIMIT 1);`,
       [requestData.username]
     );
 
@@ -376,13 +375,14 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     await connection.execute(
       `INSERT INTO hangout_members (
         hangout_id,
+        username,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      ) VALUES (${generatePlaceHolders(6)});`,
-      [requestData.hangoutId, 'guest', null, guestId, requestData.displayName, false]
+      ) VALUES (${generatePlaceHolders(7)});`,
+      [requestData.hangoutId, requestData.username, 'guest', null, guestId, requestData.displayName, false]
     );
 
     await connection.commit();

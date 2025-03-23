@@ -219,6 +219,7 @@ async function createHangoutMembersTable(): Promise<void> {
       `CREATE TABLE IF NOT EXISTS hangout_members (
         hangout_member_id INT PRIMARY KEY AUTO_INCREMENT,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
+        username VARCHAR(40) NOT NULL,
         user_type ENUM('account', 'guest') NOT NULL,
         account_id INT,
         guest_id INT,
@@ -227,6 +228,7 @@ async function createHangoutMembersTable(): Promise<void> {
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE,
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE SET NULL,
         FOREIGN KEY (guest_id) REFERENCES guests(guest_id) ON DELETE SET NULL,
+        UNIQUE (hangout_id, username),
         UNIQUE (hangout_id, account_id),
         UNIQUE (hangout_id, guest_id)
       );`

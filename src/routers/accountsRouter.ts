@@ -75,7 +75,9 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       UNION ALL
       (SELECT 1 AS taken_status FROM email_update WHERE new_email = :email LIMIT 1)
       UNION ALL
-      (SELECT 2 AS taken_status FROM accounts WHERE username = :username LIMIT 1);`,
+      (SELECT 2 AS taken_status FROM accounts WHERE username = :username LIMIT 1)
+      UNION ALL
+      (SELECT 2 AS taken_status FROM guests WHERE username = :username LIMIT 1);`,
       { email: requestData.email, username: requestData.username }
     );
 
