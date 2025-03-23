@@ -4,6 +4,7 @@ import { HangoutMember } from "../hangoutTypes";
 
 export function createMemberElement(member: HangoutMember, renderingForLeader: boolean): HTMLDivElement {
   const memberElement: HTMLDivElement = createDivElement('member');
+  memberElement.setAttribute('data-memberId', `${member.hangout_member_id}`);
 
   member.is_leader && memberElement.classList.add('leader');
   member.hangout_member_id === globalHangoutState.data?.hangoutMemberId && memberElement.classList.add('user');
