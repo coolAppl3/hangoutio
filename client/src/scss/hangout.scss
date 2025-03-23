@@ -1534,6 +1534,86 @@
   }
 }
 
+// hangout members --- ---
+#members {
+
+  &-container {
+
+    &-inner {
+      @apply grid grid-cols-2 sm:grid-cols-1 gap-1;
+
+      .member {
+        @apply bg-secondary dark:bg-secondary-dark font-medium gap-1 p-[1.8rem] rounded relative border-solid border-2 border-secondary dark:border-secondary-dark;
+
+        &.user {
+          @apply border-cta dark:border-cta-dark;
+        }
+
+        &-header {
+          @apply flex justify-between items-center;
+
+          .display-name {
+            @apply text-title dark:text-title-dark whitespace-nowrap overflow-hidden text-ellipsis;
+          }
+
+          .dropdown-menu {
+            @apply relative ml-1;
+
+            &>button {
+              @apply svg w-2 h-2 mt-[2px] transition-[filter] hover:brightness-75 relative after:absolute after:top-0 after:left-0 after:w-full after:h-full after:z-1;
+
+              svg path {
+                @apply fill-title dark:fill-title-dark;
+              }
+            }
+
+            &.expanded {
+
+              .dropdown-menu-list {
+                @apply block;
+              }
+            }
+
+            &-list {
+              @apply absolute top-0 right-3 w-fit h-fit hidden z-3 rounded-sm overflow-hidden whitespace-nowrap;
+
+              button {
+                @apply block w-full p-1 px-2 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
+
+                &.kick-member-btn,
+                &.waive-leadership-btn {
+                  @apply text-danger dark:text-danger-dark;
+                }
+              }
+            }
+          }
+        }
+
+        &-username,
+        &-type {
+          @apply text-sm text-description dark:text-description-dark;
+        }
+
+        &-username {
+          @apply whitespace-nowrap overflow-hidden text-ellipsis mr-3;
+        }
+
+        &-type {
+          @apply mt-1;
+        }
+
+        .leader-icon {
+          @apply svg w-2 h-2 absolute bottom-2 right-2;
+
+          svg path {
+            @apply fill-description dark:fill-description-dark;
+          }
+        }
+      }
+    }
+  }
+}
+
 // hangout settings --- ---
 #settings-section {
 

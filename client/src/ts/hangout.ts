@@ -8,6 +8,7 @@ import { hangoutAvailability } from './modules/hangout/availability/hangoutAvail
 import { hangoutSuggestions } from './modules/hangout/suggestions/hangoutSuggestions';
 import { hangoutSettings } from './modules/hangout/settings/hangoutSettings';
 import { hangoutConclusion } from './modules/hangout/conclusion/hangoutConclusion';
+import { hangoutMembers } from './modules/hangout/members/hangoutMembers';
 
 // initializing imports
 topNavbar();
@@ -18,4 +19,5 @@ hangoutNav();
 hangoutAvailability();
 hangoutSuggestions();
 hangoutConclusion();
+hangoutMembers();
 hangoutSettings();
