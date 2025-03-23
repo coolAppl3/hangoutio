@@ -1496,6 +1496,21 @@
     >
       <div class="container mb-3 mt-2 md:mt-3">
         <div id="members">
+          <h3 class="text-lg font-medium text-title dark:text-title-dark mb-1">Hangout members</h3>
+
+          <div class="members-search form-group">
+            <label for="members-search-input">Search members</label>
+            <input
+              type="text"
+              id="members-search-input"
+              autocomplete="name"
+              class="placeholder-description/50 dark:placeholder-description-dark/50"
+            />
+            <span
+              class="error-span"
+              data-target="members-search-input"
+            ></span>
+          </div>
           <div id="members-container"></div>
         </div>
       </div>
