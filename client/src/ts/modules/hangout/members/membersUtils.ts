@@ -29,8 +29,16 @@ function createMemberHeader(member: HangoutMember, renderingForLeader: boolean):
   const memberHeader: HTMLDivElement = createDivElement('member-header');
 
   memberHeader.appendChild(createParagraphElement('display-name', member.display_name));
-  renderingForLeader && memberHeader.appendChild(createMemberDropdownMenu(member.is_leader));
 
+  if (!renderingForLeader) {
+    return memberHeader;
+  };
+
+  if (globalHangoutState.data?.hangoutDetails.is_concluded && member.is_leader) {
+    return memberHeader;
+  };
+
+  memberHeader.appendChild(createMemberDropdownMenu(member.is_leader));
   return memberHeader;
 };
 
@@ -48,8 +56,8 @@ function createMemberDropdownMenu(isLeader: boolean): HTMLDivElement {
     dropdownMenuList.appendChild(createBtnElement('waive-leadership-btn', 'Waive leadership'));
 
   } else {
-    dropdownMenuList.appendChild(createBtnElement('transfer-leadership-btn', 'Transfer leadership'));
-    dropdownMenuList.appendChild(createBtnElement('kick-member-btn', 'Kick'));
+    globalHangoutState.data?.hangoutDetails.is_concluded || dropdownMenuList.appendChild(createBtnElement('transfer-leadership-btn', 'Transfer leadership'));
+    dropdownMenuList.appendChild(createBtnElement('kick-member-btn', 'Kick member'));
   };
 
   dropdownMenu.appendChild(dropdownMenuButton);
