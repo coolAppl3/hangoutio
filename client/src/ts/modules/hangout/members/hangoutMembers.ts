@@ -244,7 +244,7 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
     return;
   };
 
-  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersMap } = globalHangoutState.data;
+  const { hangoutId, hangoutMemberId, isLeader, hangoutMembersMap } = globalHangoutState.data;
 
   if (!isLeader) {
     popup(`You're not the hangout leader.`, 'error');
@@ -265,13 +265,6 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
     renderMembersSection();
 
     popup('Hangout member kicked.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
-  if (hangoutDetails.is_concluded) {
-    popup('Hangout has already been concluded.', 'error');
     LoadingModal.remove();
 
     return;
