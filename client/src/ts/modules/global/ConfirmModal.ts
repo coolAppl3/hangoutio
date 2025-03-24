@@ -1,5 +1,5 @@
 export interface ConfirmModalConfig {
-  title: string,
+  title: string | null,
   description: string | null,
   confirmBtnTitle: string,
   cancelBtnTitle: string,
@@ -41,7 +41,7 @@ export class ConfirmModal {
     const confirmModalContainer: HTMLDivElement = document.createElement('div');
     confirmModalContainer.id = 'confirm-modal-container';
 
-    confirmModalContainer.appendChild(this.createModalTitle(config.title));
+    config.title && confirmModalContainer.appendChild(this.createModalTitle(config.title));
 
     if (config.description) {
       const descriptionContainer: HTMLDivElement = this.createDescriptionContainer();
