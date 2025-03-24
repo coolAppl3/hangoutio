@@ -533,13 +533,13 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMember.is_leader) {
-      res.status(401).json({ message: 'Not hangout leader.' });
+      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
       return;
     };
 
     const memberToKick: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === +memberToKickId);
     if (!memberToKick) {
-      res.status(404).json({ message: 'Hangout member not found.' });
+      res.json({});
       return;
     };
 
@@ -891,7 +891,7 @@ hangoutMembersRouter.patch('/waiveLeadership', async (req: Request, res: Respons
     };
 
     if (!hangoutMemberDetails.is_leader) {
-      res.status(401).json({ message: 'Not the hangout leader.' });
+      res.status(401).json({ message: `You're not the hangout leader.` });
       return;
     };
 
@@ -1044,7 +1044,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
 
     if (hangoutMemberRows.length === 0) {
       await connection.rollback();
-      res.status(404).json({ message: 'Hangout not found.' });
+      res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
 
       return;
     };
@@ -1063,7 +1063,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
 
     if (!hangoutMember.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.' });
+      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
 
       return;
     };
@@ -1071,7 +1071,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
     const newHangoutLeader: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === requestData.newLeaderMemberId);
     if (!newHangoutLeader) {
       await connection.rollback();
-      res.status(404).json({ message: 'Member not found.' });
+      res.status(404).json({ message: 'Hangout member not found.', reason: 'memberNotFound' });
 
       return;
     };
