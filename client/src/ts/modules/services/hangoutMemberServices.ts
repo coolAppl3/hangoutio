@@ -36,6 +36,46 @@ export async function joinHangoutAsGuestService(requestBody: JoinHangoutAsGuestB
 
 // --- --- ---
 
+export async function kickHangoutMemberService(hangoutId: string, hangoutMemberId: number, memberToKickId: number): Promise<AxiosResponse> {
+  return axios.post(`${hangoutMembersApiUrl}/kick?hangoutId=${hangoutId}&hangoutMemberId=${hangoutMemberId}&memberToKickId=${memberToKickId}`);
+};
+
+// --- --- ---
+
+interface WaiveHangoutLeadershipBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+};
+
+export async function waiveHangoutLeadershipService(requestBody: WaiveHangoutLeadershipBody): Promise<AxiosResponse> {
+  return axios.patch(`${hangoutMembersApiUrl}/waiveLeadership`, requestBody);
+};
+
+// --- --- ---
+
+interface TransferLeadershipBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+  newLeaderMemberId: number,
+};
+
+export async function transferHangoutLeadershipService(requestBody: TransferLeadershipBody): Promise<AxiosResponse> {
+  return axios.patch(`${hangoutMembersApiUrl}/transferLeadership`, requestBody);
+};
+
+// --- --- ---
+
+interface ClaimLeadershipBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+};
+
+export async function claimHangoutLeadershipService(requestBody: ClaimLeadershipBody): Promise<AxiosResponse> {
+  return axios.patch(`${hangoutMembersApiUrl}/claimLeadership`, requestBody);
+};
+
+// --- --- ---
+
 export async function leaveHangoutService(hangoutMemberId: number, hangoutId: string): Promise<AxiosResponse> {
   return axios.delete(`${hangoutMembersApiUrl}/leave?hangoutMemberId=${hangoutMemberId}&hangoutId=${hangoutId}`);
 };
