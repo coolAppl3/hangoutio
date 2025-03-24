@@ -413,12 +413,6 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 });
 
 hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
-  interface RequestData {
-    hangoutId: string,
-    hangoutMemberId: number,
-    memberToKickId: number,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -433,30 +427,31 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const hangoutId = req.query.hangoutId;
+  const hangoutMemberId = req.query.hangoutMemberId;
+  const memberToKickId = req.query.memberToKickId;
 
-  const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId', 'memberToKickId'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof memberToKickId !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (isValidHangoutId(requestData.hangoutId)) {
+  if (isValidHangoutId(hangoutId)) {
     res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberId)) {
+  if (!Number.isInteger(+hangoutMemberId)) {
     res.status(400).json({ message: 'Invalid hangout member ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.memberToKickId)) {
+  if (!Number.isInteger(+memberToKickId)) {
     res.status(400).json({ message: 'Invalid member to kick ID.' });
     return;
   };
 
-  if (requestData.hangoutMemberId === requestData.memberToKickId) {
+  if (+hangoutMemberId === +memberToKickId) {
     res.status(409).json({ message: `You can't kick yourself.` });
     return;
   };
@@ -519,7 +514,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
       WHERE
         hangout_id = :hangoutId
       LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT};`,
-      { hangoutId: requestData.hangoutId }
+      { hangoutId }
     );
 
     if (hangoutMemberRows.length === 0) {
@@ -527,7 +522,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
       return;
     };
 
-    const hangoutMember: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === requestData.hangoutMemberId && member[`${authSessionDetails.user_type}_id`] === authSessionDetails.user_id);
+    const hangoutMember: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === +hangoutMemberId && member[`${authSessionDetails.user_type}_id`] === authSessionDetails.user_id);
 
     if (!hangoutMember) {
       await destroyAuthSession(authSessionId);
@@ -542,9 +537,9 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
       return;
     };
 
-    const memberToKick: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === requestData.memberToKickId);
+    const memberToKick: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === +memberToKickId);
     if (!memberToKick) {
-      res.status(404).json({ message: 'Member not found.' });
+      res.status(404).json({ message: 'Hangout member not found.' });
       return;
     };
 
@@ -553,13 +548,13 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
         `DELETE FROM
           votes
         WHERE
-          hangout_member_id = :hangoutMemberId;
+          hangout_member_id = :memberToKickId;
         
         DELETE FROM
           suggestion_likes
         WHERE
-          hangout_member_id = :hangoutMemberId;`,
-        { hangoutMemberId: requestData.memberToKickId }
+          hangout_member_id = :memberToKickId;`,
+        { memberToKickId: +memberToKickId }
       );
     };
 
@@ -579,7 +574,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
       res.json({});
 
-      await addHangoutEvent(requestData.hangoutId, `${memberToKick.display_name} was kicked.`);
+      await addHangoutEvent(hangoutId, `${memberToKick.display_name} was kicked by the hangout leader.`);
       return;
     };
 
@@ -597,7 +592,8 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
     };
 
     res.json({});
-    await addHangoutEvent(requestData.hangoutId, `${memberToKick.display_name} was kicked.`);
+
+    await addHangoutEvent(hangoutId, `${memberToKick.display_name} was kicked by the hangout leader.`);
 
   } catch (err: unknown) {
     console.log(err);
