@@ -10,14 +10,6 @@ import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMember } from "../hangoutTypes";
 import { createMemberElement } from "./membersUtils";
 
-interface HangoutMembersState {
-  changesToRender: boolean,
-};
-
-const hangoutMembersState: HangoutMembersState = {
-  changesToRender: true,
-};
-
 const membersContainer: HTMLDivElement | null = document.querySelector('#members-container');
 
 export function hangoutMembers(): void {
@@ -31,12 +23,7 @@ function loadEventListeners(): void {
 };
 
 function renderMembersSection(): void {
-  if (!hangoutMembersState.changesToRender) {
-    return;
-  };
-
   renderMembersContainer();
-  hangoutMembersState.changesToRender = false;
 };
 
 function renderMembersContainer(): void {
