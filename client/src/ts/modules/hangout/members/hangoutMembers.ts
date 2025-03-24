@@ -4,7 +4,7 @@ import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { transferHangoutLeadershipService } from "../../services/hangoutMemberServices";
+import { kickHangoutMemberService, transferHangoutLeadershipService } from "../../services/hangoutMemberServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMember } from "../hangoutTypes";
 import { hangoutSuggestionState } from "../suggestions/hangoutSuggestions";
@@ -239,8 +239,108 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
   };
 };
 
-async function kickHangoutMember(hangoutMemberId: number): Promise<void> {
-  // TODO: implement
+async function kickHangoutMember(memberToKickId: number): Promise<void> {
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong/', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersMap, hangoutMembers } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (memberToKickId === hangoutMemberId) {
+    popup(`You can't kick yourself.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!hangoutMembersMap.has(memberToKickId)) {
+    removeHangoutMemberData(memberToKickId);
+    renderMembersSection();
+
+    popup('Hangout member kicked.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await kickHangoutMemberService(hangoutId, hangoutMemberId, memberToKickId);
+
+    removeHangoutMemberData(memberToKickId);
+    renderMembersSection();
+
+    popup('Hangout member kicked.', 'error');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'notHangoutLeader') {
+        globalHangoutState.data.isLeader = false;
+        renderMembersSection();
+
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
 };
 
 async function waiveHangoutLeadership(): Promise<void> {
