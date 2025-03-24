@@ -1,13 +1,13 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
+import { HANGOUT_CONCLUSION_STAGE } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { kickHangoutMemberService, transferHangoutLeadershipService } from "../../services/hangoutMemberServices";
+import { kickHangoutMemberService, transferHangoutLeadershipService, waiveHangoutLeadershipService } from "../../services/hangoutMemberServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMember } from "../hangoutTypes";
-import { hangoutSuggestionState } from "../suggestions/hangoutSuggestions";
 import { createMemberElement } from "./membersUtils";
 
 interface HangoutMembersState {
@@ -249,7 +249,7 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
     return;
   };
 
-  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersMap, hangoutMembers } = globalHangoutState.data;
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersMap } = globalHangoutState.data;
 
   if (!isLeader) {
     popup(`You're not the hangout leader.`, 'error');
@@ -344,7 +344,96 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
 };
 
 async function waiveHangoutLeadership(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!globalHangoutState.data) {
+    popup('Something went wrong/', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembers } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await waiveHangoutLeadershipService({ hangoutId, hangoutMemberId });
+
+    const hangoutMember: HangoutMember | undefined = hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === hangoutMemberId);
+
+    hangoutMember && (hangoutMember.is_leader = true);
+    globalHangoutState.data.isLeader = false;
+
+    renderMembersSection();
+
+    popup('Hangout leadership waived.', 'error');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    if (!axios.isAxiosError(err)) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const axiosError: AxiosError<AxiosErrorResponseData> = err;
+
+    if (!axiosError.status || !axiosError.response) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const status: number = axiosError.status;
+    const errMessage: string = axiosError.response.data.message;
+    const errReason: string | undefined = axiosError.response.data.reason;
+
+    if (status === 409) {
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+
+      return;
+    };
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'notHangoutLeader') {
+        globalHangoutState.data.isLeader = false;
+        renderMembersSection();
+
+        return;
+      };
+
+      handleAuthSessionExpired();
+    };
+  };
 };
 
 function confirmMemberAction<T extends (...args: any[]) => Promise<void>>(confirmationString: string, func: T, args: Parameters<T>): void {
