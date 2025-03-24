@@ -207,6 +207,14 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
 
     popup(errMessage, 'error');
 
+    if (status === 409 && errReason === 'hangoutConcluded') {
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+
+      renderMembersSection();
+      return;
+    };
+
     if (status === 404) {
       if (errReason === 'memberNotFound') {
         removeHangoutMemberData(newLeaderMemberId);
@@ -406,6 +414,7 @@ async function waiveHangoutLeadership(): Promise<void> {
       globalHangoutState.data.hangoutDetails.is_concluded = true;
       globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
 
+      renderMembersSection();
       return;
     };
 

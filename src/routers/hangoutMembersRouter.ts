@@ -452,7 +452,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
   };
 
   if (+hangoutMemberId === +memberToKickId) {
-    res.status(409).json({ message: `You can't kick yourself.` });
+    res.status(409).json({ message: `You can't kick yourself.`, reason: 'selfKick' });
     return;
   };
 
@@ -1021,6 +1021,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
       guest_id: number | null,
       display_name: string,
       is_leader: boolean,
+      hangout_is_concluded: boolean,
     };
 
     connection = await dbPool.getConnection();
@@ -1033,18 +1034,26 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
         account_id,
         guest_id,
         display_name,
-        is_leader
+        is_leader,
+        (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
         hangout_members
       WHERE
-        hangout_id = ?
+        hangout_id = :hangoutId
       LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT};`,
-      [requestData.hangoutId]
+      { hangoutId: requestData.hangoutId }
     );
 
     if (hangoutMemberRows.length === 0) {
       await connection.rollback();
       res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
+
+      return;
+    };
+
+    if (hangoutMemberRows[0]?.hangout_is_concluded) {
+      await connection.rollback();
+      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };
@@ -1207,6 +1216,7 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
       guest_id: number | null,
       is_leader: boolean,
       display_name: string,
+      hangout_is_concluded: boolean,
     };
 
     const [hangoutMemberRows] = await connection.execute<HangoutMember[]>(
@@ -1215,18 +1225,26 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
         account_id,
         guest_id,
         is_leader,
-        display_name
+        display_name,
+        (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
         hangout_members
       WHERE
-        hangout_id = ?
+        hangout_id = :hangoutId
       LIMIT ${MAX_HANGOUT_MEMBERS_LIMIT};`,
-      [requestData.hangoutId]
+      { hangoutId: requestData.hangoutId }
     );
 
     if (hangoutMemberRows.length === 0) {
       await connection.rollback();
       res.status(404).json({ message: 'Hangout not found.' });
+
+      return;
+    };
+
+    if (hangoutMemberRows[0]?.hangout_is_concluded) {
+      await connection.rollback();
+      res.status(409).json({ message: 'Hangout has already been concluded.' });
 
       return;
     };
