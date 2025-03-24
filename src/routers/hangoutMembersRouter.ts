@@ -180,7 +180,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };
@@ -320,7 +320,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
     if (hangoutDetails.is_concluded) {
       await connection.rollback();
-      res.status(403).json({ message: 'Hangout has already been concluded.' });
+      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };
