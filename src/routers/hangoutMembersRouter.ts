@@ -796,6 +796,142 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
   };
 });
 
+hangoutMembersRouter.patch('/waiveLeadership', async (req: Request, res: Response) => {
+  interface RequestData {
+    hangoutId: string,
+    hangoutMemberId: number,
+  };
+
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId'];
+  if (!undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutId(requestData.hangoutId)) {
+    res.status(400).json({ message: 'Invalid hangout ID.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.hangoutMemberId)) {
+    res.status(400).json({ message: 'Invalid hangout member ID.' });
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails)) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    interface HangoutMemberDetails extends RowDataPacket {
+      is_leader: boolean,
+      hangout_is_concluded: boolean,
+    };
+
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
+      `SELECT
+        is_leader,
+        (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
+      FROM
+        hangout_members
+      WHERE
+        hangout_member_id = :hangoutMemberId AND
+        hangout_id = :hangoutId;`,
+      { hangoutId: requestData.hangoutId, hangoutMemberId: requestData.hangoutMemberId }
+    );
+
+    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
+
+    if (!hangoutMemberDetails) {
+      res.status(404).json({ message: 'Hangout not found.' });
+      return;
+    };
+
+    if (!hangoutMemberDetails.is_leader) {
+      res.status(401).json({ message: 'Not the hangout leader.' });
+      return;
+    };
+
+    if (hangoutMemberDetails.hangout_is_concluded) {
+      res.status(409).json({ message: 'Hangout has already been concluded.' });
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `UPDATE
+        hangout_members
+      SET
+        is_leader = ?
+      WHERE
+        hangout_member_id = ?;`,
+      [false, requestData.hangoutMemberId]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ message: 'Internal server error.' });
+      return;
+    };
+
+    res.json({});
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
+    res.status(500).json({ message: 'Internal server error.' });
+  };
+});
+
 hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutId: string,
