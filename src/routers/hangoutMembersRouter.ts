@@ -366,7 +366,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
         hashed_password,
         display_name,
         hangout_id
-      ) VALUES (${generatePlaceHolders(5)});`,
+      ) VALUES (${generatePlaceHolders(4)});`,
       [requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]
     );
 
