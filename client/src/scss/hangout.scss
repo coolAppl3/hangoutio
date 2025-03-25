@@ -1542,6 +1542,15 @@
     &-inner {
       @apply grid grid-cols-2 sm:grid-cols-1 gap-1;
 
+      &.empty {
+        @apply block;
+
+        p.no-members-found {
+          @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-3 mt-1 mx-auto w-fit rounded-[20rem];
+          ;
+        }
+      }
+
       .member {
         @apply bg-secondary dark:bg-secondary-dark font-medium gap-1 p-[1.8rem] rounded relative border-solid border-2 border-secondary dark:border-secondary-dark;
 

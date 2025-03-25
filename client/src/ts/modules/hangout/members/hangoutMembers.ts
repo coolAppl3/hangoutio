@@ -2,7 +2,8 @@ import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_CONCLUSION_STAGE } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
-import { createDivElement } from "../../global/domUtils";
+import { debounce } from "../../global/debounce";
+import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { claimHangoutLeadershipService, kickHangoutMemberService, transferHangoutLeadershipService, relinquishHangoutLeadershipService } from "../../services/hangoutMemberServices";
@@ -12,23 +13,47 @@ import { HangoutMember } from "../hangoutTypes";
 import { createMemberElement } from "./membersUtils";
 
 interface HangoutMembersState {
+  isLoaded: boolean,
+
   hasLeader: boolean,
   dismissedLeadershipClaim: boolean,
+
+  filteredMembers: HangoutMember[],
+  membersSectionMutationObserverActive: boolean,
 };
 
 const hangoutMembersState: HangoutMembersState = {
+  isLoaded: false,
+
   hasLeader: true,
   dismissedLeadershipClaim: false,
+
+  filteredMembers: [],
+  membersSectionMutationObserverActive: false,
 };
+
+const membersSection: HTMLElement | null = document.querySelector('#members-section');
 
 const membersHeader: HTMLDivElement | null = document.querySelector('#members-header');
 const membersContainer: HTMLDivElement | null = document.querySelector('#members-container');
 
 const claimLeadershipContainer: HTMLDivElement | null = document.querySelector('#claim-leadership-container');
+const membersSearchInput: HTMLInputElement | null = document.querySelector('#members-search-input');
 
 export function hangoutMembers(): void {
-  hangoutMembersState.hasLeader = hangoutHasLeader();
+  initHangoutMembers();
   loadEventListeners();
+};
+
+function initHangoutMembers(): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  hangoutMembersState.hasLeader = hangoutHasLeader();
+  hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
+
+  hangoutMembersState.isLoaded = true;
 };
 
 function loadEventListeners(): void {
@@ -36,11 +61,21 @@ function loadEventListeners(): void {
 
   membersHeader?.addEventListener('click', handleMembersHeaderClicks);
   membersContainer?.addEventListener('click', handleMembersContainerClicks);
+
+  membersSearchInput?.addEventListener('keyup', debounceMembersSearch);
 };
 
 function renderMembersSection(): void {
+  if (!hangoutMembersState.isLoaded) {
+    initHangoutMembers();
+  };
+
   renderMembersContainer();
   renderClaimLeadershipContainer();
+
+  if (!hangoutMembersState.membersSectionMutationObserverActive) {
+    initMembersSectionMutationObserver();
+  };
 };
 
 function renderMembersContainer(): void {
@@ -49,11 +84,16 @@ function renderMembersContainer(): void {
     return;
   };
 
-  const { isLeader, hangoutMembers } = globalHangoutState.data;
+  const isLeader: boolean = globalHangoutState.data.isLeader;
   const innerMembersContainer: HTMLDivElement = createDivElement(null, 'members-container-inner');
 
-  for (const member of hangoutMembers) {
+  for (const member of hangoutMembersState.filteredMembers) {
     innerMembersContainer.appendChild(createMemberElement(member, isLeader));
+  };
+
+  if (hangoutMembersState.filteredMembers.length === 0) {
+    innerMembersContainer.classList.add('empty');
+    innerMembersContainer.appendChild(createParagraphElement('no-members-found', 'No members found'));
   };
 
   membersContainer.firstElementChild?.remove();
@@ -655,4 +695,43 @@ function handleHangoutAlreadyHasLeader(errResData: unknown, hangoutMemberId: num
   if (errResData.leaderMemberId === hangoutMemberId) {
     globalHangoutState.data.isLeader = true;
   };
+};
+
+const debounceMembersSearch = debounce(searchHangoutMembers, 300);
+
+function searchHangoutMembers(): void {
+  if (!globalHangoutState.data || !membersSearchInput) {
+    return;
+  };
+
+  const searchQuery: string = membersSearchInput.value;
+  hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers.filter((member: HangoutMember) => member.display_name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  renderMembersContainer();
+};
+
+function initMembersSectionMutationObserver(): void {
+  if (!membersSection) {
+    return;
+  };
+
+  const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === 'class' && membersSection.classList.contains('hidden')) {
+        if (!globalHangoutState.data || !membersSection) {
+          return;
+        };
+
+        hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
+        hangoutMembersState.membersSectionMutationObserverActive = false;
+        membersSearchInput && (membersSearchInput.value = '');
+
+        observer.disconnect();
+        break;
+      };
+    };
+  });
+
+  observer.observe(membersSection, { attributes: true, attributeFilter: ['class'], subtree: false });
+  hangoutMembersState.membersSectionMutationObserverActive = true;
 };
