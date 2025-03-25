@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
+import { debounce } from "../../global/debounce";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -10,19 +11,28 @@ import { HangoutEvent } from "../hangoutTypes";
 
 interface HangoutEventsState {
   isLoaded: boolean,
+
   hangoutEvents: HangoutEvent[],
+  filteredHangoutEvents: HangoutEvent[],
 
   eventsRenderLimit: number,
+  membersSectionMutationObserverActive: boolean,
 };
 
 const hangoutEventsState: HangoutEventsState = {
   isLoaded: false,
+
   hangoutEvents: [],
+  filteredHangoutEvents: [],
 
   eventsRenderLimit: 20,
+  membersSectionMutationObserverActive: false,
 };
 
+const eventsSection: HTMLElement | null = document.querySelector('#events-section');
+
 const eventsContainer: HTMLDivElement | null = document.querySelector('#events-container');
+const eventsSearchInput: HTMLInputElement | null = document.querySelector('#events-search-input');
 
 export function hangoutEvents(): void {
   loadEventListeners();
@@ -30,11 +40,12 @@ export function hangoutEvents(): void {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-events', initHangoutEvents);
+  eventsSearchInput?.addEventListener('keyup', debounceEventSearch);
 };
 
 async function initHangoutEvents(): Promise<void> {
   if (hangoutEventsState.isLoaded) {
-    renderHangoutEvents();
+    renderEventsContainer();
     return;
   };
 
@@ -46,27 +57,39 @@ async function initHangoutEvents(): Promise<void> {
   LoadingModal.display();
 
   await getHangoutEvents();
-  renderHangoutEvents();
+  renderEventsSection();
 
   LoadingModal.remove();
 };
 
-function renderHangoutEvents(): void {
+function renderEventsSection(): void {
+  renderEventsContainer();
+
+  if (!hangoutEventsState.membersSectionMutationObserverActive) {
+    initMembersSectionMutationObserver();
+  };
+};
+
+function renderEventsContainer(): void {
   if (!eventsContainer) {
     return;
   };
 
   const innerEventsContainer: HTMLDivElement = createDivElement(null, 'events-container-inner');
-  const eventsToRender: number = Math.min(hangoutEventsState.eventsRenderLimit, hangoutEventsState.hangoutEvents.length);
+  const eventsToRender: number = Math.min(hangoutEventsState.eventsRenderLimit, hangoutEventsState.filteredHangoutEvents.length);
 
   for (let i = 0; i < eventsToRender; i++) {
-    const event: HangoutEvent | undefined = hangoutEventsState.hangoutEvents[i];
+    const event: HangoutEvent | undefined = hangoutEventsState.filteredHangoutEvents[i];
 
     if (!event) {
       return;
     };
 
     innerEventsContainer.appendChild(createEventElement(event));
+  };
+
+  if (hangoutEventsState.filteredHangoutEvents.length === 0) {
+    innerEventsContainer.appendChild(createParagraphElement('no-events-found', 'No events found'));
   };
 
   eventsContainer.firstElementChild?.remove();
@@ -89,6 +112,8 @@ async function getHangoutEvents(): Promise<void> {
     const hangoutEvents: HangoutEvent[] = (await getHangoutEventsService(hangoutId, hangoutMemberId)).data;
 
     hangoutEventsState.hangoutEvents = hangoutEvents;
+    hangoutEventsState.filteredHangoutEvents = hangoutEvents;
+
     hangoutEventsState.isLoaded = true;
 
   } catch (err: unknown) {
@@ -126,6 +151,42 @@ async function getHangoutEvents(): Promise<void> {
       setTimeout(() => window.location.reload(), 1000);
     };
   };
+};
+
+const debounceEventSearch = debounce(searchHangoutEvents, 300);
+
+function searchHangoutEvents(): void {
+  if (!eventsSearchInput) {
+    return;
+  };
+
+  const searchQuery: string = eventsSearchInput.value;
+  hangoutEventsState.filteredHangoutEvents = hangoutEventsState.hangoutEvents.filter((event: HangoutEvent) => event.event_description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  renderEventsContainer();
+};
+
+function initMembersSectionMutationObserver(): void {
+  if (!eventsSection) {
+    return;
+  };
+
+  const mutationObserver: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === 'class' && eventsSection.classList.contains('hidden')) {
+        hangoutEventsState.filteredHangoutEvents = hangoutEventsState.hangoutEvents;
+        hangoutEventsState.eventsRenderLimit = 20;
+        hangoutEventsState.membersSectionMutationObserverActive = false;
+        eventsSearchInput && (eventsSearchInput.value = '');
+
+        mutationObserver.disconnect();
+        return;
+      };
+    };
+  });
+
+  mutationObserver.observe(eventsSection, { attributes: true, attributeFilter: ['class'] });
+  hangoutEventsState.membersSectionMutationObserverActive = true;
 };
 
 function createEventElement(event: HangoutEvent): HTMLDivElement {

@@ -1547,7 +1547,6 @@
 
         p.no-members-found {
           @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-3 mt-1 mx-auto w-fit rounded-[20rem];
-          ;
         }
       }
 
@@ -1629,6 +1628,11 @@
   &-container {
 
     &-inner {
+
+      p.no-events-found {
+        @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-3 mt-1 mx-auto w-fit rounded-[20rem];
+      }
+
       .event {
         @apply mb-1 flex flex-col justify-between items-start p-2 rounded-sm bg-secondary dark:bg-secondary-dark;
 

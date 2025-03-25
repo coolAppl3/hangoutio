@@ -1556,6 +1556,20 @@
         <div id="events">
           <h3 class="text-lg font-medium text-title dark:text-title-dark mb-1">Hangout events</h3>
 
+          <div class="events-search form-group">
+            <label for="events-search-input">Search events</label>
+            <input
+              type="text"
+              id="events-search-input"
+              autocomplete="name"
+              class="placeholder-description/50 dark:placeholder-description-dark/50"
+            />
+            <span
+              class="error-span"
+              data-target="events-search-input"
+            ></span>
+          </div>
+
           <div id="events-container"></div>
         </div>
       </div>
