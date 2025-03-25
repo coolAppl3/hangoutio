@@ -1623,6 +1623,27 @@
   }
 }
 
+// hangout events --- ---
+#events {
+
+  &-container {
+
+    &-inner {
+      .event {
+        @apply mb-1 flex flex-col justify-between items-start p-2 rounded-sm bg-secondary dark:bg-secondary-dark;
+
+        span.created-on {
+          @apply text-xs md:text-sm font-bold text-title dark:text-title-dark mb-1;
+        }
+
+        p.description {
+          @apply text-sm md:text-base font-medium text-description dark:text-description-dark;
+        }
+      }
+    }
+  }
+}
+
 // hangout settings --- ---
 #settings-section {
 
