@@ -1786,7 +1786,7 @@ hangoutsRouter.get('/events', async (req: Request, res: Response) => {
       [hangoutId]
     );
 
-    res.json({ hangoutEvents })
+    res.json(hangoutEvents)
 
   } catch (err: unknown) {
     console.log(err);
