@@ -170,6 +170,11 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
         return;
       };
 
+      if (errReason === 'hangoutConcluded') {
+        handleHangoutConcluded();
+        return;
+      };
+
       handleHangoutFull();
       return;
     };

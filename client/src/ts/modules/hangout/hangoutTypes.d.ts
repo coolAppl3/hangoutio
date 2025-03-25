@@ -17,6 +17,7 @@ export interface HangoutEvent {
 
 export interface HangoutMember {
   hangout_member_id: number,
+  username: string,
   user_type: 'account' | 'guest',
   display_name: string,
   is_leader: boolean,

@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.4.63] (2025-03-25)
+
+### Features
+
+- Reworked the `hangout_members` table to include a username column, and refactored surrounding logic throughout the app to align accordingly.
+- Usernames are now unique across both registered and guest users.
+- Added PATCH `hangouts/relinquishLeadership`.
+- Added a number of hangout member services.
+- Updated the members section to always render when navigated to.
+- Implemented logic to claim hangout leadership, and fixed a few bugs in the process.
+
+
+### Code Refactoring
+
+- Reworked `ConfirmModal.ts` to allow for the title to be null.
+
+
+### Bug Fixes
+
+- Fixed DELETE `suggestions/kick` using a request body.
+- Fixed hangout leadership changes being possible after hangout conclusion.
+- Fixed "hangout concluded" responses having a 403 code instead of 409 when attempting join a concluded hangout.
+
+
 ## [0.4.62] (2025-03-22)
 
 ### Features

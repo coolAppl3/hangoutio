@@ -147,12 +147,7 @@ export async function joinHangoutAsAccount(): Promise<void> {
     };
 
     if (status === 403) {
-      if (errReason === 'guestAccount') {
-        handleGuestNotMember();
-        return;
-      };
-
-      handleHangoutConcluded();
+      handleGuestNotMember();
       return;
     };
 
@@ -166,6 +161,11 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
       if (errReason === 'hangoutsLimitReached') {
         handleHangoutsLimitReached(errMessage);
+        return;
+      };
+
+      if (errReason === 'hangoutConcluded') {
+        handleHangoutConcluded();
         return;
       };
 

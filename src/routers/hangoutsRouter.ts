@@ -112,12 +112,14 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
     interface AccountDetails extends RowDataPacket {
       display_name: string,
+      username: string,
       hangout_id: string,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
         accounts.display_name,
+        accounts.username,
         hangout_members.hangout_id
       FROM
         accounts
@@ -192,13 +194,14 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     await connection.execute(
       `INSERT INTO hangout_members (
         hangout_id,
+        username,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      ) VALUES (${generatePlaceHolders(6)});`,
-      [hangoutId, 'account', authSessionDetails.user_id, null, accountDetails.display_name, true]
+      ) VALUES (${generatePlaceHolders(7)});`,
+      [hangoutId, accountDetails.username, 'account', authSessionDetails.user_id, null, accountDetails.display_name, true]
     );
 
     await connection.commit();
@@ -303,14 +306,10 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     await connection.beginTransaction();
 
     const [guestRows] = await connection.execute<RowDataPacket[]>(
-      `SELECT
-        1 AS username_taken
-      FROM
-        guests
-      WHERE
-        username = ?
-      LIMIT 1;`,
-      [requestData.username]
+      `(SELECT 1 AS taken_status FROM accounts WHERE username = :username LIMIT 1)
+      UNION ALL
+      (SELECT 1 AS taken_status FROM guests WHERE username = :username LIMIT 1);`,
+      { username: requestData.username }
     );
 
     if (guestRows.length > 0) {
@@ -357,13 +356,14 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     await connection.execute(
       `INSERT INTO hangout_members (
         hangout_id,
+        username,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      ) VALUES (${generatePlaceHolders(6)});`,
-      [hangoutId, 'guest', null, guestId, requestData.displayName, true]
+      ) VALUES (${generatePlaceHolders(7)});`,
+      [hangoutId, requestData.username, 'guest', null, guestId, requestData.displayName, true]
     );
 
     await connection.commit();
@@ -1589,6 +1589,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
 
       SELECT
         hangout_member_id,
+        username,
         user_type,
         display_name,
         is_leader

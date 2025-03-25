@@ -114,6 +114,7 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
         ;
         const [accountRows] = await db_1.dbPool.execute(`SELECT
         accounts.display_name,
+        accounts.username,
         hangout_members.hangout_id
       FROM
         accounts
@@ -166,12 +167,13 @@ exports.hangoutsRouter.post('/create/accountLeader', async (req, res) => {
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(11)});`, [hangoutId, requestData.hangoutTitle, encryptedHangoutPassword, requestData.membersLimit, availabilityPeriod, suggestionsPeriod, votingPeriod, 1, currentTimestamp, currentTimestamp, false]);
         await connection.execute(`INSERT INTO hangout_members (
         hangout_id,
+        username,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutId, 'account', authSessionDetails.user_id, null, accountDetails.display_name, true]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(7)});`, [hangoutId, accountDetails.username, 'account', authSessionDetails.user_id, null, accountDetails.display_name, true]);
         await connection.commit();
         res.status(201).json({ hangoutId });
         await (0, addHangoutEvent_1.addHangoutEvent)(hangoutId, `${accountDetails.display_name} created the hangout.`, currentTimestamp);
@@ -256,13 +258,9 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         connection = await db_1.dbPool.getConnection();
         await connection.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;');
         await connection.beginTransaction();
-        const [guestRows] = await connection.execute(`SELECT
-        1 AS username_taken
-      FROM
-        guests
-      WHERE
-        username = ?
-      LIMIT 1;`, [requestData.username]);
+        const [guestRows] = await connection.execute(`(SELECT 1 AS taken_status FROM accounts WHERE username = :username LIMIT 1)
+      UNION ALL
+      (SELECT 1 AS taken_status FROM guests WHERE username = :username LIMIT 1);`, { username: requestData.username });
         if (guestRows.length > 0) {
             await connection.rollback();
             res.status(409).json({ message: 'Username is already taken.', reason: 'guestUsernameTaken' });
@@ -295,12 +293,13 @@ exports.hangoutsRouter.post('/create/guestLeader', async (req, res) => {
         const guestId = resultSetHeader.insertId;
         await connection.execute(`INSERT INTO hangout_members (
         hangout_id,
+        username,
         user_type,
         account_id,
         guest_id,
         display_name,
         is_leader
-      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [hangoutId, 'guest', null, guestId, requestData.displayName, true]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(7)});`, [hangoutId, requestData.username, 'guest', null, guestId, requestData.displayName, true]);
         await connection.commit();
         const authSessionCreated = await (0, authSessions_1.createAuthSession)(res, {
             user_id: guestId,
@@ -1214,6 +1213,7 @@ exports.hangoutsRouter.get('/details/initial', async (req, res) => {
 
       SELECT
         hangout_member_id,
+        username,
         user_type,
         display_name,
         is_leader
