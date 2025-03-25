@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.64] (2025-03-26)
+
+### Features
+
+- Added hangout member search functionality.
+- Added GET `hangouts/events`.
+- Fully implemented the hangout events section.
+
+
+### Bug Fixes
+
+- Fixed settings navigation buttons not being updated when the user's leaderships status changes.
+- Fixed issues with loading the hangout members section when joining.
+- Fixed guest sign up form being rendered below the footer.
+
+
 ## [0.4.63] (2025-03-25)
 
 ### Features
