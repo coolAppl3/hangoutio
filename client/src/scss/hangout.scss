@@ -1542,6 +1542,14 @@
     &-inner {
       @apply grid grid-cols-2 sm:grid-cols-1 gap-1;
 
+      &.empty {
+        @apply block;
+
+        p.no-members-found {
+          @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-3 mt-1 mx-auto w-fit rounded-[20rem];
+        }
+      }
+
       .member {
         @apply bg-secondary dark:bg-secondary-dark font-medium gap-1 p-[1.8rem] rounded relative border-solid border-2 border-secondary dark:border-secondary-dark;
 
@@ -1608,6 +1616,32 @@
           svg path {
             @apply fill-description dark:fill-description-dark;
           }
+        }
+      }
+    }
+  }
+}
+
+// hangout events --- ---
+#events {
+
+  &-container {
+
+    &-inner {
+
+      p.no-events-found {
+        @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-3 mt-1 mx-auto w-fit rounded-[20rem];
+      }
+
+      .event {
+        @apply mb-1 flex flex-col justify-between items-start p-2 rounded-sm bg-secondary dark:bg-secondary-dark;
+
+        span.created-on {
+          @apply text-xs md:text-sm font-bold text-title dark:text-title-dark mb-1;
+        }
+
+        p.description {
+          @apply text-sm md:text-base font-medium text-description dark:text-description-dark;
         }
       }
     }

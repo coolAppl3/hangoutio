@@ -304,7 +304,7 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
         hashed_password,
         display_name,
         hangout_id
-      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]);
         const guestId = resultSetHeader.insertId;
         await connection.execute(`INSERT INTO hangout_members (
         hangout_id,

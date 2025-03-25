@@ -148,3 +148,9 @@ export interface InitialHangoutData {
 export async function getInitialHangoutDataService(hangoutId: string): Promise<AxiosResponse<InitialHangoutData>> {
   return axios.get(`${hangoutsApiUrl}/details/initial?hangoutId=${hangoutId}`);
 };
+
+// --- --- ---
+
+export async function getHangoutEventsService(hangoutId: string, hangoutMemberId: number): Promise<AxiosResponse<HangoutEvent[]>> {
+  return axios.get(`${hangoutsApiUrl}/events?hangoutId=${hangoutId}&hangoutMemberId=${hangoutMemberId}`);
+};
