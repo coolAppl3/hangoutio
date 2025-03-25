@@ -106,8 +106,8 @@ function renderClaimLeadershipContainer(): void {
     return;
   };
 
-  if (!hangoutMembersState.hasLeader) {
-    hangoutMembersState.dismissedLeadershipClaim || claimLeadershipContainer?.classList.remove('hidden');
+  if (!hangoutMembersState.hasLeader && !hangoutMembersState.dismissedLeadershipClaim) {
+    claimLeadershipContainer?.classList.remove('hidden');
     return;
   };
 
