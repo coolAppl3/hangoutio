@@ -1496,21 +1496,51 @@
     >
       <div class="container mb-3 mt-2 md:mt-3">
         <div id="members">
-          <h3 class="text-lg font-medium text-title dark:text-title-dark mb-1">Hangout members</h3>
+          <div id="members-header">
+            <h3 class="text-lg font-medium text-title dark:text-title-dark mb-1">Hangout members</h3>
 
-          <div class="members-search form-group">
-            <label for="members-search-input">Search members</label>
-            <input
-              type="text"
-              id="members-search-input"
-              autocomplete="name"
-              class="placeholder-description/50 dark:placeholder-description-dark/50"
-            />
-            <span
-              class="error-span"
-              data-target="members-search-input"
-            ></span>
+            <div
+              id="claim-leadership-container"
+              class="mb-2 bg-secondary dark:bg-secondary-dark p-2 rounded"
+            >
+              <p class="text-sm font-medium text-title dark:text-title-dark mb-2">
+                Hangout no longer has a leader. You have the option to become the new hangout leader.
+              </p>
+
+              <div class="btn-container flex justify-start items-center sm:block">
+                <button
+                  type="button"
+                  class="btn bg-cta dark:bg-cta-dark mr-1 sm:mr-0 sm:mb-1 sm:w-full"
+                  id="claim-leadership-btn"
+                >
+                  Claim leadership
+                </button>
+
+                <button
+                  type="button"
+                  class="btn bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark border-title dark:border-title-dark sm:w-full"
+                  id="dismiss-claim-leadership-container"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+
+            <div class="members-search form-group">
+              <label for="members-search-input">Search members</label>
+              <input
+                type="text"
+                id="members-search-input"
+                autocomplete="name"
+                class="placeholder-description/50 dark:placeholder-description-dark/50"
+              />
+              <span
+                class="error-span"
+                data-target="members-search-input"
+              ></span>
+            </div>
           </div>
+
           <div id="members-container"></div>
         </div>
       </div>

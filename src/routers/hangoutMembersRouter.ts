@@ -1159,7 +1159,7 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(404).json({ message: 'Invalid hangout ID.' });
+    res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
 
@@ -1244,7 +1244,7 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
 
     if (hangoutMemberRows[0]?.hangout_is_concluded) {
       await connection.rollback();
-      res.status(409).json({ message: 'Hangout has already been concluded.' });
+      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };
@@ -1263,9 +1263,13 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
 
     const currentHangoutLeader: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.is_leader);
     if (currentHangoutLeader) {
+      const userIsLeader: boolean = hangoutMember.hangout_member_id === currentHangoutLeader.hangout_member_id;
+
       await connection.rollback();
       res.status(409).json({
-        message: hangoutMember.hangout_member_id === currentHangoutLeader.hangout_member_id ? `You're already the hangout leader.` : 'Hangout already has a leader.',
+        message: userIsLeader ? `You're already the hangout leader.` : 'Hangout already has a leader.',
+        reason: 'hangoutHasLeader',
+        resData: { leaderMemberId: currentHangoutLeader.hangout_member_id },
       });
 
       return;
