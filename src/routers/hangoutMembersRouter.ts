@@ -815,7 +815,7 @@ hangoutMembersRouter.patch('/waiveLeadership', async (req: Request, res: Respons
   const requestData: RequestData = req.body;
 
   const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId'];
-  if (!undefinedValuesDetected(requestData, expectedKeys)) {
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
