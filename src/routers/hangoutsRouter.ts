@@ -1782,7 +1782,9 @@ hangoutsRouter.get('/events', async (req: Request, res: Response) => {
       FROM
         hangout_events
       WHERE
-        hangout_id = ?;`,
+        hangout_id = ?
+      ORDER BY
+        event_timestamp DESC;`,
       [hangoutId]
     );
 
