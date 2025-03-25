@@ -107,7 +107,7 @@ function handlePhoneNavMenuEvents(e: MouseEvent): void {
   navigateHangoutSections(e);
 };
 
-function updateHangoutSettingsNavButtons(): void {
+export function updateHangoutSettingsNavButtons(): void {
   if (!globalHangoutState.data) {
     return;
   };

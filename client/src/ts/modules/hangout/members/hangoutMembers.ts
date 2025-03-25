@@ -7,6 +7,7 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { claimHangoutLeadershipService, kickHangoutMemberService, transferHangoutLeadershipService, relinquishHangoutLeadershipService } from "../../services/hangoutMemberServices";
 import { globalHangoutState } from "../globalHangoutState";
+import { updateHangoutSettingsNavButtons } from "../hangoutNav";
 import { HangoutMember } from "../hangoutTypes";
 import { createMemberElement } from "./membersUtils";
 
@@ -208,6 +209,7 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
     newHangoutLeader && (newHangoutLeader.is_leader = true);
     globalHangoutState.data.isLeader = false;
 
+    updateHangoutSettingsNavButtons();
     renderMembersSection();
 
     popup('Hangout leadership transferred.', 'success');
@@ -320,6 +322,7 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
     await kickHangoutMemberService(hangoutId, hangoutMemberId, memberToKickId);
 
     removeHangoutMemberData(memberToKickId);
+    updateHangoutSettingsNavButtons();
     renderMembersSection();
 
     popup('Hangout member kicked.', 'success');
@@ -410,8 +413,9 @@ async function relinquishHangoutLeadership(): Promise<void> {
 
     hangoutMember && (hangoutMember.is_leader = false);
     globalHangoutState.data.isLeader = false;
-
     hangoutMembersState.hasLeader = false;
+
+    updateHangoutSettingsNavButtons();
     renderMembersSection();
 
     popup('Hangout leadership relinquished.', 'success');
@@ -505,8 +509,9 @@ async function claimHangoutLeadership(): Promise<void> {
 
     hangoutMember && (hangoutMember.is_leader = true);
     globalHangoutState.data.isLeader = true;
-
     hangoutMembersState.hasLeader = true;
+
+    updateHangoutSettingsNavButtons();
     renderMembersSection();
 
     popup('Hangout leadership claimed', 'success');
