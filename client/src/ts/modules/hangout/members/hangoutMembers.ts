@@ -5,7 +5,7 @@ import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
-import { claimHangoutLeadershipService, kickHangoutMemberService, transferHangoutLeadershipService, waiveHangoutLeadershipService } from "../../services/hangoutMemberServices";
+import { claimHangoutLeadershipService, kickHangoutMemberService, transferHangoutLeadershipService, relinquishHangoutLeadershipService } from "../../services/hangoutMemberServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMember } from "../hangoutTypes";
 import { createMemberElement } from "./membersUtils";
@@ -146,10 +146,10 @@ function handleMembersContainerClicks(e: MouseEvent): void {
     return;
   };
 
-  if (e.target.className === 'waive-leadership-btn') {
+  if (e.target.className === 'relinquish-leadership-btn') {
     confirmMemberAction(
-      `Are you sure you want to waive the hangout leadership?`,
-      waiveHangoutLeadership,
+      `Are you sure you want to relinquish the hangout leadership?`,
+      relinquishHangoutLeadership,
       []
     );
 
@@ -377,7 +377,7 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
   };
 };
 
-async function waiveHangoutLeadership(): Promise<void> {
+async function relinquishHangoutLeadership(): Promise<void> {
   LoadingModal.display();
 
   if (!globalHangoutState.data) {
@@ -404,7 +404,7 @@ async function waiveHangoutLeadership(): Promise<void> {
   };
 
   try {
-    await waiveHangoutLeadershipService({ hangoutId, hangoutMemberId });
+    await relinquishHangoutLeadershipService({ hangoutId, hangoutMemberId });
 
     const hangoutMember: HangoutMember | undefined = hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === hangoutMemberId);
 
@@ -414,7 +414,7 @@ async function waiveHangoutLeadership(): Promise<void> {
     hangoutMembersState.hasLeader = false;
     renderMembersSection();
 
-    popup('Hangout leadership waived.', 'success');
+    popup('Hangout leadership relinquished.', 'success');
     LoadingModal.remove();
 
   } catch (err: unknown) {

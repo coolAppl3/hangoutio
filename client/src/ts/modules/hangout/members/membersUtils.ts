@@ -53,7 +53,7 @@ function createMemberDropdownMenu(isLeader: boolean): HTMLDivElement {
   const dropdownMenuList: HTMLDivElement = createDivElement('dropdown-menu-list');
 
   if (isLeader) {
-    dropdownMenuList.appendChild(createBtnElement('waive-leadership-btn', 'Waive leadership'));
+    dropdownMenuList.appendChild(createBtnElement('relinquish-leadership-btn', 'Relinquish leadership'));
 
   } else {
     globalHangoutState.data?.hangoutDetails.is_concluded || dropdownMenuList.appendChild(createBtnElement('transfer-leadership-btn', 'Transfer leadership'));

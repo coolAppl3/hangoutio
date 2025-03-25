@@ -792,7 +792,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
   };
 });
 
-hangoutMembersRouter.patch('/waiveLeadership', async (req: Request, res: Response) => {
+hangoutMembersRouter.patch('/relinquishLeadership', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutId: string,
     hangoutMemberId: number,

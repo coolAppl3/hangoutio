@@ -42,13 +42,13 @@ export async function kickHangoutMemberService(hangoutId: string, hangoutMemberI
 
 // --- --- ---
 
-interface WaiveHangoutLeadershipBody {
+interface RelinquishHangoutLeadershipBody {
   hangoutId: string,
   hangoutMemberId: number,
 };
 
-export async function waiveHangoutLeadershipService(requestBody: WaiveHangoutLeadershipBody): Promise<AxiosResponse> {
-  return axios.patch(`${hangoutMembersApiUrl}/waiveLeadership`, requestBody);
+export async function relinquishHangoutLeadershipService(requestBody: RelinquishHangoutLeadershipBody): Promise<AxiosResponse> {
+  return axios.patch(`${hangoutMembersApiUrl}/relinquishLeadership`, requestBody);
 };
 
 // --- --- ---
