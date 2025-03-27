@@ -860,19 +860,19 @@ function initSettingsSectionMutationObserver(): void {
     return;
   };
 
-  const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+  const mutationObserver: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
     for (const mutation of mutations) {
       if (mutation.attributeName === 'class' && settingsSectionElement.classList.contains('hidden')) {
         resetSliderValues();
         hangoutSettingsState.settingsSectionMutationObserverActive = false;
 
-        observer.disconnect();
+        mutationObserver.disconnect();
         break;
       };
     };
   });
 
-  observer.observe(settingsSectionElement, { attributes: true, attributeFilter: ['class'], subtree: false });
+  mutationObserver.observe(settingsSectionElement, { attributes: true, attributeFilter: ['class'] });
   hangoutSettingsState.settingsSectionMutationObserverActive = true;
 };
 

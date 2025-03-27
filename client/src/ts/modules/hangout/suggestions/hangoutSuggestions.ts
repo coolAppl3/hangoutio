@@ -798,19 +798,19 @@ function initSuggestionsSectionMutationObserver(): void {
     return;
   };
 
-  const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+  const mutationObserver: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
     for (const mutation of mutations) {
       if (mutation.attributeName === 'class' && suggestionsSectionElement.classList.contains('hidden')) {
         hangoutSuggestionState.maxSuggestionsToRender = 10;
         hangoutSuggestionState.suggestionsSectionMutationObserverActive = false;
 
-        observer.disconnect();
+        mutationObserver.disconnect();
         return;
       };
     };
   });
 
-  observer.observe(suggestionsSectionElement, { attributes: true, attributeFilter: ['class'], subtree: false });
+  mutationObserver.observe(suggestionsSectionElement, { attributes: true, attributeFilter: ['class'] });
   hangoutSuggestionState.suggestionsSectionMutationObserverActive = true;
 };
 
