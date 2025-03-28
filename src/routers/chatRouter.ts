@@ -11,7 +11,7 @@ import { destroyAuthSession } from '../auth/authSessions';
 
 export const chatRouter: Router = express.Router();
 
-chatRouter.post('/add', async (req: Request, res: Response) => {
+chatRouter.post('/', async (req: Request, res: Response) => {
   interface RequestData {
     hangoutMemberId: number,
     hangoutId: string,
@@ -155,7 +155,7 @@ chatRouter.post('/add', async (req: Request, res: Response) => {
       messageTimestamp,
     };
 
-    res.status(200).json({ chatMessage });
+    res.status(201).json({ chatMessage });
 
     // TODO: websocket logic
 
