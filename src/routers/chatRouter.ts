@@ -170,13 +170,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
   };
 });
 
-chatRouter.post('/retrieve', async (req: Request, res: Response) => {
-  interface RequestData {
-    hangoutId: string,
-    hangoutMemberId: number,
-    messageOffset: number,
-  };
-
+chatRouter.get('/', async (req: Request, res: Response) => {
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -191,26 +185,27 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const hangoutId = req.query.hangoutId;
+  const hangoutMemberId = req.query.hangoutMemberId;
+  const messageOffset = req.query.messageOffset;
 
-  const expectedKeys: string[] = ['hangoutId', 'hangoutMemberId', 'messageOffset'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof messageOffset !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+  if (!isValidHangoutId(hangoutId)) {
+    res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
+  if (!Number.isInteger(+hangoutMemberId)) {
+    res.status(400).json({ message: 'Invalid hangout member ID.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.messageOffset)) {
-    res.status(400).json({ message: 'Invalid messages offset.', reason: 'messageOffset' });
+  if (!Number.isInteger(+messageOffset)) {
+    res.status(400).json({ message: 'Invalid messages offset.' });
     return;
   };
 
@@ -259,7 +254,7 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
         hangout_member_id = ? AND
         ${authSessionDetails.user_type}_id = ? AND
         hangout_id = ?;`,
-      [requestData.hangoutMemberId, authSessionDetails.user_id, requestData.hangoutId]
+      [+hangoutMemberId, authSessionDetails.user_id, hangoutId]
     );
 
     if (hangoutRows.length === 0) {
@@ -267,34 +262,23 @@ chatRouter.post('/retrieve', async (req: Request, res: Response) => {
       return;
     };
 
-    interface ChatMessage extends RowDataPacket {
-      message_id: number,
-      hangout_member_id: number,
-      message_content: string,
-      message_timestamp: number,
-      sender_name: string,
-    };
-
-    const [chatRows] = await dbPool.execute<ChatMessage[]>(
+    const [chatMessages] = await dbPool.execute<RowDataPacket[]>(
       `SELECT
-        chat.message_id,
-        chat.hangout_member_id,
-        chat.message_content,
-        chat.message_timestamp,
-        hangout_members.display_name as sender_name
+        message_id,
+        hangout_member_id,
+        message_content,
+        message_timestamp,
       FROM
         chat
-      LEFT JOIN
-        hangout_members ON chat.hangout_member_id = hangout_members.hangout_member_id
       WHERE
-        chat.hangout_id = ?
+        hangout_id = ?
       ORDER BY
-        chat.message_timestamp DESC
-      LIMIT 20 OFFSET ?;`,
-      [requestData.hangoutId, requestData.messageOffset]
+        message_timestamp DESC
+      LIMIT 30 OFFSET ?;`,
+      [hangoutId, +messageOffset]
     );
 
-    res.json({ chatMessages: chatRows })
+    res.json(chatMessages);
 
   } catch (err: unknown) {
     console.log(err);
