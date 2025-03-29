@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.65] (2025-03-29)
+
+### Features
+
+- Added logic to render more events in hangout events section.
+- Added chatServices.ts and a pair of services.
+- Implemented the layout of the chat section, partially implemented rendering logic.
+
+
+### Code Refactoring
+
+- Renamed POST `chat/add` to POST `chat/`.
+- Reworked POST `chat/retrieve` to GET `chat/`, and slightly improved functionality.
+
+
 ## [0.4.64] (2025-03-26)
 
 ### Features

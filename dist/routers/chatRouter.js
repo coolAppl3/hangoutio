@@ -36,8 +36,9 @@ const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const authUtils = __importStar(require("../auth/authUtils"));
 const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
+const constants_1 = require("../util/constants");
 exports.chatRouter = express_1.default.Router();
-exports.chatRouter.post('/add', async (req, res) => {
+exports.chatRouter.post('/', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
@@ -98,14 +99,14 @@ exports.chatRouter.post('/add', async (req, res) => {
         }
         ;
         ;
-        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
         hangout_id,
         display_name
       FROM
         hangout_members
       WHERE
         hangout_member_id = ?;`, [requestData.hangoutMemberId]);
-        const hangoutMemberDetails = hangoutRows[0];
+        const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
@@ -138,7 +139,7 @@ exports.chatRouter.post('/add', async (req, res) => {
             messageContent: requestData.messageContent,
             messageTimestamp,
         };
-        res.status(200).json({ chatMessage });
+        res.status(201).json({ chatMessage });
     }
     catch (err) {
         console.log(err);
@@ -150,8 +151,7 @@ exports.chatRouter.post('/add', async (req, res) => {
     }
     ;
 });
-exports.chatRouter.post('/retrieve', async (req, res) => {
-    ;
+exports.chatRouter.get('/', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
         res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -164,25 +164,26 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
         return;
     }
     ;
-    const requestData = req.body;
-    const expectedKeys = ['hangoutId', 'hangoutMemberId', 'messageOffset'];
-    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+    const hangoutId = req.query.hangoutId;
+    const hangoutMemberId = req.query.hangoutMemberId;
+    const messageOffset = req.query.messageOffset;
+    if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string' || typeof messageOffset !== 'string') {
         res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
-        res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
+        res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.hangoutMemberId)) {
-        res.status(400).json({ message: 'Invalid hangout member ID.', reason: 'hangoutMemberId' });
+    if (!Number.isInteger(+hangoutMemberId)) {
+        res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
-    if (!Number.isInteger(requestData.messageOffset)) {
-        res.status(400).json({ message: 'Invalid messages offset.', reason: 'messageOffset' });
+    if (!Number.isInteger(+messageOffset)) {
+        res.status(400).json({ message: 'Invalid messages offset.' });
         return;
     }
     ;
@@ -195,7 +196,7 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
       FROM
         auth_sessions
       WHERE
-        session_id = ?;`, { authSessionId });
+        session_id = ?;`, [authSessionId]);
         const authSessionDetails = authSessionRows[0];
         if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -217,29 +218,26 @@ exports.chatRouter.post('/retrieve', async (req, res) => {
       WHERE
         hangout_member_id = ? AND
         ${authSessionDetails.user_type}_id = ? AND
-        hangout_id = ?;`, [requestData.hangoutMemberId, authSessionDetails.user_id, requestData.hangoutId]);
+        hangout_id = ?;`, [+hangoutMemberId, authSessionDetails.user_id, hangoutId]);
         if (hangoutRows.length === 0) {
             res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
-        ;
-        const [chatRows] = await db_1.dbPool.execute(`SELECT
-        chat.message_id,
-        chat.hangout_member_id,
-        chat.message_content,
-        chat.message_timestamp,
-        hangout_members.display_name as sender_name
+        const [chatMessages] = await db_1.dbPool.execute(`SELECT
+        message_id,
+        hangout_member_id,
+        message_content,
+        message_timestamp
       FROM
         chat
-      LEFT JOIN
-        hangout_members ON chat.hangout_member_id = hangout_members.hangout_member_id
       WHERE
-        chat.hangout_id = ?
+        hangout_id = ?
       ORDER BY
-        chat.message_timestamp DESC
-      LIMIT 20 OFFSET ?;`, [requestData.hangoutId, requestData.messageOffset]);
-        res.json({ chatMessages: chatRows });
+        message_timestamp DESC
+      LIMIT ? OFFSET ?;`, [hangoutId, constants_1.HANGOUT_CHAT_FETCH_CHUNK_SIZE, +messageOffset]);
+        chatMessages.reverse();
+        res.json(chatMessages);
     }
     catch (err) {
         console.log(err);
