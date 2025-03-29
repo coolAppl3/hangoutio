@@ -8,6 +8,7 @@ import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from '../util/cookieUtils';
 import { destroyAuthSession } from '../auth/authSessions';
+import { HANGOUT_CHAT_FETCH_CHUNK_SIZE } from '../util/constants';
 
 export const chatRouter: Router = express.Router();
 
@@ -96,7 +97,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       display_name: string,
     };
 
-    const [hangoutRows] = await dbPool.execute<HangoutMemberDetails[]>(
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
         hangout_id,
         display_name
@@ -107,7 +108,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       [requestData.hangoutMemberId]
     );
 
-    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutRows[0];
+    const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
 
     if (!hangoutMemberDetails) {
       res.status(404).json({ message: 'Hangout not found.' });
@@ -225,7 +226,7 @@ chatRouter.get('/', async (req: Request, res: Response) => {
         auth_sessions
       WHERE
         session_id = ?;`,
-      { authSessionId }
+      [authSessionId]
     );
 
     const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
@@ -267,17 +268,18 @@ chatRouter.get('/', async (req: Request, res: Response) => {
         message_id,
         hangout_member_id,
         message_content,
-        message_timestamp,
+        message_timestamp
       FROM
         chat
       WHERE
         hangout_id = ?
       ORDER BY
         message_timestamp DESC
-      LIMIT 30 OFFSET ?;`,
-      [hangoutId, +messageOffset]
+      LIMIT ? OFFSET ?;`,
+      [hangoutId, HANGOUT_CHAT_FETCH_CHUNK_SIZE, +messageOffset]
     );
 
+    chatMessages.reverse();
     res.json(chatMessages);
 
   } catch (err: unknown) {

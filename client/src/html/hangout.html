@@ -1481,6 +1481,51 @@
 
     <!-- hangout conclusion -->
     <section
+      id="chat-section"
+      class="hidden"
+    >
+      <div class="container mb-3 mt-2 md:mt-3">
+        <div id="chat">
+          <div id="chat-container"></div>
+
+          <div class="h-2 w-full block bg-transparent"></div>
+
+          <div class="form-group fixed bottom-0 md:bottom-6 left-0 w-full flex justify-center items-center !mb-0 py-1 bg-description-dark dark:bg-description">
+            <form class="container !mx-0 flex items-end">
+              <textarea
+                name="chat-textarea"
+                id="chat-textarea"
+                placeholder="Type a message"
+                class="placeholder-description/50 dark:placeholder-description-dark/50 !border-secondary dark:!border-secondary-dark !bg-secondary dark:!bg-secondary-dark resize-none h-[4.2rem] min-h-[4.2rem] focus:!border-cta dark:focus:!border-cta-dark w-full"
+              ></textarea>
+
+              <button
+                type="submit"
+                class="ml-1 group/btn"
+              >
+                <div class="svg w-[4.2rem] h-[4.2rem]">
+                  <svg
+                    width="501"
+                    height="500"
+                    viewBox="0 0 501 500"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M441.442 261.159C452.033 257.49 452.033 242.51 441.441 238.841L65.73 108.691C54.8647 104.927 45.5751 117.333 52.2449 126.7L131.428 237.902H213.2C219.723 237.902 225.01 243.189 225.01 249.711C225.01 256.233 219.723 261.52 213.2 261.52L131.84 261.52L52.2449 373.3C45.5751 382.667 54.8647 395.073 65.7301 391.309L441.442 261.159Z"
+                      class="fill-title dark:fill-title-dark group-hover/btn:fill-cta dark:group-hover/btn:fill-cta-dark"
+                    />
+                  </svg>
+                </div>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- hangout conclusion -->
+    <section
       id="conclusion-section"
       class="hidden"
     >

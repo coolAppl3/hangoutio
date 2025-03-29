@@ -72,6 +72,7 @@ export function directlyNavigateHangoutSections(navigateTo: string): void {
   hidePhoneNavMenu();
 
   document.dispatchEvent(new CustomEvent(`loadSection-${navigateTo}`));
+  toggleFooterVisibility(navigateTo);
 };
 
 function displayPhoneNavMenu(): void {
@@ -121,4 +122,14 @@ export function updateHangoutSettingsNavButtons(): void {
   };
 
   settingsNavButtons.forEach((btn: HTMLButtonElement) => btn.classList.remove('hidden'));
+};
+
+function toggleFooterVisibility(navigateTo: string): void {
+  if (navigateTo === 'chat') {
+    document.querySelector('footer')?.classList.add('hidden');
+
+    return;
+  };
+
+  document.querySelector('footer')?.classList.remove('hidden');
 };
