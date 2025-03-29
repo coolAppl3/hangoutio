@@ -1534,6 +1534,31 @@
   }
 }
 
+// hangout chat --- ---
+#chat {
+
+  &-container {
+    @apply overflow-y-auto;
+    max-height: calc(100svh - 24rem);
+
+    @media(max-width: 830px) {
+      max-height: calc(100svh - 21rem);
+    }
+
+    .message {
+      @apply p-1 mb-1 last:mb-2 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
+
+      span.message-sent-by {
+        @apply mb-[4px] text-xs md:text-sm font-bold text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
+      }
+
+      p.message-content {
+        @apply text-sm md:text-base text-description dark:text-description-dark mb-1 last:mb-0;
+      }
+    }
+  }
+}
+
 // hangout members --- ---
 #members {
 
@@ -1626,6 +1651,7 @@
 #events {
 
   &-container {
+    @apply mb-2;
 
     &-inner {
 
@@ -1634,7 +1660,7 @@
       }
 
       .event {
-        @apply mb-1 flex flex-col justify-between items-start p-2 rounded-sm bg-secondary dark:bg-secondary-dark;
+        @apply mb-1 last:mb-0 flex flex-col justify-between items-start p-2 rounded-sm bg-secondary dark:bg-secondary-dark;
 
         span.created-on {
           @apply text-xs md:text-sm font-bold text-title dark:text-title-dark mb-1;

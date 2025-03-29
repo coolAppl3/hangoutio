@@ -715,7 +715,7 @@ function initMembersSectionMutationObserver(): void {
     return;
   };
 
-  const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+  const mutationObserver: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
     for (const mutation of mutations) {
       if (mutation.attributeName === 'class' && membersSection.classList.contains('hidden')) {
         if (!globalHangoutState.data || !membersSection) {
@@ -726,12 +726,12 @@ function initMembersSectionMutationObserver(): void {
         hangoutMembersState.membersSectionMutationObserverActive = false;
         membersSearchInput && (membersSearchInput.value = '');
 
-        observer.disconnect();
+        mutationObserver.disconnect();
         break;
       };
     };
   });
 
-  observer.observe(membersSection, { attributes: true, attributeFilter: ['class'], subtree: false });
+  mutationObserver.observe(membersSection, { attributes: true, attributeFilter: ['class'] });
   hangoutMembersState.membersSectionMutationObserverActive = true;
 };

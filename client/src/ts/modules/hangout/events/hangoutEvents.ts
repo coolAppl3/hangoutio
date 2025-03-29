@@ -33,6 +33,7 @@ const eventsSection: HTMLElement | null = document.querySelector('#events-sectio
 
 const eventsContainer: HTMLDivElement | null = document.querySelector('#events-container');
 const eventsSearchInput: HTMLInputElement | null = document.querySelector('#events-search-input');
+const renderMoreEventsBtn: HTMLButtonElement | null = document.querySelector('#render-more-events-btn');
 
 export function hangoutEvents(): void {
   loadEventListeners();
@@ -40,7 +41,9 @@ export function hangoutEvents(): void {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-events', initHangoutEvents);
+
   eventsSearchInput?.addEventListener('keyup', debounceEventSearch);
+  renderMoreEventsBtn?.addEventListener('click', renderMoreEvents);
 };
 
 async function initHangoutEvents(): Promise<void> {
@@ -90,6 +93,13 @@ function renderEventsContainer(): void {
 
   if (hangoutEventsState.filteredHangoutEvents.length === 0) {
     innerEventsContainer.appendChild(createParagraphElement('no-events-found', 'No events found'));
+  };
+
+  if (hangoutEventsState.eventsRenderLimit <= hangoutEventsState.filteredHangoutEvents.length) {
+    renderMoreEventsBtn?.classList.remove('hidden');
+
+  } else {
+    renderMoreEventsBtn?.classList.add('hidden');
   };
 
   eventsContainer.firstElementChild?.remove();
@@ -187,6 +197,11 @@ function initMembersSectionMutationObserver(): void {
 
   mutationObserver.observe(eventsSection, { attributes: true, attributeFilter: ['class'] });
   hangoutEventsState.membersSectionMutationObserverActive = true;
+};
+
+function renderMoreEvents(): void {
+  hangoutEventsState.eventsRenderLimit += 20;
+  renderEventsContainer();
 };
 
 function createEventElement(event: HangoutEvent): HTMLDivElement {
