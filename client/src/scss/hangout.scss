@@ -1554,7 +1554,7 @@
       word-break: break-word;
 
       &.sent-by-user {
-        @apply ml-auto mr-0 md:mr-0 bg-cta/50 dark:bg-cta-dark/85;
+        @apply ml-auto mr-0 md:mr-0 bg-cta/50 dark:bg-[#ABABAC];
 
         .message-container-content,
         .message-container-time {
@@ -1578,7 +1578,7 @@
         }
 
         &-time {
-          @apply text-xs text-description dark:text-description-dark ml-auto min-w-fit;
+          @apply font-normal text-xs text-description dark:text-description-dark ml-auto min-w-fit;
         }
       }
     }
