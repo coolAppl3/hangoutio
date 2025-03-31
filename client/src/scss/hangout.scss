@@ -1539,21 +1539,47 @@
 
   &-container {
     @apply overflow-y-auto;
+    scrollbar-color: #777 transparent;
+
     max-height: calc(100svh - 24rem);
+    min-height: calc(100svh - 24rem);
 
     @media(max-width: 830px) {
       max-height: calc(100svh - 21rem);
+      min-height: calc(100svh - 21rem);
     }
 
     .message {
-      @apply p-1 mb-1 last:mb-2 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
+      @apply p-1 mb-[4px] last:mb-2 md:last:mb-4 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start;
+      word-break: break-word;
 
-      span.message-sent-by {
+      &.sent-by-user {
+        @apply ml-auto mr-0 md:mr-0 bg-cta/50 dark:bg-cta-dark/85;
+
+        .message-container-content,
+        .message-container-time {
+          @apply dark:text-title;
+        }
+      }
+
+      &.new-sender {
+        @apply mt-2 first:mt-0
+      }
+
+      &-sent-by {
         @apply mb-[4px] text-xs md:text-sm font-bold text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
       }
 
-      p.message-content {
-        @apply text-sm md:text-base text-description dark:text-description-dark mb-1 last:mb-0;
+      &-container {
+        @apply flex justify-between items-end w-full;
+
+        &-content {
+          @apply text-sm md:text-base text-description dark:text-description-dark mr-1;
+        }
+
+        &-time {
+          @apply text-xs text-description dark:text-description-dark ml-auto min-w-fit;
+        }
       }
     }
   }

@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_CHAT_FETCH_CHUNK_SIZE } from "../../global/clientConstants";
+import { getTime } from "../../global/dateTimeUtils";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -71,13 +72,14 @@ function insertChatMessages(messages: ChatMessage[]): void {
   const fragment: DocumentFragment = new DocumentFragment();
 
   for (const message of messages) {
-    if (message.hangout_member_id === senderMemberId) {
-      fragment.appendChild(createMessageElement(message, true));
-      continue;
-    };
+    const isSameSender: boolean = message.hangout_member_id === senderMemberId;
+    const isUser: boolean = message.hangout_member_id === globalHangoutState.data?.hangoutMemberId;
 
-    senderMemberId = message.hangout_member_id;
-    fragment.appendChild(createMessageElement(message));
+    fragment.appendChild(createMessageElement(message, isSameSender, isUser));
+
+    if (!isSameSender) {
+      senderMemberId = message.hangout_member_id;
+    };
   };
 
   chatContainer.insertBefore(fragment, chatContainer.firstElementChild);
@@ -134,7 +136,6 @@ async function getHangoutMessages(): Promise<void> {
 
     const status: number = axiosError.status;
     const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -164,14 +165,28 @@ function hideHangoutPhoneNav(hide: boolean): void {
   hangoutPhoneNavBtn?.classList.add('hidden');
 };
 
-function createMessageElement(message: ChatMessage, isSameSender: boolean = false): HTMLDivElement {
+function createMessageElement(message: ChatMessage, isSameSender: boolean, isUser: boolean): HTMLDivElement {
   const messageElement: HTMLDivElement = createDivElement('message');
 
   if (!isSameSender) {
-    const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);
-    messageElement.appendChild(createSpanElement('message-sent-by', senderDisplayName || 'Former member'));
+    messageElement.classList.add('new-sender');
+
+    if (!isUser) {
+      const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);
+      messageElement.appendChild(createSpanElement('message-sent-by', senderDisplayName || 'Former member'));
+    };
   };
 
-  messageElement.appendChild(createParagraphElement('message-content', message.message_content));
+  if (isUser) {
+    messageElement.classList.add('sent-by-user');
+  };
+
+  const messageContainer: HTMLDivElement = createDivElement('message-container');
+  messageContainer.appendChild(createParagraphElement('message-container-content', message.message_content));
+  messageContainer.appendChild(createSpanElement('message-container-time', getTime(new Date(message.message_timestamp))));
+
+  messageElement.appendChild(messageContainer);
+
+
   return messageElement;
 };
