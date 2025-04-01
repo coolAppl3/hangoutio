@@ -1550,7 +1550,7 @@
     }
 
     .message {
-      @apply p-1 mb-[4px] last:mb-2 md:last:mb-4 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start;
+      @apply p-1 mb-[4px] last:mb-2 md:last:mb-4 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden;
       word-break: break-word;
 
       &.sent-by-user {
@@ -1582,6 +1582,10 @@
         }
       }
     }
+  }
+
+  #chat-textarea {
+    scrollbar-color: #777 transparent;
   }
 }
 

@@ -1491,11 +1491,20 @@
           <div class="h-2 w-full block bg-transparent"></div>
 
           <div class="form-group fixed bottom-0 md:bottom-6 left-0 w-full flex justify-center items-center !mb-0 py-1 bg-description-dark dark:bg-description">
-            <form class="container !mx-0 flex items-end">
+            <form
+              id="chat-form"
+              class="container !mx-0 flex items-end relative"
+            >
+              <span
+                id="chat-error-span"
+                class="text-xs font-medium leading-[1] text-danger dark:text-danger-dark absolute top-[-2.4rem] left-2 hidden"
+              ></span>
+
               <textarea
                 name="chat-textarea"
                 id="chat-textarea"
                 placeholder="Type a message"
+                maxlength="2000"
                 class="placeholder-description/50 dark:placeholder-description-dark/50 !border-secondary dark:!border-secondary-dark !bg-secondary dark:!bg-secondary-dark resize-none h-[4.2rem] min-h-[4.2rem] focus:!border-cta dark:focus:!border-cta-dark w-full"
               ></textarea>
 
