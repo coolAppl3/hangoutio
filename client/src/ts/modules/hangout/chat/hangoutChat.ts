@@ -56,7 +56,9 @@ function loadEventListeners(): void {
 };
 
 async function initHangoutChat(): Promise<void> {
-  chatTextarea?.focus();
+  if (navigator.maxTouchPoints === 0) {
+    chatTextarea?.focus();
+  };
 
   if (hangoutChatState.isLoaded) {
     return;
