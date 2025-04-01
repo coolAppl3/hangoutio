@@ -1538,7 +1538,7 @@
 #chat {
 
   &-container {
-    @apply overflow-y-auto;
+    @apply overflow-y-auto md:pb-4;
     scrollbar-color: #777 transparent;
 
     max-height: calc(100svh - 24rem);
@@ -1550,11 +1550,11 @@
     }
 
     .message {
-      @apply p-1 mb-[4px] last:mb-2 md:last:mb-4 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden;
+      @apply p-1 mb-[4px] last:mb-0 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden;
       word-break: break-word;
 
       &.sent-by-user {
-        @apply ml-auto mr-0 md:mr-0 bg-cta/50 dark:bg-[#ABABAC];
+        @apply ml-auto mr-1 bg-cta/50 dark:bg-[#ABABAC];
 
         .message-container-content,
         .message-container-time {
