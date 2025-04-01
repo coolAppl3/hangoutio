@@ -1546,7 +1546,7 @@
 #chat {
 
   &-container {
-    @apply overflow-y-auto md:pb-4;
+    @apply overflow-y-auto md:pb-4 relative;
     scrollbar-color: #777 transparent;
 
     max-height: calc(100svh - 24rem);
@@ -1555,6 +1555,10 @@
     @media(max-width: 830px) {
       max-height: calc(100svh - 21rem);
       min-height: calc(100svh - 21rem);
+    }
+
+    .no-messages {
+      @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-2 w-fit rounded-[20rem] block absolute bottom-0 left-0 right-0 mx-auto;
     }
 
     .message {

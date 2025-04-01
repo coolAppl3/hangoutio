@@ -79,7 +79,6 @@ function insertChatMessages(messages: ChatMessage[]): void {
     return;
   };
 
-
   if (hangoutChatState.messages[0]?.hangout_member_id === messages[messages.length - 1]?.hangout_member_id) {
     chatContainer.firstElementChild?.querySelector('.message-sent-by')?.remove();
   };
@@ -99,7 +98,9 @@ function insertChatMessages(messages: ChatMessage[]): void {
   };
 
   chatContainer.insertBefore(fragment, chatContainer.firstElementChild);
+
   scrollChatToBottom();
+  removeNoMessagesElement();
 };
 
 function insertSingleChatMessage(message: ChatMessage): void {
@@ -110,6 +111,7 @@ function insertSingleChatMessage(message: ChatMessage): void {
   chatContainer?.appendChild(chatElement);
 
   scrollChatToBottom();
+  removeNoMessagesElement();
 };
 
 async function getHangoutMessages(): Promise<void> {
@@ -380,4 +382,8 @@ function repositionHangoutNavBtn(nudgeUp: boolean): void {
 
 function scrollChatToBottom(): void {
   chatContainer?.scrollTo(0, chatContainer.scrollHeight);
+};
+
+function removeNoMessagesElement(): void {
+  chatContainer?.querySelector('.no-messages')?.remove();
 };
