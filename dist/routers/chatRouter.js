@@ -53,19 +53,19 @@ exports.chatRouter.post('/', async (req, res) => {
     }
     ;
     const requestData = req.body;
-    const expectedKeys = ['hangoutMemberId', 'messageContent'];
+    const expectedKeys = ['hangoutMemberId', 'hangoutId', 'messageContent'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
     if (!Number.isInteger(requestData.hangoutMemberId)) {
-        res.status(400).json({ message: 'Invalid hangout member Id', reason: 'hangoutMemberId' });
+        res.status(400).json({ message: 'Invalid hangout member Id' });
         return;
     }
     ;
     if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
-        res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+        res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
     ;
@@ -83,7 +83,7 @@ exports.chatRouter.post('/', async (req, res) => {
       FROM
         auth_sessions
       WHERE
-        session_id = ?;`, { authSessionId });
+        session_id = ?;`, [authSessionId]);
         const authSessionDetails = authSessionRows[0];
         if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -101,6 +101,8 @@ exports.chatRouter.post('/', async (req, res) => {
         ;
         const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
         hangout_id,
+        account_id,
+        guest_id,
         display_name
       FROM
         hangout_members
@@ -131,15 +133,13 @@ exports.chatRouter.post('/', async (req, res) => {
         message_content,
         message_timestamp
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, hangoutMemberDetails.hangout_id, requestData.messageContent, messageTimestamp]);
-        ;
         const chatMessage = {
-            messageId: resultSetHeader.insertId,
-            hangoutMemberId: requestData.hangoutMemberId,
-            hangoutId: hangoutMemberDetails.hangout_id,
-            messageContent: requestData.messageContent,
-            messageTimestamp,
+            message_id: resultSetHeader.insertId,
+            hangout_member_id: requestData.hangoutMemberId,
+            message_content: requestData.messageContent,
+            message_timestamp: messageTimestamp,
         };
-        res.status(201).json({ chatMessage });
+        res.status(201).json(chatMessage);
     }
     catch (err) {
         console.log(err);

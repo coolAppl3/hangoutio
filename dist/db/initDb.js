@@ -312,7 +312,7 @@ async function createChatTable() {
         message_id INT PRIMARY KEY AUTO_INCREMENT,
         hangout_member_id INT,
         hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
-        message_content VARCHAR(600) NOT NULL,
+        message_content VARCHAR(2000) NOT NULL,
         message_timestamp BIGINT NOT NULL,
         FOREIGN KEY (hangout_member_id) REFERENCES hangout_members(hangout_member_id) ON DELETE SET NULL,
         FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE

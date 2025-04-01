@@ -7,6 +7,6 @@ export function isValidMessageContent(message: string): boolean {
     return false;
   };
 
-  const messageRegex: RegExp = /^[ -~\r\n]{1,500}$/;
+  const messageRegex: RegExp = /^[ -~\r\n]{1,2000}$/;
   return messageRegex.test(message);
 };

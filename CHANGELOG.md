@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.66] (2025-04-01)
+
+### Features
+
+- Vastly improved the look of chat messages and how they're rendered.
+- Raised the character limit on chat messages from 500 to 2000.
+- Implemented chat sending logic.
+
+
+### Bug Fixes
+
+- Fixed a few bugs in `chatRouter.ts`.
+
+
 ## [0.4.65] (2025-03-29)
 
 ### Features

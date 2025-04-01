@@ -9,6 +9,7 @@ import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from '../util/cookieUtils';
 import { destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_CHAT_FETCH_CHUNK_SIZE } from '../util/constants';
+import { ChatMessage } from '../util/hangoutTypes';
 
 export const chatRouter: Router = express.Router();
 
@@ -35,19 +36,19 @@ chatRouter.post('/', async (req: Request, res: Response) => {
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['hangoutMemberId', 'messageContent'];
+  const expectedKeys: string[] = ['hangoutMemberId', 'hangoutId', 'messageContent'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ message: 'Invalid hangout member Id', reason: 'hangoutMemberId' });
+    res.status(400).json({ message: 'Invalid hangout member Id' });
     return;
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
 
@@ -72,7 +73,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
         auth_sessions
       WHERE
         session_id = ?;`,
-      { authSessionId }
+      [authSessionId]
     );
 
     const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
@@ -94,12 +95,16 @@ chatRouter.post('/', async (req: Request, res: Response) => {
 
     interface HangoutMemberDetails extends RowDataPacket {
       hangout_id: string,
+      account_id: number | null,
+      guest_id: number | null,
       display_name: string,
     };
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
         hangout_id,
+        account_id,
+        guest_id,
         display_name
       FROM
         hangout_members
@@ -140,23 +145,15 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       [requestData.hangoutMemberId, hangoutMemberDetails.hangout_id, requestData.messageContent, messageTimestamp]
     );
 
-    interface ChatMessage {
-      messageId: number,
-      hangoutMemberId: number,
-      hangoutId: string,
-      messageContent: string,
-      messageTimestamp: number,
+
+    const chatMessage = {
+      message_id: resultSetHeader.insertId,
+      hangout_member_id: requestData.hangoutMemberId,
+      message_content: requestData.messageContent,
+      message_timestamp: messageTimestamp,
     };
 
-    const chatMessage: ChatMessage = {
-      messageId: resultSetHeader.insertId,
-      hangoutMemberId: requestData.hangoutMemberId,
-      hangoutId: hangoutMemberDetails.hangout_id,
-      messageContent: requestData.messageContent,
-      messageTimestamp,
-    };
-
-    res.status(201).json({ chatMessage });
+    res.status(201).json(chatMessage);
 
     // TODO: websocket logic
 
@@ -263,7 +260,7 @@ chatRouter.get('/', async (req: Request, res: Response) => {
       return;
     };
 
-    const [chatMessages] = await dbPool.execute<RowDataPacket[]>(
+    const [chatMessages] = await dbPool.execute<ChatMessage[]>(
       `SELECT
         message_id,
         hangout_member_id,
