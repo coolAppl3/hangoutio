@@ -12,6 +12,7 @@ import { ChatMessage } from "../hangoutTypes";
 interface HangoutChatState {
   isLoaded: boolean,
   oldestMessageLoaded: boolean,
+  chatSectionMutationObserverActive: boolean,
 
   messageOffset: number,
   fetchChunkSize: number,
@@ -22,6 +23,7 @@ interface HangoutChatState {
 const hangoutChatState: HangoutChatState = {
   isLoaded: false,
   oldestMessageLoaded: false,
+  chatSectionMutationObserverActive: false,
 
   messageOffset: 0,
   fetchChunkSize: HANGOUT_CHAT_FETCH_CHUNK_SIZE,
@@ -29,6 +31,7 @@ const hangoutChatState: HangoutChatState = {
   messages: [],
 };
 
+const chatSection: HTMLElement | null = document.querySelector('#chat-section');
 const chatContainer: HTMLDivElement | null = document.querySelector('#chat-container');
 const hangoutPhoneNavBtn: HTMLButtonElement | null = document.querySelector('#hangout-phone-nav-btn');
 
@@ -42,7 +45,6 @@ export function hangoutChat(): void {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-chat', initHangoutChat);
-
   chatForm?.addEventListener('submit', sendHangoutMessage);
 
   chatTextarea?.addEventListener('keydown', handleChatTextareaKeydownEvents);
@@ -50,14 +52,15 @@ function loadEventListeners(): void {
     autoExpandChatTextarea();
     validateChatMessage();
   });
-
-  chatTextarea?.addEventListener('focus', () => hideHangoutPhoneNav(true));
-  chatTextarea?.addEventListener('blur', () => hideHangoutPhoneNav(false));
 };
 
 async function initHangoutChat(): Promise<void> {
   if (navigator.maxTouchPoints === 0) {
     chatTextarea?.focus();
+  };
+
+  if (!hangoutChatState.chatSectionMutationObserverActive) {
+    initChatSectionMutationObserver();
   };
 
   if (hangoutChatState.isLoaded) {
@@ -343,13 +346,36 @@ function autoExpandChatTextarea(): void {
   chatTextarea.style.height = `${newHeight}px`;
 };
 
-function hideHangoutPhoneNav(hide: boolean): void {
-  if (!hide) {
-    hangoutPhoneNavBtn?.classList.remove('hidden');
+function initChatSectionMutationObserver(): void {
+  if (!chatSection) {
     return;
   };
 
-  hangoutPhoneNavBtn?.classList.add('hidden');
+  const mutationObserver: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === 'class' && chatSection.classList.contains('hidden')) {
+        repositionHangoutNavBtn(false);
+        hangoutChatState.chatSectionMutationObserverActive = false;
+
+        mutationObserver.disconnect();
+        return;
+      };
+    };
+  });
+
+  mutationObserver.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
+  hangoutChatState.chatSectionMutationObserverActive = true;
+
+  repositionHangoutNavBtn(true);
+};
+
+function repositionHangoutNavBtn(nudgeUp: boolean): void {
+  if (!nudgeUp) {
+    hangoutPhoneNavBtn?.classList.remove('nudge-up');
+    return;
+  };
+
+  hangoutPhoneNavBtn?.classList.add('nudge-up');
 };
 
 function scrollChatToBottom(): void {

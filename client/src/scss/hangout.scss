@@ -817,6 +817,7 @@
 
 #hangout-desktop-nav,
 #hangout-phone-nav {
+
   &[data-selected="dashboard"] {
 
     [data-goTo="dashboard"] {
@@ -879,6 +880,13 @@
     [data-goTo="settings"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
+  }
+}
+
+#hangout-phone-nav {
+
+  #hangout-phone-nav-btn.nudge-up {
+    @apply bottom-[11rem];
   }
 }
 
