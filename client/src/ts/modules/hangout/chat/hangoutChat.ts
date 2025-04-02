@@ -55,6 +55,8 @@ function loadEventListeners(): void {
 };
 
 async function initHangoutChat(): Promise<void> {
+  scrollChatToBottom();
+
   if (navigator.maxTouchPoints === 0) {
     chatTextarea?.focus();
   };
