@@ -817,6 +817,7 @@
 
 #hangout-desktop-nav,
 #hangout-phone-nav {
+
   &[data-selected="dashboard"] {
 
     [data-goTo="dashboard"] {
@@ -879,6 +880,13 @@
     [data-goTo="settings"] {
       @apply bg-cta dark:bg-cta-dark text-title hover:brightness-100 border-b-transparent;
     }
+  }
+}
+
+#hangout-phone-nav {
+
+  #hangout-phone-nav-btn.nudge-up {
+    @apply bottom-[11rem];
   }
 }
 
@@ -1536,25 +1544,34 @@
 
 // hangout chat --- ---
 #chat {
+  @apply overflow-y-auto md:pb-4 relative flex flex-col justify-end;
+
+  max-height: calc(100svh - 24rem);
+  min-height: calc(100svh - 24rem);
+
+  @media(max-width: 830px) {
+    max-height: calc(100svh - 21rem);
+    min-height: calc(100svh - 21rem);
+  }
 
   &-container {
     @apply overflow-y-auto;
     scrollbar-color: #777 transparent;
 
-    max-height: calc(100svh - 24rem);
-    min-height: calc(100svh - 24rem);
+    .no-messages {
+      @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mb-2 w-fit rounded-[20rem] block absolute bottom-0 left-0 right-0 mx-auto;
+    }
 
-    @media(max-width: 830px) {
-      max-height: calc(100svh - 21rem);
-      min-height: calc(100svh - 21rem);
+    .date-stamp {
+      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-fit py-[4px] px-2 mb-2 rounded-[20rem] mt-auto;
     }
 
     .message {
-      @apply p-1 mb-[4px] last:mb-2 md:last:mb-4 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden;
+      @apply h-fit p-1 mb-[4px] last:mb-0 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden;
       word-break: break-word;
 
       &.sent-by-user {
-        @apply ml-auto mr-0 md:mr-0 bg-cta/50 dark:bg-[#ABABAC];
+        @apply ml-auto mr-1 bg-cta/50 dark:bg-[#ABABAC];
 
         .message-container-content,
         .message-container-time {

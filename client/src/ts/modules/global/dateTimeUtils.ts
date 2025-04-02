@@ -1,12 +1,12 @@
 import { hourMilliseconds, minuteMilliseconds } from "./clientConstants";
 
-export function getDateAndTimeString(timestamp: number): string {
+export function getDateAndTimeString(timestamp: number, omitTime: boolean = false): string {
   const dateObj: Date = new Date(timestamp);
 
   const date: number = dateObj.getDate();
   const ordinalSuffix: string = getDateOrdinalSuffix(date);
 
-  return `${getMonthName(dateObj)} ${date}${ordinalSuffix}, ${getTime(dateObj)}`;
+  return `${getMonthName(dateObj)} ${date}${ordinalSuffix}${omitTime ? '' : `, ${getTime(dateObj)}`}`;
 };
 
 export function getMonthName(date: Date): string {

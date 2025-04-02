@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { HANGOUT_CHAT_FETCH_CHUNK_SIZE } from "../../global/clientConstants";
-import { getTime } from "../../global/dateTimeUtils";
+import { dayMilliseconds, HANGOUT_CHAT_FETCH_CHUNK_SIZE } from "../../global/clientConstants";
+import { getDateAndTimeString, getTime } from "../../global/dateTimeUtils";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -12,6 +12,7 @@ import { ChatMessage } from "../hangoutTypes";
 interface HangoutChatState {
   isLoaded: boolean,
   oldestMessageLoaded: boolean,
+  chatSectionMutationObserverActive: boolean,
 
   messageOffset: number,
   fetchChunkSize: number,
@@ -22,6 +23,7 @@ interface HangoutChatState {
 const hangoutChatState: HangoutChatState = {
   isLoaded: false,
   oldestMessageLoaded: false,
+  chatSectionMutationObserverActive: false,
 
   messageOffset: 0,
   fetchChunkSize: HANGOUT_CHAT_FETCH_CHUNK_SIZE,
@@ -29,6 +31,7 @@ const hangoutChatState: HangoutChatState = {
   messages: [],
 };
 
+const chatSection: HTMLElement | null = document.querySelector('#chat-section');
 const chatContainer: HTMLDivElement | null = document.querySelector('#chat-container');
 const hangoutPhoneNavBtn: HTMLButtonElement | null = document.querySelector('#hangout-phone-nav-btn');
 
@@ -42,7 +45,6 @@ export function hangoutChat(): void {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-chat', initHangoutChat);
-
   chatForm?.addEventListener('submit', sendHangoutMessage);
 
   chatTextarea?.addEventListener('keydown', handleChatTextareaKeydownEvents);
@@ -50,13 +52,18 @@ function loadEventListeners(): void {
     autoExpandChatTextarea();
     validateChatMessage();
   });
-
-  chatTextarea?.addEventListener('focus', () => hideHangoutPhoneNav(true));
-  chatTextarea?.addEventListener('blur', () => hideHangoutPhoneNav(false));
 };
 
 async function initHangoutChat(): Promise<void> {
-  chatTextarea?.focus();
+  scrollChatToBottom();
+
+  if (navigator.maxTouchPoints === 0) {
+    chatTextarea?.focus();
+  };
+
+  if (!hangoutChatState.chatSectionMutationObserverActive) {
+    initChatSectionMutationObserver();
+  };
 
   if (hangoutChatState.isLoaded) {
     return;
@@ -74,19 +81,28 @@ function insertChatMessages(messages: ChatMessage[]): void {
     return;
   };
 
-
   if (hangoutChatState.messages[0]?.hangout_member_id === messages[messages.length - 1]?.hangout_member_id) {
     chatContainer.firstElementChild?.querySelector('.message-sent-by')?.remove();
   };
 
   let senderMemberId: number = 0;
+  let lastMessageTimestamp: number = messages[0]!.message_timestamp; // guaranteed not undefined
+
   const fragment: DocumentFragment = new DocumentFragment();
+  fragment.appendChild(createDateStampElement(lastMessageTimestamp));
 
   for (const message of messages) {
     const isSameSender: boolean = message.hangout_member_id === senderMemberId;
     const isUser: boolean = message.hangout_member_id === globalHangoutState.data?.hangoutMemberId;
 
+    const notInSameDay: boolean = Math.abs(lastMessageTimestamp - message.message_timestamp) > dayMilliseconds || new Date(lastMessageTimestamp).getDate() !== new Date(message.message_timestamp).getDate();
+
+    if (notInSameDay) {
+      fragment.appendChild(createDateStampElement(message.message_timestamp));
+    };
+
     fragment.appendChild(createMessageElement(message, isSameSender, isUser));
+    lastMessageTimestamp = message.message_timestamp;
 
     if (!isSameSender) {
       senderMemberId = message.hangout_member_id;
@@ -94,17 +110,34 @@ function insertChatMessages(messages: ChatMessage[]): void {
   };
 
   chatContainer.insertBefore(fragment, chatContainer.firstElementChild);
+
   scrollChatToBottom();
+  removeNoMessagesElement();
 };
 
 function insertSingleChatMessage(message: ChatMessage): void {
   const messages: ChatMessage[] = hangoutChatState.messages;
   const isSameSender: boolean = messages[messages.length - 1]?.hangout_member_id === globalHangoutState.data?.hangoutMemberId;
 
+  if (messages.length === 1) {
+    chatContainer?.appendChild(createDateStampElement(message.message_timestamp));
+
+  } else {
+    // length - 2 since the message passed in is now at the last index based on where this function is called
+    let lastMessageTimestamp: number | undefined = messages[messages.length - 2]?.message_timestamp;
+
+    if (lastMessageTimestamp) {
+      const notInSameDay: boolean = Math.abs(lastMessageTimestamp - message.message_timestamp) > dayMilliseconds || new Date(lastMessageTimestamp).getDate() !== new Date(message.message_timestamp).getDate();
+
+      notInSameDay && chatContainer?.appendChild(createDateStampElement(message.message_timestamp));
+    };
+  };
+
   const chatElement: HTMLDivElement = createMessageElement(message, isSameSender, true);
   chatContainer?.appendChild(chatElement);
 
   scrollChatToBottom();
+  removeNoMessagesElement();
 };
 
 async function getHangoutMessages(): Promise<void> {
@@ -261,32 +294,6 @@ async function handleChatTextareaKeydownEvents(e: KeyboardEvent): Promise<void> 
   };
 };
 
-function createMessageElement(message: ChatMessage, isSameSender: boolean, isUser: boolean): HTMLDivElement {
-  const messageElement: HTMLDivElement = createDivElement('message');
-
-  if (!isSameSender) {
-    messageElement.classList.add('new-sender');
-
-    if (!isUser) {
-      const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);
-      messageElement.appendChild(createSpanElement('message-sent-by', senderDisplayName || 'Former member'));
-    };
-  };
-
-  if (isUser) {
-    messageElement.classList.add('sent-by-user');
-  };
-
-  const messageContainer: HTMLDivElement = createDivElement('message-container');
-  messageContainer.appendChild(createParagraphElement('message-container-content', message.message_content));
-  messageContainer.appendChild(createSpanElement('message-container-time', getTime(new Date(message.message_timestamp))));
-
-  messageElement.appendChild(messageContainer);
-
-
-  return messageElement;
-};
-
 function validateChatMessage(): boolean {
   if (!chatTextarea || !chatErrorSpan) {
     return false;
@@ -341,15 +348,73 @@ function autoExpandChatTextarea(): void {
   chatTextarea.style.height = `${newHeight}px`;
 };
 
-function hideHangoutPhoneNav(hide: boolean): void {
-  if (!hide) {
-    hangoutPhoneNavBtn?.classList.remove('hidden');
+function initChatSectionMutationObserver(): void {
+  if (!chatSection) {
     return;
   };
 
-  hangoutPhoneNavBtn?.classList.add('hidden');
+  const mutationObserver: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === 'class' && chatSection.classList.contains('hidden')) {
+        repositionHangoutNavBtn(false);
+        hangoutChatState.chatSectionMutationObserverActive = false;
+
+        mutationObserver.disconnect();
+        return;
+      };
+    };
+  });
+
+  mutationObserver.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
+  hangoutChatState.chatSectionMutationObserverActive = true;
+
+  repositionHangoutNavBtn(true);
+};
+
+function repositionHangoutNavBtn(nudgeUp: boolean): void {
+  if (!nudgeUp) {
+    hangoutPhoneNavBtn?.classList.remove('nudge-up');
+    return;
+  };
+
+  hangoutPhoneNavBtn?.classList.add('nudge-up');
 };
 
 function scrollChatToBottom(): void {
   chatContainer?.scrollTo(0, chatContainer.scrollHeight);
+};
+
+function removeNoMessagesElement(): void {
+  chatContainer?.querySelector('.no-messages')?.remove();
+};
+
+function createMessageElement(message: ChatMessage, isSameSender: boolean, isUser: boolean): HTMLDivElement {
+  const messageElement: HTMLDivElement = createDivElement('message');
+
+  if (!isSameSender) {
+    messageElement.classList.add('new-sender');
+
+    if (!isUser) {
+      const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);
+      messageElement.appendChild(createSpanElement('message-sent-by', senderDisplayName || 'Former member'));
+    };
+  };
+
+  if (isUser) {
+    messageElement.classList.add('sent-by-user');
+  };
+
+  const messageContainer: HTMLDivElement = createDivElement('message-container');
+  messageContainer.appendChild(createParagraphElement('message-container-content', message.message_content));
+  messageContainer.appendChild(createSpanElement('message-container-time', getTime(new Date(message.message_timestamp))));
+
+  messageElement.appendChild(messageContainer);
+
+
+  return messageElement;
+};
+
+function createDateStampElement(timestamp: number): HTMLSpanElement {
+  const dateStampElement: HTMLSpanElement = createSpanElement('date-stamp', getDateAndTimeString(timestamp, true));
+  return dateStampElement;
 };

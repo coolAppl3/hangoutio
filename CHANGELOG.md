@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.67] (2025-04-02)
+
+### Features
+
+- Disabled auto focusing the chat textarea when a touchscreen is detected.
+- Hangout phone navbar button is now nudged up to not cover the button for sending chat messages when the user is in the chat section.
+- Added an indicator if to relay to the user if no messages have been sent in the hangout chat so far.
+- Added date stamp logic to the hangout chat.
+- Chat container will now scroll to the bottom when the user navigates to the chat section, regardless of whether new messages have been received in the meantime.
+- Chat messages are now intuitively rendered from the bottom up.
+
+
+### Bug Fixes
+
+- Implemented a workaround to fix an issue with the V8 engine causing lines to render randomly below the last message in the chat section.
+- Fixed chat messages not piling from the bottom up
+
+
 ## [0.4.66] (2025-04-01)
 
 ### Features
