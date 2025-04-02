@@ -110,8 +110,6 @@ function insertChatMessages(messages: ChatMessage[]): void {
   };
 
   chatContainer.insertBefore(fragment, chatContainer.firstElementChild);
-
-  scrollChatToBottom();
   removeNoMessagesElement();
 };
 
@@ -133,10 +131,7 @@ function insertSingleChatMessage(message: ChatMessage): void {
     };
   };
 
-  const chatElement: HTMLDivElement = createMessageElement(message, isSameSender, true);
-  chatContainer?.appendChild(chatElement);
-
-  scrollChatToBottom();
+  chatContainer?.appendChild(createMessageElement(message, isSameSender, true));
   removeNoMessagesElement();
 };
 
@@ -175,6 +170,8 @@ async function getHangoutMessages(): Promise<void> {
     };
 
     insertChatMessages(messages);
+    scrollChatToBottom();
+
     LoadingModal.remove();
 
   } catch (err: unknown) {
@@ -233,13 +230,13 @@ async function sendHangoutMessage(e: SubmitEvent): Promise<void> {
 
   try {
     const sentMessage: ChatMessage = (await sendHangoutMessageService({ hangoutMemberId, hangoutId, messageContent })).data;
-
     hangoutChatState.messages.push(sentMessage);
+
     insertSingleChatMessage(sentMessage);
+    scrollChatToBottom();
 
     chatTextarea.value = '';
     autoExpandChatTextarea();
-    scrollChatToBottom();
 
   } catch (err: unknown) {
     console.log(err);
