@@ -170,6 +170,10 @@ async function getHangoutMessages(): Promise<void> {
       hangoutChatState.oldestMessageLoaded = true;
     };
 
+    if (messages.length === 0) {
+      chatContainer?.appendChild(createParagraphElement('no-messages', 'No messages found'));
+    };
+
     insertChatMessages(messages);
     LoadingModal.remove();
 
