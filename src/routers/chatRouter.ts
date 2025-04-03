@@ -10,6 +10,7 @@ import { getRequestCookie, removeRequestCookie } from '../util/cookieUtils';
 import { destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_CHAT_FETCH_CHUNK_SIZE } from '../util/constants';
 import { ChatMessage } from '../util/hangoutTypes';
+import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 
 export const chatRouter: Router = express.Router();
 
@@ -145,7 +146,6 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       [requestData.hangoutMemberId, hangoutMemberDetails.hangout_id, requestData.messageContent, messageTimestamp]
     );
 
-
     const chatMessage = {
       message_id: resultSetHeader.insertId,
       hangout_member_id: requestData.hangoutMemberId,
@@ -155,7 +155,13 @@ chatRouter.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json(chatMessage);
 
-    // TODO: websocket logic
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'chat',
+      reason: 'newMessage',
+      data: {
+        chatMessage,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);

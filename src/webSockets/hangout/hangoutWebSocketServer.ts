@@ -62,7 +62,7 @@ function parseJsonString(message: string): unknown | null {
 interface WebSocketData {
   type: string,
   reason: string,
-  data: unknown,
+  data: { [key: string]: unknown },
 };
 
 export function sendHangoutWebSocketMessage(hangoutIds: string[], webSocketData: WebSocketData): void {
