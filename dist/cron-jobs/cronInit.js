@@ -31,10 +31,8 @@ const node_cron_1 = __importDefault(require("node-cron"));
 const accountCronJobs = __importStar(require("./accountCronJobs"));
 const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
 const authCronJobs_1 = require("./authCronJobs");
-const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
-        (0, hangoutWebSocketServer_1.clearExpiredHangoutWebSockets)();
         await hangoutCronJobs.progressHangouts();
         await hangoutCronJobs.concludeSingleSuggestionHangouts();
         await hangoutCronJobs.concludeNoSuggestionHangouts();
