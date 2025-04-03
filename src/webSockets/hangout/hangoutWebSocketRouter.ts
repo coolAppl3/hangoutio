@@ -1,48 +1,35 @@
 import WebSocket from "ws"
 
-interface ValidClientSentMessage {
+interface ValidWebSocketMessage {
   type: string,
   reason: string,
   data: { [key: string]: unknown },
 };
 
-function isValidClientSentMessage(messageContent: unknown): messageContent is ValidClientSentMessage {
-  if (typeof messageContent !== 'object' || messageContent === null) {
+function isValidClientSentMessage(wsMessage: unknown): wsMessage is ValidWebSocketMessage {
+  if (typeof wsMessage !== 'object' || wsMessage === null) {
     return false;
   };
 
-  if (!('type' in messageContent) || typeof messageContent.type !== 'string') {
+  if (!('type' in wsMessage) || typeof wsMessage.type !== 'string') {
     return false;
   };
 
-  if (!('reason' in messageContent) || typeof messageContent.reason !== 'string') {
+  if (!('reason' in wsMessage) || typeof wsMessage.reason !== 'string') {
     return false;
   };
 
-  if (!('data' in messageContent) || typeof messageContent.data !== 'object') {
-    return false;
-  };
-
-  if (messageContent.data === null || Object.getPrototypeOf(messageContent.data) !== Object.prototype) {
+  if (!('data' in wsMessage) || typeof wsMessage.data !== 'object' || wsMessage.data === null) {
     return false;
   };
 
   return true;
 };
 
-export function hangoutWebSocketServerRouter(messageContent: unknown, ws: WebSocket): void {
-  if (!isValidClientSentMessage(messageContent)) {
+export function hangoutWebSocketRouter(wsMessage: unknown, ws: WebSocket): void {
+  if (!isValidClientSentMessage(wsMessage)) {
     return;
   };
 
-  if (messageContent.type === 'chatUpdate') {
-    handleHangoutChatUpdates(messageContent, ws);
-  };
-};
-
-function handleHangoutChatUpdates(messageContent: ValidClientSentMessage, ws: WebSocket): void {
-  if (messageContent.reason === 'userTyping') {
-    // TODO: send user typing to clients.
-    return;
-  };
+  // not in use for now
 };

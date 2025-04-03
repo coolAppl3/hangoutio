@@ -83,12 +83,15 @@ server.on('upgrade', async (req, socket, head) => {
     }
     ;
     hangoutWebSocketServer_1.wss.handleUpgrade(req, socket, head, (ws) => {
+        const wsSet = hangoutWebSocketServer_1.wsMap.get(webSocketDetails.hangoutId);
+        if (!wsSet) {
+            hangoutWebSocketServer_1.wsMap.set(webSocketDetails.hangoutId, new Set());
+            hangoutWebSocketServer_1.wss.emit('connection', ws, req);
+            return;
+        }
+        ;
+        wsSet.add(ws);
         hangoutWebSocketServer_1.wss.emit('connection', ws, req);
-        hangoutWebSocketServer_1.hangoutClients.set(webSocketDetails.hangoutMemberId, {
-            ws,
-            hangoutId: webSocketDetails.hangoutId,
-            createdOn: Date.now(),
-        });
     });
 });
 async function initServer() {

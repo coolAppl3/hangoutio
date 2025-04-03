@@ -1,77 +1,88 @@
+import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
 import { hangoutDashboardState, renderDashboardSection } from "../../modules/hangout/dashboard/hangoutDashboard";
 import { initNextStageTimer } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
-import { HangoutEvent } from "../../modules/hangout/hangoutTypes";
+import { ChatMessage, HangoutEvent } from "../../modules/hangout/hangoutTypes";
 
 interface WebSocketData {
   type: string,
   reason: string,
-  data: unknown,
+  data: { [key: string]: unknown },
 };
 
-export function hangoutWebSocketRouter(WebSocketData: unknown, ws: WebSocket): void {
+function isValidWebSocketData(webSocketData: unknown): webSocketData is WebSocketData {
+  if (typeof webSocketData !== 'object' || webSocketData === null) {
+    return false;
+  };
+
+  if (!('type' in webSocketData) || typeof webSocketData.type !== 'string') {
+    return false;
+  };
+
+  if (!('reason' in webSocketData) || typeof webSocketData.reason !== 'string') {
+    return false;
+  };
+
+  if (!('data' in webSocketData) || typeof webSocketData.data !== 'object' || typeof webSocketData.data === null) {
+    return false;
+  };
+
+  return true;
+};
+
+export function hangoutWebSocketRouter(WebSocketData: unknown): void {
   if (!isValidWebSocketData(WebSocketData)) {
     return;
   };
 
-  if (WebSocketData.type === 'hangoutStageUpdate') {
+  if (WebSocketData.type === 'chat') {
+    handleChatUpdate(WebSocketData);
+    return;
+  };
+
+  if (WebSocketData.type === 'hangoutStage') {
     handleHangoutStageUpdate(WebSocketData);
   };
 
-  if (WebSocketData.type === 'chatUpdate') {
-    handleHangoutChatUpdates(WebSocketData, ws);
-    return;
+  if (WebSocketData.type === 'availabilitySlot') {
+    handleAvailabilitySlotsUpdate(WebSocketData);
   };
 
-  if (WebSocketData.type === 'newData') {
-    handleNewHangoutData(WebSocketData, ws);
-    return;
+  if (WebSocketData.type === 'suggestion') {
+    handleSuggestionsUpdate(WebSocketData);
   };
 
-  if (WebSocketData.type === 'hangoutUtil') {
-    handleHangoutUtilUpdates(WebSocketData, ws);
-  };
-};
-
-function handleHangoutChatUpdates(messageContent: WebSocketData, ws: WebSocket): void {
-  if (messageContent.reason === 'newMessage') {
-    // TODO: share new message.
-    return;
+  if (WebSocketData.type === 'vote') {
+    handleVotesUpdate(WebSocketData);
   };
 
-  if (messageContent.reason === 'userTyping') {
-    // TODO: share user typing.
+  if (WebSocketData.type === 'like') {
+    handleLikesUpdate(WebSocketData);
+  };
+
+  if (WebSocketData.type === 'misc') {
+    handleHangoutMiscUpdate(WebSocketData);
   };
 };
 
-function handleNewHangoutData(messageContent: WebSocketData, ws: WebSocket): void {
-  if (messageContent.reason === 'newAvailabilitySlot') {
-    // TODO: insert and share new slot
+function handleChatUpdate(webSocketData: WebSocketData): void {
+  if (webSocketData.reason !== 'newMessage') {
     return;
   };
 
-  if (messageContent.reason === 'newSuggestions') {
-    // TODO: insert and share new suggestion
+  if (!('chatMessage' in webSocketData.data)) {
+    console.log(webSocketData)
     return;
   };
 
-  if (messageContent.reason === 'newVote') {
-    // TODO: insert and share new vote
-  };
-};
+  const newMessage = webSocketData.data.chatMessage as ChatMessage;
 
-function handleHangoutUtilUpdates(messageContent: WebSocketData, ws: WebSocket): void {
-  if (messageContent.reason === 'memberJoined') {
-    // TODO: insert and share new member
+  if (newMessage.hangout_member_id === globalHangoutState.data?.hangoutMemberId) {
     return;
   };
 
-  if (messageContent.reason === 'memberLeft') {
-    // TODO: share member leaving
-    return;
-  };
-
-  // TODO: Add other hangout events
+  hangoutChatState.messages.push(newMessage);
+  insertSingleChatMessage(newMessage, false);
 };
 
 function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
@@ -118,22 +129,32 @@ function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
   initNextStageTimer();
 };
 
-function isValidWebSocketData(messageContent: unknown): messageContent is WebSocketData {
-  if (typeof messageContent !== 'object' || messageContent === null) {
-    return false;
+function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
+  // TODO: implement
+};
+
+function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
+  // TODO: implement
+};
+
+function handleVotesUpdate(webSocketData: WebSocketData): void {
+  // TODO: implement
+};
+
+function handleLikesUpdate(webSocketData: WebSocketData): void {
+  // TODO: implement
+};
+
+function handleHangoutMiscUpdate(webSocketData: WebSocketData): void {
+  if (webSocketData.reason === 'memberJoined') {
+    // TODO: insert and share new member
+    return;
   };
 
-  if (!('type' in messageContent) || typeof messageContent.type !== 'string') {
-    return false;
+  if (webSocketData.reason === 'memberLeft') {
+    // TODO: share member leaving
+    return;
   };
 
-  if (!('reason' in messageContent) || typeof messageContent.reason !== 'string') {
-    return false;
-  };
-
-  if (!('data' in messageContent) || typeof messageContent.data !== 'object' || typeof messageContent.data === null) {
-    return false;
-  };
-
-  return true;
+  // TODO: Add other hangout events
 };

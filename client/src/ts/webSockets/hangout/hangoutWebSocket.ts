@@ -43,9 +43,7 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
       return;
     };
 
-    console.log(WebSocketData);
-
-    hangoutWebSocketRouter(WebSocketData, hangoutWebSocket);
+    hangoutWebSocketRouter(WebSocketData);
   });
 
   hangoutWebSocket.addEventListener('close', (event) => {

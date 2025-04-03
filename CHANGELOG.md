@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.68] (2025-04-04)
+
+### Features
+
+- Reworked the hangout websocket logic on the backend to be more suited towards sending updates to the clients, instead of active, back-and-forth communication, which won't be necessary.
+- Integrated websocket logic into the chat section to allow for live updates for all members.
+
+
+### Code Refactoring
+
+- Removed the hard-coded "no messages" element in the chat container, in favor of appending it only if no messages are found after the initial fetch.
+
+
+### Bug Fixes
+
+- Implemented another fix to address V8 rendering glitchy lines below chat elements in the chat container.
+
+
 ## [0.4.67] (2025-04-02)
 
 ### Features

@@ -37,6 +37,7 @@ const authUtils = __importStar(require("../auth/authUtils"));
 const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
+const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 exports.chatRouter = express_1.default.Router();
 exports.chatRouter.post('/', async (req, res) => {
     ;
@@ -140,6 +141,13 @@ exports.chatRouter.post('/', async (req, res) => {
             message_timestamp: messageTimestamp,
         };
         res.status(201).json(chatMessage);
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
+            type: 'chat',
+            reason: 'newMessage',
+            data: {
+                chatMessage,
+            },
+        });
     }
     catch (err) {
         console.log(err);

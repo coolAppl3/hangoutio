@@ -1,15 +1,13 @@
 import WebSocket, { WebSocketServer, RawData } from "ws";
-import { hangoutWebSocketServerRouter } from "./hangoutWebSocketRouter";
-import { hourMilliseconds } from "../../util/constants";
+import { hangoutWebSocketRouter } from "./hangoutWebSocketRouter";
 
+export const wsMap: Map<string, Set<WebSocket>> = new Map();
 export const wss: WebSocketServer = new WebSocket.Server({
   noServer: true,
   maxPayload: 1700,
   clientTracking: false,
   perMessageDeflate: false,
 });
-
-console.log('Hangout websocket server started.');
 
 wss.on('connection', (ws: WebSocket) => {
   ws.on('message', (data: RawData) => {
@@ -26,7 +24,7 @@ wss.on('connection', (ws: WebSocket) => {
       return;
     };
 
-    hangoutWebSocketServerRouter(messageContent, ws);
+    hangoutWebSocketRouter(messageContent, ws);
   });
 
   ws.on('error', (err) => {
@@ -37,31 +35,18 @@ wss.on('connection', (ws: WebSocket) => {
     };
   });
 
-  ws.on('close', () => { });
+  ws.on('close', () => {
+    for (const wsSet of wsMap.values()) {
+      const foundAndDeleted: boolean = wsSet.delete(ws);
+
+      if (foundAndDeleted) {
+        return;
+      };
+    };
+  });
 });
 
-interface WebSocketClientData {
-  ws: WebSocket,
-  hangoutId: string,
-  createdOn: number,
-};
-
-export const hangoutClients: Map<number, WebSocketClientData> = new Map();
-
-export function clearExpiredHangoutWebSockets(): void {
-  for (const [hangoutMemberId, webSocketClientData] of hangoutClients) {
-    if (webSocketClientData.createdOn + (hourMilliseconds * 6) < Date.now()) {
-      webSocketClientData.ws.close();
-      hangoutClients.delete(hangoutMemberId);
-
-      continue;
-    };
-
-    if (webSocketClientData.ws.readyState === 2 || webSocketClientData.ws.readyState === 3) {
-      hangoutClients.delete(hangoutMemberId);
-    };
-  };
-};
+console.log('Hangout websocket server started.');
 
 function parseJsonString(message: string): unknown | null {
   try {
@@ -69,5 +54,27 @@ function parseJsonString(message: string): unknown | null {
 
   } catch (err: unknown) {
     return null;
+  };
+};
+
+// --- --- ---
+
+interface WebSocketData {
+  type: string,
+  reason: string,
+  data: { [key: string]: unknown },
+};
+
+export function sendHangoutWebSocketMessage(hangoutIds: string[], webSocketData: WebSocketData): void {
+  for (const hangoutId of hangoutIds) {
+    const wsSet: Set<WebSocket> | undefined = wsMap.get(hangoutId);
+
+    if (!wsSet) {
+      continue;
+    };
+
+    for (const ws of wsSet.values()) {
+      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
+    };
   };
 };
