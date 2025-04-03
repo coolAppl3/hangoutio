@@ -568,6 +568,8 @@
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
 
+    word-break: break-word;
+
     p.confirm-modal-title {
       @apply font-medium text-base text-title dark:text-title-dark mb-2;
     }
@@ -631,6 +633,8 @@
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
+
+    word-break: break-word;
 
     p.info-modal-title {
       @apply font-medium text-base text-title dark:text-title-dark mb-2;
@@ -1329,20 +1333,10 @@
 
       .suggestion {
         @apply grid grid-rows-[auto_0fr] transition-[grid] bg-secondary dark:bg-secondary-dark p-2 pb-0 rounded-sm shadow-simple overflow-hidden;
+        word-break: break-word;
 
         &.expanded {
           @apply grid-rows-[auto_1fr] pb-2;
-
-          .suggestion-details {
-
-            &-header p.suggestion-title {
-              @apply whitespace-normal;
-            }
-
-            &-container div span {
-              @apply whitespace-normal;
-            }
-          }
         }
 
         &.user {
@@ -1381,7 +1375,7 @@
             @apply flex justify-start items-start mb-2;
 
             p.suggestion-title {
-              @apply text-md font-bold text-title dark:text-title-dark mr-auto text-ellipsis whitespace-nowrap md:whitespace-normal overflow-hidden;
+              @apply text-md font-bold text-title dark:text-title-dark mr-auto;
             }
 
             .rating-container {
@@ -1447,7 +1441,7 @@
               @apply overflow-hidden;
 
               span {
-                @apply block text-sm text-description dark:text-description-dark font-medium whitespace-nowrap text-ellipsis overflow-hidden;
+                @apply block text-sm text-description dark:text-description-dark font-medium;
 
                 &:last-child {
                   @apply md:text-base text-title dark:text-title-dark font-bold dark:font-medium;
@@ -1625,16 +1619,17 @@
 
       .member {
         @apply bg-secondary dark:bg-secondary-dark font-medium gap-1 p-[1.8rem] rounded relative border-solid border-2 border-secondary dark:border-secondary-dark;
+        word-break: break-word;
 
         &.user {
           @apply border-cta dark:border-cta-dark;
         }
 
         &-header {
-          @apply flex justify-between items-center;
+          @apply flex justify-between items-start;
 
           .display-name {
-            @apply text-title dark:text-title-dark whitespace-nowrap overflow-hidden text-ellipsis;
+            @apply text-title dark:text-title-dark;
           }
 
           .dropdown-menu {
@@ -1676,7 +1671,7 @@
         }
 
         &-username {
-          @apply whitespace-nowrap overflow-hidden text-ellipsis mr-3;
+          @apply mr-3;
         }
 
         &-type {

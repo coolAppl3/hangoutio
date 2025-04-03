@@ -349,6 +349,8 @@
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
 
+    word-break: break-word;
+
     p.confirm-modal-title {
       @apply font-medium text-base text-title dark:text-title-dark mb-2;
     }
@@ -412,6 +414,8 @@
     transform: translate3d(0, 3rem, 0);
     opacity: 0;
     transition: opacity 150ms, transform 150ms;
+
+    word-break: break-word;
 
     p.info-modal-title {
       @apply font-medium text-base text-title dark:text-title-dark mb-2;
