@@ -1,8 +1,7 @@
 import { dbPool } from "../db/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
-import { hangoutClients } from "../webSockets/hangout/hangoutWebSocketServer";
-import WebSocket from "ws";
+import { sendHangoutWebSocketMessage } from "../webSockets/hangout/hangoutWebSocketServer";
 
 export async function progressHangouts(): Promise<void> {
   const currentTimestamp: number = Date.now();
@@ -47,35 +46,11 @@ export async function progressHangouts(): Promise<void> {
       [currentTimestamp, hangoutIdsToProgress]
     );
 
-    interface HangoutMemberDetails extends RowDataPacket {
-      hangout_member_id: number,
-    };
-
-    const [hangoutMemberRows] = await dbPool.query<HangoutMemberDetails[]>(
-      `SELECT
-        hangout_member_id
-      FROM
-        hangout_members
-      WHERE
-        hangout_id IN (?);`,
-      [hangoutIdsToProgress]
-    );
-
-    const webSocketData = {
+    sendHangoutWebSocketMessage(hangoutIdsToProgress, {
       type: 'hangoutStageUpdate',
       reason: 'hangoutAutoProgressed',
       data: { newStageControlTimestamp: currentTimestamp },
-    };
-
-    for (const member of hangoutMemberRows) {
-      const ws: WebSocket | undefined = hangoutClients.get(member.hangout_member_id)?.ws;
-
-      if (!ws) {
-        continue;
-      };
-
-      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
-    };
+    });
 
   } catch (err: any) {
     console.log(`CRON JOB ERROR: ${progressHangouts.name}`);
@@ -120,36 +95,6 @@ export async function concludeSingleSuggestionHangouts(): Promise<void> {
       [currentTimestamp, HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]
     );
 
-    interface HangoutMemberDetails extends RowDataPacket {
-      hangout_member_id: number,
-    };
-
-    const [hangoutMemberRows] = await dbPool.query<HangoutMemberDetails[]>(
-      `SELECT
-        hangout_member_id
-      FROM
-        hangout_members
-      WHERE
-        hangout_id IN (?);`,
-      [hangoutIdsToProgress]
-    );
-
-    const webSocketData = {
-      type: 'hangoutStageUpdate',
-      reason: 'singleSuggestionConclusion',
-      data: { newStageControlTimestamp: currentTimestamp },
-    };
-
-    for (const member of hangoutMemberRows) {
-      const ws: WebSocket | undefined = hangoutClients.get(member.hangout_member_id)?.ws;
-
-      if (!ws) {
-        continue;
-      };
-
-      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
-    };
-
     const eventDescription: string = 'The hangout reached the voting stage with a single suggestion, marking it as the winning suggestion without any votes.';
     let hangoutEventRowValuesString: string = '';
 
@@ -166,6 +111,16 @@ export async function concludeSingleSuggestionHangouts(): Promise<void> {
         event_timestamp
       ) VALUES ${hangoutEventRowValuesString};`
     );
+
+
+    sendHangoutWebSocketMessage(hangoutIdsToProgress, {
+      type: 'hangoutStageUpdate',
+      reason: 'singleSuggestionConclusion',
+      data: {
+        newStageControlTimestamp: currentTimestamp,
+        eventDescription
+      },
+    });
 
   } catch (err: any) {
     console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
@@ -212,36 +167,6 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       [currentTimestamp, HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]
     );
 
-    interface HangoutMemberDetails extends RowDataPacket {
-      hangout_member_id: number,
-    };
-
-    const [hangoutMemberRows] = await dbPool.query<HangoutMemberDetails[]>(
-      `SELECT
-        hangout_member_id
-      FROM
-        hangout_members
-      WHERE
-        hangout_id IN (?);`,
-      [hangoutIdsToProgress]
-    );
-
-    const webSocketData = {
-      type: 'hangoutStageUpdate',
-      reason: 'noSuggestionConclusion',
-      data: { newStageControlTimestamp: currentTimestamp },
-    };
-
-    for (const member of hangoutMemberRows) {
-      const ws: WebSocket | undefined = hangoutClients.get(member.hangout_member_id)?.ws;
-
-      if (!ws) {
-        continue;
-      };
-
-      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
-    };
-
     const eventDescription: string = 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion.';
     let hangoutEventRowValuesString: string = '';
 
@@ -258,6 +183,15 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
         event_timestamp
       ) VALUES ${hangoutEventRowValuesString};`
     );
+
+    sendHangoutWebSocketMessage(hangoutIdsToProgress, {
+      type: 'hangoutStageUpdate',
+      reason: 'noSuggestionConclusion',
+      data: {
+        newStageControlTimestamp: currentTimestamp,
+        eventDescription
+      },
+    });
 
   } catch (err: any) {
     console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);

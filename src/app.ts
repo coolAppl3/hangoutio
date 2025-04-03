@@ -3,7 +3,7 @@ dotenv.config();
 import path from 'path';
 import cors from 'cors';
 import http, { IncomingMessage } from 'http';
-import { hangoutClients, wss } from './webSockets/hangout/hangoutWebSocketServer';
+import { wsMap, wss } from './webSockets/hangout/hangoutWebSocketServer';
 import { Socket } from 'net';
 import { WebSocket } from 'ws';
 import express, { Application } from 'express';
@@ -111,12 +111,17 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
   };
 
   wss.handleUpgrade(req, socket, head, (ws: WebSocket) => {
+    const wsSet: Set<WebSocket> | undefined = wsMap.get(webSocketDetails.hangoutId);
+
+    if (!wsSet) {
+      wsMap.set(webSocketDetails.hangoutId, new Set());
+      wss.emit('connection', ws, req);
+
+      return;
+    };
+
+    wsSet.add(ws);
     wss.emit('connection', ws, req);
-    hangoutClients.set(webSocketDetails.hangoutMemberId, {
-      ws,
-      hangoutId: webSocketDetails.hangoutId,
-      createdOn: Date.now(),
-    });
   });
 });
 
