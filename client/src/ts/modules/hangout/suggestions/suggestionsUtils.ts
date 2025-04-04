@@ -246,7 +246,7 @@ function createDetailsElement(title: string, value: string): HTMLDivElement {
 
 function createBtnContainer(isVotedFor: boolean): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
-  btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View details'));
+  btnContainer.appendChild(createBtnElement('view-suggestion-btn', 'View description'));
 
   const toggleVoteBtn: HTMLButtonElement = createBtnElement('toggle-vote-btn', 'Add vote');
 

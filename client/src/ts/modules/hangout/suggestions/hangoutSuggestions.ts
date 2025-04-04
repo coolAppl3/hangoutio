@@ -281,7 +281,7 @@ async function handleSuggestionsContainerClicks(e: MouseEvent): Promise<void> {
   };
 
   if (e.target.classList.contains('view-suggestion-btn')) {
-    suggestionElement.classList.toggle('expanded');
+    toggleSuggestionExpansion(suggestionElement);
     return;
   };
 
@@ -1055,4 +1055,18 @@ async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTML
       handleAuthSessionExpired();
     };
   };
+};
+
+function toggleSuggestionExpansion(suggestionElement: HTMLDivElement): void {
+  const viewSuggestionBtn: HTMLButtonElement | null = suggestionElement.querySelector('.view-suggestion-btn');
+
+  if (suggestionElement.classList.contains('expanded')) {
+    suggestionElement.classList.remove('expanded');
+    viewSuggestionBtn && (viewSuggestionBtn.textContent = 'View description');
+
+    return;
+  };
+
+  suggestionElement.classList.add('expanded');
+  viewSuggestionBtn && (viewSuggestionBtn.textContent = 'Hide description');
 };
