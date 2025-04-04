@@ -1424,7 +1424,7 @@
                 @apply absolute top-0 right-3 w-fit h-fit hidden z-3 rounded-sm overflow-hidden whitespace-nowrap;
 
                 button {
-                  @apply block w-full p-1 px-2 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
+                  @apply block w-full p-1 px-2 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer transition-[filter] hover:brightness-75;
 
                   &.delete-btn {
                     @apply text-danger dark:text-danger-dark;
@@ -1654,7 +1654,7 @@
               @apply absolute top-0 right-3 w-fit h-fit hidden z-3 rounded-sm overflow-hidden whitespace-nowrap;
 
               button {
-                @apply block w-full p-1 px-2 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
+                @apply block w-full p-1 px-2 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer transition-[filter] hover:brightness-75;
 
                 &.kick-member-btn,
                 &.relinquish-leadership-btn {
