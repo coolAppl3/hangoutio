@@ -1138,7 +1138,7 @@
                     @apply svg w-2 h-2;
 
                     path {
-                      @apply fill-edit;
+                      @apply fill-title dark:fill-title-dark;
                     }
                   }
                 }
