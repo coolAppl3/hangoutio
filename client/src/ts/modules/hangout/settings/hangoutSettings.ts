@@ -7,7 +7,7 @@ import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
-import { validateNewPassword, validatePassword } from "../../global/validation";
+import { validateNewPassword } from "../../global/validation";
 import { deleteHangoutService, ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
 import { initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
@@ -690,7 +690,7 @@ async function updateHangoutPassword(deletePassword: boolean = false): Promise<v
     return;
   };
 
-  const isValidNewPassword: boolean = deletePassword ? true : validatePassword(settingsPasswordInput);
+  const isValidNewPassword: boolean = deletePassword ? true : validateNewPassword(settingsPasswordInput);
 
   if (!isValidNewPassword) {
     popup('Invalid new hangout password.', 'error');

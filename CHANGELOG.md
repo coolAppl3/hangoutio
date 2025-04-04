@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.4.69] (2025-04-04)
+
+### Features
+
+- Improved text display in a few locations within the app using `word-break: break-word;`.
+- Users can now join a concluded hangout.
+- Guest accounts will now be deleted two months after their associated hangout is concluded.
+
+
+### Code Refactoring
+
+- Changed the color of the edit button for availability slots to better match the app's theme.
+- Changed "View details" button in suggestion cards to "View description", and implemented logic to change its text content to "Hide description" after the suggestion card is expanded.
+
+
+### Bug Fixes
+
+- Changed `will-change` property to `scroll-position` in the chat container to address elements with a absolute positions becoming invisible.
+- Fixed a broken link in `create-hangout.html`.
+- Fixed a flaw in how the cookie map is created in `Cookies.ts`, which caused issues with query parameters when links were stored.
+- Fixed buttons in the dropdown menu for suggestion and member cards not having a transition.
+
+
+### Documentation Changes
+
+- Fixed a typo in the patch notes for patch `0.4.30`.
+
+
 ## [0.4.68] (2025-04-04)
 
 ### Features
@@ -639,7 +667,7 @@
 
 - Added a ribbon to distinguish suggestions made by the user.
 - Added logic to render user likes and votes on respective suggestions in `suggestionUtils.ts`.
-- User will not be informed if they try to expand the suggestions form when they've already reached the suggestions limit.
+- User will now be informed if they try to expand the suggestions form when they've already reached the suggestions limit.
 - Suggestion form now collapses after a suggestion is successfully added.
 
 

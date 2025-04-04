@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import * as accountCronJobs from './accountCronJobs';
 import * as hangoutCronJobs from './hangoutCronJobs';
 import { clearExpiredAuthSessions } from './authCronJobs';
+import { deleteStaleGuestUsers } from './guestCronJobs';
 
 export function initCronJobs(): void {
   // every minute
@@ -24,6 +25,11 @@ export function initCronJobs(): void {
   // every hour
   cron.schedule('0 * * * *', async () => {
     await hangoutCronJobs.deleteNoMemberHangouts();
+  });
+
+  // every day
+  cron.schedule('0 0 * * *', async () => {
+    await deleteStaleGuestUsers();
   });
 
   console.log('CRON jobs started.');

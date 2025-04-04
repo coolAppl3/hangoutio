@@ -8,7 +8,7 @@ import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutMemberServices";
 import { getInitialHangoutData } from "./hangoutDashboard";
-import { handleHangoutConcluded, handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
+import { handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import { initJoinHangoutForm, removeJoinHangoutForm } from "./initJoinHangoutForm";
 
@@ -25,11 +25,6 @@ export function handleNotHangoutMember(errResData: unknown, hangoutId: string): 
     popup('Something went wrong.', 'error');
     setTimeout(() => window.location.href = 'home', 1000);
 
-    return;
-  };
-
-  if (errResData.isConcluded) {
-    handleHangoutConcluded();
     return;
   };
 
@@ -161,11 +156,6 @@ export async function joinHangoutAsAccount(): Promise<void> {
 
       if (errReason === 'hangoutsLimitReached') {
         handleHangoutsLimitReached(errMessage);
-        return;
-      };
-
-      if (errReason === 'hangoutConcluded') {
-        handleHangoutConcluded();
         return;
       };
 
