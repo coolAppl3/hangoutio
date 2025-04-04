@@ -1081,7 +1081,6 @@ exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
     try {
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
-        is_concluded,
         encrypted_password
       FROM
         hangouts
@@ -1090,11 +1089,6 @@ exports.hangoutsRouter.get('/details/hangoutExists', async (req, res) => {
         const hangoutDetails = hangoutRows[0];
         if (!hangoutDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
-            return;
-        }
-        ;
-        if (hangoutDetails.is_concluded) {
-            res.status(403).json({ message: 'Hangout has already been concluded.' });
             return;
         }
         ;

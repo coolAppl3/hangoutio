@@ -31,6 +31,7 @@ const node_cron_1 = __importDefault(require("node-cron"));
 const accountCronJobs = __importStar(require("./accountCronJobs"));
 const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
 const authCronJobs_1 = require("./authCronJobs");
+const guestCronJobs_1 = require("./guestCronJobs");
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
         await hangoutCronJobs.progressHangouts();
@@ -46,6 +47,9 @@ function initCronJobs() {
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
         await hangoutCronJobs.deleteNoMemberHangouts();
+    });
+    node_cron_1.default.schedule('0 0 * * *', async () => {
+        await (0, guestCronJobs_1.deleteStaleGuestUsers)();
     });
     console.log('CRON jobs started.');
 }
