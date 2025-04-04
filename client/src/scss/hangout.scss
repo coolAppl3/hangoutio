@@ -955,30 +955,51 @@
     &-extra {
 
       &-chat {
-        #dashboard-chat {
+        #dashboard-chat-container {
 
-          &-container-inner {
-            @apply mb-1;
+          &-inner {
+            @apply bg-primary dark:bg-primary-dark p-2 rounded-sm;
+
+            .no-messages {
+              @apply bg-secondary dark:bg-secondary-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 w-fit mx-auto rounded-[20rem] block;
+            }
+
+            .date-stamp {
+              @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-fit py-[4px] px-2 mb-2 rounded-[20rem] mt-auto;
+            }
 
             .message {
-              @apply p-2 mb-1 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-primary dark:bg-primary-dark rounded-sm font-medium flex flex-col justify-start items-start overflow-hidden;
+              @apply h-fit p-1 mb-[4px] last:mb-0 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden;
+              word-break: break-word;
 
-              &-sent-by {
-                @apply text-xs md:text-sm font-bold leading-[1] text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
-              }
+              &.sent-by-user {
+                @apply ml-auto bg-cta/50 dark:bg-[#ABABAC];
 
-              &-content {
-                @apply text-sm md:text-base py-1;
-
-                p {
-                  @apply text-description dark:text-description-dark mb-1 last:mb-0;
+                .message-container-content,
+                .message-container-time {
+                  @apply dark:text-title;
                 }
               }
 
-              &-sent-on {
-                @apply text-xs md:text-sm leading-[1] text-description dark:text-description-dark self-end ml-1;
+              &.new-sender {
+                @apply mt-2 first:mt-0
               }
 
+              &-sent-by {
+                @apply mb-[4px] text-xs md:text-sm font-bold text-title dark:text-title-dark overflow-hidden text-ellipsis text-nowrap mr-1 max-w-[15rem];
+              }
+
+              &-container {
+                @apply flex justify-between items-end w-full;
+
+                &-content {
+                  @apply text-sm md:text-base text-description dark:text-description-dark mr-1;
+                }
+
+                &-time {
+                  @apply font-normal text-xs text-description dark:text-description-dark ml-auto min-w-fit;
+                }
+              }
             }
           }
         }

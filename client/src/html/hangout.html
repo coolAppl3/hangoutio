@@ -896,40 +896,25 @@
                 <div class="dashboard-grid-content-extra-chat mb-3">
                   <h4 class="text-md font-medium text-title dark:text-title-dark mb-2">Latest messages</h4>
 
-                  <div
-                    id="dashboard-chat"
-                    class=""
-                  >
-                    <!-- no chats -->
-                    <div
-                      id="dashboard-chat-empty"
-                      class="bg-primary dark:bg-primary-dark p-2 rounded-sm flex-col justify-center items-center"
-                    >
-                      <p class="text-sm md:text-base font-medium text-center text-description dark:text-description-dark mb-2">No messages found</p>
-
-                      <button
-                        type="button"
-                        class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title w-1/2 sm:w-full mx-auto"
-                        data-goTo="chat"
-                      >
-                        Start chatting
-                      </button>
-                    </div>
-
+                  <div id="dashboard-chat">
                     <div
                       id="dashboard-chat-container"
-                      class="hidden"
+                      class="mb-2"
                     >
-                      <div>
-                        <div class="h-line max-w-[50%] sm:max-w-[70%] mx-auto mb-1"></div>
-                        <button
-                          type="button"
-                          class="block text-sm font-medium link text-center w-fit mx-auto"
-                          data-goTo="chat"
-                        >
-                          Go to chat
-                        </button>
+                      <div id="dashboard-chat-container-inner">
+                        <p class="no-messages">No messages found</p>
                       </div>
+                    </div>
+
+                    <div>
+                      <div class="h-line max-w-[50%] sm:max-w-[70%] mx-auto mb-1"></div>
+                      <button
+                        type="button"
+                        class="block text-sm font-medium link text-center w-fit mx-auto"
+                        data-goTo="chat"
+                      >
+                        Go to chat
+                      </button>
                     </div>
                   </div>
                 </div>

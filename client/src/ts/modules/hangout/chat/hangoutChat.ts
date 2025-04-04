@@ -6,6 +6,7 @@ import { createDivElement, createParagraphElement, createSpanElement } from "../
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutMessagesService, sendHangoutMessageService } from "../../services/chatServices";
+import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
 import { globalHangoutState } from "../globalHangoutState";
 import { ChatMessage } from "../hangoutTypes";
 
@@ -89,7 +90,7 @@ function insertChatMessages(messages: ChatMessage[]): void {
   let lastMessageTimestamp: number = messages[0]!.message_timestamp; // guaranteed not undefined
 
   const fragment: DocumentFragment = new DocumentFragment();
-  fragment.appendChild(createDateStampElement(lastMessageTimestamp));
+  fragment.appendChild(createMessageDateStampElement(lastMessageTimestamp));
 
   for (const message of messages) {
     const isSameSender: boolean = message.hangout_member_id === senderMemberId;
@@ -98,7 +99,7 @@ function insertChatMessages(messages: ChatMessage[]): void {
     const notInSameDay: boolean = Math.abs(lastMessageTimestamp - message.message_timestamp) > dayMilliseconds || new Date(lastMessageTimestamp).getDate() !== new Date(message.message_timestamp).getDate();
 
     if (notInSameDay) {
-      fragment.appendChild(createDateStampElement(message.message_timestamp));
+      fragment.appendChild(createMessageDateStampElement(message.message_timestamp));
     };
 
     fragment.appendChild(createMessageElement(message, isSameSender, isUser));
@@ -120,20 +121,25 @@ export function insertSingleChatMessage(message: ChatMessage, isUser: boolean): 
   const isSameSender: boolean = messages[messages.length - 2]?.hangout_member_id === message.hangout_member_id;
   const lastMessageTimestamp: number | undefined = messages[messages.length - 2]?.message_timestamp;
 
-
   if (messages.length === 1) {
-    chatContainer?.appendChild(createDateStampElement(message.message_timestamp));
+    chatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
 
   } else {
     if (lastMessageTimestamp) {
       const notInSameDay: boolean = Math.abs(lastMessageTimestamp - message.message_timestamp) > dayMilliseconds || new Date(lastMessageTimestamp).getDate() !== new Date(message.message_timestamp).getDate();
 
-      notInSameDay && chatContainer?.appendChild(createDateStampElement(message.message_timestamp));
+      notInSameDay && chatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
     };
   };
 
   chatContainer?.appendChild(createMessageElement(message, isSameSender, isUser));
   removeNoMessagesElement();
+
+  hangoutDashboardState.latestChatMessages.push(message);
+
+  if (hangoutDashboardState.latestChatMessages.length > 2) {
+    hangoutDashboardState.latestChatMessages.shift();
+  };
 };
 
 async function getHangoutMessages(): Promise<void> {
@@ -390,7 +396,7 @@ function removeNoMessagesElement(): void {
   chatContainer?.querySelector('.no-messages')?.remove();
 };
 
-function createMessageElement(message: ChatMessage, isSameSender: boolean, isUser: boolean): HTMLDivElement {
+export function createMessageElement(message: ChatMessage, isSameSender: boolean, isUser: boolean): HTMLDivElement {
   const messageElement: HTMLDivElement = createDivElement('message');
 
   if (!isSameSender) {
@@ -416,7 +422,7 @@ function createMessageElement(message: ChatMessage, isSameSender: boolean, isUse
   return messageElement;
 };
 
-function createDateStampElement(timestamp: number): HTMLSpanElement {
+export function createMessageDateStampElement(timestamp: number): HTMLSpanElement {
   const dateStampElement: HTMLSpanElement = createSpanElement('date-stamp', getDateAndTimeString(timestamp, true));
   return dateStampElement;
 };
