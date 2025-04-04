@@ -1405,13 +1405,11 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
 
   try {
     interface HangoutDetails extends RowDataPacket {
-      is_concluded: boolean,
       encrypted_password: string | null,
     };
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
-        is_concluded,
         encrypted_password
       FROM
         hangouts
@@ -1424,11 +1422,6 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
 
     if (!hangoutDetails) {
       res.status(404).json({ message: 'Hangout not found.' });
-      return;
-    };
-
-    if (hangoutDetails.is_concluded) {
-      res.status(403).json({ message: 'Hangout has already been concluded.' });
       return;
     };
 
