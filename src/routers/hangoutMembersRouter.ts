@@ -418,7 +418,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
     return;
   };
 
-  if (isValidHangoutId(hangoutId)) {
+  if (!isValidHangoutId(hangoutId)) {
     res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
@@ -939,7 +939,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
     return;
   };
 
-  if (isValidHangoutId(requestData.hangoutId)) {
+  if (!isValidHangoutId(requestData.hangoutId)) {
     res.status(400).json({ message: 'Invalid hangout ID.' });
     return;
   };
@@ -1067,7 +1067,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
       return;
     };
 
-    const [resultSetHeader] = await connection.query<ResultSetHeader>(
+    const [resultSetHeaderArr] = await connection.query<ResultSetHeader[]>(
       `UPDATE
         hangout_members
       SET
@@ -1084,7 +1084,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
       [false, hangoutMember.hangout_member_id, true, newHangoutLeader.hangout_member_id]
     );
 
-    if (resultSetHeader.affectedRows !== 2) {
+    if (resultSetHeaderArr[0]?.affectedRows === 0 || resultSetHeaderArr[1]?.affectedRows === 0) {
       await connection.rollback();
       res.status(500).json({ message: 'Internal server error.' });
 
