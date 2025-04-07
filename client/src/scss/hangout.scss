@@ -1579,7 +1579,7 @@
     }
 
     .date-stamp {
-      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-fit py-[4px] px-2 mb-2 rounded-[20rem] mt-auto;
+      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-fit py-[4px] px-2 my-2 first:mt-0 rounded-[20rem];
     }
 
     .message {
