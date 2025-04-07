@@ -28,4 +28,4 @@ export const HANGOUT_SUGGESTIONS_STAGE: number = 2;
 export const HANGOUT_VOTING_STAGE: number = 3;
 export const HANGOUT_CONCLUSION_STAGE: number = 4;
 
-export const HANGOUT_CHAT_FETCH_CHUNK_SIZE: number = 30;
+export const HANGOUT_CHAT_FETCH_BATCH_SIZE: number = 30;

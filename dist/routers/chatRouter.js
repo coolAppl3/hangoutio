@@ -243,7 +243,7 @@ exports.chatRouter.get('/', async (req, res) => {
         hangout_id = ?
       ORDER BY
         message_timestamp DESC
-      LIMIT ? OFFSET ?;`, [hangoutId, constants_1.HANGOUT_CHAT_FETCH_CHUNK_SIZE, +messageOffset]);
+      LIMIT ? OFFSET ?;`, [hangoutId, constants_1.HANGOUT_CHAT_FETCH_BATCH_SIZE, +messageOffset]);
         chatMessages.reverse();
         res.json(chatMessages);
     }

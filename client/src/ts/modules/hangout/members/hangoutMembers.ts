@@ -244,10 +244,19 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
   try {
     await transferHangoutLeadershipService({ hangoutId, hangoutMemberId, newLeaderMemberId });
 
-    const newHangoutLeader: HangoutMember | undefined = hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === newLeaderMemberId);
-
-    newHangoutLeader && (newHangoutLeader.is_leader = true);
     globalHangoutState.data.isLeader = false;
+    for (const member of hangoutMembers) {
+      if (member.hangout_member_id === hangoutMemberId) {
+        member.is_leader = false;
+        continue;
+      };
+
+      if (member.hangout_member_id === newLeaderMemberId) {
+        member.is_leader = true;
+      };
+    };
+
+    console.log(hangoutMembersState.filteredMembers)
 
     updateHangoutSettingsNavButtons();
     renderMembersSection();
@@ -554,7 +563,7 @@ async function claimHangoutLeadership(): Promise<void> {
     updateHangoutSettingsNavButtons();
     renderMembersSection();
 
-    popup('Hangout leadership claimed', 'success');
+    popup('Hangout leadership claimed.', 'success');
     LoadingModal.remove();
 
   } catch (err: unknown) {
@@ -653,6 +662,8 @@ function removeHangoutMemberData(hangoutMemberId: number): void {
 
   globalHangoutState.data.hangoutMembersMap.delete(hangoutMemberId);
   globalHangoutState.data.hangoutMembers = globalHangoutState.data.hangoutMembers.filter((member: HangoutMember) => member.hangout_member_id !== hangoutMemberId);
+
+  hangoutMembersState.filteredMembers = hangoutMembersState.filteredMembers.filter((member: HangoutMember) => member.hangout_member_id !== hangoutMemberId);
 };
 
 function hangoutHasLeader(): boolean {

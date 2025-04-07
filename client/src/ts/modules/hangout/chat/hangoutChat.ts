@@ -1,11 +1,12 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { dayMilliseconds, HANGOUT_CHAT_FETCH_CHUNK_SIZE } from "../../global/clientConstants";
+import { dayMilliseconds, HANGOUT_CHAT_FETCH_BATCH_SIZE } from "../../global/clientConstants";
 import { getDateAndTimeString, getTime } from "../../global/dateTimeUtils";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutMessagesService, sendHangoutMessageService } from "../../services/chatServices";
+import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
 import { globalHangoutState } from "../globalHangoutState";
 import { ChatMessage } from "../hangoutTypes";
 
@@ -15,7 +16,7 @@ interface HangoutChatState {
   chatSectionMutationObserverActive: boolean,
 
   messageOffset: number,
-  fetchChunkSize: number,
+  fetchBatchSize: number,
 
   messages: ChatMessage[],
 };
@@ -26,7 +27,7 @@ export const hangoutChatState: HangoutChatState = {
   chatSectionMutationObserverActive: false,
 
   messageOffset: 0,
-  fetchChunkSize: HANGOUT_CHAT_FETCH_CHUNK_SIZE,
+  fetchBatchSize: HANGOUT_CHAT_FETCH_BATCH_SIZE,
 
   messages: [],
 };
@@ -73,39 +74,45 @@ async function initHangoutChat(): Promise<void> {
 };
 
 function insertChatMessages(messages: ChatMessage[]): void {
-  if (!chatContainer) {
+  if (!globalHangoutState.data || !chatContainer) {
     return;
   };
 
-  if (hangoutChatState.messages.length === 0) {
+  if (messages.length === 0) {
     return;
   };
 
   if (hangoutChatState.messages[0]?.hangout_member_id === messages[messages.length - 1]?.hangout_member_id) {
-    chatContainer.firstElementChild?.querySelector('.message-sent-by')?.remove();
+    chatContainer.querySelector('.message')?.querySelector('.message-sent-by')?.remove();
   };
 
-  let senderMemberId: number = 0;
-  let lastMessageTimestamp: number = messages[0]!.message_timestamp; // guaranteed not undefined
-
   const fragment: DocumentFragment = new DocumentFragment();
-  fragment.appendChild(createDateStampElement(lastMessageTimestamp));
+  const hangoutMemberId: number = globalHangoutState.data.hangoutMemberId;
 
-  for (const message of messages) {
-    const isSameSender: boolean = message.hangout_member_id === senderMemberId;
-    const isUser: boolean = message.hangout_member_id === globalHangoutState.data?.hangoutMemberId;
+  for (let i = 0; i < messages.length; i++) {
+    const message: ChatMessage | undefined = messages[i];
+    const previousMessage: ChatMessage | undefined = messages[i - 1];
 
-    const notInSameDay: boolean = Math.abs(lastMessageTimestamp - message.message_timestamp) > dayMilliseconds || new Date(lastMessageTimestamp).getDate() !== new Date(message.message_timestamp).getDate();
+    if (!message) {
+      break;
+    };
 
-    if (notInSameDay) {
-      fragment.appendChild(createDateStampElement(message.message_timestamp));
+    const isSameSender: boolean = message.hangout_member_id === previousMessage?.hangout_member_id;
+    const isUser: boolean = message.hangout_member_id === hangoutMemberId;
+
+    if (i === 0 || (previousMessage && !messageIsInSameDay(message.message_timestamp, previousMessage.message_timestamp))) {
+      fragment.appendChild(createMessageDateStampElement(message.message_timestamp));
     };
 
     fragment.appendChild(createMessageElement(message, isSameSender, isUser));
-    lastMessageTimestamp = message.message_timestamp;
 
-    if (!isSameSender) {
-      senderMemberId = message.hangout_member_id;
+    if (i < messages.length - 1) {
+      continue;
+    };
+
+    const previousOldestMessage: ChatMessage | undefined = hangoutChatState.messages[messages.length];
+    if (previousOldestMessage && messageIsInSameDay(message.message_timestamp, previousOldestMessage.message_timestamp)) {
+      chatContainer.querySelector('.date-stamp')?.remove();
     };
   };
 
@@ -120,20 +127,23 @@ export function insertSingleChatMessage(message: ChatMessage, isUser: boolean): 
   const isSameSender: boolean = messages[messages.length - 2]?.hangout_member_id === message.hangout_member_id;
   const lastMessageTimestamp: number | undefined = messages[messages.length - 2]?.message_timestamp;
 
-
   if (messages.length === 1) {
-    chatContainer?.appendChild(createDateStampElement(message.message_timestamp));
+    chatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
 
   } else {
-    if (lastMessageTimestamp) {
-      const notInSameDay: boolean = Math.abs(lastMessageTimestamp - message.message_timestamp) > dayMilliseconds || new Date(lastMessageTimestamp).getDate() !== new Date(message.message_timestamp).getDate();
-
-      notInSameDay && chatContainer?.appendChild(createDateStampElement(message.message_timestamp));
+    if (lastMessageTimestamp && !messageIsInSameDay(lastMessageTimestamp, message.message_timestamp)) {
+      chatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
     };
   };
 
   chatContainer?.appendChild(createMessageElement(message, isSameSender, isUser));
   removeNoMessagesElement();
+
+  hangoutDashboardState.latestChatMessages.push(message);
+
+  if (hangoutDashboardState.latestChatMessages.length > 2) {
+    hangoutDashboardState.latestChatMessages.shift();
+  };
 };
 
 async function getHangoutMessages(): Promise<void> {
@@ -159,20 +169,18 @@ async function getHangoutMessages(): Promise<void> {
     const messages: ChatMessage[] = (await getHangoutMessagesService(hangoutId, hangoutMemberId, hangoutChatState.messageOffset)).data;
 
     hangoutChatState.messages = [...messages, ...hangoutChatState.messages];
-    hangoutChatState.messageOffset += hangoutChatState.fetchChunkSize;
+    hangoutChatState.messageOffset += hangoutChatState.fetchBatchSize;
     hangoutChatState.isLoaded = true;
 
-    if (messages.length < hangoutChatState.fetchChunkSize) {
+    if (messages.length < hangoutChatState.fetchBatchSize && hangoutChatState.messages.length !== 0) {
       hangoutChatState.oldestMessageLoaded = true;
     };
 
-    if (messages.length === 0) {
+    if (messages.length === 0 && hangoutChatState.messageOffset === hangoutChatState.fetchBatchSize) { // initial fetch
       chatContainer?.appendChild(createParagraphElement('no-messages', 'No messages found'));
     };
 
     insertChatMessages(messages);
-    scrollChatToBottom();
-
     LoadingModal.remove();
 
   } catch (err: unknown) {
@@ -390,7 +398,19 @@ function removeNoMessagesElement(): void {
   chatContainer?.querySelector('.no-messages')?.remove();
 };
 
-function createMessageElement(message: ChatMessage, isSameSender: boolean, isUser: boolean): HTMLDivElement {
+function messageIsInSameDay(firstTimestamp: number, secondTimestamp: number): boolean {
+  if (Math.abs(firstTimestamp - secondTimestamp) > dayMilliseconds) {
+    return false;
+  };
+
+  if (new Date(firstTimestamp).getDate() !== new Date(secondTimestamp).getDate()) {
+    return false;
+  };
+
+  return true;
+};
+
+export function createMessageElement(message: ChatMessage, isSameSender: boolean, isUser: boolean): HTMLDivElement {
   const messageElement: HTMLDivElement = createDivElement('message');
 
   if (!isSameSender) {
@@ -416,7 +436,7 @@ function createMessageElement(message: ChatMessage, isSameSender: boolean, isUse
   return messageElement;
 };
 
-function createDateStampElement(timestamp: number): HTMLSpanElement {
+export function createMessageDateStampElement(timestamp: number): HTMLSpanElement {
   const dateStampElement: HTMLSpanElement = createSpanElement('date-stamp', getDateAndTimeString(timestamp, true));
   return dateStampElement;
 };

@@ -11,11 +11,13 @@ import { copyToClipboard } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
 import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardMessage, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
-import { createDivElement, createSpanElement } from "../../global/domUtils";
+import { createDivElement } from "../../global/domUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import LoadingModal from "../../global/LoadingModal";
 import { leaveHangoutService } from "../../services/hangoutMemberServices";
+import { dayMilliseconds } from "../../global/clientConstants";
+import { createMessageDateStampElement, createMessageElement } from "../chat/hangoutChat";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
@@ -84,7 +86,7 @@ export async function getInitialHangoutData(): Promise<void> {
       hangoutDetails: initialHangoutData.hangoutDetails,
     };
 
-    hangoutDashboardState.latestChatMessages = initialHangoutData.latestChatMessages;
+    hangoutDashboardState.latestChatMessages = [...initialHangoutData.latestChatMessages].reverse();
     hangoutDashboardState.latestHangoutEvents = initialHangoutData.latestHangoutEvents;
 
     renderDashboardSection();
@@ -151,7 +153,7 @@ function loadEventListeners(): void {
 export function renderDashboardSection(): void {
   renderMainDashboardContent();
   renderHangoutStageDescriptions();
-  renderLatestMessages();
+  renderDashboardLatestMessages();
   renderLatestEvents();
   renderMembersSection();
 };
@@ -279,35 +281,39 @@ function pushUserAndLeaderToFront(hangoutMembers: HangoutMember[]): void {
   leaderMember && hangoutMembers.splice(1, 0, leaderMember);
 };
 
-function renderLatestMessages(): void {
+export function renderDashboardLatestMessages(): void {
   if (hangoutDashboardState.latestChatMessages.length === 0) {
     return;
   };
 
+  const latestChatMessages: ChatMessage[] = hangoutDashboardState.latestChatMessages;
   const dashboardChatContainer: HTMLDivElement | null = document.querySelector('#dashboard-chat-container');
-  const dashboardChatEmptyElement: HTMLDivElement | null = document.querySelector('#dashboard-chat-empty');
 
-  if (!dashboardChatContainer || !dashboardChatEmptyElement) {
-    return;
-  };
+  let senderMemberId: number = 0;
+  let lastMessageTimestamp: number = latestChatMessages[0]!.message_timestamp; // guaranteed not undefined
 
-  const dashboardChatContainerInner: HTMLDivElement = createDivElement(null, 'dashboard-chat-container-inner');
+  const innerDashboardChatContainer: HTMLDivElement = createDivElement(null, 'dashboard-chat-container-inner');
 
-  for (let i = 0; i < 2; i++) {
-    const message: ChatMessage | undefined = hangoutDashboardState.latestChatMessages[i];
+  innerDashboardChatContainer.appendChild(createMessageDateStampElement(lastMessageTimestamp));
 
-    if (!message) {
-      break;
+  for (const message of latestChatMessages) {
+    const isUser: boolean = message.hangout_member_id === globalHangoutState.data?.hangoutMemberId;
+
+    const isSameSender: boolean = senderMemberId === message.hangout_member_id;
+    const notInSameDay: boolean = Math.abs(lastMessageTimestamp - message.message_timestamp) > dayMilliseconds || new Date(lastMessageTimestamp).getDate() !== new Date(message.message_timestamp).getDate();
+
+    if (notInSameDay) {
+      innerDashboardChatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
     };
 
-    dashboardChatContainerInner.insertAdjacentElement('afterbegin', createDashboardMessage(message));
+    innerDashboardChatContainer?.appendChild(createMessageElement(message, isSameSender, isUser));
+
+    senderMemberId = message.hangout_member_id;
+    lastMessageTimestamp = message.message_timestamp;
   };
 
-  dashboardChatContainer.firstElementChild?.remove();
-  dashboardChatContainer.insertAdjacentElement('afterbegin', dashboardChatContainerInner);
-
-  dashboardChatContainer.classList.remove('hidden');
-  dashboardChatEmptyElement.classList.add('hidden');
+  dashboardChatContainer?.firstElementChild?.remove();
+  dashboardChatContainer?.appendChild(innerDashboardChatContainer);
 };
 
 function renderLatestEvents(): void {

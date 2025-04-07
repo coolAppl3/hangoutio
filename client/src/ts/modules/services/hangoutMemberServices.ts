@@ -37,7 +37,7 @@ export async function joinHangoutAsGuestService(requestBody: JoinHangoutAsGuestB
 // --- --- ---
 
 export async function kickHangoutMemberService(hangoutId: string, hangoutMemberId: number, memberToKickId: number): Promise<AxiosResponse> {
-  return axios.post(`${hangoutMembersApiUrl}/kick?hangoutId=${hangoutId}&hangoutMemberId=${hangoutMemberId}&memberToKickId=${memberToKickId}`);
+  return axios.delete(`${hangoutMembersApiUrl}/kick?hangoutId=${hangoutId}&hangoutMemberId=${hangoutMemberId}&memberToKickId=${memberToKickId}`);
 };
 
 // --- --- ---

@@ -1,5 +1,5 @@
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
-import { hangoutDashboardState, renderDashboardSection } from "../../modules/hangout/dashboard/hangoutDashboard";
+import { hangoutDashboardState, renderDashboardLatestMessages, renderDashboardSection } from "../../modules/hangout/dashboard/hangoutDashboard";
 import { initNextStageTimer } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { ChatMessage, HangoutEvent } from "../../modules/hangout/hangoutTypes";
@@ -71,7 +71,6 @@ function handleChatUpdate(webSocketData: WebSocketData): void {
   };
 
   if (!('chatMessage' in webSocketData.data)) {
-    console.log(webSocketData)
     return;
   };
 
@@ -83,6 +82,8 @@ function handleChatUpdate(webSocketData: WebSocketData): void {
 
   hangoutChatState.messages.push(newMessage);
   insertSingleChatMessage(newMessage, false);
+
+  renderDashboardLatestMessages();
 };
 
 function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
