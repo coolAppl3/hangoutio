@@ -345,7 +345,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         return;
     }
     ;
-    if ((0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
         res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
@@ -742,7 +742,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         return;
     }
     ;
-    if ((0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
         res.status(400).json({ message: 'Invalid hangout ID.' });
         return;
     }
@@ -837,7 +837,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
             return;
         }
         ;
-        const [resultSetHeader] = await connection.query(`UPDATE
+        const [resultSetHeaderArr] = await connection.query(`UPDATE
         hangout_members
       SET
         is_leader = ?
@@ -850,7 +850,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         is_leader = ?
       WHERE
         hangout_member_id = ?;`, [false, hangoutMember.hangout_member_id, true, newHangoutLeader.hangout_member_id]);
-        if (resultSetHeader.affectedRows !== 2) {
+        if (resultSetHeaderArr[0]?.affectedRows === 0 || resultSetHeaderArr[1]?.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ message: 'Internal server error.' });
             return;

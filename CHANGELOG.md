@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.70] (2025-04-07)
+
+### Features
+
+- Redesigned the filter icon in the suggestion section to be more recognizable for users.
+
+
+### Code Refactoring
+
+- Refactored how the latest chat messages in the dashboard section are rendered and updated to align with the chat section.
+- Renamed `HANGOUT_CHAT_FETCH_CHUNK_SIZE` to `HANGOUT_CHAT_FETCH_BATCH_SIZE`.
+
+
+### Bug Fixes
+
+- Fixed a number of bugs with the members section caused mostly by typos.
+- Reworked how batch chat messages are inserted to fix duplicate date stamps.
+- Fixed a typo where "Keep me signed in" was written as "Keep my signed in".
+
+
 ## [0.4.69] (2025-04-04)
 
 ### Features
