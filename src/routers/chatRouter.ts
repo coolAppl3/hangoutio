@@ -8,7 +8,7 @@ import { generatePlaceHolders } from '../util/generatePlaceHolders';
 import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from '../util/cookieUtils';
 import { destroyAuthSession } from '../auth/authSessions';
-import { HANGOUT_CHAT_FETCH_CHUNK_SIZE } from '../util/constants';
+import { HANGOUT_CHAT_FETCH_BATCH_SIZE } from '../util/constants';
 import { ChatMessage } from '../util/hangoutTypes';
 import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 
@@ -279,7 +279,7 @@ chatRouter.get('/', async (req: Request, res: Response) => {
       ORDER BY
         message_timestamp DESC
       LIMIT ? OFFSET ?;`,
-      [hangoutId, HANGOUT_CHAT_FETCH_CHUNK_SIZE, +messageOffset]
+      [hangoutId, HANGOUT_CHAT_FETCH_BATCH_SIZE, +messageOffset]
     );
 
     chatMessages.reverse();

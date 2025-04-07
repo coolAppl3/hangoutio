@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
-import { dayMilliseconds, HANGOUT_CHAT_FETCH_CHUNK_SIZE } from "../../global/clientConstants";
+import { dayMilliseconds, HANGOUT_CHAT_FETCH_BATCH_SIZE } from "../../global/clientConstants";
 import { getDateAndTimeString, getTime } from "../../global/dateTimeUtils";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
@@ -16,7 +16,7 @@ interface HangoutChatState {
   chatSectionMutationObserverActive: boolean,
 
   messageOffset: number,
-  fetchChunkSize: number,
+  fetchBatchSize: number,
 
   messages: ChatMessage[],
 };
@@ -27,7 +27,7 @@ export const hangoutChatState: HangoutChatState = {
   chatSectionMutationObserverActive: false,
 
   messageOffset: 0,
-  fetchChunkSize: HANGOUT_CHAT_FETCH_CHUNK_SIZE,
+  fetchBatchSize: HANGOUT_CHAT_FETCH_BATCH_SIZE,
 
   messages: [],
 };
@@ -169,14 +169,14 @@ async function getHangoutMessages(): Promise<void> {
     const messages: ChatMessage[] = (await getHangoutMessagesService(hangoutId, hangoutMemberId, hangoutChatState.messageOffset)).data;
 
     hangoutChatState.messages = [...messages, ...hangoutChatState.messages];
-    hangoutChatState.messageOffset += hangoutChatState.fetchChunkSize;
+    hangoutChatState.messageOffset += hangoutChatState.fetchBatchSize;
     hangoutChatState.isLoaded = true;
 
-    if (messages.length < hangoutChatState.fetchChunkSize && hangoutChatState.messages.length !== 0) {
+    if (messages.length < hangoutChatState.fetchBatchSize && hangoutChatState.messages.length !== 0) {
       hangoutChatState.oldestMessageLoaded = true;
     };
 
-    if (messages.length === 0 && hangoutChatState.messageOffset === hangoutChatState.fetchChunkSize) { // initial fetch
+    if (messages.length === 0 && hangoutChatState.messageOffset === hangoutChatState.fetchBatchSize) { // initial fetch
       chatContainer?.appendChild(createParagraphElement('no-messages', 'No messages found'));
     };
 
