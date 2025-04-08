@@ -90,8 +90,11 @@ function insertChatMessages(messages: ChatMessage[]): void {
     return;
   };
 
-  if (hangoutChatState.messages[0]?.hangout_member_id === messages[messages.length - 1]?.hangout_member_id) {
-    chatContainer.querySelector('.message')?.querySelector('.message-sent-by')?.remove();
+  if (messages[messages.length - 1]?.hangout_member_id === hangoutChatState.messages[messages.length]?.hangout_member_id) {
+    const firstMessage: HTMLDivElement | null = chatContainer.querySelector('.message');
+
+    firstMessage?.classList.remove('new-sender');
+    firstMessage?.querySelector('.message-sent-by')?.remove();
   };
 
   const fragment: DocumentFragment = new DocumentFragment();
