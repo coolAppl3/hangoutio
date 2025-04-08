@@ -337,7 +337,7 @@ async function loadOlderMessages(): Promise<void> {
 
   await getHangoutMessages();
 
-  chatContainer.scrollTop = chatContainer.scrollHeight - initialScrollHeight;
+  chatContainer.scrollTop = chatContainer.scrollHeight - initialScrollHeight + initialScrollTop;
   hangoutChatState.latestChatContainerScrollTop = chatContainer.scrollTop;
 };
 
