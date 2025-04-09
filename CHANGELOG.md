@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.71] (2025-04-09)
+
+### Features
+
+- Implemented logic to load older chat messages when the user scrolls up to the first tenth of the chat container.
+- Improved chat date stamps to now be sticky, helping users know at every point when the messages they're viewing were sent.
+- Added a shadow to date stamps to help them hover over messages more naturally.
+
+
+### Bug Fixes
+
+- Fixed and issue where the earliest message in a fetched batch, despite being by the same sender as the oldest rendered message, being rendered as if it were sent be a different sender.
+
+
 ## [0.4.70] (2025-04-07)
 
 ### Features
