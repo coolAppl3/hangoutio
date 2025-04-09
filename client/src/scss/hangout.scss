@@ -965,7 +965,7 @@
             }
 
             .date-stamp {
-              @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem];
+              @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem] shadow-simple-sm;
             }
 
             .message {
@@ -1591,7 +1591,7 @@
     }
 
     .date-stamp {
-      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem] sticky top-0 z-5;
+      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem] sticky top-0 z-5 shadow-simple-sm;
     }
 
     .message {
