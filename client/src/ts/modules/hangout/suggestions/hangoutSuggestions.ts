@@ -3,6 +3,7 @@ import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../glob
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { addHangoutSuggestionLikeService, deleteHangoutSuggestionAsLeaderService, deleteHangoutSuggestionService, getHangoutSuggestionsService, removeHangoutSuggestionLikeService } from "../../services/suggestionsServices";
@@ -121,21 +122,14 @@ async function getHangoutSuggestions(): Promise<void> {
   } catch (err: unknown) {
     console.log(err);
 
-    if (!axios.isAxiosError(err)) {
-      popup('Failed to load hangout suggestions.', 'error');
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Failed to load hangout suggestions.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Failed to load hangout suggestions.', 'error');
@@ -411,21 +405,14 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     console.log(err);
     suggestionElement.classList.remove('like-pending');
 
-    if (!axios.isAxiosError(err)) {
-      popup('Failed to like suggestion.', 'error');
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Failed to like suggestion.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Failed to like suggestion.', 'error');
@@ -501,21 +488,14 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
     console.log(err);
     suggestionElement.classList.remove('like-pending');
 
-    if (!axios.isAxiosError(err)) {
-      popup('Failed to unlike suggestion.', 'error');
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Failed to unlike suggestion.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Failed to unlike suggestion.', 'error');
@@ -589,21 +569,14 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -718,21 +691,14 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -868,21 +834,14 @@ async function addHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDiv
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -985,21 +944,14 @@ async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTML
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');

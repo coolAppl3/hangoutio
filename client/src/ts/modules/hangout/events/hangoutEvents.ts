@@ -3,6 +3,7 @@ import { handleAuthSessionExpired } from "../../global/authUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { debounce } from "../../global/debounce";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutEventsService } from "../../services/hangoutServices";
@@ -129,20 +130,14 @@ async function getHangoutEvents(): Promise<void> {
   } catch (err: unknown) {
     console.log(err);
 
-    if (!axios.isAxiosError(err)) {
-      popup('Something went wrong..', 'error');
-      return;
-    };
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
+    const { status, errMessage } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');

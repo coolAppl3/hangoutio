@@ -3,6 +3,7 @@ import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../glob
 import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import ErrorSpan from "../../global/ErrorSpan";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -381,21 +382,14 @@ async function updateHangoutStages(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -492,21 +486,14 @@ async function progressHangoutStage(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -607,21 +594,14 @@ async function updateHangoutMembersLimit(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong/.', 'error');
@@ -717,21 +697,14 @@ async function updateHangoutPassword(deletePassword: boolean = false): Promise<v
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
@@ -807,21 +780,14 @@ async function deleteHangout(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');

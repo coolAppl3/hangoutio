@@ -35,6 +35,7 @@ export async function signOut(): Promise<void> {
     };
 
     const status: number = axiosError.status;
+
     if (status === 409) {
       popup('Not signed in.', 'error');
 

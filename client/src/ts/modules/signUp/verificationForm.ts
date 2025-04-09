@@ -10,6 +10,7 @@ import { AccountVerificationBody, resendVerificationEmailService, verifyAccountS
 import { clearVerificationCookies, displayVerificationExpiryInfoModal, handleSignedInUser, reloadWithoutQueryString, switchToVerificationStage } from "./signUpUtils";
 import { ConfirmModal } from "../global/ConfirmModal";
 import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 
 
 const verificationFormElement: HTMLFormElement | null = document.querySelector('#verification-form');
@@ -97,25 +98,20 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       if (errReason === 'verificationCode') {
         ErrorSpan.display(verificationCodeInput, errMessage);
+        popup(errMessage, 'error');
+
         return;
       };
 
@@ -203,20 +199,14 @@ async function resendVerificationEmail(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
+    const { status, errMessage } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');

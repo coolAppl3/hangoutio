@@ -18,6 +18,7 @@ import LoadingModal from "../../global/LoadingModal";
 import { leaveHangoutService } from "../../services/hangoutMemberServices";
 import { dayMilliseconds } from "../../global/clientConstants";
 import { createMessageDateStampElement, createMessageElement } from "../chat/hangoutChat";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
@@ -99,26 +100,14 @@ export async function getInitialHangoutData(): Promise<void> {
   } catch (err: unknown) {
     console.log(err);
 
-    if (!axios.isAxiosError(err)) {
-      popup('Failed to load hangout data.', 'error');
-      setTimeout(() => window.location.href = 'home', 1000);
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Failed to load hangout data.', 'error');
-      setTimeout(() => window.location.href = 'home', 1000);
-
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     if (status === 401) {
       if (errReason === 'authSessionExpired') {
@@ -459,21 +448,14 @@ async function leaveHangout(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');

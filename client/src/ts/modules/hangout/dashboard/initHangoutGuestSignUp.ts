@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
 import ErrorSpan from "../../global/ErrorSpan";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -121,21 +122,14 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
