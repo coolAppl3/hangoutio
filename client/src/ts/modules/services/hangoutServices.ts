@@ -56,7 +56,7 @@ export interface UpdateHangoutPasswordBody {
   newPassword: string | null,
 };
 
-export async function updateHangoutPasswordService(requestBody: UpdateHangoutPasswordBody): Promise<AxiosErrorResponseData> {
+export async function updateHangoutPasswordService(requestBody: UpdateHangoutPasswordBody): Promise<AxiosResponse> {
   return axios.patch(`${hangoutsApiUrl}/details/updatePassword`, requestBody);
 };
 
