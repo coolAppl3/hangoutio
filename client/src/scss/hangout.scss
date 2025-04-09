@@ -965,7 +965,7 @@
             }
 
             .date-stamp {
-              @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-fit py-[4px] px-2 mb-2 rounded-[20rem] mt-auto;
+              @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem] shadow-simple-sm;
             }
 
             .message {
@@ -1569,8 +1569,20 @@
     min-height: calc(100svh - 21rem);
   }
 
+  &.loading {
+
+    .spinner {
+      @apply block;
+    }
+  }
+
+  .spinner {
+    @apply rounded-[100%] border-[6px] border-solid border-dark dark:border-light border-l-cta dark:border-l-cta-dark animate-spin w-3 h-3 absolute top-0 left-0 right-0 hidden mx-auto z-3;
+  }
+
   &-container {
-    @apply overflow-y-auto;
+    @apply overflow-y-auto relative z-0;
+
     scrollbar-color: #777 transparent;
     will-change: scroll-position;
 
@@ -1579,7 +1591,7 @@
     }
 
     .date-stamp {
-      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-fit py-[4px] px-2 my-2 first:mt-0 rounded-[20rem];
+      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem] sticky top-0 z-5 shadow-simple-sm;
     }
 
     .message {

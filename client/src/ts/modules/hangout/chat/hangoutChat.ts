@@ -2,6 +2,7 @@ import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { dayMilliseconds, HANGOUT_CHAT_FETCH_BATCH_SIZE } from "../../global/clientConstants";
 import { getDateAndTimeString, getTime } from "../../global/dateTimeUtils";
+import { debounce } from "../../global/debounce";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
@@ -17,6 +18,7 @@ interface HangoutChatState {
 
   messageOffset: number,
   fetchBatchSize: number,
+  latestChatContainerScrollTop: number,
 
   messages: ChatMessage[],
 };
@@ -28,12 +30,15 @@ export const hangoutChatState: HangoutChatState = {
 
   messageOffset: 0,
   fetchBatchSize: HANGOUT_CHAT_FETCH_BATCH_SIZE,
+  latestChatContainerScrollTop: 0,
 
   messages: [],
 };
 
 const chatSection: HTMLElement | null = document.querySelector('#chat-section');
+const chatElement: HTMLDivElement | null = document.querySelector('#chat');
 const chatContainer: HTMLDivElement | null = document.querySelector('#chat-container');
+
 const hangoutPhoneNavBtn: HTMLButtonElement | null = document.querySelector('#hangout-phone-nav-btn');
 
 const chatForm: HTMLFormElement | null = document.querySelector('#chat-form');
@@ -46,7 +51,9 @@ export function hangoutChat(): void {
 
 function loadEventListeners(): void {
   document.addEventListener('loadSection-chat', initHangoutChat);
+
   chatForm?.addEventListener('submit', sendHangoutMessage);
+  chatContainer?.addEventListener('scroll', debounceLoadOlderMessages);
 
   chatTextarea?.addEventListener('keydown', handleChatTextareaKeydownEvents);
   chatTextarea?.addEventListener('input', () => {
@@ -56,8 +63,6 @@ function loadEventListeners(): void {
 };
 
 async function initHangoutChat(): Promise<void> {
-  scrollChatToBottom();
-
   if (navigator.maxTouchPoints === 0) {
     chatTextarea?.focus();
   };
@@ -71,6 +76,9 @@ async function initHangoutChat(): Promise<void> {
   };
 
   await getHangoutMessages();
+
+  scrollChatToBottom();
+  hangoutChatState.latestChatContainerScrollTop = chatContainer?.scrollTop || 0;
 };
 
 function insertChatMessages(messages: ChatMessage[]): void {
@@ -82,8 +90,11 @@ function insertChatMessages(messages: ChatMessage[]): void {
     return;
   };
 
-  if (hangoutChatState.messages[0]?.hangout_member_id === messages[messages.length - 1]?.hangout_member_id) {
-    chatContainer.querySelector('.message')?.querySelector('.message-sent-by')?.remove();
+  if (messages[messages.length - 1]?.hangout_member_id === hangoutChatState.messages[messages.length]?.hangout_member_id) {
+    const firstMessage: HTMLDivElement | null = chatContainer.querySelector('.message');
+
+    firstMessage?.classList.remove('new-sender');
+    firstMessage?.querySelector('.message-sent-by')?.remove();
   };
 
   const fragment: DocumentFragment = new DocumentFragment();
@@ -147,18 +158,11 @@ export function insertSingleChatMessage(message: ChatMessage, isUser: boolean): 
 };
 
 async function getHangoutMessages(): Promise<void> {
-  LoadingModal.display();
+  chatElement?.classList.add('loading');
 
   if (!globalHangoutState.data) {
     popup('Failed to load hangout chat.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
-  if (hangoutChatState.oldestMessageLoaded) {
-    popup('All messages loaded.', 'success');
-    LoadingModal.remove();
+    chatElement?.classList.remove('loading');
 
     return;
   };
@@ -174,6 +178,7 @@ async function getHangoutMessages(): Promise<void> {
 
     if (messages.length < hangoutChatState.fetchBatchSize && hangoutChatState.messages.length !== 0) {
       hangoutChatState.oldestMessageLoaded = true;
+      popup('All messages loaded.', 'success');
     };
 
     if (messages.length === 0 && hangoutChatState.messageOffset === hangoutChatState.fetchBatchSize) { // initial fetch
@@ -181,11 +186,11 @@ async function getHangoutMessages(): Promise<void> {
     };
 
     insertChatMessages(messages);
-    LoadingModal.remove();
+    chatElement?.classList.remove('loading');
 
   } catch (err: unknown) {
     console.log(err);
-    LoadingModal.remove();
+    chatElement?.classList.remove('loading');
 
     if (!axios.isAxiosError(err)) {
       popup('Something went wrong.', 'error');
@@ -302,6 +307,38 @@ async function handleChatTextareaKeydownEvents(e: KeyboardEvent): Promise<void> 
 
     await sendHangoutMessage(new SubmitEvent('submit'));
   };
+};
+
+const debounceLoadOlderMessages = debounce(loadOlderMessages, 300);
+
+async function loadOlderMessages(): Promise<void> {
+  if (!chatContainer) {
+    return;
+  };
+
+  if (hangoutChatState.oldestMessageLoaded) {
+    return;
+  };
+
+  const initialScrollHeight: number = chatContainer.scrollHeight;
+  const initialScrollTop: number = chatContainer.scrollTop;
+
+  const isScrollingUp: boolean = initialScrollTop < hangoutChatState.latestChatContainerScrollTop;
+  if (!isScrollingUp) {
+    hangoutChatState.latestChatContainerScrollTop = initialScrollTop;
+    return;
+  };
+
+  hangoutChatState.latestChatContainerScrollTop = initialScrollTop;
+
+  if (initialScrollTop > chatContainer.scrollHeight / 10) {
+    return;
+  };
+
+  await getHangoutMessages();
+
+  chatContainer.scrollTop = chatContainer.scrollHeight - initialScrollHeight + initialScrollTop;
+  hangoutChatState.latestChatContainerScrollTop = chatContainer.scrollTop;
 };
 
 function validateChatMessage(): boolean {
