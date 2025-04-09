@@ -1277,7 +1277,7 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
     await connection.commit();
     res.json({});
 
-    const eventDescription: string = `${hangoutMember.display_name} has claimed the hangout leader role.`;
+    const eventDescription: string = `${hangoutMember.display_name} claimed the hangout leadership.`;
     await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {

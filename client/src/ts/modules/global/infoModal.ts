@@ -1,5 +1,5 @@
 export interface InfoModalConfig {
-  title: string,
+  title: string | null,
   description: string | null,
   btnTitle: string,
 };
@@ -62,7 +62,7 @@ export class InfoModal {
     const infoModalContainer: HTMLDivElement = document.createElement('div');
     infoModalContainer.id = 'info-modal-container';
 
-    infoModalContainer.appendChild(this.createModalTitle(config.title));
+    config.title && infoModalContainer.appendChild(this.createModalTitle(config.title));
 
     if (config.description) {
       const descriptionContainer: HTMLDivElement = this.createDescriptionContainer();
