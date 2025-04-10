@@ -349,7 +349,7 @@ function insertNewHangoutEvent(webSocketData: WebSocketData): void {
   };
 
   hangoutDashboardState.latestHangoutEvents.unshift(newEvent);
-  hangoutDashboardState.latestHangoutEvents.pop();
+  hangoutDashboardState.latestHangoutEvents.length > 2 && hangoutDashboardState.latestHangoutEvents.pop();
   renderDashboardLatestEvents();
 
   if (!hangoutEventsState.isLoaded) {
