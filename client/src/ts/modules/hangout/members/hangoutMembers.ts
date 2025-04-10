@@ -548,7 +548,7 @@ async function claimHangoutLeadership(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
-    LoadingModal.display();
+    LoadingModal.remove();
 
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
