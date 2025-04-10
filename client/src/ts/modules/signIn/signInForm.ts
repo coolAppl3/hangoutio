@@ -9,6 +9,7 @@ import axios, { AxiosError } from '../../../../node_modules/axios/index';
 import { GuestSignInBody, guestSignInService } from '../services/guestServices';
 import { InfoModal } from '../global/InfoModal';
 import { ConfirmModal } from '../global/ConfirmModal';
+import { AsyncErrorData, getAsyncErrorData } from '../global/errorUtils';
 
 interface SignInFormState {
   isGuestUser: boolean,
@@ -112,21 +113,14 @@ async function accountSignIn(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     popup(errMessage, 'error');
 
@@ -220,21 +214,14 @@ async function guestSignIn(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     popup(errMessage, 'error');
 

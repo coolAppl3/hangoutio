@@ -4,6 +4,7 @@ import { dayMilliseconds, HANGOUT_CHAT_FETCH_BATCH_SIZE } from "../../global/cli
 import { getDateAndTimeString, getTime } from "../../global/dateTimeUtils";
 import { debounce } from "../../global/debounce";
 import { createDivElement, createParagraphElement, createSpanElement } from "../../global/domUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { getHangoutMessagesService, sendHangoutMessageService } from "../../services/chatServices";
@@ -141,10 +142,8 @@ export function insertSingleChatMessage(message: ChatMessage, isUser: boolean): 
   if (messages.length === 1) {
     chatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
 
-  } else {
-    if (lastMessageTimestamp && !messageIsInSameDay(lastMessageTimestamp, message.message_timestamp)) {
-      chatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
-    };
+  } else if (lastMessageTimestamp && !messageIsInSameDay(lastMessageTimestamp, message.message_timestamp)) {
+    chatContainer?.appendChild(createMessageDateStampElement(message.message_timestamp));
   };
 
   chatContainer?.appendChild(createMessageElement(message, isSameSender, isUser));
@@ -192,20 +191,14 @@ async function getHangoutMessages(): Promise<void> {
     console.log(err);
     chatElement?.classList.remove('loading');
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
+    const { status, errMessage } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -255,21 +248,14 @@ async function sendHangoutMessage(e: SubmitEvent): Promise<void> {
   } catch (err: unknown) {
     console.log(err);
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');

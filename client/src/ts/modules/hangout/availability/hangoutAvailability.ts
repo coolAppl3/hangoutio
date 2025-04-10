@@ -13,6 +13,7 @@ import { getDateAndTimeString } from "../../global/dateTimeUtils";
 import { AvailabilitySlot } from "../hangoutTypes";
 import { initAvailabilityCalendar, updateAvailabilityCalendar } from "./availabilityCalendar";
 import { createAvailabilitySlotElement } from "./availabilityUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 
 interface HangoutAvailabilityState {
   isLoaded: boolean,
@@ -147,21 +148,14 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
   } catch (err: unknown) {
     console.log(err);
 
-    if (!axios.isAxiosError(err)) {
-      popup('Failed to load availability slots.', 'error');
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Failed to load availability slots.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Failed to load availability slots.', 'error');
@@ -246,22 +240,14 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
@@ -389,22 +375,14 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
@@ -494,21 +472,14 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -579,21 +550,14 @@ async function clearAvailabilitySlots(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');

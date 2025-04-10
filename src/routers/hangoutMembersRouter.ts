@@ -12,6 +12,7 @@ import * as authUtils from '../auth/authUtils';
 import { createAuthSession, destroyAuthSession, purgeAuthSessions } from "../auth/authSessions";
 import { decryptPassword } from "../util/encryptionUtils";
 import { hourMilliseconds, MAX_HANGOUT_MEMBERS_LIMIT, MAX_ONGOING_HANGOUTS_LIMIT } from "../util/constants";
+import { sendHangoutWebSocketMessage } from "../webSockets/hangout/hangoutWebSocketServer";
 
 export const hangoutMembersRouter: Router = express.Router();
 
@@ -195,7 +196,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       return;
     };
 
-    await connection.execute(
+    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members (
         hangout_id,
         username,
@@ -210,6 +211,27 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
 
     await connection.commit();
     res.json({});
+
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${accountDetails.display_name} joined the hangout.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangoutMember',
+      reason: 'memberJoined',
+      data: {
+        newMember: {
+          hangout_member_id: resultSetHeader.insertId,
+          username: accountDetails.username,
+          user_type: 'account',
+          display_name: accountDetails.display_name,
+          is_leader: false,
+        },
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -378,6 +400,27 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     setResponseCookie(res, 'guestHangoutId', requestData.hangoutId, hourMilliseconds * 6, false);
 
     res.json({ authSessionCreated });
+
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${requestData.displayName} joined the hangout.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangoutMember',
+      reason: 'memberJoined',
+      data: {
+        newMember: {
+          hangout_member_id: resultSetHeader.insertId,
+          username: requestData.username,
+          user_type: 'guest',
+          display_name: requestData.displayName,
+          is_leader: false,
+        },
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -556,7 +599,21 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
       res.json({});
 
-      await addHangoutEvent(hangoutId, `${memberToKick.display_name} was kicked by the hangout leader.`);
+      const eventTimestamp: number = Date.now();
+      const eventDescription: string = `${memberToKick.display_name} was kicked from the hangout.`;
+      await addHangoutEvent(hangoutId, eventDescription, eventTimestamp);
+
+      sendHangoutWebSocketMessage([hangoutId], {
+        type: 'hangoutMember',
+        reason: 'memberKicked',
+        data: {
+          kickedMemberId: +memberToKickId,
+
+          eventTimestamp,
+          eventDescription,
+        },
+      });
+
       return;
     };
 
@@ -575,7 +632,20 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
     res.json({});
 
-    await addHangoutEvent(hangoutId, `${memberToKick.display_name} was kicked by the hangout leader.`);
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${memberToKick.display_name} was kicked from the hangout.`;
+    await addHangoutEvent(hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'hangoutMember',
+      reason: 'memberKicked',
+      data: {
+        kickedMemberId: +memberToKickId,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -663,7 +733,6 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       guest_id: number,
       display_name: string,
       is_leader: boolean,
-      hangout_member_count: number,
       hangout_is_concluded: boolean,
     };
 
@@ -674,7 +743,6 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
         guest_id,
         display_name,
         is_leader,
-        (SELECT COUNT(*) FROM hangout_members WHERE hangout_id = :hangoutId) AS hangout_member_count,
         (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
         hangout_members
@@ -700,29 +768,6 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-      return;
-    };
-
-    if (hangoutMemberDetails.hangout_member_count === 1) {
-      const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
-        `DELETE FROM
-          hangouts
-        WHERE
-          hangout_id = ?;`,
-        [hangoutId]
-      );
-
-      if (resultSetHeader.affectedRows === 0) {
-        res.status(500).json({ message: 'Internal server error.' });
-        return;
-      };
-
-      if (authSessionDetails.user_type === 'guest') {
-        await purgeAuthSessions(authSessionDetails.user_id, 'guest');
-        removeRequestCookie(res, 'authSessionId');
-      };
-
-      res.json({});
       return;
     };
 
@@ -761,7 +806,20 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
 
     res.json({});
 
-    await addHangoutEvent(hangoutId, `${hangoutMemberDetails.display_name} left the hangout.`);
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${hangoutMemberDetails.display_name} left the hangout.`;
+    await addHangoutEvent(hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'hangoutMember',
+      reason: 'memberLeft',
+      data: {
+        leftMemberId: +hangoutMemberId,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -849,12 +907,14 @@ hangoutMembersRouter.patch('/relinquishLeadership', async (req: Request, res: Re
     };
 
     interface HangoutMemberDetails extends RowDataPacket {
+      display_name: string,
       is_leader: boolean,
       hangout_is_concluded: boolean,
     };
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
       `SELECT
+        display_name,
         is_leader,
         (SELECT is_concluded FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_is_concluded
       FROM
@@ -898,6 +958,21 @@ hangoutMembersRouter.patch('/relinquishLeadership', async (req: Request, res: Re
     };
 
     res.json({});
+
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${hangoutMemberDetails.display_name} relinquished the hangout leadership.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangoutMember',
+      reason: 'leadershipRelinquished',
+      data: {
+        previousLeaderId: requestData.hangoutMemberId,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1094,8 +1169,21 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
     await connection.commit();
     res.json({});
 
+    const eventTimestamp: number = Date.now();
     const eventDescription: string = `${hangoutMember.display_name} transferred hangout leadership to ${newHangoutLeader.display_name}.`;
-    await addHangoutEvent(requestData.hangoutId, eventDescription);
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangoutMember',
+      reason: 'leadershipTransferred',
+      data: {
+        previousLeaderId: requestData.hangoutMemberId,
+        newLeaderId: newHangoutLeader.hangout_member_id,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1277,8 +1365,20 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
     await connection.commit();
     res.json({});
 
-    const eventDescription: string = `${hangoutMember.display_name} has claimed the hangout leader role.`;
-    await addHangoutEvent(requestData.hangoutId, eventDescription);
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${hangoutMember.display_name} claimed the hangout leadership.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangoutMember',
+      reason: 'leadershipClaimed',
+      data: {
+        newLeaderMemberId: requestData.hangoutMemberId,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);

@@ -8,6 +8,7 @@ import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
 import { RecoveryUpdatePasswordBody, recoveryUpdatePasswordService, resendAccountRecoveryEmailService } from "../services/accountServices";
 import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 
 const passwordUpdateFormElement: HTMLFormElement | null = document.querySelector('#password-update-form');
 
@@ -85,22 +86,14 @@ async function updateAccountPassword(e: SubmitEvent): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     if (status === 400 && !errReason) {
       popup('Something went wrong.', 'error');
@@ -188,22 +181,14 @@ async function resendAccountRecoveryEmail(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');

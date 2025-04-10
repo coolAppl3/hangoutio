@@ -4,6 +4,7 @@ import { HANGOUT_CONCLUSION_STAGE } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import { debounce } from "../../global/debounce";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import { claimHangoutLeadershipService, kickHangoutMemberService, transferHangoutLeadershipService, relinquishHangoutLeadershipService } from "../../services/hangoutMemberServices";
@@ -22,7 +23,7 @@ interface HangoutMembersState {
   membersSectionMutationObserverActive: boolean,
 };
 
-const hangoutMembersState: HangoutMembersState = {
+export const hangoutMembersState: HangoutMembersState = {
   isLoaded: false,
 
   hasLeader: true,
@@ -41,23 +42,11 @@ const claimLeadershipContainer: HTMLDivElement | null = document.querySelector('
 const membersSearchInput: HTMLInputElement | null = document.querySelector('#members-search-input');
 
 export function hangoutMembers(): void {
-  initHangoutMembers();
   loadEventListeners();
 };
 
-function initHangoutMembers(): void {
-  if (!globalHangoutState.data) {
-    return;
-  };
-
-  hangoutMembersState.hasLeader = hangoutHasLeader();
-  hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
-
-  hangoutMembersState.isLoaded = true;
-};
-
 function loadEventListeners(): void {
-  document.addEventListener('loadSection-members', renderMembersSection);
+  document.addEventListener('loadSection-members', initHangoutMembers);
 
   membersHeader?.addEventListener('click', handleMembersHeaderClicks);
   membersContainer?.addEventListener('click', handleMembersContainerClicks);
@@ -65,13 +54,27 @@ function loadEventListeners(): void {
   membersSearchInput?.addEventListener('keyup', debounceMembersSearch);
 };
 
-function renderMembersSection(): void {
-  if (!hangoutMembersState.isLoaded) {
-    initHangoutMembers();
+function initHangoutMembers(): void {
+  if (hangoutMembersState.isLoaded) {
+    renderMembersSection();
+    return;
   };
 
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  hangoutMembersState.hasLeader = hangoutHasLeader();
+  hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
+  hangoutMembersState.isLoaded = true;
+
+  renderMembersSection();
+};
+
+export function renderMembersSection(): void {
   renderMembersContainer();
   renderClaimLeadershipContainer();
+  updateHangoutSettingsNavButtons();
 
   if (!hangoutMembersState.membersSectionMutationObserverActive) {
     initMembersSectionMutationObserver();
@@ -256,8 +259,6 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
       };
     };
 
-    console.log(hangoutMembersState.filteredMembers)
-
     updateHangoutSettingsNavButtons();
     renderMembersSection();
 
@@ -268,21 +269,14 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -381,21 +375,14 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -474,21 +461,14 @@ async function relinquishHangoutLeadership(): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 409) {
       globalHangoutState.data.hangoutDetails.is_concluded = true;
@@ -570,22 +550,14 @@ async function claimHangoutLeadership(): Promise<void> {
     console.log(err);
     LoadingModal.display();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -655,7 +627,7 @@ function confirmMemberAction<T extends (...args: any[]) => Promise<void>>(confir
   });
 };
 
-function removeHangoutMemberData(hangoutMemberId: number): void {
+export function removeHangoutMemberData(hangoutMemberId: number): void {
   if (!globalHangoutState.data) {
     return;
   };
@@ -710,7 +682,7 @@ function handleHangoutAlreadyHasLeader(errResData: unknown, hangoutMemberId: num
 
 const debounceMembersSearch = debounce(searchHangoutMembers, 300);
 
-function searchHangoutMembers(): void {
+export function searchHangoutMembers(): void {
   if (!globalHangoutState.data || !membersSearchInput) {
     return;
   };

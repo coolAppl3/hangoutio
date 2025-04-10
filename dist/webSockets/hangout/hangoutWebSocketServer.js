@@ -60,16 +60,22 @@ function parseJsonString(message) {
 ;
 ;
 function sendHangoutWebSocketMessage(hangoutIds, webSocketData) {
-    for (const hangoutId of hangoutIds) {
-        const wsSet = exports.wsMap.get(hangoutId);
-        if (!wsSet) {
-            continue;
+    try {
+        for (const hangoutId of hangoutIds) {
+            const wsSet = exports.wsMap.get(hangoutId);
+            if (!wsSet) {
+                continue;
+            }
+            ;
+            for (const ws of wsSet.values()) {
+                ws.send(JSON.stringify(webSocketData), (err) => err && console.log(err));
+            }
+            ;
         }
         ;
-        for (const ws of wsSet.values()) {
-            ws.send(JSON.stringify(webSocketData), (err) => err && console.log(err));
-        }
-        ;
+    }
+    catch (err) {
+        console.log(err);
     }
     ;
 }

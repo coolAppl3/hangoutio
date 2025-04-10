@@ -13,6 +13,7 @@ import { ChatMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import LoadingModal from "../../global/LoadingModal";
 import { hangoutDashboardState } from "./hangoutDashboard";
+import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 
 export function handleInvalidHangoutId(): void {
   const signedInAs: string | null = Cookies.get('signedInAs');
@@ -99,20 +100,14 @@ export async function handleNotSignedIn(hangoutId: string): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
+    const { status, errMessage } = asyncErrorData;
 
     popup(errMessage, 'error');
 

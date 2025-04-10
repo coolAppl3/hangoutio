@@ -1,8 +1,11 @@
+import { InfoModal } from "../../modules/global/InfoModal";
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
-import { hangoutDashboardState, renderDashboardLatestMessages, renderDashboardSection } from "../../modules/hangout/dashboard/hangoutDashboard";
+import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection } from "../../modules/hangout/dashboard/hangoutDashboard";
 import { initNextStageTimer } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
+import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
-import { ChatMessage, HangoutEvent } from "../../modules/hangout/hangoutTypes";
+import { ChatMessage, HangoutEvent, HangoutMember } from "../../modules/hangout/hangoutTypes";
+import { hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
 
 interface WebSocketData {
   type: string,
@@ -42,22 +45,32 @@ export function hangoutWebSocketRouter(WebSocketData: unknown): void {
 
   if (WebSocketData.type === 'hangoutStage') {
     handleHangoutStageUpdate(WebSocketData);
+    return;
+  };
+
+  if (WebSocketData.type === 'hangoutMember') {
+    handleHangoutMembersUpdate(WebSocketData);
+    return;
   };
 
   if (WebSocketData.type === 'availabilitySlot') {
     handleAvailabilitySlotsUpdate(WebSocketData);
+    return;
   };
 
   if (WebSocketData.type === 'suggestion') {
     handleSuggestionsUpdate(WebSocketData);
+    return;
   };
 
   if (WebSocketData.type === 'vote') {
     handleVotesUpdate(WebSocketData);
+    return;
   };
 
   if (WebSocketData.type === 'like') {
     handleLikesUpdate(WebSocketData);
+    return;
   };
 
   if (WebSocketData.type === 'misc') {
@@ -70,7 +83,7 @@ function handleChatUpdate(webSocketData: WebSocketData): void {
     return;
   };
 
-  if (!('chatMessage' in webSocketData.data)) {
+  if (!webSocketData.data.chatMessage) {
     return;
   };
 
@@ -94,11 +107,11 @@ function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
   const { hangoutDetails } = globalHangoutState.data;
   const { reason, data } = webSocketData;
 
-  let newStageControlTimestamp: number = Date.now();
-
-  if (typeof data === 'object' && data !== null && 'stageControlTimestamp' in data && typeof data.stageControlTimestamp === 'number') {
-    newStageControlTimestamp = data.stageControlTimestamp;
+  if (typeof data.stageControlTimestamp !== 'number' || !Number.isInteger(data.stageControlTimestamp)) {
+    return;
   };
+
+  const newStageControlTimestamp = data.stageControlTimestamp;
 
   if (reason === 'hangoutAutoProgressed') {
     hangoutDetails.current_stage++;
@@ -130,6 +143,169 @@ function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
   initNextStageTimer();
 };
 
+function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'memberJoined') {
+    if (!data.newMember) {
+      return;
+    };
+
+    const newMember = data.newMember as HangoutMember;
+
+    globalHangoutState.data.hangoutMembers.push(newMember);
+    globalHangoutState.data.hangoutMembersMap.set(newMember.hangout_member_id, newMember.display_name);
+
+    renderDashboardMembersContainer();
+    hangoutMembersState.isLoaded && searchHangoutMembers(); // will rerender
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
+  if (reason === 'memberKicked') {
+    if (typeof data.kickedMemberId !== 'number' || !Number.isInteger(data.kickedMemberId)) {
+      return;
+    };
+
+    if (globalHangoutState.data.isLeader) { // can't be kicked, and already received necessary updates, as the action originated from them
+      insertNewHangoutEvent(webSocketData);
+      return;
+    };
+
+    if (data.kickedMemberId === globalHangoutState.data.hangoutMemberId) {
+      globalHangoutState.hangoutWebSocket?.close(1000);
+
+      const infoModal: HTMLDivElement = InfoModal.display({
+        title: null,
+        description: `You've been kicked from this hangout.`,
+        btnTitle: 'Okay',
+      });
+
+      infoModal.addEventListener('click', (e: MouseEvent) => {
+        if (!(e.target instanceof HTMLButtonElement)) {
+          return;
+        };
+
+        if (e.target.id === 'info-modal-btn') {
+          window.location.href = 'home';
+        };
+      });
+
+      return;
+    };
+
+    removeHangoutMemberData(data.kickedMemberId);
+
+    renderDashboardMembersContainer();
+    hangoutMembersState.isLoaded && renderMembersSection();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
+  if (reason === 'memberLeft') {
+    if (typeof data.leftMemberId !== 'number' || !Number.isInteger(data.leftMemberId)) {
+      return;
+    };
+
+    if (data.leftMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    removeHangoutMemberData(data.leftMemberId);
+
+    renderDashboardMembersContainer();
+    hangoutMembersState.isLoaded && renderMembersSection();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
+  if (reason === 'leadershipRelinquished') {
+    if (typeof data.previousLeaderId !== 'number' || !Number.isInteger(data.previousLeaderId)) {
+      return;
+    };
+
+    if (data.previousLeaderId === globalHangoutState.data.hangoutMemberId) {
+      insertNewHangoutEvent(webSocketData);
+      return;
+    };
+
+    const hangoutMember: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === data.previousLeaderId);
+
+    hangoutMember && (hangoutMember.is_leader = false);
+    hangoutMembersState.hasLeader = false;
+
+    renderDashboardMembersContainer();
+    hangoutMembersState.isLoaded && renderMembersSection();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
+  if (reason === 'leadershipTransferred') {
+    if (typeof data.previousLeaderId !== 'number' || !Number.isInteger(data.previousLeaderId)) {
+      return;
+    };
+
+    if (typeof data.newLeaderId !== 'number' || !Number.isInteger(data.newLeaderId)) {
+      return;
+    };
+
+    if (data.previousLeaderId === globalHangoutState.data.hangoutMemberId) {
+      insertNewHangoutEvent(webSocketData);
+      return;
+    };
+
+    const previousLeader: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === data.previousLeaderId);
+    const newLeader: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === data.newLeader);
+
+    previousLeader && (previousLeader.is_leader = false);
+    newLeader && (newLeader.is_leader = true);
+
+    if (data.newLeaderId === globalHangoutState.data.hangoutMemberId) {
+      globalHangoutState.data.isLeader = true;
+
+      InfoModal.display({
+        title: `You're now the hangout leader.`,
+        description: `${previousLeader?.display_name} has transferred the hangout leadership to you.`,
+        btnTitle: 'Okay',
+      }, { simple: true });
+    };
+
+    renderDashboardMembersContainer();
+    hangoutMembersState.isLoaded && renderMembersSection();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
+  if (reason === 'leadershipClaimed') {
+    if (typeof data.newLeaderMemberId !== 'number' || !Number.isInteger(data.newLeaderMemberId)) {
+      return;
+    };
+
+    const newLeaderMemberId: number = data.newLeaderMemberId;
+
+    if (newLeaderMemberId === globalHangoutState.data.hangoutMemberId) {
+      insertNewHangoutEvent(webSocketData);
+      return;
+    };
+
+    const newLeaderMember: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === newLeaderMemberId);
+
+    newLeaderMember && (newLeaderMember.is_leader = true);
+    hangoutMembersState.hasLeader = true;
+
+    renderMembersSection();
+  };
+};
+
 function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
   // TODO: implement
 };
@@ -147,15 +323,39 @@ function handleLikesUpdate(webSocketData: WebSocketData): void {
 };
 
 function handleHangoutMiscUpdate(webSocketData: WebSocketData): void {
-  if (webSocketData.reason === 'memberJoined') {
-    // TODO: insert and share new member
+  // TODO: implement
+};
+
+// --- --- ---
+
+function insertNewHangoutEvent(webSocketData: WebSocketData): void {
+  if (!globalHangoutState.data) {
     return;
   };
 
-  if (webSocketData.reason === 'memberLeft') {
-    // TODO: share member leaving
+  const data: { [key: string]: unknown } = webSocketData.data;
+
+  if (typeof data.eventDescription !== 'string') {
     return;
   };
 
-  // TODO: Add other hangout events
+  if (typeof data.eventTimestamp !== 'number' || !Number.isInteger(data.eventTimestamp)) {
+    return;
+  };
+
+  const newEvent: HangoutEvent = {
+    event_description: data.eventDescription,
+    event_timestamp: data.eventTimestamp,
+  };
+
+  hangoutDashboardState.latestHangoutEvents.unshift(newEvent);
+  hangoutDashboardState.latestHangoutEvents.pop();
+  renderDashboardLatestEvents();
+
+  if (!hangoutEventsState.isLoaded) {
+    return;
+  };
+
+  hangoutEventsState.hangoutEvents.unshift(newEvent);
+  searchHangoutEvents(); // will rerender
 };

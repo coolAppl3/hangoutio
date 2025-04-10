@@ -10,6 +10,7 @@ import { signOut } from "../global/signOut";
 import { ConfirmModal } from "../global/ConfirmModal";
 import Cookies from "../global/Cookies";
 import { handleRecoveryExpired, handleSignedInUser, reloadWithoutQueryString, handleUnexpectedError, handleRecoverySuspension, progressRecovery } from "./recoveryUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 
 const recoveryEmailFormElement: HTMLFormElement | null = document.querySelector('#recovery-email-form');
 const recoveryEmailInput: HTMLInputElement | null = document.querySelector('#recovery-email-input');
@@ -78,22 +79,14 @@ async function startAccountRecovery(e: SubmitEvent): Promise<void> {
     console.log(err);
     LoadingModal.remove();
 
-    if (!axios.isAxiosError(err)) {
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
       popup('Something went wrong.', 'error');
       return;
     };
 
-    const axiosError: AxiosError<AxiosErrorResponseData> = err;
-
-    if (!axiosError.status || !axiosError.response) {
-      popup('Something went wrong.', 'error');
-      return;
-    };
-
-    const status: number = axiosError.status;
-    const errMessage: string = axiosError.response.data.message;
-    const errReason: string | undefined = axiosError.response.data.reason;
-    const errResData: unknown = axiosError.response.data.resData;
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     if (status === 409 && errReason === 'ongoingRequest') {
       if (typeof errResData !== 'object' || errResData === null) {
