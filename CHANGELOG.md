@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.72] (2025-04-10)
+
+### Features
+
+- The title in InfoModal can now be set to null.
+- Implemented realtime updates, using the hangout websocket, for all hangout member related actions.
+
+
+### Code Refactoring
+
+- Added `getAsyncErrorData()` to abstract the process of extracting data from a caught error in client-side try-catch statements.
+
+
 ## [0.4.71] (2025-04-09)
 
 ### Features
