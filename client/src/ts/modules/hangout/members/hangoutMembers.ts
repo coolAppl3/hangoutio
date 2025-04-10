@@ -23,7 +23,7 @@ interface HangoutMembersState {
   membersSectionMutationObserverActive: boolean,
 };
 
-const hangoutMembersState: HangoutMembersState = {
+export const hangoutMembersState: HangoutMembersState = {
   isLoaded: false,
 
   hasLeader: true,
@@ -42,23 +42,11 @@ const claimLeadershipContainer: HTMLDivElement | null = document.querySelector('
 const membersSearchInput: HTMLInputElement | null = document.querySelector('#members-search-input');
 
 export function hangoutMembers(): void {
-  initHangoutMembers();
   loadEventListeners();
 };
 
-function initHangoutMembers(): void {
-  if (!globalHangoutState.data) {
-    return;
-  };
-
-  hangoutMembersState.hasLeader = hangoutHasLeader();
-  hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
-
-  hangoutMembersState.isLoaded = true;
-};
-
 function loadEventListeners(): void {
-  document.addEventListener('loadSection-members', renderMembersSection);
+  document.addEventListener('loadSection-members', initHangoutMembers);
 
   membersHeader?.addEventListener('click', handleMembersHeaderClicks);
   membersContainer?.addEventListener('click', handleMembersContainerClicks);
@@ -66,13 +54,27 @@ function loadEventListeners(): void {
   membersSearchInput?.addEventListener('keyup', debounceMembersSearch);
 };
 
-function renderMembersSection(): void {
-  if (!hangoutMembersState.isLoaded) {
-    initHangoutMembers();
+function initHangoutMembers(): void {
+  if (hangoutMembersState.isLoaded) {
+    renderMembersSection();
+    return;
   };
 
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  hangoutMembersState.hasLeader = hangoutHasLeader();
+  hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
+  hangoutMembersState.isLoaded = true;
+
+  renderMembersSection();
+};
+
+export function renderMembersSection(): void {
   renderMembersContainer();
   renderClaimLeadershipContainer();
+  updateHangoutSettingsNavButtons();
 
   if (!hangoutMembersState.membersSectionMutationObserverActive) {
     initMembersSectionMutationObserver();
@@ -256,8 +258,6 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
         member.is_leader = true;
       };
     };
-
-    console.log(hangoutMembersState.filteredMembers)
 
     updateHangoutSettingsNavButtons();
     renderMembersSection();
@@ -627,7 +627,7 @@ function confirmMemberAction<T extends (...args: any[]) => Promise<void>>(confir
   });
 };
 
-function removeHangoutMemberData(hangoutMemberId: number): void {
+export function removeHangoutMemberData(hangoutMemberId: number): void {
   if (!globalHangoutState.data) {
     return;
   };
@@ -682,7 +682,7 @@ function handleHangoutAlreadyHasLeader(errResData: unknown, hangoutMemberId: num
 
 const debounceMembersSearch = debounce(searchHangoutMembers, 300);
 
-function searchHangoutMembers(): void {
+export function searchHangoutMembers(): void {
   if (!globalHangoutState.data || !membersSearchInput) {
     return;
   };

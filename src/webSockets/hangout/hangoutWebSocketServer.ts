@@ -66,15 +66,20 @@ interface WebSocketData {
 };
 
 export function sendHangoutWebSocketMessage(hangoutIds: string[], webSocketData: WebSocketData): void {
-  for (const hangoutId of hangoutIds) {
-    const wsSet: Set<WebSocket> | undefined = wsMap.get(hangoutId);
+  try {
+    for (const hangoutId of hangoutIds) {
+      const wsSet: Set<WebSocket> | undefined = wsMap.get(hangoutId);
 
-    if (!wsSet) {
-      continue;
+      if (!wsSet) {
+        continue;
+      };
+
+      for (const ws of wsSet.values()) {
+        ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
+      };
     };
 
-    for (const ws of wsSet.values()) {
-      ws.send(JSON.stringify(webSocketData), (err: Error | undefined) => err && console.log(err));
-    };
+  } catch (err: unknown) {
+    console.log(err);
   };
 };

@@ -143,8 +143,8 @@ export function renderDashboardSection(): void {
   renderMainDashboardContent();
   renderHangoutStageDescriptions();
   renderDashboardLatestMessages();
-  renderLatestEvents();
-  renderMembersSection();
+  renderDashboardLatestEvents();
+  renderDashboardMembersContainer();
 };
 
 function renderMainDashboardContent(): void {
@@ -210,7 +210,7 @@ function displayHangoutPassword(): void {
   hangoutPasswordValueSpan.textContent = '*************';
 };
 
-function renderMembersSection(): void {
+export function renderDashboardMembersContainer(): void {
   if (!globalHangoutState.data) {
     return;
   };
@@ -305,7 +305,7 @@ export function renderDashboardLatestMessages(): void {
   dashboardChatContainer?.appendChild(innerDashboardChatContainer);
 };
 
-function renderLatestEvents(): void {
+export function renderDashboardLatestEvents(): void {
   const dashboardEventsElement: HTMLDivElement | null = document.querySelector('#dashboard-events');
 
   if (!dashboardEventsElement) {

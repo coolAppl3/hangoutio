@@ -20,7 +20,7 @@ interface HangoutEventsState {
   membersSectionMutationObserverActive: boolean,
 };
 
-const hangoutEventsState: HangoutEventsState = {
+export const hangoutEventsState: HangoutEventsState = {
   isLoaded: false,
 
   hangoutEvents: [],
@@ -160,7 +160,7 @@ async function getHangoutEvents(): Promise<void> {
 
 const debounceEventSearch = debounce(searchHangoutEvents, 300);
 
-function searchHangoutEvents(): void {
+export function searchHangoutEvents(): void {
   if (!eventsSearchInput) {
     return;
   };
