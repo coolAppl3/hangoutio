@@ -1,4 +1,3 @@
-import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import Cookies from "../../global/Cookies";
 import ErrorSpan from "../../global/ErrorSpan";
 import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";

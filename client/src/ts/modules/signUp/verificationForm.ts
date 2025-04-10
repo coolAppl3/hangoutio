@@ -1,5 +1,4 @@
 import { signUpState } from "./signUpState";
-import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import Cookies from "../global/Cookies";
 import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal } from "../global/InfoModal";
