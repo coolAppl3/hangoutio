@@ -1,5 +1,4 @@
 import WebSocket, { WebSocketServer, RawData } from "ws";
-import { hangoutWebSocketRouter } from "./hangoutWebSocketRouter";
 
 export const wsMap: Map<string, Set<WebSocket>> = new Map();
 export const wss: WebSocketServer = new WebSocket.Server({
@@ -24,7 +23,7 @@ wss.on('connection', (ws: WebSocket) => {
       return;
     };
 
-    hangoutWebSocketRouter(messageContent, ws);
+    // further processing to be implemented later if needed.
   });
 
   ws.on('error', (err) => {
