@@ -296,15 +296,6 @@ function getLeaderIcon(): HTMLDivElement {
   return leaderIcon;
 };
 
-export function createDashboardEvent(hangoutEvent: HangoutEvent): HTMLDivElement {
-  const eventElement: HTMLDivElement = createDivElement('event-item');
-
-  eventElement.appendChild(createSpanElement('created-on', getDateAndTimeString(hangoutEvent.event_timestamp)));
-  eventElement.appendChild(createParagraphElement('description', hangoutEvent.event_description));
-
-  return eventElement;
-};
-
 export function renderHangoutStageDescriptions(): void {
   if (!globalHangoutState.data) {
     return;

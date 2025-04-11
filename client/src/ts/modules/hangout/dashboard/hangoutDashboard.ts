@@ -8,7 +8,7 @@ import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../ha
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, createDashboardEvent, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
+import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
@@ -18,6 +18,7 @@ import { leaveHangoutService } from "../../services/hangoutMemberServices";
 import { dayMilliseconds } from "../../global/clientConstants";
 import { createMessageDateStampElement, createMessageElement } from "../chat/hangoutChat";
 import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
+import { createEventElement } from "../events/hangoutEvents";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
@@ -315,7 +316,7 @@ export function renderDashboardLatestEvents(): void {
   const dashboardEventsContainer: HTMLDivElement = createDivElement(null, 'dashboard-events-container');
 
   for (const event of hangoutDashboardState.latestHangoutEvents) {
-    dashboardEventsContainer.appendChild(createDashboardEvent(event));
+    dashboardEventsContainer.appendChild(createEventElement(event));
   };
 
   dashboardEventsElement.firstElementChild?.remove();

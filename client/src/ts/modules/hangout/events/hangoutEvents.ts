@@ -198,7 +198,7 @@ function renderMoreEvents(): void {
   renderEventsContainer();
 };
 
-function createEventElement(event: HangoutEvent): HTMLDivElement {
+export function createEventElement(event: HangoutEvent): HTMLDivElement {
   const eventElement: HTMLDivElement = createDivElement('event');
 
   eventElement.appendChild(createSpanElement('created-on', getDateAndTimeString(event.event_timestamp)));
