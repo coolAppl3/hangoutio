@@ -1,4 +1,3 @@
-import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { dayMilliseconds, HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
@@ -9,7 +8,7 @@ import { isValidHangoutId } from "../../global/validation";
 import { getHangoutExistsService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { ChatMessage, HangoutMember, HangoutEvent } from "../hangoutTypes";
+import { HangoutMember, HangoutEvent } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import LoadingModal from "../../global/LoadingModal";
 import { hangoutDashboardState } from "./hangoutDashboard";
@@ -295,33 +294,6 @@ function getLeaderIcon(): HTMLDivElement {
   leaderIcon.appendChild(leaderSvgElement);
 
   return leaderIcon;
-};
-
-export function createDashboardMessage(message: ChatMessage): HTMLDivElement {
-  const messageElement: HTMLDivElement = createDivElement('message');
-
-  const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);
-  messageElement.appendChild(createSpanElement('message-sent-by', senderDisplayName || 'Former member'));
-
-  const messageContent: HTMLDivElement = createDivElement('message-content');
-
-  for (const paragraph of message.message_content.split('\r\n\r\n')) {
-    messageContent.appendChild(createParagraphElement(null, paragraph));
-  };
-
-  messageElement.appendChild(messageContent);
-  messageElement.appendChild(createSpanElement('message-sent-on', getDateAndTimeString(message.message_timestamp)));
-
-  return messageElement;
-};
-
-export function createDashboardEvent(hangoutEvent: HangoutEvent): HTMLDivElement {
-  const eventElement: HTMLDivElement = createDivElement('event-item');
-
-  eventElement.appendChild(createSpanElement('created-on', getDateAndTimeString(hangoutEvent.event_timestamp)));
-  eventElement.appendChild(createParagraphElement('description', hangoutEvent.event_description));
-
-  return eventElement;
 };
 
 export function renderHangoutStageDescriptions(): void {

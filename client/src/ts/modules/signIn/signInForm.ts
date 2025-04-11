@@ -5,7 +5,6 @@ import Cookies from '../global/Cookies';
 import LoadingModal from '../global/LoadingModal';
 import popup from '../global/popup';
 import { AccountSignInBody, accountSignInService } from '../services/accountServices';
-import axios, { AxiosError } from '../../../../node_modules/axios/index';
 import { GuestSignInBody, guestSignInService } from '../services/guestServices';
 import { InfoModal } from '../global/InfoModal';
 import { ConfirmModal } from '../global/ConfirmModal';

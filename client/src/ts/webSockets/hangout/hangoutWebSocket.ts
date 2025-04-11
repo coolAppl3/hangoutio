@@ -24,13 +24,6 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
   hangoutWebSocket.addEventListener('open', () => {
     globalHangoutState.hangoutWebSocket = hangoutWebSocket;
     globalHangoutState.webSocketConnected = true;
-
-    window.addEventListener('beforeunload', () => {
-      globalHangoutState.hangoutWebSocket?.close();
-
-      globalHangoutState.hangoutWebSocket = null;
-      globalHangoutState.webSocketConnected = false;
-    });
   });
 
   hangoutWebSocket.addEventListener('message', (e: MessageEvent) => {
@@ -56,7 +49,7 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
   });
 
   hangoutWebSocket.addEventListener('error', (err) => {
-    console.log(err)
+    console.log(err);
 
     if (hangoutWebSocket.readyState === 1) {
       hangoutWebSocket.close(1011);

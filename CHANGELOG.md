@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.73] (2025-04-11)
+
+### Code Refactoring
+
+- Removed unnecessary code from `hangoutWebsocket.ts`.
+- Removed a number of unused imports throughout the app.
+- Removed `hangoutWebSocketRouter.ts` from the backend, as it's currently not used, with no plans for it be used in sight.
+- Refactored how latest hangout events are rendered in the dashboard, to use `createEventElement()` in `hangoutEvents.ts` for better consistency and reduced bundle size.
+
+
+### Bug Fixes
+
+- Fixed an issue where the user's websocket wouldn't be included in the hangout's websocket map in `app.ts`.
+- Fixed `hangoutDashboardState.latestHangoutEvents` always being popped after a live event is inserted, instead of only being popped if it's length is greater than 2.
+- Fixed the "No messages found" element not showing in the chat section when no messages are found.
+
+
 ## [0.4.72] (2025-04-10)
 
 ### Features

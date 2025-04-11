@@ -114,7 +114,7 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
     const wsSet: Set<WebSocket> | undefined = wsMap.get(webSocketDetails.hangoutId);
 
     if (!wsSet) {
-      wsMap.set(webSocketDetails.hangoutId, new Set());
+      wsMap.set(webSocketDetails.hangoutId, new Set([ws]));
       wss.emit('connection', ws, req);
 
       return;

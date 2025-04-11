@@ -1,4 +1,4 @@
-import { dayMilliseconds, HANGOUT_CONCLUSION_STAGE, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT, MIN_HANGOUT_PERIOD_DAYS } from "../constants";
+import { dayMilliseconds, MAX_HANGOUT_MEMBERS_LIMIT, MAX_HANGOUT_PERIOD_DAYS, MIN_HANGOUT_MEMBERS_LIMIT, MIN_HANGOUT_PERIOD_DAYS } from "../constants";
 import { containsInvalidWhitespace } from "../globalUtils";
 
 export function isValidHangoutId(hangoutId: string): boolean {

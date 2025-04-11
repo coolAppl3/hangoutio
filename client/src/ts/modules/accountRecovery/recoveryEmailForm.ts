@@ -1,5 +1,4 @@
 import { recoveryState } from "./recoveryState";
-import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";

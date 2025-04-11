@@ -1,4 +1,3 @@
-import axios, { AxiosError } from "../../../../../node_modules/axios/index";
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_CONCLUSION_STAGE } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
@@ -548,7 +547,7 @@ async function claimHangoutLeadership(): Promise<void> {
 
   } catch (err: unknown) {
     console.log(err);
-    LoadingModal.display();
+    LoadingModal.remove();
 
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 

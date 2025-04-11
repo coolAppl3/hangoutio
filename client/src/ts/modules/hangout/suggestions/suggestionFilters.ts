@@ -1,4 +1,4 @@
-import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../../global/clientConstants";
+import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_STAGE } from "../../global/clientConstants";
 import { debounce } from "../../global/debounce";
 import { createDivElement } from "../../global/domUtils";
 import LoadingModal from "../../global/LoadingModal";

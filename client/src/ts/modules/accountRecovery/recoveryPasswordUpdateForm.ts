@@ -4,7 +4,6 @@ import { validateCode, validateConfirmPassword, validateNewPassword } from "../g
 import { handleRecoverySuspension, handleSignedInUser, reloadWithoutQueryString, } from "./recoveryUtils";
 import revealPassword from "../global/revealPassword";
 import popup from "../global/popup";
-import axios, { AxiosError } from "../../../../node_modules/axios/index";
 import ErrorSpan from "../global/ErrorSpan";
 import { RecoveryUpdatePasswordBody, recoveryUpdatePasswordService, resendAccountRecoveryEmailService } from "../services/accountServices";
 import { EMAILS_SENT_LIMIT } from "../global/clientConstants";
