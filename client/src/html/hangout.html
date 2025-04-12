@@ -1808,6 +1808,45 @@
 
         <div class="h-line my-2"></div>
 
+        <!-- title -->
+        <div id="title-settings">
+          <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Hangout title</h3>
+
+          <p class="w-full text-sm md:text-base font-medium text-description dark:text-description-dark mb-2">
+            Current title:
+            <span
+              id="settings-title-span"
+              class="text-title dark:text-title-dark"
+            ></span>
+          </p>
+
+          <form id="hangout-settings-title-form">
+            <div class="form-group">
+              <label for="hangout-settings-title-input">New title</label>
+              <input
+                type="text"
+                id="hangout-settings-title-input"
+                autocomplete="name"
+              />
+              <span
+                class="error-span"
+                data-target="hangout-settings-title-input"
+              ></span>
+            </div>
+
+            <button
+              type="submit"
+              id="update-hangout-title-btn"
+              class="btn bg-cta dark:bg-cta-dark text-title sm:w-full disabled"
+              disabled
+            >
+              Update title
+            </button>
+          </form>
+        </div>
+
+        <div class="h-line my-2"></div>
+
         <!-- password -->
         <div id="password-settings">
           <h3 class="w-full text-lg font-medium text-title dark:text-title-dark mb-1">Hangout password</h3>
@@ -1910,7 +1949,8 @@
               <button
                 type="submit"
                 id="update-hangout-password-btn"
-                class="btn bg-cta dark:bg-cta-dark text-title sm:w-full mr-1 sm:mr-0 sm:mb-1"
+                class="btn bg-cta dark:bg-cta-dark text-title sm:w-full mr-1 sm:mr-0 sm:mb-1 disabled"
+                disabled
               >
                 Update password
               </button>
