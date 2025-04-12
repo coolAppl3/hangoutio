@@ -7,9 +7,9 @@ import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import SliderInput from "../../global/SliderInput";
-import { validateNewPassword } from "../../global/validation";
-import { deleteHangoutService, ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
-import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
+import { validateHangoutTitle, validateNewPassword } from "../../global/validation";
+import { deleteHangoutService, ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService, updateHangoutTitleService } from "../../services/hangoutServices";
+import { hangoutDashboardState, renderDashboardSection } from "../dashboard/hangoutDashboard";
 import { getHangoutStageTitle, initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../globalHangoutState";
 import { copyToClipboard } from "../globalHangoutUtils";
@@ -46,6 +46,9 @@ export const hangoutSettingsState: HangoutSettingsState = {
 
 const settingsSectionElement: HTMLElement | null = document.querySelector('#settings-section');
 
+const updateHangoutTitleForm: HTMLFormElement | null = document.querySelector('#hangout-settings-title-form');
+const settingsTitleInput: HTMLInputElement | null = document.querySelector('#hangout-settings-title-input');
+
 const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector('#hangout-settings-password-form');
 const settingsPasswordInput: HTMLInputElement | null = document.querySelector('#hangout-settings-password-input');
 
@@ -53,6 +56,7 @@ const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#pr
 
 const currentStageSpan: HTMLSpanElement | null = document.querySelector('#settings-current-stage-span');
 const membersCountSpan: HTMLSpanElement | null = document.querySelector('#settings-member-count-span');
+const hangoutTitleSpan: HTMLSpanElement | null = document.querySelector('#settings-title-span');
 
 const settingsPasswordPreviewer: HTMLSpanElement | null = document.querySelector('#settings-password-previewer');
 const deleteHangoutPassword: HTMLButtonElement | null = document.querySelector('#delete-hangout-password-btn');
@@ -71,6 +75,8 @@ function loadEventListeners(): void {
   });
 
   settingsSectionElement?.addEventListener('click', handleHangoutSettingsClicks);
+
+  updateHangoutTitleForm?.addEventListener('submit', updateHangoutTitle);
   updateHangoutPasswordForm?.addEventListener('submit', async (e: SubmitEvent) => {
     e.preventDefault();
     updateHangoutPassword();
@@ -158,6 +164,7 @@ export function renderHangoutSettingsSection(): void {
   updateProgressBtn();
   updateCurrentStageSpan();
   updateMembersCount();
+  updateHangoutTitleSpan();
   updateHangoutPasswordElements();
 
   if (!hangoutSettingsState.settingsSectionMutationObserverActive) {
@@ -223,6 +230,14 @@ function updateCurrentStageSpan(): void {
   };
 
   currentStageSpan.textContent = getHangoutStageTitle(globalHangoutState.data.hangoutDetails.current_stage);
+};
+
+function updateHangoutTitleSpan(): void {
+  if (!globalHangoutState.data || !hangoutTitleSpan) {
+    return;
+  };
+
+  hangoutTitleSpan.textContent = globalHangoutState.data.hangoutDetails.hangout_title;
 };
 
 function updateHangoutPasswordElements(): void {
@@ -653,6 +668,115 @@ async function updateHangoutMembersLimit(): Promise<void> {
   };
 };
 
+async function updateHangoutTitle(e: SubmitEvent): Promise<void> {
+  e.preventDefault();
+  LoadingModal.display();
+
+  if (!globalHangoutState.data || !settingsTitleInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails } = globalHangoutState.data;
+
+  if (!isLeader) {
+    popup(`You're not the hangout leader.`, 'error');
+    LoadingModal.remove();
+
+    directlyNavigateHangoutSections('dashboard');
+    return;
+  };
+
+  if (hangoutDetails.is_concluded) {
+    popup('Hangout has already been concluded.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidNewHangoutTitle: boolean = validateHangoutTitle(settingsTitleInput);
+
+  if (!isValidNewHangoutTitle) {
+    popup('Invalid new hangout title.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const newTitle: string = settingsTitleInput.value;
+
+  try {
+    await updateHangoutTitleService({ hangoutId, hangoutMemberId, newTitle });
+
+    hangoutDetails.hangout_title = newTitle;
+    updateHangoutTitleSpan();
+
+    settingsTitleInput.value = '';
+    settingsTitleInput.blur();
+
+    popup('Hangout title updated.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason } = asyncErrorData;
+
+    if (status === 400 && !errReason) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 409 || (status === 400 && errReason === 'invalidNewTitle')) {
+      ErrorSpan.display(settingsTitleInput, errMessage);
+      return;
+    };
+
+    if (status === 403) {
+      globalHangoutState.data.hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+      globalHangoutState.data.hangoutDetails.is_concluded = true;
+
+      renderDashboardSection();
+      return;
+    };
+
+    if (status === 404) {
+      LoadingModal.display();
+      setTimeout(() => window.location.reload(), 1000);
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'notHangoutLeader') {
+        globalHangoutState.data.isLeader = false;
+        directlyNavigateHangoutSections('dashboard');
+
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
+};
+
 async function updateHangoutPassword(deletePassword: boolean = false): Promise<void> {
   LoadingModal.display();
 
@@ -981,6 +1105,7 @@ function confirmPasswordDelete(): void {
 };
 
 function setActiveValidation(): void {
+  settingsTitleInput?.addEventListener('keyup', () => validateHangoutTitle(settingsTitleInput));
   settingsPasswordInput?.addEventListener('keyup', () => validateNewPassword(settingsPasswordInput));
 };
 
