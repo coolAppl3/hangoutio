@@ -8,7 +8,7 @@ import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../ha
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { handleNotHangoutMember } from "./handleNotHangoutMember";
-import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, renderHangoutStageDescriptions } from "./hangoutDashboardUtils";
+import { getHangoutStageTitle, getNextHangoutStageTitle, initNextStageTimer, handleHangoutNotFound, handleInvalidHangoutId, handleNotSignedIn, removeLoadingSkeleton, removeGuestSignUpSection, createHangoutMemberElement, renderDashboardStageDescriptions } from "./hangoutDashboardUtils";
 import { initHangoutWebSocket } from "../../../webSockets/hangout/hangoutWebSocket";
 import { createDivElement } from "../../global/domUtils";
 import { getDateAndTimeString } from "../../global/dateTimeUtils";
@@ -140,14 +140,14 @@ function loadEventListeners(): void {
 };
 
 export function renderDashboardSection(): void {
-  renderMainDashboardContent();
-  renderHangoutStageDescriptions();
+  renderDashboardMainContent();
+  renderDashboardStageDescriptions();
   renderDashboardLatestMessages();
   renderDashboardLatestEvents();
   renderDashboardMembersContainer();
 };
 
-function renderMainDashboardContent(): void {
+export function renderDashboardMainContent(): void {
   if (!globalHangoutState.data) {
     popup('Something went wrong.', 'error');
     return;
@@ -174,10 +174,10 @@ function renderMainDashboardContent(): void {
   dashboardViewMembersBtn?.addEventListener('click', navigateHangoutSections);
 
   initNextStageTimer();
-  displayHangoutPassword();
+  updateDashboardHangoutPasswordInfo();
 };
 
-function displayHangoutPassword(): void {
+export function updateDashboardHangoutPasswordInfo(): void {
   if (!globalHangoutState.data) {
     return;
   };
@@ -384,14 +384,14 @@ async function handleCopyHangoutPassword(): Promise<void> {
 
   if (!isLeader) {
     popup(`You're not the hangout leader.`, 'error');
-    displayHangoutPassword();
+    updateDashboardHangoutPasswordInfo();
 
     return;
   };
 
   if (!decryptedHangoutPassword) {
     popup('Hangout is not password protected.', 'error');
-    displayHangoutPassword();
+    updateDashboardHangoutPasswordInfo();
 
     return;
   };

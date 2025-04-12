@@ -152,7 +152,7 @@ function initHangoutSettings(): void {
   LoadingModal.remove();
 };
 
-function renderHangoutSettingsSection(): void {
+export function renderHangoutSettingsSection(): void {
   updateSliderValues();
   disablePassedStagesSliders();
   updateProgressBtn();

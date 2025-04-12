@@ -19,14 +19,13 @@ interface AvailabilityCalendarState {
   },
 };
 
-let availabilityCalendarState: AvailabilityCalendarState = {
+export const availabilityCalendarState: AvailabilityCalendarState = {
   hasBeenInitiated: false,
   data: null,
 };
 
 const availabilityCalendarDatesElement: HTMLDivElement | null = document.querySelector('#availability-calendar-dates');
 const availabilityCalendarHeader: HTMLDivElement | null = document.querySelector('#availability-calendar-header');
-
 
 export function initAvailabilityCalendar(): void {
   if (availabilityCalendarState.hasBeenInitiated) {
@@ -40,17 +39,15 @@ export function initAvailabilityCalendar(): void {
 
   const dateObj: Date = new Date(globalHangoutState.data.conclusionTimestamp);
 
-  availabilityCalendarState = {
-    hasBeenInitiated: true,
-    data: {
-      conclusionDate: dateObj.getDate(),
+  availabilityCalendarState.hasBeenInitiated = true;
+  availabilityCalendarState.data = {
+    conclusionDate: dateObj.getDate(),
 
-      initialMonth: dateObj.getMonth(),
-      initialYear: dateObj.getFullYear(),
+    initialMonth: dateObj.getMonth(),
+    initialYear: dateObj.getFullYear(),
 
-      currentMonth: dateObj.getMonth(),
-      currentYear: dateObj.getFullYear(),
-    },
+    currentMonth: dateObj.getMonth(),
+    currentYear: dateObj.getFullYear(),
   };
 
   updateAvailabilityCalendar();
@@ -75,10 +72,8 @@ export function updateAvailabilityCalendar(): void {
   availabilityCalendarTitle && (availabilityCalendarTitle.textContent = `${monthName} ${currentYear}`);
 
   if (!availabilityCalendarDatesElement) {
-    availabilityCalendarState = {
-      hasBeenInitiated: false,
-      data: null,
-    };
+    availabilityCalendarState.hasBeenInitiated = false;
+    availabilityCalendarState.data = null;
 
     popup('Something went wrong.', 'error');
     return;
@@ -301,4 +296,11 @@ function handleCalendarCellClick(e: MouseEvent): void {
   const selectedDateTimestamp: number = new Date(currentYear, currentMonth, selectedDate).getTime();
 
   displayAvailabilityPreviewer(selectedDateTimestamp);
+};
+
+export function resetAvailabilityCalendar(): void {
+  availabilityCalendarState.hasBeenInitiated = false;
+  availabilityCalendarState.data = null;
+
+  initAvailabilityCalendar();
 };

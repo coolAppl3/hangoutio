@@ -16,6 +16,7 @@ import { getRequestCookie, removeRequestCookie, setResponseCookie } from '../uti
 import { createAuthSession, destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, MAX_ONGOING_HANGOUTS_LIMIT } from '../util/constants';
 import { HangoutEvent, HangoutMember, HangoutMemberCountables, ChatMessage, HangoutsDetails } from '../util/hangoutTypes';
+import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -571,8 +572,22 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     res.json({});
 
-    const eventDescription: string = 'Hangout password was updated.';
-    await addHangoutEvent(requestData.hangoutId, eventDescription);
+    const isPasswordProtected: boolean = requestData.newPassword ? true : false;
+
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `Hangout password ${isPasswordProtected ? 'updated' : 'removed'}.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangout',
+      reason: 'passwordUpdated',
+      data: {
+        isPasswordProtected,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -766,7 +781,21 @@ hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Re
     await connection.commit();
     res.json({});
 
-    const eventDescription: string = `Hangout members limit was changed to ${requestData.newMembersLimit}.`;
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `Hangout members limit was updated to ${requestData.newMembersLimit}.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangout',
+      reason: 'memberLimitUpdated',
+      data: {
+        newMemberLimit: requestData.newMembersLimit,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
+
     await addHangoutEvent(requestData.hangoutId, eventDescription);
 
   } catch (err: unknown) {
@@ -941,7 +970,7 @@ hangoutsRouter.patch('/details/stages/update', async (req: Request, res: Respons
     if (!hangoutValidation.isValidNewHangoutPeriods(
       { currentStage: hangoutDetails.current_stage, stageControlTimestamp: hangoutDetails.stage_control_timestamp },
       [hangoutDetails.availability_period, hangoutDetails.suggestions_period, hangoutDetails.voting_period],
-      [requestData.newAvailabilityPeriod, requestData.newSuggestionsPeriod, requestData.newSuggestionsPeriod]
+      [requestData.newAvailabilityPeriod, requestData.newSuggestionsPeriod, requestData.newVotingPeriod]
     )) {
       await connection.rollback();
       res.status(409).json({ message: 'Invalid new hangout stages configuration.' });
@@ -975,26 +1004,40 @@ hangoutsRouter.patch('/details/stages/update', async (req: Request, res: Respons
     await connection.commit();
     res.json({ newConclusionTimestamp });
 
-    if (newConclusionTimestamp < previousConclusionTimestamp) {
+    if (newConclusionTimestamp > previousConclusionTimestamp) {
       await connection.query(
         `DELETE FROM
-        availability_slots
-      WHERE
-        slot_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;
-      
-      DELETE FROM
-        suggestions
-      WHERE
-        suggestion_start_timestamp < :newConclusionTimestamp AND
-        hangout_id = :hangoutId;  `,
+          availability_slots
+        WHERE
+          slot_start_timestamp < :newConclusionTimestamp AND
+          hangout_id = :hangoutId;
+        
+        DELETE FROM
+          suggestions
+        WHERE
+          suggestion_start_timestamp < :newConclusionTimestamp AND
+          hangout_id = :hangoutId;`,
         { newConclusionTimestamp, hangoutId: requestData.hangoutId }
       );
     };
 
-    const newConclusionDateAndTime: string = getDateAndTimeString(newConclusionTimestamp);
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `Hangout stages have been updated. The hangout will now be concluded on ${getDateAndTimeString(newConclusionTimestamp)} as a result.`;
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
 
-    await addHangoutEvent(requestData.hangoutId, `Hangout stages have been updated. The hangout will now be concluded on ${newConclusionDateAndTime} as a result.`);
+    const { newAvailabilityPeriod, newSuggestionsPeriod, newVotingPeriod } = requestData;
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangout',
+      reason: 'hangoutStagesUpdated',
+      data: {
+        newAvailabilityPeriod,
+        newSuggestionsPeriod,
+        newVotingPeriod,
+
+        eventTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1238,13 +1281,25 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
     await connection.commit();
     res.json(updatedHangoutDetails);
 
-    const conclusionDateString: string = getDateAndTimeString(updatedHangoutDetails.conclusion_timestamp);
     const eventDescription: string = updatedHangoutDetails.is_concluded
       ? 'Hangout has been manually concluded.'
-      : `Hangout has been manually progressed, and will now be concluded on ${conclusionDateString} as a result.`;
+      : `Hangout has been manually progressed, and will now be concluded on ${getDateAndTimeString(updatedHangoutDetails.conclusion_timestamp)} as a result.`;
     // 
-
     await addHangoutEvent(requestData.hangoutId, eventDescription, currentTimestamp);
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'hangout',
+      reason: 'hangoutManuallyProgressed',
+      data: {
+        updatedHangoutDetails: {
+          ...updatedHangoutDetails,
+          is_concluded: Boolean(updatedHangoutDetails.is_concluded),
+        },
+
+        eventTimestamp: currentTimestamp,
+        eventDescription,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -1701,7 +1756,6 @@ hangoutsRouter.get('/events', async (req: Request, res: Response) => {
   const hangoutMemberId = req.query.hangoutMemberId;
 
   if (typeof hangoutId !== 'string' || typeof hangoutMemberId !== 'string') {
-    console.log(true)
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };

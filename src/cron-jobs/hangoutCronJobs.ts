@@ -47,9 +47,11 @@ export async function progressHangouts(): Promise<void> {
     );
 
     sendHangoutWebSocketMessage(hangoutIdsToProgress, {
-      type: 'hangoutStageUpdate',
+      type: 'hangout',
       reason: 'hangoutAutoProgressed',
-      data: { newStageControlTimestamp: currentTimestamp },
+      data: {
+        newStageControlTimestamp: currentTimestamp,
+      },
     });
 
   } catch (err: any) {
@@ -112,13 +114,14 @@ export async function concludeSingleSuggestionHangouts(): Promise<void> {
       ) VALUES ${hangoutEventRowValuesString};`
     );
 
-
     sendHangoutWebSocketMessage(hangoutIdsToProgress, {
-      type: 'hangoutStageUpdate',
+      type: 'hangout',
       reason: 'singleSuggestionConclusion',
       data: {
         newStageControlTimestamp: currentTimestamp,
-        eventDescription
+
+        eventTimestamp: currentTimestamp,
+        eventDescription,
       },
     });
 
@@ -185,11 +188,13 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
     );
 
     sendHangoutWebSocketMessage(hangoutIdsToProgress, {
-      type: 'hangoutStageUpdate',
+      type: 'hangout',
       reason: 'noSuggestionConclusion',
       data: {
         newStageControlTimestamp: currentTimestamp,
-        eventDescription
+
+        eventTimestamp: currentTimestamp,
+        eventDescription,
       },
     });
 

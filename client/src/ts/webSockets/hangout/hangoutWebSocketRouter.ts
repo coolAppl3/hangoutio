@@ -1,11 +1,18 @@
+import { HANGOUT_CONCLUSION_STAGE } from "../../modules/global/clientConstants";
 import { InfoModal } from "../../modules/global/InfoModal";
+import { availabilityCalendarState, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
+import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
-import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection } from "../../modules/hangout/dashboard/hangoutDashboard";
-import { initNextStageTimer } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
+import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
+import { renderDashboardStageDescriptions } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
-import { ChatMessage, HangoutEvent, HangoutMember } from "../../modules/hangout/hangoutTypes";
+import { directlyNavigateHangoutSections } from "../../modules/hangout/hangoutNav";
+import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../../modules/hangout/hangoutTypes";
 import { hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
+import { hangoutSettingsState, renderHangoutSettingsSection } from "../../modules/hangout/settings/hangoutSettings";
+import { hangoutSuggestionState, removeOutOfBoundsSuggestions, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
+import { updateSuggestionsFormHeader } from "../../modules/hangout/suggestions/suggestionsUtils";
 
 interface WebSocketData {
   type: string,
@@ -43,8 +50,8 @@ export function hangoutWebSocketRouter(WebSocketData: unknown): void {
     return;
   };
 
-  if (WebSocketData.type === 'hangoutStage') {
-    handleHangoutStageUpdate(WebSocketData);
+  if (WebSocketData.type === 'hangout') {
+    handleHangoutUpdate(WebSocketData);
     return;
   };
 
@@ -99,48 +106,139 @@ function handleChatUpdate(webSocketData: WebSocketData): void {
   renderDashboardLatestMessages();
 };
 
-function handleHangoutStageUpdate(webSocketData: WebSocketData): void {
+function handleHangoutUpdate(webSocketData: WebSocketData): void {
   if (!globalHangoutState.data) {
     return;
   };
 
-  const { hangoutDetails } = globalHangoutState.data;
   const { reason, data } = webSocketData;
 
-  if (typeof data.stageControlTimestamp !== 'number' || !Number.isInteger(data.stageControlTimestamp)) {
+  if (reason === 'passwordUpdated') {
+    if (typeof data.isPasswordProtected !== 'boolean') {
+      return;
+    };
+
+    globalHangoutState.data.isPasswordProtected = data.isPasswordProtected;
+    updateDashboardHangoutPasswordInfo();
+
+    insertNewHangoutEvent(webSocketData);
     return;
   };
 
-  const newStageControlTimestamp = data.stageControlTimestamp;
-
-  if (reason === 'hangoutAutoProgressed') {
-    hangoutDetails.current_stage++;
-
-    if (hangoutDetails.current_stage === 4) {
-      const newHangoutEvent: HangoutEvent = {
-        event_description: 'Hangout has been concluded.',
-        event_timestamp: newStageControlTimestamp,
-      };
-
-      hangoutDashboardState.latestHangoutEvents.push(newHangoutEvent);
-    };
-  };
-
-  if (reason === 'noSuggestionConclusion') {
-    hangoutDetails.current_stage = 4;
-
-    const newHangoutEvent: HangoutEvent = {
-      event_description: 'Hangout reached the voting stage without any suggestions and was therefore automatically concluded.',
-      event_timestamp: newStageControlTimestamp,
+  if (reason === 'memberLimitUpdated') {
+    if (typeof data.newMemberLimit !== 'number' || !Number.isInteger(data.newMemberLimit)) {
+      return;
     };
 
-    hangoutDashboardState.latestHangoutEvents.unshift(newHangoutEvent);
+    globalHangoutState.data.hangoutDetails.members_limit = data.newMemberLimit;
+
+    renderDashboardMainContent();
+    renderDashboardMembersContainer();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
   };
 
-  hangoutDetails.stage_control_timestamp = newStageControlTimestamp;
+  if (reason === 'hangoutStagesUpdated') {
+    const { newAvailabilityPeriod, newSuggestionsPeriod, newVotingPeriod } = data;
+    const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
 
-  renderDashboardSection();
-  initNextStageTimer();
+    if (typeof newAvailabilityPeriod !== 'number' || typeof newSuggestionsPeriod !== 'number' || typeof newVotingPeriod !== 'number') {
+      return;
+    };
+
+    if (!Number.isInteger(newAvailabilityPeriod) || !Number.isInteger(newSuggestionsPeriod) || !Number.isInteger(newSuggestionsPeriod)) {
+      return;
+    };
+
+    hangoutDetails.availability_period = newAvailabilityPeriod;
+    hangoutDetails.suggestions_period = newSuggestionsPeriod;
+    hangoutDetails.voting_period = newVotingPeriod;
+
+    const previousConclusionTimestamp = globalHangoutState.data.conclusionTimestamp;
+    const newHangoutConclusionTimestamp: number = hangoutDetails.created_on_timestamp + newAvailabilityPeriod + newSuggestionsPeriod + newVotingPeriod;
+
+    globalHangoutState.data.conclusionTimestamp = newHangoutConclusionTimestamp;
+
+    clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
+    hangoutDashboardState.nextStageTimerInitiated = false;
+
+    if (newHangoutConclusionTimestamp > previousConclusionTimestamp) {
+      hangoutSuggestionState.isLoaded && removeOutOfBoundsSuggestions(newHangoutConclusionTimestamp);
+      hangoutAvailabilityState.isLoaded && removeOutOfBoundsAvailabilitySlots(newHangoutConclusionTimestamp);
+    };
+
+    renderDashboardMainContent(); // will restart the next-stage timer
+    availabilityCalendarState.hasBeenInitiated && resetAvailabilityCalendar();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
+  if (reason === 'hangoutManuallyProgressed') {
+    if (typeof data.updatedHangoutDetails !== 'object' || data.updatedHangoutDetails === null) {
+      return;
+    };
+
+    if (!isValidUpdatedHangoutDetails(data.updatedHangoutDetails)) {
+      console.log(data)
+      return;
+    };
+
+    const updatedHangoutDetails = data.updatedHangoutDetails as UpdatedHangoutDetails;
+    const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
+
+    globalHangoutState.data.conclusionTimestamp = updatedHangoutDetails.conclusion_timestamp;
+    hangoutDetails.availability_period = updatedHangoutDetails.availability_period;
+    hangoutDetails.suggestions_period = updatedHangoutDetails.suggestions_period;
+    hangoutDetails.voting_period = updatedHangoutDetails.voting_period;
+    hangoutDetails.stage_control_timestamp = updatedHangoutDetails.stage_control_timestamp;
+    hangoutDetails.current_stage = updatedHangoutDetails.current_stage;
+    hangoutDetails.is_concluded = updatedHangoutDetails.is_concluded;
+
+    clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
+    hangoutDashboardState.nextStageTimerInitiated = false;
+
+    renderDashboardMainContent();
+    renderDashboardStageDescriptions();
+
+    availabilityCalendarState.hasBeenInitiated && resetAvailabilityCalendar();
+
+    if (hangoutSuggestionState.isLoaded) {
+      updateRemainingSuggestionsCount();
+      updateRemainingVotesCount();
+      updateSuggestionsFormHeader();
+    };
+
+    insertNewHangoutEvent(webSocketData);
+    displayHangoutConcludedInfoModal();
+
+    return;
+  };
+
+  if (reason === 'hangoutAutoProgressed' || reason === 'singleSuggestionConclusion' || reason === 'noSuggestionConclusion') {
+    if (typeof data.newStageControlTimestamp !== 'number' || !Number.isInteger(data.newStageControlTimestamp)) {
+      return;
+    };
+
+    const { hangoutDetails, isLeader } = globalHangoutState.data;
+
+    hangoutDetails.stage_control_timestamp = data.newStageControlTimestamp;
+    reason === 'hangoutAutoProgressed' ? hangoutDetails.current_stage++ : hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
+
+    renderDashboardMainContent();
+    renderDashboardStageDescriptions();
+
+    if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE || reason !== 'hangoutAutoProgressed') {
+      hangoutDetails.is_concluded = true;
+      globalHangoutState.data.conclusionTimestamp = data.newStageControlTimestamp;
+
+      displayHangoutConcludedInfoModal();
+    };
+
+    hangoutSuggestionState.isLoaded && renderDashboardSection();
+    (hangoutSettingsState.isLoaded && isLeader) && renderHangoutSettingsSection();
+  };
 };
 
 function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
@@ -358,4 +456,66 @@ function insertNewHangoutEvent(webSocketData: WebSocketData): void {
 
   hangoutEventsState.hangoutEvents.unshift(newEvent);
   searchHangoutEvents(); // will rerender
+};
+
+function displayHangoutConcludedInfoModal(): void {
+  const infoModal: HTMLDivElement = InfoModal.display({
+    title: null,
+    description: 'Hangout has been manually concluded.',
+    btnTitle: 'View outcome',
+  });
+
+  infoModal.addEventListener('click', (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'info-modal-btn') {
+      directlyNavigateHangoutSections('conclusion');
+      InfoModal.remove();
+    };
+  });
+};
+
+// --- --- ---
+
+interface UpdatedHangoutDetails {
+  availability_period: number,
+  suggestions_period: number,
+  voting_period: number,
+  conclusion_timestamp: number,
+  stage_control_timestamp: number,
+  current_stage: number,
+  is_concluded: boolean,
+};
+
+function isValidUpdatedHangoutDetails(updatedHangoutDetails: object): updatedHangoutDetails is UpdatedHangoutDetails {
+  if (
+    !('availability_period' in updatedHangoutDetails) ||
+    !('suggestions_period' in updatedHangoutDetails) ||
+    !('voting_period' in updatedHangoutDetails) ||
+    !('conclusion_timestamp' in updatedHangoutDetails) ||
+    !('stage_control_timestamp' in updatedHangoutDetails) ||
+    !('current_stage' in updatedHangoutDetails) ||
+    !('is_concluded' in updatedHangoutDetails)
+  ) {
+    return false;
+  };
+
+
+  for (const [key, value] of Object.entries(updatedHangoutDetails)) {
+    if (key === 'is_concluded') {
+      if (typeof value !== 'boolean') {
+        return false;
+      };
+
+      continue;
+    };
+
+    if (typeof value !== 'number' || !Number.isInteger(value)) {
+      return false;
+    };
+  };
+
+  return true;
 };
