@@ -10,7 +10,7 @@ import SliderInput from "../../global/SliderInput";
 import { validateNewPassword } from "../../global/validation";
 import { deleteHangoutService, ProgressHangoutStageData, progressHangoutStageService, updateHangoutMembersLimitService, updateHangoutPasswordService, UpdateHangoutStagesBody, updateHangoutStagesService } from "../../services/hangoutServices";
 import { hangoutDashboardState } from "../dashboard/hangoutDashboard";
-import { initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
+import { getHangoutStageTitle, initNextStageTimer } from "../dashboard/hangoutDashboardUtils";
 import { globalHangoutState } from "../globalHangoutState";
 import { copyToClipboard } from "../globalHangoutUtils";
 import { directlyNavigateHangoutSections, navigateHangoutSections } from "../hangoutNav";
@@ -50,6 +50,8 @@ const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector
 const settingsPasswordInput: HTMLInputElement | null = document.querySelector('#hangout-settings-password-input');
 
 const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
+
+const currentStageSpan: HTMLSpanElement | null = document.querySelector('#settings-current-stage-span');
 const membersCountSpan: HTMLSpanElement | null = document.querySelector('#settings-member-count-span');
 
 const settingsPasswordPreviewer: HTMLSpanElement | null = document.querySelector('#settings-password-previewer');
@@ -154,6 +156,7 @@ function renderHangoutSettingsSection(): void {
   updateSliderValues();
   disablePassedStagesSliders();
   updateProgressBtn();
+  updateCurrentStageSpan();
   updateMembersCount();
   updateHangoutPasswordElements();
 
@@ -212,6 +215,14 @@ function updateMembersCount(): void {
   };
 
   membersCountSpan.textContent = `${hangoutSettingsState.sliders.membersLimitSlider.value}`;
+};
+
+function updateCurrentStageSpan(): void {
+  if (!globalHangoutState.data || !currentStageSpan) {
+    return;
+  };
+
+  currentStageSpan.textContent = getHangoutStageTitle(globalHangoutState.data.hangoutDetails.current_stage);
 };
 
 function updateHangoutPasswordElements(): void {
