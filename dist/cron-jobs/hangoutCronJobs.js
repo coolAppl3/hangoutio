@@ -35,9 +35,11 @@ async function progressHangouts() {
       WHERE
         hangout_id IN (?);`, [currentTimestamp, hangoutIdsToProgress]);
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)(hangoutIdsToProgress, {
-            type: 'hangoutStageUpdate',
+            type: 'hangout',
             reason: 'hangoutAutoProgressed',
-            data: { newStageControlTimestamp: currentTimestamp },
+            data: {
+                newStageControlTimestamp: currentTimestamp,
+            },
         });
     }
     catch (err) {
@@ -86,11 +88,12 @@ async function concludeSingleSuggestionHangouts() {
         event_timestamp
       ) VALUES ${hangoutEventRowValuesString};`);
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)(hangoutIdsToProgress, {
-            type: 'hangoutStageUpdate',
+            type: 'hangout',
             reason: 'singleSuggestionConclusion',
             data: {
                 newStageControlTimestamp: currentTimestamp,
-                eventDescription
+                eventTimestamp: currentTimestamp,
+                eventDescription,
             },
         });
     }
@@ -142,11 +145,12 @@ async function concludeNoSuggestionHangouts() {
         event_timestamp
       ) VALUES ${hangoutEventRowValuesString};`);
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)(hangoutIdsToProgress, {
-            type: 'hangoutStageUpdate',
+            type: 'hangout',
             reason: 'noSuggestionConclusion',
             data: {
                 newStageControlTimestamp: currentTimestamp,
-                eventDescription
+                eventTimestamp: currentTimestamp,
+                eventDescription,
             },
         });
     }

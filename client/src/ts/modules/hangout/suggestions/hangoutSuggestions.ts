@@ -225,7 +225,7 @@ function applySuggestionsContainerStyles(displayRenderMoreSuggestionsBtn: boolea
   renderMoreSuggestionsBtn?.classList.add('hidden');
 };
 
-function updateRemainingSuggestionsCount(): void {
+export function updateRemainingSuggestionsCount(): void {
   if (!globalHangoutState.data || !suggestionsRemainingSpan) {
     return;
   };
@@ -234,7 +234,7 @@ function updateRemainingSuggestionsCount(): void {
   suggestionsRemainingSpan.textContent = `${suggestionsCount}`;
 };
 
-function updateRemainingVotesCount(): void {
+export function updateRemainingVotesCount(): void {
   if (!globalHangoutState.data || !votesRemainingSpan) {
     return;
   };
@@ -1020,4 +1020,32 @@ function toggleSuggestionExpansion(suggestionElement: HTMLDivElement): void {
 
   suggestionElement.classList.add('expanded');
   viewSuggestionBtn && (viewSuggestionBtn.textContent = 'Hide description');
+};
+
+export function removeOutOfBoundsSuggestions(newConclusionTimestamp: number): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  globalHangoutState.data.suggestionsCount = 0;
+  const inBoundsSuggestions: Suggestion[] = [];
+
+  for (const suggestion of hangoutSuggestionState.suggestions) {
+    if (suggestion.suggestion_start_timestamp < newConclusionTimestamp) {
+      hangoutSuggestionState.memberLikesSet.delete(suggestion.suggestion_id);
+      const voteDeleted: boolean = hangoutSuggestionState.memberVotesSet.delete(suggestion.suggestion_id);
+
+      voteDeleted && globalHangoutState.data.votesCount--;
+      continue;
+    };
+
+    inBoundsSuggestions.push(suggestion);
+
+    if (suggestion.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      globalHangoutState.data.suggestionsCount++;
+    };
+  };
+
+  hangoutSuggestionState.suggestions = inBoundsSuggestions;
+  renderSuggestionsSection();
 };

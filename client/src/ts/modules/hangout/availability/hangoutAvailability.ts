@@ -729,3 +729,22 @@ function handleSlotOverlap(errResData: unknown): void {
 
   displayTimePickerError('Slot overlap detected.');
 };
+
+export function removeOutOfBoundsAvailabilitySlots(newConclusionTimestamp: number): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((availabilitySlot: AvailabilitySlot) => availabilitySlot.slot_start_timestamp >= newConclusionTimestamp);
+
+  globalHangoutState.data.availabilitySlotsCount = 0;
+  for (const availabilitySlot of hangoutAvailabilityState.availabilitySlots) {
+    if (availabilitySlot.hangout_member_id !== globalHangoutState.data.hangoutMemberId) {
+      continue;
+    };
+
+    globalHangoutState.data.availabilitySlotsCount++;
+  };
+
+  renderAvailabilitySection();
+};

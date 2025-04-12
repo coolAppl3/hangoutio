@@ -296,7 +296,7 @@ function getLeaderIcon(): HTMLDivElement {
   return leaderIcon;
 };
 
-export function renderHangoutStageDescriptions(): void {
+export function renderDashboardStageDescriptions(): void {
   if (!globalHangoutState.data) {
     return;
   };
