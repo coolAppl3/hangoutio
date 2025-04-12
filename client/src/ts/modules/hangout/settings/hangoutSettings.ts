@@ -48,9 +48,12 @@ const settingsSectionElement: HTMLElement | null = document.querySelector('#sett
 
 const updateHangoutTitleForm: HTMLFormElement | null = document.querySelector('#hangout-settings-title-form');
 const settingsTitleInput: HTMLInputElement | null = document.querySelector('#hangout-settings-title-input');
+const updateTitleBtn: HTMLButtonElement | null = document.querySelector('#update-hangout-title-btn')
+
 
 const updateHangoutPasswordForm: HTMLFormElement | null = document.querySelector('#hangout-settings-password-form');
 const settingsPasswordInput: HTMLInputElement | null = document.querySelector('#hangout-settings-password-input');
+const updatePasswordBtn: HTMLButtonElement | null = document.querySelector('#update-hangout-password-btn')
 
 const progressHangoutBtn: HTMLButtonElement | null = document.querySelector('#progress-hangout-btn');
 
@@ -1105,8 +1108,27 @@ function confirmPasswordDelete(): void {
 };
 
 function setActiveValidation(): void {
-  settingsTitleInput?.addEventListener('keyup', () => validateHangoutTitle(settingsTitleInput));
-  settingsPasswordInput?.addEventListener('keyup', () => validateNewPassword(settingsPasswordInput));
+  settingsTitleInput?.addEventListener('keyup', () => {
+    const isValidInput: boolean = validateHangoutTitle(settingsTitleInput);
+    updateTitleBtn && toggleFormBtn(updateTitleBtn, isValidInput);
+  });
+
+  settingsPasswordInput?.addEventListener('keyup', () => {
+    const isValidInput: boolean = validateNewPassword(settingsPasswordInput);
+    updateTitleBtn && toggleFormBtn(updateTitleBtn, isValidInput);
+  });
+};
+
+function toggleFormBtn(btn: HTMLButtonElement, enable: boolean): void {
+  if (!enable) {
+    btn.classList.add('disabled');
+    btn.disabled = true;
+
+    return;
+  };
+
+  btn.classList.remove('disabled');
+  btn.disabled = false;
 };
 
 function clearUpdatePasswordForm(): void {
