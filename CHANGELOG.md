@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.74] (2025-04-12)
+
+### Features
+
+- Implemented live websocket updates for all hangout config related updates.
+
+
+### Bug Fixes
+
+- Fixed the current stage span in the hangout settings section not being updated.
+
+
 ## [0.4.73] (2025-04-11)
 
 ### Code Refactoring
@@ -22,7 +34,7 @@
 ### Features
 
 - The title in InfoModal can now be set to null.
-- Implemented realtime updates, using the hangout websocket, for all hangout member related actions.
+- Implemented live websocket updates for all hangout member related updates.
 
 
 ### Code Refactoring
