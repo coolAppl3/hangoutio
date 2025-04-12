@@ -62,6 +62,18 @@ export async function updateHangoutPasswordService(requestBody: UpdateHangoutPas
 
 // --- --- ---
 
+export interface UpdateHangoutTitleBody {
+  hangoutId: string,
+  hangoutMemberId: number,
+  newTitle: string,
+};
+
+export async function updateHangoutTitleService(requestBody: UpdateHangoutTitleBody): Promise<AxiosResponse> {
+  return axios.patch(`${hangoutsApiUrl}/details/updateTitle`, requestBody);
+};
+
+// --- --- ---
+
 export interface UpdateHangoutMembersLimitBody {
   hangoutId: string,
   hangoutMemberId: number,
