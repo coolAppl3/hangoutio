@@ -640,7 +640,7 @@ hangoutsRouter.patch('/details/updateTitle', async (req: Request, res: Response)
   };
 
   if (!hangoutValidation.isValidHangoutTitle(requestData.newTitle)) {
-    res.status(400).json({ message: 'Invalid new hangout title.' });
+    res.status(400).json({ message: 'Invalid new hangout title.', reason: 'invalidNewTitle' });
     return;
   };
 
