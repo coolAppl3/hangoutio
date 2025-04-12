@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.75] (2025-04-13)
+
+### Features
+
+- Added PATCH `hangout/details/updateTitle`.
+- Added logic for the hangout leader to update its title.
+- Added logic to disable the hangout setting form buttons, effectively dimming them, to avoid overloading the user with a lot of call-to-action buttons, especially on smaller devices.
+
+
 ## [0.4.74] (2025-04-12)
 
 ### Features
