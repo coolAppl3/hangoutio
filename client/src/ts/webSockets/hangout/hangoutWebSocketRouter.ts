@@ -1,6 +1,6 @@
 import { HANGOUT_CONCLUSION_STAGE } from "../../modules/global/clientConstants";
 import { InfoModal } from "../../modules/global/InfoModal";
-import { availabilityCalendarState, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
+import { availabilityCalendarState, updateAvailabilityCalendarMarkers, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
 import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
 import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
@@ -8,7 +8,7 @@ import { renderDashboardStageDescriptions } from "../../modules/hangout/dashboar
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { directlyNavigateHangoutSections } from "../../modules/hangout/hangoutNav";
-import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../../modules/hangout/hangoutTypes";
+import { AvailabilitySlot, ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../../modules/hangout/hangoutTypes";
 import { hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
 import { hangoutSettingsState, renderHangoutSettingsSection } from "../../modules/hangout/settings/hangoutSettings";
 import { hangoutSuggestionState, removeOutOfBoundsSuggestions, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
@@ -193,11 +193,10 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     };
 
     if (!isValidUpdatedHangoutDetails(data.updatedHangoutDetails)) {
-      console.log(data)
       return;
     };
 
-    const updatedHangoutDetails = data.updatedHangoutDetails as UpdatedHangoutDetails;
+    const updatedHangoutDetails: UpdatedHangoutDetails = data.updatedHangoutDetails;
     const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
 
     globalHangoutState.data.conclusionTimestamp = updatedHangoutDetails.conclusion_timestamp;
@@ -417,7 +416,111 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
 };
 
 function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
-  // TODO: implement
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'newSlot') {
+    if (typeof data.newAvailabilitySlot !== 'object' || data.newAvailabilitySlot === null) {
+      return;
+    };
+
+    if (!isValidAvailabilitySlot(data.newAvailabilitySlot)) {
+      return;
+    };
+
+    const newAvailabilitySlot: AvailabilitySlot = data.newAvailabilitySlot;
+
+    if (newAvailabilitySlot.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    hangoutAvailabilityState.availabilitySlots.push(newAvailabilitySlot);
+    updateAvailabilityCalendarMarkers();
+
+    return;
+  };
+
+  if (reason === 'slotUpdated') {
+    if (typeof data.updatedAvailabilitySlot !== 'object' || data.updatedAvailabilitySlot === null) {
+      return;
+    };
+
+    if (!isValidAvailabilitySlot(data.updatedAvailabilitySlot)) {
+      return;
+    };
+
+    const updatedAvailabilitySlot: AvailabilitySlot = data.updatedAvailabilitySlot;
+
+    if (updatedAvailabilitySlot.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    for (const slot of hangoutAvailabilityState.availabilitySlots) {
+      if (slot.availability_slot_id !== updatedAvailabilitySlot.availability_slot_id) {
+        continue;
+      };
+
+      slot.slot_start_timestamp = updatedAvailabilitySlot.slot_start_timestamp;
+      slot.slot_end_timestamp = updatedAvailabilitySlot.slot_end_timestamp;
+
+      break;
+    };
+
+    updateAvailabilityCalendarMarkers();
+    return;
+  };
+
+  if (reason === 'slotDeleted') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (typeof data.deletedSlotId !== 'number' || !Number.isInteger(data.deletedSlotId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== data.deletedSlotId);
+
+    updateAvailabilityCalendarMarkers();
+    return;
+  };
+
+  if (reason === 'slotsCleared') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.hangout_member_id !== data.hangoutMemberId);
+
+    updateAvailabilityCalendarMarkers();
+  };
 };
 
 function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
@@ -524,6 +627,26 @@ function isValidUpdatedHangoutDetails(updatedHangoutDetails: object): updatedHan
       continue;
     };
 
+    if (typeof value !== 'number' || !Number.isInteger(value)) {
+      return false;
+    };
+  };
+
+  return true;
+};
+
+function isValidAvailabilitySlot(newAvailabilitySlot: object): newAvailabilitySlot is AvailabilitySlot {
+  if (
+    !('availability_slot_id' in newAvailabilitySlot) ||
+    !('hangout_member_id' in newAvailabilitySlot) ||
+    !('slot_start_timestamp' in newAvailabilitySlot) ||
+    !('slot_end_timestamp' in newAvailabilitySlot)
+  ) {
+    return false;
+  };
+
+
+  for (const value of Object.values(newAvailabilitySlot)) {
     if (typeof value !== 'number' || !Number.isInteger(value)) {
       return false;
     };

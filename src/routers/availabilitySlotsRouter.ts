@@ -10,6 +10,7 @@ import * as authUtils from '../auth/authUtils';
 import { destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, MAX_HANGOUT_MEMBERS_LIMIT } from '../util/constants';
 import { AvailabilitySlot } from '../util/hangoutTypes';
+import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 
 export const availabilitySlotsRouter: Router = express.Router();
 
@@ -211,6 +212,19 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
 
     await connection.commit();
     res.status(201).json({ availabilitySlotId: resultSetHeader.insertId });
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'availabilitySlot',
+      reason: 'newSlot',
+      data: {
+        newAvailabilitySlot: {
+          availability_slot_id: resultSetHeader.insertId,
+          hangout_member_id: requestData.hangoutMemberId,
+          slot_start_timestamp: requestData.slotStartTimestamp,
+          slot_end_timestamp: requestData.slotEndTimestamp,
+        },
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -454,6 +468,19 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
     await connection.commit();
     res.json({});
 
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'availabilitySlot',
+      reason: 'slotUpdated',
+      data: {
+        updatedAvailabilitySlot: {
+          availability_slot_id: requestData.availabilitySlotId,
+          hangout_member_id: requestData.hangoutMemberId,
+          slot_start_timestamp: requestData.slotStartTimestamp,
+          slot_end_timestamp: requestData.slotEndTimestamp,
+        },
+      },
+    });
+
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
@@ -611,6 +638,15 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
 
     res.json({});
 
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'availabilitySlot',
+      reason: 'slotDeleted',
+      data: {
+        hangoutMemberId: +hangoutMemberId,
+        deletedSlotId: +availabilitySlotId,
+      },
+    });
+
   } catch (err: unknown) {
     console.log(err);
 
@@ -757,6 +793,14 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     };
 
     res.json({ deletedSlots: resultSetHeader.affectedRows });
+
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'availabilitySlot',
+      reason: 'slotsCleared',
+      data: {
+        hangoutMemberId: +hangoutMemberId,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
