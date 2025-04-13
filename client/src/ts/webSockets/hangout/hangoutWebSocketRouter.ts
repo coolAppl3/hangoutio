@@ -1,10 +1,11 @@
 import { HANGOUT_CONCLUSION_STAGE } from "../../modules/global/clientConstants";
 import { InfoModal } from "../../modules/global/InfoModal";
+import popup from "../../modules/global/popup";
 import { availabilityCalendarState, updateAvailabilityCalendarMarkers, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
 import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
 import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
-import { renderDashboardStageDescriptions } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
+import { getHangoutStageTitle, renderDashboardStageDescriptions } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { directlyNavigateHangoutSections } from "../../modules/hangout/hangoutNav";
@@ -218,8 +219,13 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     };
 
     insertNewHangoutEvent(webSocketData);
-    (hangoutDetails.is_concluded && !globalHangoutState.data.isLeader) && displayHangoutConcludedInfoModal();
 
+    if (hangoutDetails.is_concluded && !globalHangoutState.data.isLeader) {
+      displayHangoutConcludedInfoModal(true);
+      return;
+    };
+
+    !globalHangoutState.data.isLeader && popup(`${getHangoutStageTitle(hangoutDetails.current_stage)} stage has started.`, 'info');
     return;
   };
 
@@ -236,15 +242,17 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     renderDashboardMainContent();
     renderDashboardStageDescriptions();
 
-    if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE || reason !== 'hangoutAutoProgressed') {
+    if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
       hangoutDetails.is_concluded = true;
       globalHangoutState.data.conclusionTimestamp = data.newStageControlTimestamp;
 
-      displayHangoutConcludedInfoModal();
+      displayHangoutConcludedInfoModal(false);
     };
 
     hangoutSuggestionState.isLoaded && renderDashboardSection();
     (hangoutSettingsState.isLoaded && isLeader) && renderHangoutSettingsSection();
+
+    !hangoutDetails.is_concluded && popup(`${getHangoutStageTitle(hangoutDetails.current_stage)} stage has started.`, 'info');
   };
 };
 
@@ -778,10 +786,10 @@ function insertNewHangoutEvent(webSocketData: WebSocketData): void {
   searchHangoutEvents(); // will rerender
 };
 
-function displayHangoutConcludedInfoModal(): void {
+function displayHangoutConcludedInfoModal(manuallyConcluded: boolean): void {
   const infoModal: HTMLDivElement = InfoModal.display({
     title: null,
-    description: 'Hangout has been manually concluded.',
+    description: `Hangout has been${manuallyConcluded ? ' manually' : ''} concluded.`,
     btnTitle: 'View outcome',
   });
 
