@@ -125,6 +125,18 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     return;
   };
 
+  if (reason === 'titleUpdated') {
+    if (typeof data.newTitle !== 'string') {
+      return;
+    };
+
+    globalHangoutState.data.hangoutDetails.hangout_title = data.newTitle;
+    renderDashboardMainContent();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
   if (reason === 'memberLimitUpdated') {
     if (typeof data.newMemberLimit !== 'number' || !Number.isInteger(data.newMemberLimit)) {
       return;
