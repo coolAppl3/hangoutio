@@ -180,7 +180,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
       hangoutAvailabilityState.isLoaded && removeOutOfBoundsAvailabilitySlots(newHangoutConclusionTimestamp);
     };
 
-    renderDashboardMainContent(); // will restart the next-stage timer
+    renderDashboardMainContent(); // will re-init nextStageTimer
     availabilityCalendarState.hasBeenInitiated && resetAvailabilityCalendar();
 
     insertNewHangoutEvent(webSocketData);
@@ -211,7 +211,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
     hangoutDashboardState.nextStageTimerInitiated = false;
 
-    renderDashboardMainContent();
+    renderDashboardMainContent(); // will re-init nextStageTimer
     renderDashboardStageDescriptions();
 
     availabilityCalendarState.hasBeenInitiated && resetAvailabilityCalendar();
