@@ -8,6 +8,7 @@ import * as authUtils from '../auth/authUtils';
 import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE } from "../util/constants";
+import { sendHangoutWebSocketMessage } from "../webSockets/hangout/hangoutWebSocketServer";
 
 export const votesRouter: Router = express.Router();
 
@@ -199,6 +200,15 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     await connection.commit();
     res.status(201).json({});
 
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'vote',
+      reason: 'voteAdded',
+      data: {
+        hangoutMemberId: requestData.hangoutMemberId,
+        suggestionId: requestData.suggestionId,
+      },
+    });
+
   } catch (err: unknown) {
     console.log(err);
     await connection?.rollback();
@@ -364,6 +374,15 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     res.json({});
+
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'vote',
+      reason: 'voteDeleted',
+      data: {
+        hangoutMemberId: +hangoutMemberId,
+        suggestionId: +suggestionId,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);

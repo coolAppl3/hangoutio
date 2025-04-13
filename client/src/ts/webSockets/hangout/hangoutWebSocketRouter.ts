@@ -706,7 +706,38 @@ function handleLikesUpdate(webSocketData: WebSocketData): void {
 };
 
 function handleVotesUpdate(webSocketData: WebSocketData): void {
-  // TODO: implement
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'voteAdded' || reason === 'voteDeleted') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (typeof data.suggestionId !== 'number' || !Number.isInteger(data.suggestionId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    for (const suggestion of hangoutSuggestionState.suggestions) {
+      if (suggestion.suggestion_id === data.suggestionId) {
+        reason === 'voteAdded' ? suggestion.votes_count++ : suggestion.votes_count--;
+        renderHangoutSuggestions();
+
+        return;
+      };
+    };
+  };
 };
 
 function handleHangoutMiscUpdate(webSocketData: WebSocketData): void {
