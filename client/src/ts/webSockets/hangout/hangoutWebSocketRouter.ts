@@ -8,10 +8,10 @@ import { renderDashboardStageDescriptions } from "../../modules/hangout/dashboar
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { directlyNavigateHangoutSections } from "../../modules/hangout/hangoutNav";
-import { AvailabilitySlot, ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../../modules/hangout/hangoutTypes";
+import { AvailabilitySlot, ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails, Suggestion } from "../../modules/hangout/hangoutTypes";
 import { hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
 import { hangoutSettingsState, renderHangoutSettingsSection } from "../../modules/hangout/settings/hangoutSettings";
-import { hangoutSuggestionState, removeOutOfBoundsSuggestions, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
+import { hangoutSuggestionState, removeOutOfBoundsSuggestions, renderHangoutSuggestions, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
 import { updateSuggestionsFormHeader } from "../../modules/hangout/suggestions/suggestionsUtils";
 
 interface WebSocketData {
@@ -218,7 +218,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     };
 
     insertNewHangoutEvent(webSocketData);
-    displayHangoutConcludedInfoModal();
+    (hangoutDetails.is_concluded && !globalHangoutState.data.isLeader) && displayHangoutConcludedInfoModal();
 
     return;
   };
@@ -512,7 +512,162 @@ function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
 };
 
 function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
-  // TODO: implement
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'newSuggestion') {
+    if (typeof data.newSuggestion !== 'object' || data.newSuggestion == null) {
+      return;
+    };
+
+    const newSuggestion = data.newSuggestion as Suggestion;
+
+    if (newSuggestion.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    hangoutSuggestionState.suggestions.push(newSuggestion);
+    renderHangoutSuggestions();
+
+    return;
+  };
+
+  if (reason === 'suggestionUpdated') {
+    if (typeof data.isMajorChange !== 'boolean') {
+      return;
+    };
+
+    if (typeof data.updatedSuggestion !== 'object' || data.updatedSuggestion == null) {
+      return;
+    };
+
+    const updatedSuggestion = data.updatedSuggestion as Suggestion;
+
+    if (updatedSuggestion.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.map((suggestion: Suggestion) => {
+      if (suggestion.suggestion_id !== updatedSuggestion.suggestion_id) {
+        return suggestion;
+      };
+
+      const likesCount: number = suggestion.likes_count;
+      const votesCount: number = suggestion.votes_count;
+
+      return {
+        ...updatedSuggestion,
+        likes_count: data.isMajorChange ? 0 : likesCount,
+        votes_count: data.isMajorChange ? 0 : votesCount,
+      };
+    });
+
+    if (data.isMajorChange) {
+      hangoutSuggestionState.memberLikesSet.delete(updatedSuggestion.suggestion_id);
+      const voteDeleted: boolean = hangoutSuggestionState.memberVotesSet.delete(updatedSuggestion.suggestion_id);
+
+      voteDeleted && globalHangoutState.data.votesCount--;
+    };
+
+    renderHangoutSuggestions();
+
+    renderDashboardMainContent();
+    renderDashboardStageDescriptions();
+
+    return;
+  };
+
+  if (reason === 'suggestionDeleted') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((suggestion: Suggestion) => suggestion.suggestion_id !== data.deletedSuggestionId);
+
+    hangoutSuggestionState.memberLikesSet.delete(data.deletedSuggestionId);
+    const voteDeleted: boolean = hangoutSuggestionState.memberVotesSet.delete(data.deletedSuggestionId);
+
+    if (voteDeleted) {
+      globalHangoutState.data.votesCount--;
+      renderDashboardStageDescriptions();
+    };
+
+    renderHangoutSuggestions();
+    return;
+  };
+
+  if (reason === 'suggestionDeletedByLeader') {
+    if (typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
+      return;
+    };
+
+    if (globalHangoutState.data.isLeader) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    const filteredSuggestions: Suggestion[] = [];
+
+    let deletedSuggestionMemberId: number | null = null;
+    let deletedSuggestionTitle: string = '';
+
+    for (const suggestion of hangoutSuggestionState.suggestions) {
+      if (suggestion.suggestion_id !== data.deletedSuggestionId) {
+        filteredSuggestions.push(suggestion);
+        continue;
+      };
+
+      deletedSuggestionMemberId = suggestion.hangout_member_id;
+      deletedSuggestionTitle = suggestion.suggestion_title;
+    };
+
+    hangoutSuggestionState.suggestions = filteredSuggestions;
+
+    hangoutSuggestionState.memberLikesSet.delete(data.deletedSuggestionId);
+    const voteDeleted: boolean = hangoutSuggestionState.memberVotesSet.delete(data.deletedSuggestionId);
+
+    renderHangoutSuggestions();
+
+    if (deletedSuggestionMemberId !== globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    globalHangoutState.data.suggestionsCount--;
+    voteDeleted && globalHangoutState.data.votesCount--;
+    renderDashboardStageDescriptions();
+
+    InfoModal.display({
+      title: null,
+      description: `Your suggestion titled "${deletedSuggestionTitle}" was deleted by the hangout leader.`,
+      btnTitle: 'Okay',
+    }, { simple: true });
+  };
 };
 
 function handleVotesUpdate(webSocketData: WebSocketData): void {

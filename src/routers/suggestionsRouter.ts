@@ -11,6 +11,7 @@ import { destroyAuthSession } from "../auth/authSessions";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
 import { Suggestion, SuggestionLike, Vote } from "../util/hangoutTypes";
 import { isSqlError } from "../util/isSqlError";
+import { sendHangoutWebSocketMessage } from "../webSockets/hangout/hangoutWebSocketServer";
 
 export const suggestionsRouter: Router = express.Router();
 
@@ -212,6 +213,24 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
     await connection.commit();
     res.status(201).json({ suggestionId: resultSetHeader.insertId });
+
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'suggestion',
+      reason: 'newSuggestion',
+      data: {
+        newSuggestion: {
+          suggestion_id: resultSetHeader.insertId,
+          hangout_member_id: requestData.hangoutMemberId,
+          suggestion_title: requestData.suggestionTitle,
+          suggestion_description: requestData.suggestionDescription,
+          suggestion_start_timestamp: requestData.suggestionStartTimestamp,
+          suggestion_end_timestamp: requestData.suggestionEndTimestamp,
+          is_edited: false,
+          likes_count: 0,
+          votes_count: 0,
+        },
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -466,6 +485,25 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
       );
     };
 
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'suggestion',
+      reason: 'suggestionUpdated',
+      data: {
+        isMajorChange,
+        updatedSuggestion: {
+          suggestion_id: requestData.suggestionId,
+          hangout_member_id: requestData.hangoutMemberId,
+          suggestion_title: requestData.suggestionTitle,
+          suggestion_description: requestData.suggestionDescription,
+          suggestion_start_timestamp: requestData.suggestionStartTimestamp,
+          suggestion_end_timestamp: requestData.suggestionEndTimestamp,
+          is_edited: true,
+          likes_count: 0,
+          votes_count: 0,
+        },
+      },
+    });
+
   } catch (err: unknown) {
     console.log(err);
 
@@ -627,6 +665,15 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     res.json({});
+
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'suggestion',
+      reason: 'suggestionDeleted',
+      data: {
+        hangoutMemberId: +hangoutMemberId,
+        deletedSuggestionId: +suggestionId,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -797,6 +844,14 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     };
 
     res.json({});
+
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'suggestion',
+      reason: 'suggestionDeletedByLeader',
+      data: {
+        deletedSuggestionId: +suggestionId,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);
