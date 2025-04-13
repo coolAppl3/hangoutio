@@ -1216,6 +1216,15 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
 
     res.json({});
 
+    sendHangoutWebSocketMessage([requestData.hangoutId], {
+      type: 'like',
+      reason: 'likeAdded',
+      data: {
+        hangoutMemberId: requestData.hangoutMemberId,
+        suggestionId: requestData.suggestionId,
+      },
+    });
+
   } catch (err: unknown) {
     console.log(err);
 
@@ -1371,6 +1380,15 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
     );
 
     res.json({});
+
+    sendHangoutWebSocketMessage([hangoutId], {
+      type: 'like',
+      reason: 'likeDeleted',
+      data: {
+        hangoutMemberId: +hangoutMemberId,
+        suggestionId: +suggestionId,
+      },
+    });
 
   } catch (err: unknown) {
     console.log(err);

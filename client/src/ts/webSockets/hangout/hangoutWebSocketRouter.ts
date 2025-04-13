@@ -670,11 +670,42 @@ function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
   };
 };
 
-function handleVotesUpdate(webSocketData: WebSocketData): void {
-  // TODO: implement
+function handleLikesUpdate(webSocketData: WebSocketData): void {
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'likeAdded' || reason === 'likeDeleted') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (typeof data.suggestionId !== 'number' || !Number.isInteger(data.suggestionId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    for (const suggestion of hangoutSuggestionState.suggestions) {
+      if (suggestion.suggestion_id === data.suggestionId) {
+        reason === 'likeAdded' ? suggestion.likes_count++ : suggestion.likes_count--;
+        renderHangoutSuggestions();
+
+        return;
+      };
+    };
+  };
 };
 
-function handleLikesUpdate(webSocketData: WebSocketData): void {
+function handleVotesUpdate(webSocketData: WebSocketData): void {
   // TODO: implement
 };
 
