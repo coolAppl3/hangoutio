@@ -50,8 +50,6 @@ export function initAvailabilityCalendar(): void {
     currentYear: dateObj.getFullYear(),
   };
 
-  updateAvailabilityCalendar();
-
   availabilityCalendarHeader?.addEventListener('click', navigateCalendar);
   availabilityCalendarDatesElement?.addEventListener('click', handleCalendarCellClick);
 };
@@ -87,25 +85,22 @@ export function updateAvailabilityCalendar(): void {
   availabilityCalendarDatesElement.firstElementChild?.remove();
   availabilityCalendarDatesElement.appendChild(availabilityCalendarDatesContainer);
 
-  displayAvailabilityMarkers();
+  updateAvailabilityCalendarMarkers();
 };
 
-function displayAvailabilityMarkers(): void {
-  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
+export function updateAvailabilityCalendarMarkers(): void {
+  if (!globalHangoutState.data || !availabilityCalendarState.data) {
     return;
   };
 
-  if (!availabilityCalendarState.data) {
-    return;
-  };
-
+  const { hangoutMemberId, hangoutMembers } = globalHangoutState.data;
   const { currentYear, currentMonth } = availabilityCalendarState.data;
 
   const smallestRelevantTimestamp: number = new Date(currentYear, currentMonth, 1).getTime();
   const largestRelevantTimestamp: number = new Date(currentYear, currentMonth, getMonthNumberOfDays(currentYear, currentMonth), 23, 59).getTime();
 
-  const uniqueSlots: { memberId: number, date: number }[] = [];
   const monthSpecificSlotsMap: Map<number, number> = new Map();
+  const userAvailabilityDatesSet: Set<number> = new Set();
 
   for (const slot of hangoutAvailabilityState.availabilitySlots) {
     if (slot.slot_start_timestamp < smallestRelevantTimestamp || slot.slot_start_timestamp > largestRelevantTimestamp) {
@@ -114,23 +109,23 @@ function displayAvailabilityMarkers(): void {
 
     const date: number = new Date(slot.slot_start_timestamp).getDate();
 
-    if (uniqueSlots.some((uniqueSlot) => uniqueSlot.memberId === slot.hangout_member_id && uniqueSlot.date === date)) {
-      continue;
-    };
-
-    uniqueSlots.push({ memberId: slot.hangout_member_id, date });
-
     const dateCount: number | undefined = monthSpecificSlotsMap.get(date);
     monthSpecificSlotsMap.set(date, dateCount ? (dateCount + 1) : 1);
+
+    if (slot.hangout_member_id === hangoutMemberId) {
+      userAvailabilityDatesSet.add(date);
+    };
   };
 
-  if (!globalHangoutState.data) {
+  const calendarCells: NodeListOf<HTMLButtonElement> = document.querySelectorAll('#availability-calendar-dates-container button.date-cell');
+
+  if (hangoutAvailabilityState.availabilitySlots.length === 0) {
+    for (const cell of calendarCells) {
+      cell.className = `date-cell${cell.classList.contains('forbidden') ? ' forbidden' : ''}`;
+    };
+
     return;
   };
-
-  const { hangoutMemberId, hangoutMembers } = globalHangoutState.data;
-
-  const calendarCells: NodeListOf<HTMLButtonElement> = document.querySelectorAll('button.date-cell');
 
   for (const cell of calendarCells) {
     const date: string | null = cell.getAttribute('data-value');
@@ -140,6 +135,7 @@ function displayAvailabilityMarkers(): void {
 
     const slotsCount: number | undefined = monthSpecificSlotsMap.get(+date);
     if (!slotsCount) {
+      cell.className = `date-cell${cell.classList.contains('forbidden') ? ' forbidden' : ''}`;
       continue;
     };
 
@@ -148,15 +144,17 @@ function displayAvailabilityMarkers(): void {
 
     if (availabilityPercentage < 0.3) {
       className = 'low-availability';
+
     } else if (availabilityPercentage >= 0.3 && availabilityPercentage <= 0.6) {
       className = 'medium-availability';
+
     } else {
       className = 'high-availability';
     };
 
     cell.classList.add(className);
 
-    if (uniqueSlots.some((slot) => slot.memberId === hangoutMemberId)) {
+    if (userAvailabilityDatesSet.has(+date)) {
       cell.classList.add('self-availability');
     };
   };

@@ -97,14 +97,7 @@ async function handleSuggestionsFormSubmission(e: SubmitEvent): Promise<void> {
   };
 
   if (suggestionsFormState.suggestionIdToEdit) {
-    const { hasFailed, isIdentical, isMajorChange } = detectSuggestionEdits();
-
-    if (hasFailed) {
-      popup('Failed to update suggestion.', 'error');
-      endHangoutSuggestionsFormEdit();
-
-      return;
-    };
+    const { isIdentical, isMajorChange } = detectSuggestionEdits(suggestionsFormState.suggestionIdToEdit);
 
     if (isIdentical) {
       popup('No suggestion changes found.', 'error');
@@ -671,22 +664,18 @@ function toggleSuggestionsFormUiState(): void {
   formCollapseBtn.textContent = 'Collapse';
 };
 
-function detectSuggestionEdits(): { hasFailed: boolean, isIdentical: boolean, isMajorChange: boolean } {
-  if (!suggestionsFormState.suggestionIdToEdit) {
-    return { hasFailed: true, isIdentical: false, isMajorChange: false };
-  };
-
-  const originalSuggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionsFormState.suggestionIdToEdit);
+function detectSuggestionEdits(suggestionId: number): { isIdentical: boolean, isMajorChange: boolean } {
+  const originalSuggestion: Suggestion | undefined = hangoutSuggestionState.suggestions.find((suggestion: Suggestion) => suggestion.suggestion_id === suggestionId);
 
   if (!originalSuggestion) {
     globalHangoutState.data && globalHangoutState.data.suggestionsCount--;
     renderSuggestionsSection();
 
-    return { hasFailed: true, isIdentical: false, isMajorChange: false };
+    return { isIdentical: false, isMajorChange: false };
   };
 
   if (!suggestionTitleInput || !suggestionDescriptionTextarea) {
-    return { hasFailed: true, isIdentical: false, isMajorChange: false };
+    return { isIdentical: false, isMajorChange: false };
   };
 
   let isIdentical: boolean = true;
@@ -714,7 +703,7 @@ function detectSuggestionEdits(): { hasFailed: boolean, isIdentical: boolean, is
     isIdentical = false;
   };
 
-  return { hasFailed: false, isIdentical, isMajorChange };
+  return { isIdentical, isMajorChange };
 };
 
 function handleMajorSuggestionChanges(suggestionId: number): void {

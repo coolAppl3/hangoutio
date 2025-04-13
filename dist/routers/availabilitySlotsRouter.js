@@ -37,6 +37,7 @@ const cookieUtils_1 = require("../util/cookieUtils");
 const authUtils = __importStar(require("../auth/authUtils"));
 const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
+const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 exports.availabilitySlotsRouter = express_1.default.Router();
 exports.availabilitySlotsRouter.post('/', async (req, res) => {
     ;
@@ -186,6 +187,18 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [requestData.hangoutMemberId, requestData.hangoutId, requestData.slotStartTimestamp, requestData.slotEndTimestamp]);
         await connection.commit();
         res.status(201).json({ availabilitySlotId: resultSetHeader.insertId });
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
+            type: 'availabilitySlot',
+            reason: 'newSlot',
+            data: {
+                newAvailabilitySlot: {
+                    availability_slot_id: resultSetHeader.insertId,
+                    hangout_member_id: requestData.hangoutMemberId,
+                    slot_start_timestamp: requestData.slotStartTimestamp,
+                    slot_end_timestamp: requestData.slotEndTimestamp,
+                },
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -370,6 +383,18 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         ;
         await connection.commit();
         res.json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
+            type: 'availabilitySlot',
+            reason: 'slotUpdated',
+            data: {
+                updatedAvailabilitySlot: {
+                    availability_slot_id: requestData.availabilitySlotId,
+                    hangout_member_id: requestData.hangoutMemberId,
+                    slot_start_timestamp: requestData.slotStartTimestamp,
+                    slot_end_timestamp: requestData.slotEndTimestamp,
+                },
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -495,6 +520,14 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
         }
         ;
         res.json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
+            type: 'availabilitySlot',
+            reason: 'slotDeleted',
+            data: {
+                hangoutMemberId: +hangoutMemberId,
+                deletedSlotId: +availabilitySlotId,
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -610,6 +643,13 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         }
         ;
         res.json({ deletedSlots: resultSetHeader.affectedRows });
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
+            type: 'availabilitySlot',
+            reason: 'slotsCleared',
+            data: {
+                hangoutMemberId: +hangoutMemberId,
+            },
+        });
     }
     catch (err) {
         console.log(err);

@@ -74,7 +74,7 @@ export async function initHangoutSuggestions(): Promise<void> {
 };
 
 export function renderSuggestionsSection(): void {
-  displayHangoutSuggestions();
+  renderHangoutSuggestions();
   updateRemainingSuggestionsCount();
   updateRemainingVotesCount();
   updateSuggestionsFormHeader();
@@ -150,7 +150,7 @@ async function getHangoutSuggestions(): Promise<void> {
   };
 };
 
-function displayHangoutSuggestions(): void {
+export function renderHangoutSuggestions(): void {
   if (!suggestionsContainer || !globalHangoutState.data) {
     renderMoreSuggestionsBtn?.classList.add('hidden');
     return;
@@ -755,7 +755,7 @@ function renderMoreSuggestions(): void {
   const { maxSuggestionsToRender: suggestionsToRender, suggestionsRenderLimit } = hangoutSuggestionState;
   hangoutSuggestionState.maxSuggestionsToRender = Math.min(suggestionsRenderLimit, suggestionsToRender + 20);
 
-  displayHangoutSuggestions();
+  renderHangoutSuggestions();
 };
 
 function initSuggestionsSectionMutationObserver(): void {

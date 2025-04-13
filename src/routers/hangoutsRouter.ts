@@ -758,7 +758,7 @@ hangoutsRouter.patch('/details/updateTitle', async (req: Request, res: Response)
 
     sendHangoutWebSocketMessage([requestData.hangoutId], {
       type: 'hangout',
-      reason: 'hangoutTitleUpdated',
+      reason: 'titleUpdated',
       data: {
         newTitle: requestData.newTitle,
 

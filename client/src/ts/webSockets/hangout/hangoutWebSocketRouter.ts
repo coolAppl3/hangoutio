@@ -1,6 +1,6 @@
 import { HANGOUT_CONCLUSION_STAGE } from "../../modules/global/clientConstants";
 import { InfoModal } from "../../modules/global/InfoModal";
-import { availabilityCalendarState, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
+import { availabilityCalendarState, updateAvailabilityCalendarMarkers, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
 import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
 import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
@@ -8,10 +8,10 @@ import { renderDashboardStageDescriptions } from "../../modules/hangout/dashboar
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { directlyNavigateHangoutSections } from "../../modules/hangout/hangoutNav";
-import { ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails } from "../../modules/hangout/hangoutTypes";
+import { AvailabilitySlot, ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails, Suggestion } from "../../modules/hangout/hangoutTypes";
 import { hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
 import { hangoutSettingsState, renderHangoutSettingsSection } from "../../modules/hangout/settings/hangoutSettings";
-import { hangoutSuggestionState, removeOutOfBoundsSuggestions, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
+import { hangoutSuggestionState, removeOutOfBoundsSuggestions, renderHangoutSuggestions, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
 import { updateSuggestionsFormHeader } from "../../modules/hangout/suggestions/suggestionsUtils";
 
 interface WebSocketData {
@@ -125,6 +125,18 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     return;
   };
 
+  if (reason === 'titleUpdated') {
+    if (typeof data.newTitle !== 'string') {
+      return;
+    };
+
+    globalHangoutState.data.hangoutDetails.hangout_title = data.newTitle;
+    renderDashboardMainContent();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
+
   if (reason === 'memberLimitUpdated') {
     if (typeof data.newMemberLimit !== 'number' || !Number.isInteger(data.newMemberLimit)) {
       return;
@@ -168,7 +180,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
       hangoutAvailabilityState.isLoaded && removeOutOfBoundsAvailabilitySlots(newHangoutConclusionTimestamp);
     };
 
-    renderDashboardMainContent(); // will restart the next-stage timer
+    renderDashboardMainContent(); // will re-init nextStageTimer
     availabilityCalendarState.hasBeenInitiated && resetAvailabilityCalendar();
 
     insertNewHangoutEvent(webSocketData);
@@ -177,11 +189,6 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
 
   if (reason === 'hangoutManuallyProgressed') {
     if (typeof data.updatedHangoutDetails !== 'object' || data.updatedHangoutDetails === null) {
-      return;
-    };
-
-    if (!isValidUpdatedHangoutDetails(data.updatedHangoutDetails)) {
-      console.log(data)
       return;
     };
 
@@ -199,7 +206,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     clearInterval(hangoutDashboardState.nextStageTimerIntervalId);
     hangoutDashboardState.nextStageTimerInitiated = false;
 
-    renderDashboardMainContent();
+    renderDashboardMainContent(); // will re-init nextStageTimer
     renderDashboardStageDescriptions();
 
     availabilityCalendarState.hasBeenInitiated && resetAvailabilityCalendar();
@@ -211,7 +218,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     };
 
     insertNewHangoutEvent(webSocketData);
-    displayHangoutConcludedInfoModal();
+    (hangoutDetails.is_concluded && !globalHangoutState.data.isLeader) && displayHangoutConcludedInfoModal();
 
     return;
   };
@@ -405,11 +412,262 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
 };
 
 function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
-  // TODO: implement
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'newSlot') {
+    if (typeof data.newAvailabilitySlot !== 'object' || data.newAvailabilitySlot === null) {
+      return;
+    };
+
+    const newAvailabilitySlot = data.newAvailabilitySlot as AvailabilitySlot;
+
+    if (newAvailabilitySlot.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    hangoutAvailabilityState.availabilitySlots.push(newAvailabilitySlot);
+    updateAvailabilityCalendarMarkers();
+
+    return;
+  };
+
+  if (reason === 'slotUpdated') {
+    if (typeof data.updatedAvailabilitySlot !== 'object' || data.updatedAvailabilitySlot === null) {
+      return;
+    };
+
+    const updatedAvailabilitySlot = data.updatedAvailabilitySlot as AvailabilitySlot;
+
+    if (updatedAvailabilitySlot.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    for (const slot of hangoutAvailabilityState.availabilitySlots) {
+      if (slot.availability_slot_id !== updatedAvailabilitySlot.availability_slot_id) {
+        continue;
+      };
+
+      slot.slot_start_timestamp = updatedAvailabilitySlot.slot_start_timestamp;
+      slot.slot_end_timestamp = updatedAvailabilitySlot.slot_end_timestamp;
+
+      break;
+    };
+
+    updateAvailabilityCalendarMarkers();
+    return;
+  };
+
+  if (reason === 'slotDeleted') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (typeof data.deletedSlotId !== 'number' || !Number.isInteger(data.deletedSlotId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== data.deletedSlotId);
+
+    updateAvailabilityCalendarMarkers();
+    return;
+  };
+
+  if (reason === 'slotsCleared') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutAvailabilityState.isLoaded) {
+      return;
+    };
+
+    hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.hangout_member_id !== data.hangoutMemberId);
+
+    updateAvailabilityCalendarMarkers();
+  };
 };
 
 function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
-  // TODO: implement
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'newSuggestion') {
+    if (typeof data.newSuggestion !== 'object' || data.newSuggestion == null) {
+      return;
+    };
+
+    const newSuggestion = data.newSuggestion as Suggestion;
+
+    if (newSuggestion.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    hangoutSuggestionState.suggestions.push(newSuggestion);
+    renderHangoutSuggestions();
+
+    return;
+  };
+
+  if (reason === 'suggestionUpdated') {
+    if (typeof data.isMajorChange !== 'boolean') {
+      return;
+    };
+
+    if (typeof data.updatedSuggestion !== 'object' || data.updatedSuggestion == null) {
+      return;
+    };
+
+    const updatedSuggestion = data.updatedSuggestion as Suggestion;
+
+    if (updatedSuggestion.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.map((suggestion: Suggestion) => {
+      if (suggestion.suggestion_id !== updatedSuggestion.suggestion_id) {
+        return suggestion;
+      };
+
+      const likesCount: number = suggestion.likes_count;
+      const votesCount: number = suggestion.votes_count;
+
+      return {
+        ...updatedSuggestion,
+        likes_count: data.isMajorChange ? 0 : likesCount,
+        votes_count: data.isMajorChange ? 0 : votesCount,
+      };
+    });
+
+    if (data.isMajorChange) {
+      hangoutSuggestionState.memberLikesSet.delete(updatedSuggestion.suggestion_id);
+      const voteDeleted: boolean = hangoutSuggestionState.memberVotesSet.delete(updatedSuggestion.suggestion_id);
+
+      voteDeleted && globalHangoutState.data.votesCount--;
+    };
+
+    renderHangoutSuggestions();
+
+    renderDashboardMainContent();
+    renderDashboardStageDescriptions();
+
+    return;
+  };
+
+  if (reason === 'suggestionDeleted') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
+      return;
+    };
+
+    if (data.hangoutMemberId === globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((suggestion: Suggestion) => suggestion.suggestion_id !== data.deletedSuggestionId);
+
+    hangoutSuggestionState.memberLikesSet.delete(data.deletedSuggestionId);
+    const voteDeleted: boolean = hangoutSuggestionState.memberVotesSet.delete(data.deletedSuggestionId);
+
+    if (voteDeleted) {
+      globalHangoutState.data.votesCount--;
+      renderDashboardStageDescriptions();
+    };
+
+    renderHangoutSuggestions();
+    return;
+  };
+
+  if (reason === 'suggestionDeletedByLeader') {
+    if (typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
+      return;
+    };
+
+    if (globalHangoutState.data.isLeader) {
+      return;
+    };
+
+    if (!hangoutSuggestionState.isLoaded) {
+      return;
+    };
+
+    const filteredSuggestions: Suggestion[] = [];
+
+    let deletedSuggestionMemberId: number | null = null;
+    let deletedSuggestionTitle: string = '';
+
+    for (const suggestion of hangoutSuggestionState.suggestions) {
+      if (suggestion.suggestion_id !== data.deletedSuggestionId) {
+        filteredSuggestions.push(suggestion);
+        continue;
+      };
+
+      deletedSuggestionMemberId = suggestion.hangout_member_id;
+      deletedSuggestionTitle = suggestion.suggestion_title;
+    };
+
+    hangoutSuggestionState.suggestions = filteredSuggestions;
+
+    hangoutSuggestionState.memberLikesSet.delete(data.deletedSuggestionId);
+    const voteDeleted: boolean = hangoutSuggestionState.memberVotesSet.delete(data.deletedSuggestionId);
+
+    renderHangoutSuggestions();
+
+    if (deletedSuggestionMemberId !== globalHangoutState.data.hangoutMemberId) {
+      return;
+    };
+
+    globalHangoutState.data.suggestionsCount--;
+    voteDeleted && globalHangoutState.data.votesCount--;
+    renderDashboardStageDescriptions();
+
+    InfoModal.display({
+      title: null,
+      description: `Your suggestion titled "${deletedSuggestionTitle}" was deleted by the hangout leader.`,
+      btnTitle: 'Okay',
+    }, { simple: true });
+  };
 };
 
 function handleVotesUpdate(webSocketData: WebSocketData): void {
@@ -487,35 +745,4 @@ interface UpdatedHangoutDetails {
   stage_control_timestamp: number,
   current_stage: number,
   is_concluded: boolean,
-};
-
-function isValidUpdatedHangoutDetails(updatedHangoutDetails: object): updatedHangoutDetails is UpdatedHangoutDetails {
-  if (
-    !('availability_period' in updatedHangoutDetails) ||
-    !('suggestions_period' in updatedHangoutDetails) ||
-    !('voting_period' in updatedHangoutDetails) ||
-    !('conclusion_timestamp' in updatedHangoutDetails) ||
-    !('stage_control_timestamp' in updatedHangoutDetails) ||
-    !('current_stage' in updatedHangoutDetails) ||
-    !('is_concluded' in updatedHangoutDetails)
-  ) {
-    return false;
-  };
-
-
-  for (const [key, value] of Object.entries(updatedHangoutDetails)) {
-    if (key === 'is_concluded') {
-      if (typeof value !== 'boolean') {
-        return false;
-      };
-
-      continue;
-    };
-
-    if (typeof value !== 'number' || !Number.isInteger(value)) {
-      return false;
-    };
-  };
-
-  return true;
 };
