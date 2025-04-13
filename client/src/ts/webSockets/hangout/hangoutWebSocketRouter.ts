@@ -192,11 +192,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
       return;
     };
 
-    if (!isValidUpdatedHangoutDetails(data.updatedHangoutDetails)) {
-      return;
-    };
-
-    const updatedHangoutDetails: UpdatedHangoutDetails = data.updatedHangoutDetails;
+    const updatedHangoutDetails = data.updatedHangoutDetails as UpdatedHangoutDetails;
     const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
 
     globalHangoutState.data.conclusionTimestamp = updatedHangoutDetails.conclusion_timestamp;
@@ -427,11 +423,7 @@ function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
       return;
     };
 
-    if (!isValidAvailabilitySlot(data.newAvailabilitySlot)) {
-      return;
-    };
-
-    const newAvailabilitySlot: AvailabilitySlot = data.newAvailabilitySlot;
+    const newAvailabilitySlot = data.newAvailabilitySlot as AvailabilitySlot;
 
     if (newAvailabilitySlot.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
       return;
@@ -452,11 +444,7 @@ function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
       return;
     };
 
-    if (!isValidAvailabilitySlot(data.updatedAvailabilitySlot)) {
-      return;
-    };
-
-    const updatedAvailabilitySlot: AvailabilitySlot = data.updatedAvailabilitySlot;
+    const updatedAvailabilitySlot = data.updatedAvailabilitySlot as AvailabilitySlot;
 
     if (updatedAvailabilitySlot.hangout_member_id === globalHangoutState.data.hangoutMemberId) {
       return;
@@ -602,55 +590,4 @@ interface UpdatedHangoutDetails {
   stage_control_timestamp: number,
   current_stage: number,
   is_concluded: boolean,
-};
-
-function isValidUpdatedHangoutDetails(updatedHangoutDetails: object): updatedHangoutDetails is UpdatedHangoutDetails {
-  if (
-    !('availability_period' in updatedHangoutDetails) ||
-    !('suggestions_period' in updatedHangoutDetails) ||
-    !('voting_period' in updatedHangoutDetails) ||
-    !('conclusion_timestamp' in updatedHangoutDetails) ||
-    !('stage_control_timestamp' in updatedHangoutDetails) ||
-    !('current_stage' in updatedHangoutDetails) ||
-    !('is_concluded' in updatedHangoutDetails)
-  ) {
-    return false;
-  };
-
-
-  for (const [key, value] of Object.entries(updatedHangoutDetails)) {
-    if (key === 'is_concluded') {
-      if (typeof value !== 'boolean') {
-        return false;
-      };
-
-      continue;
-    };
-
-    if (typeof value !== 'number' || !Number.isInteger(value)) {
-      return false;
-    };
-  };
-
-  return true;
-};
-
-function isValidAvailabilitySlot(newAvailabilitySlot: object): newAvailabilitySlot is AvailabilitySlot {
-  if (
-    !('availability_slot_id' in newAvailabilitySlot) ||
-    !('hangout_member_id' in newAvailabilitySlot) ||
-    !('slot_start_timestamp' in newAvailabilitySlot) ||
-    !('slot_end_timestamp' in newAvailabilitySlot)
-  ) {
-    return false;
-  };
-
-
-  for (const value of Object.values(newAvailabilitySlot)) {
-    if (typeof value !== 'number' || !Number.isInteger(value)) {
-      return false;
-    };
-  };
-
-  return true;
 };
