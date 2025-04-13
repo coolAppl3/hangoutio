@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.76] (2025-04-13)
+
+### Features
+
+- Implemented live websocket updates to reflect changes to the hangout title.
+- Implemented live websocket updates for all hangout availability slots related updates.
+  - Massively improved the rendering logic for the availability calender, and fixed a few bugs, in the process.
+- Implemented live websocket updates for all hangout suggestions related updates.
+  - This doesn't include likes and votes, which will be implemented in the following patch.
+
+
+### Code Refactoring
+
+- Refactored `hangoutSettings.ts` to not reinitialize the next stage timer, and instead rely on websocket updated to do it.
+- Replaced verbose type checks for websocket data with type casting in `hangoutWebSocketRouter.ts` to avoid inflating it. 
+
+
 ## [0.4.75] (2025-04-13)
 
 ### Features

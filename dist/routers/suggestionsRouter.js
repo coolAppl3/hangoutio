@@ -38,6 +38,7 @@ const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
 const isSqlError_1 = require("../util/isSqlError");
+const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 exports.suggestionsRouter = express_1.default.Router();
 exports.suggestionsRouter.post('/', async (req, res) => {
     ;
@@ -186,6 +187,23 @@ exports.suggestionsRouter.post('/', async (req, res) => {
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(7)});`, [requestData.hangoutMemberId, requestData.hangoutId, requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, false]);
         await connection.commit();
         res.status(201).json({ suggestionId: resultSetHeader.insertId });
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
+            type: 'suggestion',
+            reason: 'newSuggestion',
+            data: {
+                newSuggestion: {
+                    suggestion_id: resultSetHeader.insertId,
+                    hangout_member_id: requestData.hangoutMemberId,
+                    suggestion_title: requestData.suggestionTitle,
+                    suggestion_description: requestData.suggestionDescription,
+                    suggestion_start_timestamp: requestData.suggestionStartTimestamp,
+                    suggestion_end_timestamp: requestData.suggestionEndTimestamp,
+                    is_edited: false,
+                    likes_count: 0,
+                    votes_count: 0,
+                },
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -388,6 +406,24 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
           suggestion_id = :suggestionId;`, { suggestionId: requestData.suggestionId });
         }
         ;
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
+            type: 'suggestion',
+            reason: 'suggestionUpdated',
+            data: {
+                isMajorChange,
+                updatedSuggestion: {
+                    suggestion_id: requestData.suggestionId,
+                    hangout_member_id: requestData.hangoutMemberId,
+                    suggestion_title: requestData.suggestionTitle,
+                    suggestion_description: requestData.suggestionDescription,
+                    suggestion_start_timestamp: requestData.suggestionStartTimestamp,
+                    suggestion_end_timestamp: requestData.suggestionEndTimestamp,
+                    is_edited: true,
+                    likes_count: 0,
+                    votes_count: 0,
+                },
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -517,6 +553,14 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         }
         ;
         res.json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
+            type: 'suggestion',
+            reason: 'suggestionDeleted',
+            data: {
+                hangoutMemberId: +hangoutMemberId,
+                deletedSuggestionId: +suggestionId,
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -652,6 +696,13 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
         }
         ;
         res.json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
+            type: 'suggestion',
+            reason: 'suggestionDeletedByLeader',
+            data: {
+                deletedSuggestionId: +suggestionId,
+            },
+        });
     }
     catch (err) {
         console.log(err);

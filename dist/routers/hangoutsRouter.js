@@ -604,7 +604,7 @@ exports.hangoutsRouter.patch('/details/updateTitle', async (req, res) => {
         (0, addHangoutEvent_1.addHangoutEvent)(requestData.hangoutId, eventDescription, eventTimestamp);
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
             type: 'hangout',
-            reason: 'hangoutTitleUpdated',
+            reason: 'titleUpdated',
             data: {
                 newTitle: requestData.newTitle,
                 eventTimestamp,
