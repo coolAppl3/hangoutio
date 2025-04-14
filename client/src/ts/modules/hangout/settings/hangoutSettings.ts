@@ -706,10 +706,9 @@ async function updateHangoutTitle(e: SubmitEvent): Promise<void> {
     await updateHangoutTitleService({ hangoutId, hangoutMemberId, newTitle });
 
     hangoutDetails.hangout_title = newTitle;
-    updateHangoutTitleSpan();
 
-    settingsTitleInput.value = '';
-    settingsTitleInput.blur();
+    clearUpdateTitleForm();
+    updateHangoutTitleSpan();
 
     popup('Hangout title updated.', 'success');
     LoadingModal.remove();
@@ -1100,12 +1099,12 @@ function confirmPasswordDelete(): void {
 };
 
 function setActiveValidation(): void {
-  settingsTitleInput?.addEventListener('keyup', () => {
+  settingsTitleInput?.addEventListener('input', () => {
     const isValidInput: boolean = validateHangoutTitle(settingsTitleInput);
     updateTitleBtn && toggleFormBtn(updateTitleBtn, isValidInput);
   });
 
-  settingsPasswordInput?.addEventListener('keyup', () => {
+  settingsPasswordInput?.addEventListener('input', () => {
     const isValidInput: boolean = validateNewPassword(settingsPasswordInput);
     updatePasswordBtn && toggleFormBtn(updatePasswordBtn, isValidInput);
   });
@@ -1128,9 +1127,23 @@ function clearUpdatePasswordForm(): void {
     return;
   };
 
+  settingsPasswordInput.value = '';
+  updatePasswordBtn && toggleFormBtn(updatePasswordBtn, false);
+
   settingsPasswordInput.blur();
   ErrorSpan.hide(settingsPasswordInput);
-  settingsPasswordInput.value = '';
+};
+
+function clearUpdateTitleForm(): void {
+  if (!settingsTitleInput) {
+    return;
+  };
+
+  settingsTitleInput.value = '';
+  updateTitleBtn && toggleFormBtn(updateTitleBtn, false);
+
+  settingsTitleInput.blur();
+  ErrorSpan.hide(settingsTitleInput);
 };
 
 function togglePasswordInputReveal(revealBtn: HTMLButtonElement): void {
