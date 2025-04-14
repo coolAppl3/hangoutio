@@ -1401,18 +1401,9 @@ exports.hangoutsRouter.get('/details/initial', async (req, res) => {
         hangout_id = :hangoutId;
 
       SELECT
-        COUNT(DISTINCT availability_slots.availability_slot_id) AS availability_slots_count,
-        COUNT(DISTINCT suggestions.suggestion_id) AS suggestions_count,
-        COUNT(DISTINCT votes.vote_id) AS votes_count
-      FROM
-        availability_slots
-      LEFT JOIN
-        suggestions ON availability_slots.hangout_member_id = suggestions.hangout_member_id
-      LEFT JOIN
-        votes ON suggestions.hangout_member_id = votes.hangout_member_id
-      WHERE
-        availability_slots.hangout_member_id = :hangoutMemberId
-      LIMIT 1;
+        (SELECT COUNT(*) FROM availability_slots WHERE hangout_member_id = :hangoutMemberId) AS availability_slots_count,
+        (SELECT COUNT(*) FROM suggestions WHERE hangout_member_id = :hangoutMemberId) AS suggestions_count,
+        (SELECT COUNT(*) FROM votes WHERE hangout_member_id = :hangoutMemberId) AS votes_count;
       
       SELECT
         message_id,

@@ -34,11 +34,25 @@ async function progressHangouts() {
         stage_control_timestamp = ?
       WHERE
         hangout_id IN (?);`, [currentTimestamp, hangoutIdsToProgress]);
+        const eventDescription = 'Hangout was concluded.';
+        let hangoutEventRowValuesString = '';
+        for (const id of hangoutIdsToProgress) {
+            hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
+        }
+        ;
+        hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
+        await db_1.dbPool.execute(`INSERT INTO hangout_events (
+        hangout_id,
+        event_description,
+        event_timestamp
+      ) VALUES ${hangoutEventRowValuesString};`);
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)(hangoutIdsToProgress, {
             type: 'hangout',
             reason: 'hangoutAutoProgressed',
             data: {
                 newStageControlTimestamp: currentTimestamp,
+                eventTimestamp: currentTimestamp,
+                eventDescription,
             },
         });
     }

@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.77] (2025-04-14)
+
+### Features
+
+- Implemented live websocket updates for suggestion likes.
+- Implemented live websocket updates for suggestion votes.
+- Added popups to signify to hangout members when a new stage starts.
+- Added an event when the hangout is naturally concluded.
+
+
+### Bug Fixes
+
+- Fixed a bad SQL query in GET `hangouts/details/initial` leading to issues with counting the user's availability slots, suggestions, and votes.
+- Fixed the availability slots count not being decremented after an availability slot is deleted.
+
+
 ## [0.4.76] (2025-04-13)
 
 ### Features

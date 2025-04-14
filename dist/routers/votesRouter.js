@@ -36,6 +36,7 @@ const authUtils = __importStar(require("../auth/authUtils"));
 const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
+const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 exports.votesRouter = express_1.default.Router();
 exports.votesRouter.post('/', async (req, res) => {
     ;
@@ -176,6 +177,14 @@ exports.votesRouter.post('/', async (req, res) => {
       ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.hangoutMemberId, requestData.suggestionId, requestData.hangoutId]);
         await connection.commit();
         res.status(201).json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
+            type: 'vote',
+            reason: 'voteAdded',
+            data: {
+                hangoutMemberId: requestData.hangoutMemberId,
+                suggestionId: requestData.suggestionId,
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -307,6 +316,14 @@ exports.votesRouter.delete('/', async (req, res) => {
         }
         ;
         res.json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
+            type: 'vote',
+            reason: 'voteDeleted',
+            data: {
+                hangoutMemberId: +hangoutMemberId,
+                suggestionId: +suggestionId,
+            },
+        });
     }
     catch (err) {
         console.log(err);
