@@ -4,7 +4,7 @@ import popup from "../../modules/global/popup";
 import { availabilityCalendarState, updateAvailabilityCalendarMarkers, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
 import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
-import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
+import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
 import { getHangoutStageTitle, renderDashboardStageDescriptions } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
