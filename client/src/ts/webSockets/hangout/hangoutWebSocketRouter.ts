@@ -12,7 +12,7 @@ import { directlyNavigateHangoutSections } from "../../modules/hangout/hangoutNa
 import { AvailabilitySlot, ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails, Suggestion } from "../../modules/hangout/hangoutTypes";
 import { hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
 import { hangoutSettingsState, renderHangoutSettingsSection } from "../../modules/hangout/settings/hangoutSettings";
-import { hangoutSuggestionState, removeOutOfBoundsSuggestions, renderHangoutSuggestions, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
+import { hangoutSuggestionState, removeOutOfBoundsSuggestions, renderHangoutSuggestions, renderSuggestionsSection, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
 import { updateSuggestionsFormHeader } from "../../modules/hangout/suggestions/suggestionsUtils";
 
 interface WebSocketData {
@@ -225,7 +225,10 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
       return;
     };
 
-    !globalHangoutState.data.isLeader && popup(`${getHangoutStageTitle(hangoutDetails.current_stage)} stage has started.`, 'info');
+    if (!globalHangoutState.data.isLeader) {
+      popup(`${getHangoutStageTitle(hangoutDetails.current_stage)} stage has started.`, 'info');
+    };
+
     return;
   };
 
@@ -239,9 +242,6 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
     hangoutDetails.stage_control_timestamp = data.newStageControlTimestamp;
     reason === 'hangoutAutoProgressed' ? hangoutDetails.current_stage++ : hangoutDetails.current_stage = HANGOUT_CONCLUSION_STAGE;
 
-    renderDashboardMainContent();
-    renderDashboardStageDescriptions();
-
     if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
       hangoutDetails.is_concluded = true;
       globalHangoutState.data.conclusionTimestamp = data.newStageControlTimestamp;
@@ -249,10 +249,17 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
       displayHangoutConcludedInfoModal(false);
     };
 
-    hangoutSuggestionState.isLoaded && renderDashboardSection();
+    renderDashboardMainContent();
+    renderDashboardStageDescriptions();
+
+    hangoutSuggestionState.isLoaded && renderSuggestionsSection();
     (hangoutSettingsState.isLoaded && isLeader) && renderHangoutSettingsSection();
 
-    !hangoutDetails.is_concluded && popup(`${getHangoutStageTitle(hangoutDetails.current_stage)} stage has started.`, 'info');
+    if (!hangoutDetails.is_concluded) {
+      popup(`${getHangoutStageTitle(hangoutDetails.current_stage)} stage has started.`, 'info');
+    };
+
+    insertNewHangoutEvent(webSocketData);
   };
 };
 
