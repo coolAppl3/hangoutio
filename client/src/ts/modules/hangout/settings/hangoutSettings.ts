@@ -1107,7 +1107,7 @@ function setActiveValidation(): void {
 
   settingsPasswordInput?.addEventListener('keyup', () => {
     const isValidInput: boolean = validateNewPassword(settingsPasswordInput);
-    updateTitleBtn && toggleFormBtn(updateTitleBtn, isValidInput);
+    updatePasswordBtn && toggleFormBtn(updatePasswordBtn, isValidInput);
   });
 };
 
