@@ -79,7 +79,7 @@ export function renderMemberFilters(): void {
 
 function loadEventListeners(): void {
   suggestionFiltersElement?.addEventListener('click', handleSuggestionFiltersClicks);
-  suggestionsSearchInput?.addEventListener('input', searchSuggestions);
+  suggestionsSearchInput?.addEventListener('input', debounceSearchHangoutSuggestions);
 };
 
 function handleSuggestionFiltersClicks(e: MouseEvent): void {
@@ -413,18 +413,14 @@ function collapseSortingContainer(): void {
 };
 
 // search
-function searchSuggestions(): void {
+const debounceSearchHangoutSuggestions = debounce(searchHangoutSuggestions, 300);
+
+function searchHangoutSuggestions(): void {
   if (!suggestionsSearchInput) {
     return;
   };
 
   const searchQuery: string = suggestionsSearchInput.value;
-  debounceSearch(searchQuery);
-};
-
-const debounceSearch = debounce(showSearchResults, 300);
-
-function showSearchResults(searchQuery: string): void {
   suggestionFiltersState.searchQuery = searchQuery.toLowerCase();
   renderSuggestionsSection();
 };
