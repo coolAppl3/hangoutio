@@ -82,3 +82,11 @@ export function sendHangoutWebSocketMessage(hangoutIds: string[], webSocketData:
     console.log(err);
   };
 };
+
+export function removeEmptyHangoutWebSocketSets(): void {
+  for (const [hangoutId, wsSet] of wsMap.entries()) {
+    if (wsSet.size === 0) {
+      wsMap.delete(hangoutId);
+    };
+  };
+};

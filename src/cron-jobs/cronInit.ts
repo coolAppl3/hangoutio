@@ -3,6 +3,7 @@ import * as accountCronJobs from './accountCronJobs';
 import * as hangoutCronJobs from './hangoutCronJobs';
 import { clearExpiredAuthSessions } from './authCronJobs';
 import { deleteStaleGuestUsers } from './guestCronJobs';
+import { removeEmptyHangoutWebSocketSets } from '../webSockets/hangout/hangoutWebSocketServer';
 
 export function initCronJobs(): void {
   // every minute
@@ -15,6 +16,8 @@ export function initCronJobs(): void {
     await accountCronJobs.removeExpiredRecoveryRequests();
     await accountCronJobs.removeExpiredEmailUpdateRequests();
     await accountCronJobs.removeExpiredDeletionRequests();
+
+    removeEmptyHangoutWebSocketSets();
   });
 
   // every 10 minutes
