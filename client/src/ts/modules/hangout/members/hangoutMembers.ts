@@ -50,7 +50,7 @@ function loadEventListeners(): void {
   membersHeader?.addEventListener('click', handleMembersHeaderClicks);
   membersContainer?.addEventListener('click', handleMembersContainerClicks);
 
-  membersSearchInput?.addEventListener('keyup', debounceMembersSearch);
+  membersSearchInput?.addEventListener('input', debounceMembersSearch);
 };
 
 function initHangoutMembers(): void {

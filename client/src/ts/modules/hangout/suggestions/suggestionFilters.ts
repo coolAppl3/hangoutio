@@ -79,7 +79,7 @@ export function renderMemberFilters(): void {
 
 function loadEventListeners(): void {
   suggestionFiltersElement?.addEventListener('click', handleSuggestionFiltersClicks);
-  suggestionsSearchInput?.addEventListener('keyup', searchSuggestions);
+  suggestionsSearchInput?.addEventListener('input', searchSuggestions);
 };
 
 function handleSuggestionFiltersClicks(e: MouseEvent): void {
