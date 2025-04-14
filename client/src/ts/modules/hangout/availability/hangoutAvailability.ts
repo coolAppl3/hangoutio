@@ -461,6 +461,7 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
     await deleteHangoutAvailabilitySlotService(deleteHangoutAvailabilitySlotBody);
 
     hangoutAvailabilityState.availabilitySlots = hangoutAvailabilityState.availabilitySlots.filter((slot: AvailabilitySlot) => slot.availability_slot_id !== availabilitySlotId);
+    globalHangoutState.data.availabilitySlotsCount--;
 
     renderAvailabilitySection();
 

@@ -46,11 +46,31 @@ export async function progressHangouts(): Promise<void> {
       [currentTimestamp, hangoutIdsToProgress]
     );
 
+    const eventDescription: string = 'Hangout was concluded.';
+    let hangoutEventRowValuesString: string = '';
+
+    for (const id of hangoutIdsToProgress) {
+      hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
+    };
+
+    hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
+
+    await dbPool.execute(
+      `INSERT INTO hangout_events (
+        hangout_id,
+        event_description,
+        event_timestamp
+      ) VALUES ${hangoutEventRowValuesString};`
+    );
+
     sendHangoutWebSocketMessage(hangoutIdsToProgress, {
       type: 'hangout',
       reason: 'hangoutAutoProgressed',
       data: {
         newStageControlTimestamp: currentTimestamp,
+
+        eventTimestamp: currentTimestamp,
+        eventDescription,
       },
     });
 

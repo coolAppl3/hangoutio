@@ -60,6 +60,11 @@ app.use(fallbackMiddleware_1.fallbackMiddleware);
 const server = http_1.default.createServer(app);
 server.on('upgrade', async (req, socket, head) => {
     socket.on('error', (err) => {
+        if (('errno' in err) && err.errno === -4077) {
+            socket.end();
+            return;
+        }
+        ;
         console.log(err, err.stack);
         socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[500]}\r\n\r\n`);
         socket.write('Internal server error\r\n');

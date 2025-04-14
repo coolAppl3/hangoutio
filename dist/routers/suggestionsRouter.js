@@ -990,6 +990,14 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
         hangout_id
       ) VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]);
         res.json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
+            type: 'like',
+            reason: 'likeAdded',
+            data: {
+                hangoutMemberId: requestData.hangoutMemberId,
+                suggestionId: requestData.suggestionId,
+            },
+        });
     }
     catch (err) {
         console.log(err);
@@ -1116,6 +1124,14 @@ exports.suggestionsRouter.delete('/likes', async (req, res) => {
         suggestion_id = ? AND
         hangout_member_id = ?;`, [suggestionId, hangoutMemberId]);
         res.json({});
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
+            type: 'like',
+            reason: 'likeDeleted',
+            data: {
+                hangoutMemberId: +hangoutMemberId,
+                suggestionId: +suggestionId,
+            },
+        });
     }
     catch (err) {
         console.log(err);
