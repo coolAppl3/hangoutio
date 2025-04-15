@@ -147,7 +147,7 @@ function createConclusionContainerHeader(): HTMLDivElement {
 
   if (isFailedConclusion) {
     conclusionContainerHeader.appendChild(createParagraphElement('title', 'Hangout conclusion failed.'));
-    conclusionContainerHeader.appendChild(createParagraphElement('description', 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion. You can always create a new one and try again.'));
+    conclusionContainerHeader.appendChild(createParagraphElement('description', 'Hangout reached the voting stage without any suggestions, leading to a failed conclusion.\n\nYou can always create a new one and try again.'));
 
     return conclusionContainerHeader;
   };
