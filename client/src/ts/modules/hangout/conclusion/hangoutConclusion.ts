@@ -97,8 +97,10 @@ function getWinningSuggestion(hangoutSuggestions: Suggestion[]): Suggestion {
   let winningSuggestion: Suggestion = hangoutSuggestions[0]!; // guaranteed to not be undefined based on where the function is called
   let highestVotesCount: number = winningSuggestion.votes_count;
 
+  hangoutConclusionState.tiedSuggestionsCount = 1;
+
   for (const suggestion of hangoutSuggestions) {
-    if (suggestion.votes_count < highestVotesCount) {
+    if (suggestion.suggestion_id === winningSuggestion.suggestion_id || suggestion.votes_count < highestVotesCount) {
       continue;
     };
 
