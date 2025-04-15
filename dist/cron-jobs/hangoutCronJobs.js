@@ -28,7 +28,7 @@ async function progressHangouts() {
       SET
         is_concluded = CASE
           WHEN current_stage = ${constants_1.HANGOUT_VOTING_STAGE} THEN TRUE
-          ELSE is_concluded
+          ELSE FALSE
         END,
         current_stage = current_stage + 1,
         stage_control_timestamp = ?
@@ -146,7 +146,7 @@ async function concludeNoSuggestionHangouts() {
         is_concluded = ?
       WHERE
         hangout_id IN (?);`, [currentTimestamp, constants_1.HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]);
-        const eventDescription = 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion.';
+        const eventDescription = 'Hangout reached the voting stage without any suggestions, leading to a failed conclusion.';
         let hangoutEventRowValuesString = '';
         for (const id of hangoutIdsToProgress) {
             hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;

@@ -32,6 +32,7 @@ const accountCronJobs = __importStar(require("./accountCronJobs"));
 const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
 const authCronJobs_1 = require("./authCronJobs");
 const guestCronJobs_1 = require("./guestCronJobs");
+const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 function initCronJobs() {
     node_cron_1.default.schedule('* * * * *', async () => {
         await hangoutCronJobs.progressHangouts();
@@ -41,6 +42,7 @@ function initCronJobs() {
         await accountCronJobs.removeExpiredRecoveryRequests();
         await accountCronJobs.removeExpiredEmailUpdateRequests();
         await accountCronJobs.removeExpiredDeletionRequests();
+        (0, hangoutWebSocketServer_1.removeEmptyHangoutWebSocketSets)();
     });
     node_cron_1.default.schedule('*/10 * * * *', async () => {
         await (0, authCronJobs_1.clearExpiredAuthSessions)();
