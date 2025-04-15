@@ -42,7 +42,7 @@ export function hangoutEvents(): void {
 function loadEventListeners(): void {
   document.addEventListener('loadSection-events', initHangoutEvents);
 
-  eventsSearchInput?.addEventListener('keyup', debounceEventSearch);
+  eventsSearchInput?.addEventListener('input', debounceEventSearch);
   renderMoreEventsBtn?.addEventListener('click', renderMoreEvents);
 };
 

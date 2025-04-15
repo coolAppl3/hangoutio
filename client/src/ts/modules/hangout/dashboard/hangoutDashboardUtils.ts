@@ -7,8 +7,7 @@ import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";
 import { getHangoutExistsService } from "../../services/hangoutServices";
 import { globalHangoutState } from "../globalHangoutState";
-import { getDateAndTimeString } from "../../global/dateTimeUtils";
-import { HangoutMember, HangoutEvent } from "../hangoutTypes";
+import { HangoutMember } from "../hangoutTypes";
 import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import LoadingModal from "../../global/LoadingModal";
 import { hangoutDashboardState } from "./hangoutDashboard";
@@ -352,7 +351,7 @@ export function renderDashboardStageDescriptions(): void {
   if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
     hangoutStageDescriptionContainer = createDivElement(null, 'hangout-stage-description-container');
 
-    const descriptionBtn: HTMLButtonElement = createBtnElement('hangout-description-btn', 'Learn more');
+    const descriptionBtn: HTMLButtonElement = createBtnElement('hangout-description-btn', 'View outcome');
     descriptionBtn.setAttribute('data-goTo', 'conclusion');
 
     hangoutStageDescriptionContainer.appendChild(createParagraphElement(null, 'Hangout has been concluded!'));

@@ -13,6 +13,7 @@ import { removeRequestCookie, getRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
 import { handleIncorrectAccountPassword } from '../util/accountServices';
 import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_DELETION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_RECOVERY_WINDOW, ACCOUNT_VERIFICATION_WINDOW, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT } from '../util/constants';
+import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 
 export const accountsRouter: Router = express.Router();
 
@@ -2116,11 +2117,48 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
         display_name = ?
       WHERE
         account_id = ?;`,
-      [requestData.newDisplayName]
+      [requestData.newDisplayName, authSessionDetails.user_id]
     );
 
     await connection.commit();
     res.json({ newDisplayName: requestData.newDisplayName });
+
+    interface HangoutMemberDetails extends RowDataPacket {
+      hangout_member_id: number,
+      hangout_id: string,
+    };
+
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
+      `SELECT
+        hangout_member_id,
+        hangout_id
+      FROM
+        hangout_members
+      WHERE
+        account_id = ?;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (hangoutMemberRows.length === 0) {
+      return;
+    };
+
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${accountDetails.display_name} changed his name to ${requestData.newDisplayName}.`;
+
+    for (const row of hangoutMemberRows) {
+      sendHangoutWebSocketMessage([row.hangout_id], {
+        type: 'misc',
+        reason: 'memberUpdatedDisplayName',
+        data: {
+          hangoutMemberId: row.hangout_member_id,
+          newDisplayName: requestData.newDisplayName,
+
+          eventTimestamp,
+          eventDescription,
+        },
+      });
+    };
 
   } catch (err: unknown) {
     console.log(err);

@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.4.78] (2025-04-16)
+
+### Features
+
+- Added a cron job to periodically clear the hangout websocket map of any stale sets.
+- Implemented live websocket updates to reflect changes to a registered user's display name.
+- Reworked the hangout conclusion section to display tied suggestions, instead of picking one at random.
+  - It's worth noting that the now-abolished logic to select a random winning suggestion was temporary.
+- Improved the wording for failed hangout conclusions, both in the conclusion section and in the generated event.
+
+
+### Code Refactoring
+
+- Removed a few unused variables and imports.
+- Changed the event listener a few search inputs from `keyup` to `input` for better consistency and performance.
+- Aligned search debouncing in `suggestionFilters.ts` with other modules within the app for consistency.
+- Changed the "Learn more" button in the dashboard stage description, when the hangout is concluded, to "View outcome" for better consistency.
+
+
+### Bug Fixes
+
+- Fixed the update password button in the hangout settings section not being dimmed/undimmed properly.
+- Fixed the form buttons in the hangout settings section not being dimmed after a successful form submission.
+- Fixed a flaw with how the count of tied suggestions is calculated.
+
+
 ## [0.4.77] (2025-04-14)
 
 ### Features

@@ -4,7 +4,7 @@ import popup from "../../modules/global/popup";
 import { availabilityCalendarState, updateAvailabilityCalendarMarkers, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
 import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
 import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
-import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardSection, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
+import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
 import { getHangoutStageTitle, renderDashboardStageDescriptions } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
@@ -756,7 +756,37 @@ function handleVotesUpdate(webSocketData: WebSocketData): void {
 };
 
 function handleHangoutMiscUpdate(webSocketData: WebSocketData): void {
-  // TODO: implement
+  if (!globalHangoutState.data) {
+    return;
+  };
+
+  const { reason, data } = webSocketData;
+
+  if (reason === 'memberUpdatedDisplayName') {
+    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+      return;
+    };
+
+    if (typeof data.newDisplayName !== 'string') {
+      return;
+    };
+
+    const memberExists: boolean = globalHangoutState.data.hangoutMembersMap.has(data.hangoutMemberId);
+    memberExists && globalHangoutState.data.hangoutMembersMap.set(data.hangoutMemberId, data.newDisplayName);
+
+    for (const member of globalHangoutState.data.hangoutMembers) {
+      if (member.hangout_member_id === data.hangoutMemberId) {
+        member.display_name = data.newDisplayName;
+        break;
+      };
+    };
+
+    renderDashboardMembersContainer();
+    hangoutMembersState.isLoaded && renderMembersSection();
+
+    insertNewHangoutEvent(webSocketData);
+    return;
+  };
 };
 
 // --- --- ---

@@ -9,6 +9,7 @@ export async function progressHangouts(): Promise<void> {
   try {
     interface HangoutDetails extends RowDataPacket {
       hangout_id: string,
+      current_stage: number,
     };
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
@@ -37,7 +38,7 @@ export async function progressHangouts(): Promise<void> {
       SET
         is_concluded = CASE
           WHEN current_stage = ${HANGOUT_VOTING_STAGE} THEN TRUE
-          ELSE is_concluded
+          ELSE FALSE
         END,
         current_stage = current_stage + 1,
         stage_control_timestamp = ?
@@ -190,7 +191,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       [currentTimestamp, HANGOUT_CONCLUSION_STAGE, currentTimestamp, true, hangoutIdsToProgress]
     );
 
-    const eventDescription: string = 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion.';
+    const eventDescription: string = 'Hangout reached the voting stage without any suggestions, leading to a failed conclusion.';
     let hangoutEventRowValuesString: string = '';
 
     for (const id of hangoutIdsToProgress) {

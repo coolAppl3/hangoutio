@@ -12,11 +12,9 @@ interface HangoutConclusionState {
 
   isFailedConclusion: boolean,
   isSingleSuggestionConclusion: boolean,
-
   tieDetected: boolean,
-  tiedSuggestionsCount: number,
 
-  winningSuggestion: Suggestion | null,
+  winningSuggestions: Suggestion[],
 };
 
 const hangoutConclusionState: HangoutConclusionState = {
@@ -24,11 +22,9 @@ const hangoutConclusionState: HangoutConclusionState = {
 
   isFailedConclusion: false,
   isSingleSuggestionConclusion: false,
-
   tieDetected: false,
-  tiedSuggestionsCount: 0,
 
-  winningSuggestion: null,
+  winningSuggestions: [],
 };
 
 export function hangoutConclusion(): void {
@@ -72,6 +68,7 @@ function initHangoutConclusion(): void {
   setConclusionDetails();
   renderConclusionSection();
 
+  hangoutConclusionState.isLoaded = true;
   LoadingModal.remove();
 };
 
@@ -85,45 +82,39 @@ function setConclusionDetails(): void {
 
   if (hangoutSuggestions.length === 1) {
     hangoutConclusionState.isSingleSuggestionConclusion = true;
-    hangoutConclusionState.winningSuggestion = hangoutSuggestions[0]!;
+    hangoutConclusionState.winningSuggestions.push(hangoutSuggestions[0]!);
 
     return;
   };
 
-  hangoutConclusionState.winningSuggestion = getWinningSuggestion(hangoutSuggestions);
+  setWinningSuggestions(hangoutSuggestions);
 };
 
-function getWinningSuggestion(hangoutSuggestions: Suggestion[]): Suggestion {
-  let winningSuggestion: Suggestion = hangoutSuggestions[0]!; // guaranteed to not be undefined based on where the function is called
+function setWinningSuggestions(hangoutSuggestions: Suggestion[]): void {
+  let winningSuggestion: Suggestion = hangoutSuggestions[0]!; // guaranteed not undefined based on where it's called
   let highestVotesCount: number = winningSuggestion.votes_count;
 
+  hangoutConclusionState.winningSuggestions.push(winningSuggestion);
+
   for (const suggestion of hangoutSuggestions) {
+    if (suggestion.suggestion_id === winningSuggestion.suggestion_id) {
+      continue;
+    };
+
     if (suggestion.votes_count < highestVotesCount) {
       continue;
     };
 
-    if (suggestion.votes_count === highestVotesCount && suggestion.suggestion_id !== hangoutSuggestions[0]?.suggestion_id) {
-      hangoutConclusionState.tieDetected = true;
-      hangoutConclusionState.tiedSuggestionsCount++;
+    if (suggestion.votes_count === highestVotesCount) {
+      hangoutConclusionState.winningSuggestions.push(suggestion);
       continue;
     };
 
-    winningSuggestion = suggestion;
+    hangoutConclusionState.winningSuggestions = [suggestion];
     highestVotesCount = suggestion.votes_count;
-
-    hangoutConclusionState.tieDetected = false;
-    hangoutConclusionState.tiedSuggestionsCount = 0;
   };
 
-  if (!hangoutConclusionState.tieDetected) {
-    return winningSuggestion;
-  };
-
-  const tiedSuggestions: Suggestion[] = hangoutSuggestions.filter((suggestion: Suggestion) => suggestion.votes_count === highestVotesCount);
-  const randomWinningSuggestionIndex = Math.floor(Math.random() * tiedSuggestions.length);
-
-  winningSuggestion = tiedSuggestions[randomWinningSuggestionIndex]!;
-  return winningSuggestion;
+  hangoutConclusionState.tieDetected = hangoutConclusionState.winningSuggestions.length > 1;
 };
 
 function renderConclusionSection(): void {
@@ -156,7 +147,7 @@ function createConclusionContainerHeader(): HTMLDivElement {
 
   if (isFailedConclusion) {
     conclusionContainerHeader.appendChild(createParagraphElement('title', 'Hangout conclusion failed.'));
-    conclusionContainerHeader.appendChild(createParagraphElement('description', 'The suggestions stage ended without any suggestions being made, leading to the hangout concluding without a winning suggestion. You can always create a new one and try again.'));
+    conclusionContainerHeader.appendChild(createParagraphElement('description', 'Hangout reached the voting stage without any suggestions, leading to a failed conclusion.\n\nYou can always create a new one and try again.'));
 
     return conclusionContainerHeader;
   };
@@ -168,8 +159,7 @@ function createConclusionContainerHeader(): HTMLDivElement {
     return conclusionContainerHeader;
   };
 
-
-  conclusionContainerHeader.appendChild(createParagraphElement('title', 'Hangout has been successfully concluded.'));
+  conclusionContainerHeader.appendChild(createParagraphElement('title', hangoutConclusionState.tieDetected ? 'Hangout concluded with a tie.' : 'Hangout has been successfully concluded.'));
   conclusionContainerHeader.appendChild(createConclusionDescription(tieDetected));
 
   return conclusionContainerHeader;
@@ -183,28 +173,37 @@ function createConclusionDescription(tieDetected: boolean): HTMLParagraphElement
     return createParagraphElement('description', `A total of ${suggestionsCount} suggestions and ${votesCount} ${votesCount === 1 ? 'vote' : 'votes'} resulted in a winning suggestion.`);
   };
 
-  return createParagraphElement('description', `A total of ${suggestionsCount} suggestions and ${votesCount} ${votesCount === 1 ? 'vote' : 'votes'} resulted in a tie between ${hangoutConclusionState.tiedSuggestionsCount} suggestions. One of them was randomly chosen as the winning suggestion.`);
+  return createParagraphElement('description', `A total of ${suggestionsCount} suggestions and ${votesCount} ${votesCount === 1 ? 'vote' : 'votes'} resulted in a tie between ${hangoutConclusionState.winningSuggestions.length} suggestions.`);
 };
 
 function createInnerConclusionContainer(): HTMLDivElement {
   const innerConclusionContainer: HTMLDivElement = createDivElement(null, 'conclusion-container-inner');
-  const winningSuggestion: Suggestion | null = hangoutConclusionState.winningSuggestion;
 
-  if (!winningSuggestion) {
+  if (hangoutConclusionState.winningSuggestions.length === 0) {
     innerConclusionContainer.appendChild(createFailedConclusionElement());
     return innerConclusionContainer;
   };
 
-  innerConclusionContainer.appendChild(createParagraphElement('conclusion-title', winningSuggestion.suggestion_title));
-  innerConclusionContainer.appendChild(createConclusionDetailsContainer(winningSuggestion));
-  innerConclusionContainer.appendChild(createSpanElement('conclusion-description-span', 'Suggestion details'));
-  innerConclusionContainer.appendChild(createParagraphElement('conclusion-description', winningSuggestion.suggestion_description));
+  for (const suggestion of hangoutConclusionState.winningSuggestions) {
+    innerConclusionContainer.appendChild(createConclusionSuggestionElement(suggestion));
+  };
 
   return innerConclusionContainer;
 };
 
+function createConclusionSuggestionElement(suggestion: Suggestion): HTMLDivElement {
+  const conclusionSuggestionElement: HTMLDivElement = createDivElement('conclusion-suggestion');
+
+  conclusionSuggestionElement.appendChild(createParagraphElement('conclusion-suggestion-title', suggestion.suggestion_title));
+  conclusionSuggestionElement.appendChild(createConclusionDetailsContainer(suggestion));
+  conclusionSuggestionElement.appendChild(createSpanElement('conclusion-suggestion-description-span', 'Suggestion details'));
+  conclusionSuggestionElement.appendChild(createParagraphElement('conclusion-suggestion-description', suggestion.suggestion_description));
+
+  return conclusionSuggestionElement;
+};
+
 function createConclusionDetailsContainer(suggestion: Suggestion): HTMLDivElement {
-  const conclusionDetailsContainer: HTMLDivElement = createDivElement('conclusion-details');
+  const conclusionDetailsContainer: HTMLDivElement = createDivElement('conclusion-suggestion-details');
 
   conclusionDetailsContainer.appendChild(createDetailsElement('start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
   conclusionDetailsContainer.appendChild(createDetailsElement('End', getDateAndTimeString(suggestion.suggestion_end_timestamp)));

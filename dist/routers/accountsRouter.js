@@ -41,6 +41,7 @@ const cookieUtils_1 = require("../util/cookieUtils");
 const authUtils = __importStar(require("../auth/authUtils"));
 const accountServices_1 = require("../util/accountServices");
 const constants_1 = require("../util/constants");
+const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 exports.accountsRouter = express_1.default.Router();
 exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
@@ -1646,9 +1647,36 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
       SET
         display_name = ?
       WHERE
-        account_id = ?;`, [requestData.newDisplayName]);
+        account_id = ?;`, [requestData.newDisplayName, authSessionDetails.user_id]);
         await connection.commit();
         res.json({ newDisplayName: requestData.newDisplayName });
+        ;
+        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        hangout_member_id,
+        hangout_id
+      FROM
+        hangout_members
+      WHERE
+        account_id = ?;`, [authSessionDetails.user_id]);
+        if (hangoutMemberRows.length === 0) {
+            return;
+        }
+        ;
+        const eventTimestamp = Date.now();
+        const eventDescription = `${accountDetails.display_name} changed his name to ${requestData.newDisplayName}.`;
+        for (const row of hangoutMemberRows) {
+            (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([row.hangout_id], {
+                type: 'misc',
+                reason: 'memberUpdatedDisplayName',
+                data: {
+                    hangoutMemberId: row.hangout_member_id,
+                    newDisplayName: requestData.newDisplayName,
+                    eventTimestamp,
+                    eventDescription,
+                },
+            });
+        }
+        ;
     }
     catch (err) {
         console.log(err);

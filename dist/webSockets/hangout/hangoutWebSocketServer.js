@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendHangoutWebSocketMessage = exports.wss = exports.wsMap = void 0;
+exports.removeEmptyHangoutWebSocketSets = exports.sendHangoutWebSocketMessage = exports.wss = exports.wsMap = void 0;
 const ws_1 = __importDefault(require("ws"));
 exports.wsMap = new Map();
 exports.wss = new ws_1.default.Server({
@@ -78,4 +78,15 @@ function sendHangoutWebSocketMessage(hangoutIds, webSocketData) {
     ;
 }
 exports.sendHangoutWebSocketMessage = sendHangoutWebSocketMessage;
+;
+function removeEmptyHangoutWebSocketSets() {
+    for (const [hangoutId, wsSet] of exports.wsMap.entries()) {
+        if (wsSet.size === 0) {
+            exports.wsMap.delete(hangoutId);
+        }
+        ;
+    }
+    ;
+}
+exports.removeEmptyHangoutWebSocketSets = removeEmptyHangoutWebSocketSets;
 ;
