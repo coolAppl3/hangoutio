@@ -351,7 +351,7 @@ export function renderDashboardStageDescriptions(): void {
   if (hangoutDetails.current_stage === HANGOUT_CONCLUSION_STAGE) {
     hangoutStageDescriptionContainer = createDivElement(null, 'hangout-stage-description-container');
 
-    const descriptionBtn: HTMLButtonElement = createBtnElement('hangout-description-btn', 'Learn more');
+    const descriptionBtn: HTMLButtonElement = createBtnElement('hangout-description-btn', 'View outcome');
     descriptionBtn.setAttribute('data-goTo', 'conclusion');
 
     hangoutStageDescriptionContainer.appendChild(createParagraphElement(null, 'Hangout has been concluded!'));
