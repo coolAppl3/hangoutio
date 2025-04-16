@@ -154,7 +154,7 @@ function createConclusionContainerHeader(): HTMLDivElement {
 
   if (isSingleSuggestionConclusion) {
     conclusionContainerHeader.appendChild(createParagraphElement('title', 'Hangout has been successfully concluded.'));
-    conclusionContainerHeader.appendChild(createParagraphElement('description', 'The hangout reached the voting stage with a single suggestion, marking it as the winning suggestion without any votes.'));
+    conclusionContainerHeader.appendChild(createParagraphElement('description', 'The hangout reached the voting stage with a single suggestion, marking it as the winning suggestion.'));
 
     return conclusionContainerHeader;
   };
