@@ -215,7 +215,7 @@ function createConclusionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
 };
 
 function createFailedConclusionElement(): HTMLDivElement {
-  return createDivElement('test');
+  return createDivElement('hidden');
 };
 
 function getSuggestionDisplayName(hangoutMemberId: number | null): string {
