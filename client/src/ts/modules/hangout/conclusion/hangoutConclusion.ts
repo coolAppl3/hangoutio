@@ -6,6 +6,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { directlyNavigateHangoutSections } from "../hangoutNav";
 import { HangoutsDetails, Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState, initHangoutSuggestions } from "../suggestions/hangoutSuggestions";
+import { createDetailsElement } from "../suggestions/suggestionsUtils";
 
 interface HangoutConclusionState {
   isLoaded: boolean,
@@ -211,15 +212,6 @@ function createConclusionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   conclusionDetailsContainer.appendChild(createDetailsElement('Votes', `${suggestion.votes_count}`));
 
   return conclusionDetailsContainer;
-};
-
-function createDetailsElement(title: string, value: string): HTMLDivElement {
-  const detailsElement: HTMLDivElement = createDivElement(null);
-
-  detailsElement.appendChild(createSpanElement(null, title));
-  detailsElement.appendChild(createSpanElement(null, value));
-
-  return detailsElement;
 };
 
 function createFailedConclusionElement(): HTMLDivElement {
