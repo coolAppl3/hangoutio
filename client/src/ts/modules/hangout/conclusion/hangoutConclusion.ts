@@ -207,8 +207,8 @@ function createConclusionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
 
   conclusionDetailsContainer.appendChild(createDetailsElement('Start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
   conclusionDetailsContainer.appendChild(createDetailsElement('End', getDateAndTimeString(suggestion.suggestion_end_timestamp)));
+  conclusionDetailsContainer.appendChild(createDetailsElement('Suggested by', getSuggestionDisplayName(suggestion.hangout_member_id)));
   conclusionDetailsContainer.appendChild(createDetailsElement('Votes', `${suggestion.votes_count}`));
-  conclusionDetailsContainer.appendChild(createDetailsElement('Likes', `${suggestion.likes_count}`));
 
   return conclusionDetailsContainer;
 };
@@ -224,4 +224,12 @@ function createDetailsElement(title: string, value: string): HTMLDivElement {
 
 function createFailedConclusionElement(): HTMLDivElement {
   return createDivElement('test');
+};
+
+function getSuggestionDisplayName(hangoutMemberId: number | null): string {
+  if (!hangoutMemberId) {
+    return 'Former member';
+  };
+
+  return globalHangoutState.data?.hangoutMembersMap.get(hangoutMemberId) || 'Former member';
 };
