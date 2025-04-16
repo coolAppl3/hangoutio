@@ -205,7 +205,7 @@ function createConclusionSuggestionElement(suggestion: Suggestion): HTMLDivEleme
 function createConclusionDetailsContainer(suggestion: Suggestion): HTMLDivElement {
   const conclusionDetailsContainer: HTMLDivElement = createDivElement('conclusion-suggestion-details');
 
-  conclusionDetailsContainer.appendChild(createDetailsElement('start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
+  conclusionDetailsContainer.appendChild(createDetailsElement('Start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
   conclusionDetailsContainer.appendChild(createDetailsElement('End', getDateAndTimeString(suggestion.suggestion_end_timestamp)));
   conclusionDetailsContainer.appendChild(createDetailsElement('Votes', `${suggestion.votes_count}`));
   conclusionDetailsContainer.appendChild(createDetailsElement('Likes', `${suggestion.likes_count}`));
