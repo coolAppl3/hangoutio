@@ -118,6 +118,9 @@ function loadEventListeners(): void {
   timePickerCancelBtn?.addEventListener('click', closeDateTimePicker);
   timePickerChangeDateBtn?.addEventListener('click', regressStage);
   timePickerExtendSlotCheckbox?.addEventListener('click', toggleSlotEndExtension);
+
+  timePickerSlotStartInput?.addEventListener('keyup', (e: KeyboardEvent) => autoInsertColon(e, timePickerSlotStartInput));
+  timePickerSlotEndInput?.addEventListener('keyup', (e: KeyboardEvent) => autoInsertColon(e, timePickerSlotEndInput));
 };
 
 function submitDateAndTime(e: SubmitEvent): void {
@@ -593,6 +596,16 @@ function disableCalendarNavigationBtn(direction: 'forwards' | 'backwards'): void
 function enableCalendarNavigationBtn(direction: 'forwards' | 'backwards'): void {
   const navigationBtn: HTMLButtonElement | null = document.querySelector(`#date-picker-${direction}-btn`);
   navigationBtn && navigationBtn.classList.remove('disabled');
+};
+
+function autoInsertColon(e: KeyboardEvent, input: HTMLInputElement): void {
+  if (!e.code.startsWith('Digit')) {
+    return;
+  };
+
+  if (input.value.length === 2) {
+    input.value += ':';
+  };
 };
 
 export function getMonthNumberOfDays(year: number, month: number): number {
