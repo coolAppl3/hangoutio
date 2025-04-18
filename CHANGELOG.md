@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.79] (2025-04-18)
+
+### Features
+
+- Removed the likes count from the winning suggestions, in favour of showing who they were suggested by.
+- Time picker inputs will not automatically insert a colon when valid numbers are entered.
+- Added a flag to separate new hangout chat messages.
+  - Further improvements on the way.
+
+
+### Code Refactoring
+
+- Removed duplicate `createDetailsElement()` functions, and exported the one in `suggestionUtils.ts` to reduce bundle size.
+
+
+### Bug Fixes
+
+- Fixed the members count span in the hangout settings section showing the members limit instead.
+- Fixed a tiny bug in rendering older hangout chat messages.
+
+
 ## [0.4.78] (2025-04-16)
 
 ### Features
