@@ -12,6 +12,7 @@ import { initHangoutGuestSignUp } from "./initHangoutGuestSignUp";
 import LoadingModal from "../../global/LoadingModal";
 import { hangoutDashboardState } from "./hangoutDashboard";
 import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
+import { createDetailsElement } from "../suggestions/suggestionsUtils";
 
 export function handleInvalidHangoutId(): void {
   const signedInAs: string | null = Cookies.get('signedInAs');
@@ -389,13 +390,4 @@ function createHangoutStageDescriptionContainer(
   hangoutStageDescriptionContainer.appendChild(descriptionBtn);
 
   return hangoutStageDescriptionContainer;
-};
-
-function createDetailsElement(label: string, value: string): HTMLDivElement {
-  const detailsElement: HTMLDivElement = createDivElement(null);
-
-  detailsElement.appendChild(createSpanElement(null, label));
-  detailsElement.appendChild(createSpanElement(null, value));
-
-  return detailsElement;
 };

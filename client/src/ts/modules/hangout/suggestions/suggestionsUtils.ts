@@ -235,7 +235,7 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   return suggestionDetailsContainer;
 };
 
-function createDetailsElement(title: string, value: string): HTMLDivElement {
+export function createDetailsElement(title: string, value: string): HTMLDivElement {
   const detailsElement: HTMLDivElement = createDivElement(null);
 
   detailsElement.appendChild(createSpanElement(null, title));

@@ -6,6 +6,7 @@ import { globalHangoutState } from "../globalHangoutState";
 import { directlyNavigateHangoutSections } from "../hangoutNav";
 import { HangoutsDetails, Suggestion } from "../hangoutTypes";
 import { hangoutSuggestionState, initHangoutSuggestions } from "../suggestions/hangoutSuggestions";
+import { createDetailsElement } from "../suggestions/suggestionsUtils";
 
 interface HangoutConclusionState {
   isLoaded: boolean,
@@ -154,7 +155,7 @@ function createConclusionContainerHeader(): HTMLDivElement {
 
   if (isSingleSuggestionConclusion) {
     conclusionContainerHeader.appendChild(createParagraphElement('title', 'Hangout has been successfully concluded.'));
-    conclusionContainerHeader.appendChild(createParagraphElement('description', 'The hangout reached the voting stage with a single suggestion, marking it as the winning suggestion without any votes.'));
+    conclusionContainerHeader.appendChild(createParagraphElement('description', 'The hangout reached the voting stage with a single suggestion, marking it as the winning suggestion.'));
 
     return conclusionContainerHeader;
   };
@@ -205,23 +206,22 @@ function createConclusionSuggestionElement(suggestion: Suggestion): HTMLDivEleme
 function createConclusionDetailsContainer(suggestion: Suggestion): HTMLDivElement {
   const conclusionDetailsContainer: HTMLDivElement = createDivElement('conclusion-suggestion-details');
 
-  conclusionDetailsContainer.appendChild(createDetailsElement('start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
+  conclusionDetailsContainer.appendChild(createDetailsElement('Start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
   conclusionDetailsContainer.appendChild(createDetailsElement('End', getDateAndTimeString(suggestion.suggestion_end_timestamp)));
+  conclusionDetailsContainer.appendChild(createDetailsElement('Suggested by', getSuggestionDisplayName(suggestion.hangout_member_id)));
   conclusionDetailsContainer.appendChild(createDetailsElement('Votes', `${suggestion.votes_count}`));
-  conclusionDetailsContainer.appendChild(createDetailsElement('Likes', `${suggestion.likes_count}`));
 
   return conclusionDetailsContainer;
 };
 
-function createDetailsElement(title: string, value: string): HTMLDivElement {
-  const detailsElement: HTMLDivElement = createDivElement(null);
-
-  detailsElement.appendChild(createSpanElement(null, title));
-  detailsElement.appendChild(createSpanElement(null, value));
-
-  return detailsElement;
+function createFailedConclusionElement(): HTMLDivElement {
+  return createDivElement('hidden');
 };
 
-function createFailedConclusionElement(): HTMLDivElement {
-  return createDivElement('test');
+function getSuggestionDisplayName(hangoutMemberId: number | null): string {
+  if (!hangoutMemberId) {
+    return 'Former member';
+  };
+
+  return globalHangoutState.data?.hangoutMembersMap.get(hangoutMemberId) || 'Former member';
 };

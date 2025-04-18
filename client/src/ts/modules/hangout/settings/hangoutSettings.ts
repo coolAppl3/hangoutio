@@ -224,7 +224,7 @@ function updateMembersCount(): void {
     return;
   };
 
-  membersCountSpan.textContent = `${hangoutSettingsState.sliders.membersLimitSlider.value}`;
+  globalHangoutState.data && (membersCountSpan.textContent = `${globalHangoutState.data.hangoutMembers.length}`);
 };
 
 function updateCurrentStageSpan(): void {

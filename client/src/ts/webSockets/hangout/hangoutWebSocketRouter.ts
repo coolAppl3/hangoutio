@@ -3,7 +3,7 @@ import { InfoModal } from "../../modules/global/InfoModal";
 import popup from "../../modules/global/popup";
 import { availabilityCalendarState, updateAvailabilityCalendarMarkers, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
 import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
-import { hangoutChatState, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
+import { hangoutChatState, insertNewMessagesFlag, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
 import { hangoutDashboardState, renderDashboardLatestEvents, renderDashboardLatestMessages, renderDashboardMembersContainer, renderDashboardMainContent, updateDashboardHangoutPasswordInfo } from "../../modules/hangout/dashboard/hangoutDashboard";
 import { getHangoutStageTitle, renderDashboardStageDescriptions } from "../../modules/hangout/dashboard/hangoutDashboardUtils";
 import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/events/hangoutEvents";
@@ -102,6 +102,8 @@ function handleChatUpdate(webSocketData: WebSocketData): void {
   };
 
   hangoutChatState.messages.push(newMessage);
+
+  insertNewMessagesFlag();
   insertSingleChatMessage(newMessage, false);
 
   renderDashboardLatestMessages();
