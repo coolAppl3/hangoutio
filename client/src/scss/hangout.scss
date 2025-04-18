@@ -1592,7 +1592,19 @@
     }
 
     .date-stamp {
-      @apply text-xs font-medium bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem] sticky top-0 z-5 shadow-simple-sm;
+      @apply text-xs font-bold bg-secondary dark:bg-secondary-dark text-title dark:text-title-dark block mx-auto w-[12.6rem] text-center py-[4px] px-2 my-2 first:mt-0 rounded-[20rem] sticky top-0 z-5 shadow-simple-sm;
+    }
+
+    .new-messages-flag {
+      @apply flex justify-center items-center;
+
+      span {
+        @apply text-xs font-medium leading-none text-title dark:text-cta-dark block text-center my-2 mx-1;
+      }
+
+      .line {
+        @apply h-[2px] w-4 bg-title dark:bg-cta-dark rounded-[10rem];
+      }
     }
 
     .message {

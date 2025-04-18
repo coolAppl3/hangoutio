@@ -155,6 +155,27 @@ export function insertSingleChatMessage(message: ChatMessage, isUser: boolean): 
   };
 };
 
+export function insertNewMessagesFlag(): void {
+  if (!chatContainer) {
+    return;
+  };
+
+  const closeToBottom: boolean = chatContainer.scrollHeight - chatContainer.clientHeight - chatContainer.scrollTop <= 100;
+
+  if (closeToBottom) {
+    setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 0);
+    return;
+  };
+
+  const existingFlag: HTMLDivElement | null = document.querySelector('.new-messages-flag');
+
+  if (existingFlag) {
+    return;
+  };
+
+  chatContainer.appendChild(createNewMessagesFlag());
+};
+
 async function getHangoutMessages(): Promise<void> {
   chatElement?.classList.add('loading');
 
@@ -389,6 +410,7 @@ function initChatSectionMutationObserver(): void {
     for (const mutation of mutations) {
       if (mutation.attributeName === 'class' && chatSection.classList.contains('hidden')) {
         repositionHangoutNavBtn(false);
+        removeNewMessagesFlag();
         hangoutChatState.chatSectionMutationObserverActive = false;
 
         mutationObserver.disconnect();
@@ -461,4 +483,18 @@ export function createMessageElement(message: ChatMessage, isSameSender: boolean
 export function createMessageDateStampElement(timestamp: number): HTMLSpanElement {
   const dateStampElement: HTMLSpanElement = createSpanElement('date-stamp', getDateAndTimeString(timestamp, true));
   return dateStampElement;
+};
+
+function createNewMessagesFlag(): HTMLDivElement {
+  const flag: HTMLDivElement = createDivElement('new-messages-flag');
+
+  flag.appendChild(createDivElement('line'));
+  flag.appendChild(createSpanElement(null, 'New messages'));
+  flag.appendChild(createDivElement('line'));
+
+  return flag;
+};
+
+function removeNewMessagesFlag(): void {
+  document.querySelector('.new-messages-flag')?.remove();
 };
