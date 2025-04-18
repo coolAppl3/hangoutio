@@ -14,6 +14,7 @@ import { ChatMessage } from "../hangoutTypes";
 interface HangoutChatState {
   isLoaded: boolean,
   oldestMessageLoaded: boolean,
+  unreadMessagesPending: boolean,
   chatSectionMutationObserverActive: boolean,
 
   messageOffset: number,
@@ -26,6 +27,7 @@ interface HangoutChatState {
 export const hangoutChatState: HangoutChatState = {
   isLoaded: false,
   oldestMessageLoaded: false,
+  unreadMessagesPending: false,
   chatSectionMutationObserverActive: false,
 
   messageOffset: 0,
@@ -72,6 +74,9 @@ async function initHangoutChat(): Promise<void> {
   };
 
   if (hangoutChatState.isLoaded) {
+    hangoutChatState.unreadMessagesPending && scrollNewMessagesIntoView();
+    hangoutChatState.unreadMessagesPending = false;
+
     return;
   };
 
@@ -156,19 +161,21 @@ export function insertSingleChatMessage(message: ChatMessage, isUser: boolean): 
 };
 
 export function insertNewMessagesFlag(): void {
+  hangoutChatState.unreadMessagesPending = true;
+
   if (!chatContainer) {
     return;
   };
 
   const closeToBottom: boolean = chatContainer.scrollHeight - chatContainer.clientHeight - chatContainer.scrollTop <= 100;
+  if (closeToBottom && hangoutChatState.chatSectionMutationObserverActive) {
+    removeNewMessagesFlag();
+    setTimeout(() => scrollChatToBottom(), 0);
 
-  if (closeToBottom) {
-    setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 0);
     return;
   };
 
   const existingFlag: HTMLDivElement | null = document.querySelector('.new-messages-flag');
-
   if (existingFlag) {
     return;
   };
@@ -497,4 +504,15 @@ function createNewMessagesFlag(): HTMLDivElement {
 
 function removeNewMessagesFlag(): void {
   document.querySelector('.new-messages-flag')?.remove();
+};
+
+function scrollNewMessagesIntoView(): void {
+  const newMessagesFlag: HTMLDivElement | null = document.querySelector('.new-messages-flag');
+
+  if (!newMessagesFlag) {
+    return;
+  };
+
+  newMessagesFlag.scrollIntoView();
+  chatContainer && (chatContainer.scrollTop -= 20);
 };
