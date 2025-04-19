@@ -251,7 +251,8 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
       displayHangoutConcludedInfoModal(false);
     };
 
-    renderDashboardMainContent();
+    hangoutDashboardState.nextStageTimerInitiated = false;
+    renderDashboardMainContent(); // will re-init nextSTageTimer
     renderDashboardStageDescriptions();
 
     hangoutSuggestionState.isLoaded && renderSuggestionsSection();
