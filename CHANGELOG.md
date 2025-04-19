@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.80] (2025-04-20)
+
+### Features
+
+- Slightly refined the behavior of the new messages flag in the hangout chat section.
+- Added a scroll-to-bottom button in the hangout chat section to improve the user experience.
+
+
+### Code Refactoring
+
+- Slightly improved type safety in a few modules.
+
+
+### Bug Fixes
+
+- Fixed `progressHangouts()` cron job adding a hangout conclusion event, even if the function only progressed the hangout.
+- Fixed `autoInsertColon()` causing an error when autofill is used.
+- Fixed the next stage timer not being reinitialized when a hangout is automatically progressed or concluded.
+
+
 ## [0.4.79] (2025-04-18)
 
 ### Features

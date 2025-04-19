@@ -9,7 +9,8 @@ async function progressHangouts() {
     try {
         ;
         const [hangoutRows] = await db_1.dbPool.execute(`SELECT
-        hangout_id
+        hangout_id,
+        current_stage
       FROM
         hangouts
       WHERE
@@ -36,8 +37,12 @@ async function progressHangouts() {
         hangout_id IN (?);`, [currentTimestamp, hangoutIdsToProgress]);
         const eventDescription = 'Hangout was concluded.';
         let hangoutEventRowValuesString = '';
-        for (const id of hangoutIdsToProgress) {
-            hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
+        for (const hangout of hangoutRows) {
+            if (hangout.current_stage < constants_1.HANGOUT_VOTING_STAGE) {
+                continue;
+            }
+            ;
+            hangoutEventRowValuesString += `('${hangout.hangout_id}', '${eventDescription}', ${currentTimestamp}),`;
         }
         ;
         hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
