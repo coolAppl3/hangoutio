@@ -56,6 +56,10 @@ export function handleRecoverySuspension(errResData: unknown): void {
     return;
   };
 
+  if (!Number.isInteger(errResData.expiryTimestamp)) {
+    return;
+  };
+
   const minutesTillExpiry: number = getMinutesTillRecoveryExpiry(errResData.expiryTimestamp);
   const minutesRemainingString: string = minutesTillExpiry === 1 ? '1 minute' : `${minutesTillExpiry} minutes`;
 
