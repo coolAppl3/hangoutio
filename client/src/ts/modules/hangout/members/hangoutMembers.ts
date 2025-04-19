@@ -658,7 +658,7 @@ function handleHangoutAlreadyHasLeader(errResData: unknown, hangoutMemberId: num
     return;
   };
 
-  if (!('leaderMemberId' in errResData)) {
+  if (!('leaderMemberId' in errResData) || typeof errResData.leaderMemberId !== 'number') {
     return;
   };
 

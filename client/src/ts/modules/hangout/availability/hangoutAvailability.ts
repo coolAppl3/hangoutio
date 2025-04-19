@@ -707,13 +707,11 @@ function handleSlotOverlap(errResData: unknown): void {
     return;
   };
 
-  const overlappedSlotId: number = errResData.overlappedSlotId;
-
-  if (!Number.isInteger(overlappedSlotId)) {
+  if (!Number.isInteger(errResData.overlappedSlotId)) {
     return;
   };
 
-  const overlappedSlot: AvailabilitySlot | undefined = hangoutAvailabilityState.availabilitySlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === overlappedSlotId);
+  const overlappedSlot: AvailabilitySlot | undefined = hangoutAvailabilityState.availabilitySlots.find((slot: AvailabilitySlot) => slot.availability_slot_id === errResData.overlappedSlotId);
 
   if (!overlappedSlot) {
     return;

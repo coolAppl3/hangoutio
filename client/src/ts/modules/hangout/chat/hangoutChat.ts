@@ -14,6 +14,7 @@ import { ChatMessage } from "../hangoutTypes";
 interface HangoutChatState {
   isLoaded: boolean,
   oldestMessageLoaded: boolean,
+  unreadMessagesPending: boolean,
   chatSectionMutationObserverActive: boolean,
 
   messageOffset: number,
@@ -26,6 +27,7 @@ interface HangoutChatState {
 export const hangoutChatState: HangoutChatState = {
   isLoaded: false,
   oldestMessageLoaded: false,
+  unreadMessagesPending: false,
   chatSectionMutationObserverActive: false,
 
   messageOffset: 0,
@@ -40,6 +42,7 @@ const chatElement: HTMLDivElement | null = document.querySelector('#chat');
 const chatContainer: HTMLDivElement | null = document.querySelector('#chat-container');
 
 const hangoutPhoneNavBtn: HTMLButtonElement | null = document.querySelector('#hangout-phone-nav-btn');
+const scrollToBottomBtn: HTMLButtonElement | null = document.querySelector('#scroll-to-bottom-btn');
 
 const chatForm: HTMLFormElement | null = document.querySelector('#chat-form');
 const chatTextarea: HTMLTextAreaElement | null = document.querySelector('#chat-textarea');
@@ -54,6 +57,8 @@ function loadEventListeners(): void {
 
   chatForm?.addEventListener('submit', sendHangoutMessage);
   chatContainer?.addEventListener('scroll', debounceLoadOlderMessages);
+
+  scrollToBottomBtn?.addEventListener('click', handleScrollToBottomBtn);
 
   chatTextarea?.addEventListener('keydown', handleChatTextareaKeydownEvents);
   chatTextarea?.addEventListener('input', () => {
@@ -72,6 +77,9 @@ async function initHangoutChat(): Promise<void> {
   };
 
   if (hangoutChatState.isLoaded) {
+    hangoutChatState.unreadMessagesPending && scrollNewMessagesIntoView();
+    hangoutChatState.unreadMessagesPending = false;
+
     return;
   };
 
@@ -156,19 +164,20 @@ export function insertSingleChatMessage(message: ChatMessage, isUser: boolean): 
 };
 
 export function insertNewMessagesFlag(): void {
+  hangoutChatState.unreadMessagesPending = true;
   if (!chatContainer) {
     return;
   };
 
   const closeToBottom: boolean = chatContainer.scrollHeight - chatContainer.clientHeight - chatContainer.scrollTop <= 100;
+  if (closeToBottom && hangoutChatState.chatSectionMutationObserverActive) {
+    removeNewMessagesFlag();
+    setTimeout(() => scrollChatToBottom(), 0);
 
-  if (closeToBottom) {
-    setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 0);
     return;
   };
 
   const existingFlag: HTMLDivElement | null = document.querySelector('.new-messages-flag');
-
   if (existingFlag) {
     return;
   };
@@ -322,17 +331,24 @@ async function loadOlderMessages(): Promise<void> {
     return;
   };
 
-  if (hangoutChatState.oldestMessageLoaded) {
-    return;
-  };
-
   const initialScrollHeight: number = chatContainer.scrollHeight;
   const initialScrollTop: number = chatContainer.scrollTop;
 
   const isScrollingUp: boolean = initialScrollTop < hangoutChatState.latestChatContainerScrollTop;
+  const closeToBottom: boolean = chatContainer.scrollHeight - chatContainer.clientHeight - chatContainer.scrollTop <= 600;
+
   if (!isScrollingUp) {
     hangoutChatState.latestChatContainerScrollTop = initialScrollTop;
+
+    if (closeToBottom && scrollToBottomBtn) {
+      scrollToBottomBtn.style.display = 'none';
+    };
+
     return;
+  };
+
+  if (!closeToBottom && scrollToBottomBtn) {
+    scrollToBottomBtn!.style.display = 'flex';
   };
 
   hangoutChatState.latestChatContainerScrollTop = initialScrollTop;
@@ -497,4 +513,31 @@ function createNewMessagesFlag(): HTMLDivElement {
 
 function removeNewMessagesFlag(): void {
   document.querySelector('.new-messages-flag')?.remove();
+};
+
+function scrollNewMessagesIntoView(): void {
+  const newMessagesFlag: HTMLDivElement | null = document.querySelector('.new-messages-flag');
+
+  if (!newMessagesFlag) {
+    return;
+  };
+
+  newMessagesFlag.scrollIntoView();
+};
+
+function handleScrollToBottomBtn(): void {
+  if (!hangoutChatState.unreadMessagesPending) {
+    chatContainer?.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+    return;
+  };
+
+  const newMessagesFlag: HTMLDivElement | null = document.querySelector('.new-messages-flag');
+
+  if (!newMessagesFlag || newMessagesFlag.classList.contains('scrolled-to')) {
+    chatContainer?.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+    return;
+  };
+
+  newMessagesFlag.scrollIntoView({ behavior: 'smooth' });
+  newMessagesFlag.classList.add('scrolled-to');
 };

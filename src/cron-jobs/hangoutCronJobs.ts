@@ -1,5 +1,5 @@
 import { dbPool } from "../db/db";
-import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { RowDataPacket } from "mysql2";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE } from "../util/constants";
 import { sendHangoutWebSocketMessage } from "../webSockets/hangout/hangoutWebSocketServer";
 
@@ -14,7 +14,8 @@ export async function progressHangouts(): Promise<void> {
 
     const [hangoutRows] = await dbPool.execute<HangoutDetails[]>(
       `SELECT
-        hangout_id
+        hangout_id,
+        current_stage
       FROM
         hangouts
       WHERE
@@ -50,8 +51,12 @@ export async function progressHangouts(): Promise<void> {
     const eventDescription: string = 'Hangout was concluded.';
     let hangoutEventRowValuesString: string = '';
 
-    for (const id of hangoutIdsToProgress) {
-      hangoutEventRowValuesString += `('${id}', '${eventDescription}', ${currentTimestamp}),`;
+    for (const hangout of hangoutRows) {
+      if (hangout.current_stage < HANGOUT_VOTING_STAGE) {
+        continue;
+      };
+
+      hangoutEventRowValuesString += `('${hangout.hangout_id}', '${eventDescription}', ${currentTimestamp}),`;
     };
 
     hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
@@ -105,7 +110,7 @@ export async function concludeSingleSuggestionHangouts(): Promise<void> {
 
     const hangoutIdsToProgress: string[] = hangoutRows.map((hangout: HangoutDetails) => hangout.hangout_id);
 
-    await dbPool.query<ResultSetHeader>(
+    await dbPool.query(
       `UPDATE
         hangouts
       SET
@@ -178,7 +183,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
 
     const hangoutIdsToProgress: string[] = hangoutRows.map((hangout: HangoutDetails) => hangout.hangout_id);
 
-    await dbPool.query<ResultSetHeader>(
+    await dbPool.query(
       `UPDATE
         hangouts
       SET

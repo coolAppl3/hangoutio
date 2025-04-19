@@ -103,6 +103,11 @@ async function startAccountRecovery(e: SubmitEvent): Promise<void> {
         return;
       };
 
+      if (!Number.isInteger(errResData.accountId) || !Number.isInteger(errResData.expiryTimestamp)) {
+        handleUnexpectedError();
+        return;
+      };
+
       recoveryState.accountId = errResData.accountId;
       recoveryState.expiryTimestamp = errResData.expiryTimestamp;
 
