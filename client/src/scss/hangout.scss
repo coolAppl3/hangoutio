@@ -1596,10 +1596,10 @@
     }
 
     .new-messages-flag {
-      @apply flex justify-center items-center;
+      @apply flex justify-center items-center py-3;
 
       span {
-        @apply text-xs font-medium leading-none text-title dark:text-cta-dark block text-center my-2 mx-1;
+        @apply text-xs font-medium leading-none text-title dark:text-cta-dark block text-center mx-1;
       }
 
       .line {
