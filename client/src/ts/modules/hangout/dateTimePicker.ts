@@ -598,7 +598,11 @@ function enableCalendarNavigationBtn(direction: 'forwards' | 'backwards'): void 
   navigationBtn && navigationBtn.classList.remove('disabled');
 };
 
-function autoInsertColon(e: KeyboardEvent, input: HTMLInputElement): void {
+function autoInsertColon(e: Event, input: HTMLInputElement): void {
+  if (!(e instanceof KeyboardEvent)) {
+    return;
+  };
+
   if (!e.code.startsWith('Digit')) {
     return;
   };
