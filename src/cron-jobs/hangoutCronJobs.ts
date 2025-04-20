@@ -59,15 +59,17 @@ export async function progressHangouts(): Promise<void> {
       hangoutEventRowValuesString += `('${hangout.hangout_id}', '${eventDescription}', ${currentTimestamp}),`;
     };
 
-    hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
+    if (hangoutEventRowValuesString.length > 0) {
+      hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
 
-    await dbPool.execute(
-      `INSERT INTO hangout_events (
+      await dbPool.execute(
+        `INSERT INTO hangout_events (
         hangout_id,
         event_description,
         event_timestamp
       ) VALUES ${hangoutEventRowValuesString};`
-    );
+      );
+    };
 
     sendHangoutWebSocketMessage(hangoutIdsToProgress, {
       type: 'hangout',
