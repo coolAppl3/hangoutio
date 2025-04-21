@@ -45,12 +45,15 @@ async function progressHangouts() {
             hangoutEventRowValuesString += `('${hangout.hangout_id}', '${eventDescription}', ${currentTimestamp}),`;
         }
         ;
-        hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
-        await db_1.dbPool.execute(`INSERT INTO hangout_events (
+        if (hangoutEventRowValuesString.length > 0) {
+            hangoutEventRowValuesString = hangoutEventRowValuesString.slice(0, -1);
+            await db_1.dbPool.execute(`INSERT INTO hangout_events (
         hangout_id,
         event_description,
         event_timestamp
       ) VALUES ${hangoutEventRowValuesString};`);
+        }
+        ;
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)(hangoutIdsToProgress, {
             type: 'hangout',
             reason: 'hangoutAutoProgressed',
