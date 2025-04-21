@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.81] (2025-04-21)
+
+### Features
+
+- Implemented most of the UI structure for `account.html`.
+
+
+### Build Changes
+
+- Created the files and build instructions for the account page.
+
+
+### Bug Fixes
+
+- Fixed `progressHangouts()` cron job attempting to insert conclusion events when there are no hangouts to conclude.
+
+
 ## [0.4.80] (2025-04-20)
 
 ### Features
