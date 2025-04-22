@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
+import { AccountDetails, Hangout, Friend, FriendRequest } from "../account/accountTypes";
 
 axios.defaults.withCredentials = true;
 
@@ -91,4 +92,20 @@ interface RecoveryUpdatePasswordData {
 
 export function recoveryUpdatePasswordService(requestBody: RecoveryUpdatePasswordBody): Promise<AxiosResponse<RecoveryUpdatePasswordData>> {
   return axios.patch(`${accountsApiUrl}/recovery/updatePassword`, requestBody);
+};
+
+// --- --- ---
+
+export interface HangoutInfo {
+  accountDetails: AccountDetails,
+  friends: Friend[],
+  friendRequests: FriendRequest[],
+  hangoutHistory: Hangout[],
+
+  hangoutsJoinedCount: number,
+  ongoingHangoutsCount: number,
+};
+
+export function getAccountInfoService(): Promise<AxiosResponse<HangoutInfo>> {
+  return axios.get(accountsApiUrl);
 };
