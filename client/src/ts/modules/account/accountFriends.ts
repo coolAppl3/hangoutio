@@ -1,3 +1,3 @@
-export function accountFriends(): void {
+export function initAccountFriends(): void {
   // TODO: implement
 };

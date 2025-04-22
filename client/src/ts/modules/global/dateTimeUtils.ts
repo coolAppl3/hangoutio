@@ -9,6 +9,16 @@ export function getDateAndTimeString(timestamp: number, omitTime: boolean = fals
   return `${getMonthName(dateObj)} ${date}${ordinalSuffix}${omitTime ? '' : `, ${getTime(dateObj)}`}`;
 };
 
+export function getFullDateSTring(timestamp: number): string {
+  const dateObj: Date = new Date(timestamp);
+
+  const date: number = dateObj.getDate();
+  const year: number = dateObj.getFullYear();
+  const ordinalSuffix: string = getDateOrdinalSuffix(date);
+
+  return `${getMonthName(dateObj)} ${date}${ordinalSuffix}, ${year}`;
+};
+
 export function getMonthName(date: Date): string {
   return new Intl.DateTimeFormat('en-GB', { month: 'long' }).format(date);
 };

@@ -96,7 +96,7 @@ export function recoveryUpdatePasswordService(requestBody: RecoveryUpdatePasswor
 
 // --- --- ---
 
-export interface HangoutInfo {
+interface HangoutInfo {
   accountDetails: AccountDetails,
   friends: Friend[],
   friendRequests: FriendRequest[],
