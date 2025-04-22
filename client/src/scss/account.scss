@@ -731,3 +731,90 @@
     }
   }
 }
+
+
+// hangout loading skeleton --- ---
+#loading-skeleton {
+  @apply py-3;
+
+  .skeleton {
+
+    &-details {
+      @apply bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple mb-2 p-2;
+
+      &>.title {
+        @apply w-[40%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-3;
+      }
+
+      .summary {
+        @apply grid grid-cols-2 xs:grid-cols-1 gap-2 mb-3;
+
+        &-item {
+
+          div {
+            @apply h-[1.6rem] w-[70%] first:w-[40%] first:mb-1 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast;
+          }
+        }
+      }
+    }
+
+    &-friends {
+      @apply bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple p-2 mb-3;
+
+      &>.title {
+        @apply w-[20%] md:w-[30%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-2;
+      }
+
+      &-nav {
+        @apply h-[1.6rem] w-[70%] mb-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast;
+
+      }
+
+      &-container {
+        @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-1;
+
+        .friend {
+          @apply p-1 bg-section dark:bg-section-dark rounded-sm;
+
+          div {
+            @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast h-[1.2rem] w-[40%] mb-2 first:w-[60%] first:mb-[4px] first:h-[1.6rem] last:w-[30%] last:mb-0;
+          }
+
+        }
+      }
+    }
+
+    &-hangouts {
+
+      &>.title {
+        @apply w-[20%] md:w-[30%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-2;
+      }
+
+      &-container {
+        @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-2;
+
+        .hangout {
+          @apply p-1 bg-section dark:bg-section-dark rounded-sm;
+
+
+
+          .title {
+            @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] w-[40%] h-[1.6rem] mb-2 animate-pulse-fast;
+          }
+
+          .details {
+            @apply mb-2;
+
+            div {
+              @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] w-[30%] h-[1.2rem] first:w-[60%] last:w-[45%] mb-[6px] last:mb-0 animate-pulse-fast;
+            }
+          }
+
+          .footer {
+            @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] w-[55%] h-1 animate-pulse-fast;
+          }
+        }
+      }
+    }
+  }
+}
