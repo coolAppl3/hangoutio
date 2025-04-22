@@ -470,7 +470,7 @@
     </nav>
 
     <!-- details -->
-    <section>
+    <section class="hidden">
       <div class="container">
         <div
           id="details"
@@ -501,15 +501,6 @@
             </div>
 
             <div class="flex flex-col justify-start items-start">
-              <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Ongoing hangouts</span>
-              <span
-                id="dashboard-next-stage-time"
-                class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
-                >3</span
-              >
-            </div>
-
-            <div class="flex flex-col justify-start items-start">
               <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Hangouts joined</span>
               <span
                 id="dashboard-next-stage"
@@ -517,12 +508,21 @@
                 >9</span
               >
             </div>
+
+            <div class="flex flex-col justify-start items-start">
+              <span class="text-sm md:text-base font-medium text-description dark:text-description-dark">Ongoing hangouts</span>
+              <span
+                id="dashboard-next-stage-time"
+                class="text-sm md:text-base text-title dark:text-title-dark font-bold dark:font-medium"
+                >3</span
+              >
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section>
+    <section class="hidden">
       <div class="container">
         <div
           id="friends"
@@ -824,6 +824,136 @@
         </div>
       </div>
     </section>
+
+    <!-- loading skeleton -->
+    <div id="loading-skeleton">
+      <div class="container">
+        <div class="skeleton-details">
+          <div class="title"></div>
+
+          <div class="summary">
+            <div class="summary-item">
+              <div></div>
+              <div></div>
+            </div>
+            <div class="summary-item">
+              <div></div>
+              <div></div>
+            </div>
+            <div class="summary-item">
+              <div></div>
+              <div></div>
+            </div>
+            <div class="summary-item">
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="skeleton-friends">
+          <div class="skeleton-friends-nav"></div>
+
+          <div class="skeleton-friends-container">
+            <div class="friend">
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+
+            <div class="friend">
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+
+            <div class="friend">
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="skeleton-hangouts">
+          <div class="title"></div>
+
+          <div class="skeleton-hangouts-container">
+            <div class="hangout">
+              <div class="title"></div>
+
+              <div class="details">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+
+              <div class="footer"></div>
+            </div>
+
+            <div class="hangout">
+              <div class="title"></div>
+
+              <div class="details">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+
+              <div class="footer"></div>
+            </div>
+
+            <div class="hangout">
+              <div class="title"></div>
+
+              <div class="details">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+
+              <div class="footer"></div>
+            </div>
+
+            <div class="hangout">
+              <div class="title"></div>
+
+              <div class="details">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+
+              <div class="footer"></div>
+            </div>
+
+            <div class="hangout">
+              <div class="title"></div>
+
+              <div class="details">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+
+              <div class="footer"></div>
+            </div>
+
+            <div class="hangout">
+              <div class="title"></div>
+
+              <div class="details">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+
+              <div class="footer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- footer -->
     <footer class="footer py-6 md:pb-[12rem] bg-dark border-t-2 border-dark dark:border-light-black">

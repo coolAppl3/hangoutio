@@ -2073,3 +2073,132 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
     }
     ;
 });
+exports.accountsRouter.get('/', async (req, res) => {
+    const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
+    if (!authSessionId) {
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    if (!authUtils.isValidAuthSessionId(authSessionId)) {
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    try {
+        ;
+        const [authSessionRows] = await db_1.dbPool.execute(`SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`, [authSessionId]);
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+            await (0, authSessions_1.destroyAuthSession)(authSessionId);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        const [accountRows] = await db_1.dbPool.query(`SELECT
+        email,
+        username,
+        display_name,
+        created_on_timestamp
+      FROM
+        accounts
+      WHERE
+        account_id = :accountId;
+      
+      SELECT
+        friendships.friendship_id,
+        friendships.friendship_timestamp,
+        accounts.username AS friend_username,
+        accounts.display_name AS friend_display_name
+      FROM
+        friendships
+      INNER JOIN
+        accounts ON friendships.friend_id = accounts.account_id
+      WHERE
+        friendships.account_id = :accountId;
+      
+      SELECT
+        friend_requests.request_id,
+        friend_requests.request_timestamp,
+        accounts.username AS requester_username,
+        accounts.display_name AS requester_display_name
+      FROM
+        friend_requests
+      INNER JOIN
+        accounts ON friend_requests.requester_id = accounts.account_id
+      WHERE
+        friend_requests.requestee_id = :accountId;
+      
+      SELECT
+        hangouts.hangout_id,
+        hangouts.hangout_title,
+        hangouts.current_stage,
+        hangouts.is_concluded,
+        hangouts.created_on_timestamp
+      FROM
+        hangout_members
+      INNER JOIN
+        hangouts ON hangout_members.hangout_id = hangouts.hangout_id
+      WHERE
+        hangout_members.account_id = :accountId
+      LIMIT 10;`, { accountId: authSessionDetails.user_id });
+        const accountDetails = accountRows[0];
+        const friends = accountRows[1];
+        const friendRequests = accountRows[2];
+        const hangoutHistory = accountRows[3];
+        if (!accountDetails || !friends || !friendRequests || !hangoutHistory) {
+            res.status(500).json({ message: 'Internal server error.' });
+            return;
+        }
+        ;
+        ;
+        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        COUNT(*) AS hangouts_joined_count,
+        CAST(SUM(
+          CASE
+            WHEN hangouts.is_concluded = 0 THEN 1
+            ELSE 0
+          END
+        ) AS UNSIGNED) AS ongoing_hangouts_count
+      FROM
+        hangout_members
+      INNER JOIN
+        hangouts ON hangout_members.hangout_id = hangouts.hangout_id
+      WHERE
+        hangout_members.account_id = ?;`, [authSessionDetails.user_id]);
+        const hangoutCounts = hangoutRows[0];
+        if (!hangoutCounts) {
+            res.status(500).json({ message: 'Internal server error.' });
+            return;
+        }
+        ;
+        res.json({
+            accountDetails,
+            friends,
+            friendRequests,
+            hangoutHistory,
+            hangoutsJoinedCount: hangoutCounts.hangouts_joined_count,
+            ongoingHangoutsCount: hangoutCounts.ongoing_hangouts_count,
+        });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+    ;
+});

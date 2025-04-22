@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.82] (2025-04-22)
+
+### Features
+
+- Added GET `accountsRouter/`.
+- Added `getAccountInfoService()` to `accountServices.ts`.
+- Implemented the module infrastructure for `accounts.html`.
+
+
 ## [0.4.81] (2025-04-21)
 
 ### Features
