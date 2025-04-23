@@ -96,7 +96,115 @@ export function recoveryUpdatePasswordService(requestBody: RecoveryUpdatePasswor
 
 // --- --- ---
 
-interface HangoutInfo {
+interface UpdateDisplayNameBody {
+  password: string,
+  newDisplayName: string,
+};
+
+export function updateDisplayNameService(requestBody: UpdateDisplayNameBody): Promise<AxiosResponse> {
+  return axios.patch(`${accountsApiUrl}/details/updateDisplayName`, requestBody);
+};
+
+// --- --- ---
+
+interface UpdatePasswordBody {
+  currentPassword: string,
+  newPassword: string,
+};
+
+interface UpdatePasswordData {
+  authSessionCreated: boolean,
+};
+
+export function updatePasswordService(requestBody: UpdatePasswordBody): Promise<AxiosResponse<UpdatePasswordData>> {
+  return axios.patch(`${accountsApiUrl}/details/updatePassword`, requestBody);
+};
+
+// --- --- ---
+
+interface StartEmailUpdateBody {
+  password: string,
+  newEmail: string,
+};
+
+export function StartEmailUpdateService(requestBody: StartEmailUpdateBody): Promise<AxiosResponse> {
+  return axios.post(`${accountsApiUrl}/details/updateEmail/start`);;
+};
+
+// --- --- ---
+
+export function ResendEmailUpdateService(): Promise<AxiosResponse> {
+  return axios.get(`${accountsApiUrl}/details/updateEmail/resendEmail`);
+};
+
+// --- --- ---
+
+interface ConfirmEmailUpdateBody {
+  password: string,
+  verificationCode: string,
+};
+
+interface ConfirmEmailUpdateData {
+  authSessionCreated: boolean,
+};
+
+export function confirmEmailUpdateService(requestBody: ConfirmEmailUpdateBody): Promise<AxiosResponse<ConfirmEmailUpdateData>> {
+  return axios.patch(`${accountsApiUrl}/details/updateEmail/confirm`, requestBody);;
+};
+
+// --- --- ---
+
+export function startAccountDeletionService(password: string): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/deletion/start?password=${password}`);
+};
+
+// --- --- ---
+
+export function resendDeletionEmailService(): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/deletion/resendEmail`);
+};
+
+// --- --- ---
+
+export function confirmAccountDeletionService(password: string, confirmationCode: string): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/deletion/start?password=${password}&confirmationCode=${confirmationCode}`);
+};
+
+// --- --- ---
+
+interface SendFriendRequestBody {
+  requesteeUsername: string,
+};
+
+export function sendFriendRequestService(requestBody: SendFriendRequestBody): Promise<AxiosResponse> {
+  return axios.post(`${accountsApiUrl}/friends/requests/send`, requestBody);
+};
+
+// --- --- ---
+
+interface AcceptFriendRequestBody {
+  friendRequestId: number,
+};
+
+export function acceptFriendRequestService(requestBody: AcceptFriendRequestBody): Promise<AxiosResponse> {
+  return axios.post(`${accountsApiUrl}/friends/requests/accept`, requestBody);
+};
+
+// --- --- ---
+
+export function rejectFriendRequestService(friendRequestId: number): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/friends/requests/reject?friendRequestId=${friendRequestId}`);
+};
+
+// --- --- ---
+
+export function removeFriendService(friendshipId: number): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/friends/manager/remove?friendshipId=${friendshipId}`);
+};
+
+// --- --- ---
+
+interface AccountInfo {
   accountDetails: AccountDetails,
   friends: Friend[],
   friendRequests: FriendRequest[],
@@ -106,6 +214,6 @@ interface HangoutInfo {
   ongoingHangoutsCount: number,
 };
 
-export function getAccountInfoService(): Promise<AxiosResponse<HangoutInfo>> {
+export function getAccountInfoService(): Promise<AxiosResponse<AccountInfo>> {
   return axios.get(accountsApiUrl);
 };
