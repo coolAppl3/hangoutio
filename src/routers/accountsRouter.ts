@@ -2482,10 +2482,6 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
 });
 
 accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Response) => {
-  interface RequestData {
-    friendRequestId: number,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -2500,16 +2496,16 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const friendRequestId = req.query.friendRequestId;
 
-  const expectedKeys: string[] = ['friendRequestId'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof friendRequestId !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.friendRequestId)) {
+  if (!Number.isInteger(+friendRequestId)) {
     res.status(400).json({ message: 'Invalid friend request ID.' });
+    return;
   };
 
   try {
@@ -2553,7 +2549,7 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
         friend_requests
       WHERE
         request_id = ?;`,
-      [requestData.friendRequestId]
+      [+friendRequestId]
     );
 
     if (resultSetHeader.affectedRows === 0) {
@@ -2570,10 +2566,6 @@ accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Res
 });
 
 accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Response) => {
-  interface RequestData {
-    friendshipId: number,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -2588,15 +2580,14 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const friendshipId = req.query.friendshipId;
 
-  const expectedKeys: string[] = ['friendshipId'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof friendshipId !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!Number.isInteger(requestData.friendshipId)) {
+  if (!Number.isInteger(+friendshipId)) {
     res.status(400).json({ message: 'Invalid friendship ID.' });
     return;
   };
@@ -2648,7 +2639,7 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
         friendships
       WHERE
         friendship_id = ?;`,
-      [requestData.friendshipId]
+      [+friendshipId]
     );
 
     const friendId: number | undefined = friendshipRows[0]?.friend_id;
