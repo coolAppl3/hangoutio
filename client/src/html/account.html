@@ -525,9 +525,9 @@
               </button>
 
               <div id="details-dropdown-menu">
-                <button id="update-email-btn">Update email</button>
-                <button id="update-password-btn">Update password</button>
                 <button id="update-display-name-btn">Update display name</button>
+                <button id="update-password-btn">Update password</button>
+                <button id="update-email-btn">Update email</button>
                 <div class="h-line"></div>
                 <button id="delete-account-btn">Delete account</button>
               </div>
@@ -573,21 +573,21 @@
           </div>
 
           <form
-            id="update-details-form"
-            class="bg-secondary dark:bg-secondary-dark"
+            id="details-update-form"
+            class="bg-secondary dark:bg-secondary-dark hidden"
           >
             <div class="h-line my-3"></div>
 
             <div class="form-header mb-2">
               <h4
-                id="update-details-form-title"
+                id="details-update-form-title"
                 class="text-lg font-medium text-title dark:text-title-dark"
               >
                 Update email address
               </h4>
 
               <p
-                id="delete-hangout-warning"
+                id="delete-account-warning"
                 class="text-sm md:text-base font-medium text-danger dark:text-danger-dark mt-[4px] hidden"
               >
                 Are you sure you want to delete your account? Once confirmed via email, this action is irreversible.
@@ -595,8 +595,8 @@
             </div>
 
             <div
-              class="form-group"
-              data-function="emailUpdate"
+              class="form-group hidden"
+              data-purpose="emailUpdate"
             >
               <label for="new-email-input">New email address</label>
               <input
@@ -611,8 +611,8 @@
             </div>
 
             <div
-              class="form-group"
-              data-function="displayNameUpdate"
+              class="form-group hidden"
+              data-purpose="displayNameUpdate"
             >
               <label for="new-display-name-input">New display name</label>
               <input
@@ -628,13 +628,13 @@
 
             <div
               class="form-group form-group-password relative"
-              data-function="all"
+              data-purpose="all"
             >
               <label for="password-input">Password</label>
               <input
                 type="password"
                 id="password-input"
-                autocomplete="new-password"
+                autocomplete="current-password"
               />
               <button
                 class="password-icon svg w-2 h-2 group"
@@ -664,8 +664,8 @@
             </div>
 
             <div
-              class="form-group form-group-password relative"
-              data-function="passwordUpdate"
+              class="form-group form-group-password relative hidden"
+              data-purpose="passwordUpdate"
             >
               <label for="new-password-input">New password</label>
               <input
@@ -701,8 +701,8 @@
             </div>
 
             <div
-              class="form-group form-group-password relative"
-              data-function="passwordUpdate"
+              class="form-group form-group-password relative hidden"
+              data-purpose="passwordUpdate"
             >
               <label for="confirm-new-password-input">Confirm new password</label>
               <input
@@ -739,14 +739,15 @@
 
             <div class="btn-container flex justify-start items-center md:flex-col">
               <button
-                id="update-details-confirm-btn"
-                class="btn bg-cta dark:bg-cta-dark mr-1 md:mr-0 md:mb-1 md:w-full"
+                type="submit"
+                id="details-update-form-confirm-btn"
               >
-                Update details
+                Confirm
               </button>
 
               <button
-                id="update-details-confirm-btn"
+                type="button"
+                id="details-update-form-cancel-btn"
                 class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title md:w-full"
               >
                 Cancel
