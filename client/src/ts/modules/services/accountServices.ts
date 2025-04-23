@@ -26,18 +26,6 @@ export async function accountSignUpService(requestBody: AccountSignUpBody): Prom
 
 // --- --- ---
 
-export interface AccountSignInBody {
-  email: string,
-  password: string,
-  keepSignedIn: boolean,
-};
-
-export async function accountSignInService(requestBody: AccountSignInBody): Promise<AxiosResponse> {
-  return axios.post(`${accountsApiUrl}/signIn`, requestBody);
-};
-
-// --- --- ---
-
 interface ResendVerificationEmailData {
   verificationEmailsSent: number,
 };
@@ -59,6 +47,18 @@ interface AccountVerificationData {
 
 export async function verifyAccountService(requestBody: AccountVerificationBody): Promise<AxiosResponse<AccountVerificationData>> {
   return axios.patch(`${accountsApiUrl}/verification/verify`, requestBody);
+};
+
+// --- --- ---
+
+export interface AccountSignInBody {
+  email: string,
+  password: string,
+  keepSignedIn: boolean,
+};
+
+export async function accountSignInService(requestBody: AccountSignInBody): Promise<AxiosResponse> {
+  return axios.post(`${accountsApiUrl}/signIn`, requestBody);
 };
 
 // --- --- ---
