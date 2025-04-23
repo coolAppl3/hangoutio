@@ -913,9 +913,10 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
   };
 });
 
-accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => {
+accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Response) => {
   interface RequestData {
     password: string,
+    newDisplayName: string,
   };
 
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
@@ -934,7 +935,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['password'];
+  const expectedKeys: string[] = ['password', 'newDisplayName'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
@@ -945,166 +946,10 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     return;
   };
 
-  try {
-    interface AuthSessionDetails extends RowDataPacket {
-      user_id: number,
-      user_type: 'account' | 'guest',
-      expiry_timestamp: number,
-    };
+  let connection;
 
-    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
-      `SELECT
-        user_id,
-        user_type,
-        expiry_timestamp
-      FROM
-        auth_sessions
-      WHERE
-        session_id = ?;`,
-      [authSessionId]
-    );
-
-    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
-
-    if (!authSessionDetails) {
-      removeRequestCookie(res, 'authSessionId');
-      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
-
-      return;
-    };
-
-    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
-      await destroyAuthSession('authSessionId');
-      removeRequestCookie(res, 'authSessionId');
-
-      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
-      return;
-    };
-
-    interface AccountDetails extends RowDataPacket {
-      email: string,
-      hashed_password: string,
-      display_name: string,
-      failed_sign_in_attempts: number,
-      expiry_timestamp: number,
-      failed_deletion_attempts: number,
-    };
-
-    const [accountRows] = await dbPool.execute<AccountDetails[]>(
-      `SELECT
-        accounts.email,
-        accounts.hashed_password,
-        accounts.display_name,
-        accounts.failed_sign_in_attempts,
-        account_deletion.expiry_timestamp,
-        account_deletion.failed_deletion_attempts
-      FROM
-        accounts
-      WHERE
-        account_id = ?`,
-      [authSessionDetails.user_id]
-    );
-
-    const accountDetails: AccountDetails | undefined = accountRows[0];
-
-    if (!accountDetails) {
-      await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId');
-
-      res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-      return;
-    };
-
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
-    if (!isCorrectPassword) {
-      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
-      return;
-    };
-
-    if (!accountDetails.expiry_timestamp) {
-      const confirmationCode: string = generateRandomCode();
-
-      const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
-
-      await dbPool.execute(
-        `INSERT INTO account_deletion (
-        account_id,
-        confirmation_code,
-        expiry_timestamp,
-        failed_deletion_attempts
-      ) VALUES (${generatePlaceHolders(3)});`,
-        [authSessionDetails.user_id, confirmationCode, expiryTimestamp]
-      );
-
-      res.json({});
-
-      await sendDeletionConfirmationEmail({
-        to: accountDetails.email,
-        confirmationCode,
-        displayName: accountDetails.display_name,
-      });
-
-      return;
-    };
-
-    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
-    if (requestSuspended) {
-      res.status(403).json({
-        message: 'Deletion request suspended.',
-        reason: 'requestSuspended',
-        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
-      });
-
-      return;
-    };
-
-    res.status(409).json({
-      message: 'Deletion request detected.',
-      reason: 'requestDetected',
-      resData: { expiryTimestamp: accountDetails.expiry_timestamp, failedDeletionAttempts: accountDetails.failed_deletion_attempts },
-    });
-
-  } catch (err: unknown) {
-    console.log(err);
-    res.status(500).json({ message: 'Internal server error.' });
-  };
-});
-
-accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) => {
-  interface RequestData {
-    password: string,
-    confirmationCode: string,
-  };
-
-  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
-
-  if (!authSessionId) {
-    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
-    return;
-  };
-
-  if (!authUtils.isValidAuthSessionId(authSessionId)) {
-    removeRequestCookie(res, 'authSessionId');
-    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
-
-    return;
-  };
-
-  const requestData: RequestData = req.body;
-
-  const expectedKeys: string[] = ['password', 'confirmationCode'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
-    res.status(400).json({ message: 'Invalid request data.' });
-    return;
-  };
-
-  if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
-    return;
-  };
-
-  if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
-    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidCode' });
+  if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
+    res.status(400).json({ message: 'Invalid display name.' });
     return;
   };
 
@@ -1147,124 +992,120 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     interface AccountDetails extends RowDataPacket {
       hashed_password: string,
       failed_sign_in_attempts: number,
-      email: string,
       display_name: string,
-      deletion_id: number,
-      confirmation_code: string,
-      expiry_timestamp: number,
-      failed_deletion_attempts: number,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        accounts.hashed_password,
-        accounts.failed_sign_in_attempts,
-        accounts.email,
-        accounts.display_name,
-        account_deletion.deletion_id,
-        account_deletion.confirmation_code,
-        account_deletion.request_timestamp,
-        account_deletion.failed_deletion_attempts
+        hashed_password,
+        failed_sign_in_attempts,
+        display_name
       FROM
-        accounts
-      LEFT JOIN
-        account_deletion ON accounts.account_id = account_deletion.account_id
-      WHERE
-        accounts.account_id = ?;
-      LIMIT 1;`,
-      [authSessionDetails.user_id]
-    );
-
-    const accountDetails: AccountDetails | undefined = accountRows[0];
-
-    if (!accountDetails) {
-      await destroyAuthSession(authSessionId);
-      removeRequestCookie(res, 'authSessionId');
-
-      res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-      return;
-    };
-
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
-    if (!isCorrectPassword) {
-      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
-      return;
-    };
-
-    if (!accountDetails.deletion_id) {
-      res.status(404).json({ message: 'Deletion request not found.' });
-      return;
-    };
-
-    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
-    if (requestSuspended) {
-      res.status(403).json({
-        message: 'Deletion request suspended.',
-        reason: 'requestSuspended',
-        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
-      });
-
-      return;
-    };
-
-    const isCorrectConfirmationCode: boolean = accountDetails.confirmation_code === requestData.confirmationCode;
-    if (!isCorrectConfirmationCode) {
-      const toBeSuspended: boolean = accountDetails.failed_deletion_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
-
-      if (toBeSuspended) {
-        await purgeAuthSessions(authSessionDetails.user_id, 'account');
-        removeRequestCookie(res, 'authSessionId');
-      };
-
-      const expiryTimestampValue: number = toBeSuspended
-        ? Date.now() + ACCOUNT_DELETION_SUSPENSION_WINDOW
-        : accountDetails.expiry_timestamp;
-
-      await dbPool.execute(
-        `UPDATE
-          account_deletion
-        SET
-          failed_deletion_attempts = failed_deletion_attempts + 1,
-          expiry_timestamp = ?
-        WHERE
-          deletion_id = ?;`,
-        [expiryTimestampValue, accountDetails.deletion_id]
-      );
-
-      res.status(401).json({
-        message: 'Incorrect confirmation code.',
-        reason: toBeSuspended ? 'requestSuspended' : 'incorrectCode',
-        resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : undefined,
-      });
-
-      if (toBeSuspended) {
-        await sendDeletionWarningEmail({
-          to: accountDetails.email,
-          displayName: accountDetails.display_name,
-        });
-      };
-
-      return;
-    };
-
-    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
-      `DELETE FROM
         accounts
       WHERE
         account_id = ?;`,
       [authSessionDetails.user_id]
     );
 
-    if (resultSetHeader.affectedRows === 0) {
-      res.status(500).json({ message: 'Internal server error.' });
+    const accountDetails: AccountDetails | undefined = accountRows[0];
+
+    if (!accountDetails) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
     };
 
-    res.json({});
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
+    if (!isCorrectPassword) {
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
+      return;
+    };
+
+    if (requestData.newDisplayName === accountDetails.display_name) {
+      res.status(409).json({ message: `New display name can't be identical to current display name` });
+      return;
+    };
+
+    connection = await dbPool.getConnection();
+    await connection.beginTransaction();
+
+    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
+      `UPDATE
+        accounts
+      SET
+        display_name = ?
+      WHERE
+        account_id = ?;`,
+      [requestData.newDisplayName, authSessionDetails.user_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      await connection.rollback();
+      res.status(500).json({ message: 'Internal server error.' });
+
+      return;
+    };
+
+    await connection.execute(
+      `UPDATE
+        hangout_members
+      SET
+        display_name = ?
+      WHERE
+        account_id = ?;`,
+      [requestData.newDisplayName, authSessionDetails.user_id]
+    );
+
+    await connection.commit();
+    res.json({ newDisplayName: requestData.newDisplayName });
+
+    interface HangoutMemberDetails extends RowDataPacket {
+      hangout_member_id: number,
+      hangout_id: string,
+    };
+
+    const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
+      `SELECT
+        hangout_member_id,
+        hangout_id
+      FROM
+        hangout_members
+      WHERE
+        account_id = ?;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (hangoutMemberRows.length === 0) {
+      return;
+    };
+
+    const eventTimestamp: number = Date.now();
+    const eventDescription: string = `${accountDetails.display_name} changed his name to ${requestData.newDisplayName}.`;
+
+    for (const row of hangoutMemberRows) {
+      sendHangoutWebSocketMessage([row.hangout_id], {
+        type: 'misc',
+        reason: 'memberUpdatedDisplayName',
+        data: {
+          hangoutMemberId: row.hangout_member_id,
+          newDisplayName: requestData.newDisplayName,
+
+          eventTimestamp,
+          eventDescription,
+        },
+      });
+    };
 
   } catch (err: unknown) {
     console.log(err);
+    await connection?.rollback();
+
     res.status(500).json({ message: 'Internal server error.' });
+
+  } finally {
+    connection?.release();
   };
 });
 
@@ -1976,10 +1817,9 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
   };
 });
 
-accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Response) => {
+accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => {
   interface RequestData {
     password: string,
-    newDisplayName: string,
   };
 
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
@@ -1998,7 +1838,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['password', 'newDisplayName'];
+  const expectedKeys: string[] = ['password'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
@@ -2009,10 +1849,166 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     return;
   };
 
-  let connection;
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
 
-  if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
-    res.status(400).json({ message: 'Invalid display name.' });
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+      await destroyAuthSession('authSessionId');
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    interface AccountDetails extends RowDataPacket {
+      email: string,
+      hashed_password: string,
+      display_name: string,
+      failed_sign_in_attempts: number,
+      expiry_timestamp: number,
+      failed_deletion_attempts: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
+      `SELECT
+        accounts.email,
+        accounts.hashed_password,
+        accounts.display_name,
+        accounts.failed_sign_in_attempts,
+        account_deletion.expiry_timestamp,
+        account_deletion.failed_deletion_attempts
+      FROM
+        accounts
+      WHERE
+        account_id = ?`,
+      [authSessionDetails.user_id]
+    );
+
+    const accountDetails: AccountDetails | undefined = accountRows[0];
+
+    if (!accountDetails) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+      return;
+    };
+
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
+    if (!isCorrectPassword) {
+      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
+      return;
+    };
+
+    if (!accountDetails.expiry_timestamp) {
+      const confirmationCode: string = generateRandomCode();
+
+      const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
+
+      await dbPool.execute(
+        `INSERT INTO account_deletion (
+        account_id,
+        confirmation_code,
+        expiry_timestamp,
+        failed_deletion_attempts
+      ) VALUES (${generatePlaceHolders(3)});`,
+        [authSessionDetails.user_id, confirmationCode, expiryTimestamp]
+      );
+
+      res.json({});
+
+      await sendDeletionConfirmationEmail({
+        to: accountDetails.email,
+        confirmationCode,
+        displayName: accountDetails.display_name,
+      });
+
+      return;
+    };
+
+    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
+    if (requestSuspended) {
+      res.status(403).json({
+        message: 'Deletion request suspended.',
+        reason: 'requestSuspended',
+        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+      });
+
+      return;
+    };
+
+    res.status(409).json({
+      message: 'Deletion request detected.',
+      reason: 'requestDetected',
+      resData: { expiryTimestamp: accountDetails.expiry_timestamp, failedDeletionAttempts: accountDetails.failed_deletion_attempts },
+    });
+
+  } catch (err: unknown) {
+    console.log(err);
+    res.status(500).json({ message: 'Internal server error.' });
+  };
+});
+
+accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) => {
+  interface RequestData {
+    password: string,
+    confirmationCode: string,
+  };
+
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId');
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['password', 'confirmationCode'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!userValidation.isValidPassword(requestData.password)) {
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
+    return;
+  };
+
+  if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
+    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidCode' });
     return;
   };
 
@@ -2055,18 +2051,31 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     interface AccountDetails extends RowDataPacket {
       hashed_password: string,
       failed_sign_in_attempts: number,
+      email: string,
       display_name: string,
+      deletion_id: number,
+      confirmation_code: string,
+      expiry_timestamp: number,
+      failed_deletion_attempts: number,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
-        hashed_password,
-        failed_sign_in_attempts,
-        display_name
+        accounts.hashed_password,
+        accounts.failed_sign_in_attempts,
+        accounts.email,
+        accounts.display_name,
+        account_deletion.deletion_id,
+        account_deletion.confirmation_code,
+        account_deletion.request_timestamp,
+        account_deletion.failed_deletion_attempts
       FROM
         accounts
+      LEFT JOIN
+        account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        account_id = ?;`,
+        accounts.account_id = ?;
+      LIMIT 1;`,
       [authSessionDetails.user_id]
     );
 
@@ -2086,89 +2095,80 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
       return;
     };
 
-    if (requestData.newDisplayName === accountDetails.display_name) {
-      res.status(409).json({ message: `New display name can't be identical to current display name` });
+    if (!accountDetails.deletion_id) {
+      res.status(404).json({ message: 'Deletion request not found.' });
       return;
     };
 
-    connection = await dbPool.getConnection();
-    await connection.beginTransaction();
+    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
+    if (requestSuspended) {
+      res.status(403).json({
+        message: 'Deletion request suspended.',
+        reason: 'requestSuspended',
+        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+      });
 
-    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
-      `UPDATE
+      return;
+    };
+
+    const isCorrectConfirmationCode: boolean = accountDetails.confirmation_code === requestData.confirmationCode;
+    if (!isCorrectConfirmationCode) {
+      const toBeSuspended: boolean = accountDetails.failed_deletion_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
+
+      if (toBeSuspended) {
+        await purgeAuthSessions(authSessionDetails.user_id, 'account');
+        removeRequestCookie(res, 'authSessionId');
+      };
+
+      const expiryTimestampValue: number = toBeSuspended
+        ? Date.now() + ACCOUNT_DELETION_SUSPENSION_WINDOW
+        : accountDetails.expiry_timestamp;
+
+      await dbPool.execute(
+        `UPDATE
+          account_deletion
+        SET
+          failed_deletion_attempts = failed_deletion_attempts + 1,
+          expiry_timestamp = ?
+        WHERE
+          deletion_id = ?;`,
+        [expiryTimestampValue, accountDetails.deletion_id]
+      );
+
+      res.status(401).json({
+        message: 'Incorrect confirmation code.',
+        reason: toBeSuspended ? 'requestSuspended' : 'incorrectCode',
+        resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : undefined,
+      });
+
+      if (toBeSuspended) {
+        await sendDeletionWarningEmail({
+          to: accountDetails.email,
+          displayName: accountDetails.display_name,
+        });
+      };
+
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
         accounts
-      SET
-        display_name = ?
-      WHERE
-        account_id = ?;`,
-      [requestData.newDisplayName, authSessionDetails.user_id]
-    );
-
-    if (resultSetHeader.affectedRows === 0) {
-      await connection.rollback();
-      res.status(500).json({ message: 'Internal server error.' });
-
-      return;
-    };
-
-    await connection.execute(
-      `UPDATE
-        hangout_members
-      SET
-        display_name = ?
-      WHERE
-        account_id = ?;`,
-      [requestData.newDisplayName, authSessionDetails.user_id]
-    );
-
-    await connection.commit();
-    res.json({ newDisplayName: requestData.newDisplayName });
-
-    interface HangoutMemberDetails extends RowDataPacket {
-      hangout_member_id: number,
-      hangout_id: string,
-    };
-
-    const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
-      `SELECT
-        hangout_member_id,
-        hangout_id
-      FROM
-        hangout_members
       WHERE
         account_id = ?;`,
       [authSessionDetails.user_id]
     );
 
-    if (hangoutMemberRows.length === 0) {
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ message: 'Internal server error.' });
       return;
     };
 
-    const eventTimestamp: number = Date.now();
-    const eventDescription: string = `${accountDetails.display_name} changed his name to ${requestData.newDisplayName}.`;
-
-    for (const row of hangoutMemberRows) {
-      sendHangoutWebSocketMessage([row.hangout_id], {
-        type: 'misc',
-        reason: 'memberUpdatedDisplayName',
-        data: {
-          hangoutMemberId: row.hangout_member_id,
-          newDisplayName: requestData.newDisplayName,
-
-          eventTimestamp,
-          eventDescription,
-        },
-      });
-    };
+    res.json({});
 
   } catch (err: unknown) {
     console.log(err);
-    await connection?.rollback();
-
     res.status(500).json({ message: 'Internal server error.' });
-
-  } finally {
-    connection?.release();
   };
 });
 
@@ -2800,7 +2800,7 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
       { accountId: authSessionDetails.user_id }
     );
 
-    const accountDetails: AccountDetails[] | undefined = accountRows[0];
+    const accountDetails: AccountDetails | undefined = accountRows[0][0];
     const friends: Friend[] | undefined = accountRows[1];
     const friendRequests: FriendRequest[] | undefined = accountRows[2];
     const hangoutHistory: Hangout[] | undefined = accountRows[3];
