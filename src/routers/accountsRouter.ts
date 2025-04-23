@@ -1930,9 +1930,10 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         account_id,
         confirmation_code,
         expiry_timestamp,
+        deletion_emails_sent,
         failed_deletion_attempts
       ) VALUES (${generatePlaceHolders(3)});`,
-        [authSessionDetails.user_id, confirmationCode, expiryTimestamp]
+        [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 0, 0]
       );
 
       res.json({});

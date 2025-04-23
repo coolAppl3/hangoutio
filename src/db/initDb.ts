@@ -88,6 +88,7 @@ async function createAccountDeletionTable(): Promise<void> {
         account_id INT NOT NULL UNIQUE,
         confirmation_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
         expiry_timestamp BIGINT NOT NULL,
+        deletion_emails_sent INT NOT NULL CHECK(deletion_emails_sent <= 3),
         failed_deletion_attempts INT NOT NULL CHECK(failed_deletion_attempts <= 3),
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
       );`
