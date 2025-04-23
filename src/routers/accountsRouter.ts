@@ -2606,7 +2606,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
   };
 });
 
-accountsRouter.delete('/friends/requests/decline', async (req: Request, res: Response) => {
+accountsRouter.delete('/friends/requests/reject', async (req: Request, res: Response) => {
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
