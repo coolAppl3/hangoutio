@@ -1059,7 +1059,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     );
 
     await connection.commit();
-    res.json({ newDisplayName: requestData.newDisplayName });
+    res.json({});
 
     interface HangoutMemberDetails extends RowDataPacket {
       hangout_member_id: number,
@@ -1818,10 +1818,6 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 });
 
 accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => {
-  interface RequestData {
-    password: string,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -1836,15 +1832,14 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const password = req.query.password;
 
-  const expectedKeys: string[] = ['password'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof password !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidPassword(requestData.password)) {
+  if (!userValidation.isValidPassword(password)) {
     res.status(400).json({ message: 'Invalid password.' });
     return;
   };
@@ -1919,7 +1914,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
+    const isCorrectPassword: boolean = await bcrypt.compare(password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
@@ -1975,11 +1970,6 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 });
 
 accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) => {
-  interface RequestData {
-    password: string,
-    confirmationCode: string,
-  };
-
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -1994,20 +1984,20 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     return;
   };
 
-  const requestData: RequestData = req.body;
+  const password = req.query.password;
+  const confirmationCode = req.query.confirmationCode;
 
-  const expectedKeys: string[] = ['password', 'confirmationCode'];
-  if (undefinedValuesDetected(requestData, expectedKeys)) {
+  if (typeof password !== 'string' || typeof confirmationCode !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidPassword(requestData.password)) {
+  if (!userValidation.isValidPassword(password)) {
     res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
-  if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
+  if (!userValidation.isValidRandomCode(confirmationCode)) {
     res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidCode' });
     return;
   };
@@ -2089,7 +2079,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
+    const isCorrectPassword: boolean = await bcrypt.compare(password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
@@ -2111,7 +2101,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       return;
     };
 
-    const isCorrectConfirmationCode: boolean = accountDetails.confirmation_code === requestData.confirmationCode;
+    const isCorrectConfirmationCode: boolean = accountDetails.confirmation_code === confirmationCode;
     if (!isCorrectConfirmationCode) {
       const toBeSuspended: boolean = accountDetails.failed_deletion_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
 
