@@ -1933,7 +1933,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         deletion_emails_sent,
         failed_deletion_attempts
       ) VALUES (${generatePlaceHolders(3)});`,
-        [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 0, 0]
+        [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
       );
 
       res.json({});
@@ -1963,6 +1963,130 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       reason: 'requestDetected',
       resData: { expiryTimestamp: accountDetails.expiry_timestamp, failedDeletionAttempts: accountDetails.failed_deletion_attempts },
     });
+
+  } catch (err: unknown) {
+    console.log(err);
+    res.status(500).json({ message: 'Internal server error.' });
+  };
+});
+
+accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) => {
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+      await destroyAuthSession('authSessionId');
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    interface AccountDetails extends RowDataPacket {
+      email: string,
+      display_name: string,
+      confirmation_code: string,
+      expiry_timestamp: number,
+      deletion_emails_sent: number,
+      failed_deletion_attempts: number,
+    };
+
+    const [accountRows] = await dbPool.execute<AccountDetails[]>(
+      `SELECT
+        accounts.email,
+        accounts.display_name,
+        account_deletion.confirmation_code,
+        account_deletion.expiry_timestamp,
+        account_deletion.deletion_emails_sent,
+        account_deletion.failed_deletion_attempts
+      FROM
+        accounts
+      WHERE
+        account_id = ?`,
+      [authSessionDetails.user_id]
+    );
+
+    const accountDetails: AccountDetails | undefined = accountRows[0];
+
+    if (!accountDetails) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+      return;
+    };
+
+    if (!accountDetails.confirmation_code) {
+      res.status(404).json({ message: 'Deletion request not found.' });
+      return;
+    };
+
+    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
+    if (requestSuspended) {
+      res.status(403).json({
+        message: 'Deletion request suspended.',
+        reason: 'requestSuspended',
+        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+      });
+
+      return;
+    };
+
+    if (accountDetails.deletion_emails_sent >= EMAILS_SENT_LIMIT) {
+      res.status(409).json({
+        message: 'Deletion emails limit reached.',
+        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+      });
+
+      return;
+    };
+
+    await sendDeletionConfirmationEmail({
+      to: accountDetails.email,
+      confirmationCode: accountDetails.confirmation_code,
+      displayName: accountDetails.display_name,
+    });
+
+    res.json({});
 
   } catch (err: unknown) {
     console.log(err);
