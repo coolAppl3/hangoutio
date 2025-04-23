@@ -1,13 +1,26 @@
-import { getAccountInfoService, HangoutInfo } from "../services/accountServices";
+import { handleAuthSessionExpired } from "../global/authUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
+import popup from "../global/popup";
+import { getAccountInfoService } from "../services/accountServices";
+import { initAccountDetails } from "./accountDetails";
+import { initAccountFriends } from "./accountFriends";
+import { AccountDetails, Friend, FriendRequest, Hangout } from "./accountTypes";
+import { removeLoadingSkeleton } from "./accountUtils";
 
-interface GlobalAccountState {
-  isLoaded: boolean,
-  hangoutInfo: HangoutInfo | null,
+interface Account {
+  data: null | {
+    accountDetails: AccountDetails,
+    friends: Friend[],
+    friendRequests: FriendRequest[],
+    hangoutHistory: Hangout[],
+
+    hangoutsJoinedCount: number,
+    ongoingHangoutsCount: number,
+  },
 };
 
-export const globalAccountState: GlobalAccountState = {
-  isLoaded: false,
-  hangoutInfo: null,
+export const accountState: Account = {
+  data: null,
 };
 
 export async function initAccount(): Promise<void> {
@@ -16,16 +29,39 @@ export async function initAccount(): Promise<void> {
 
 async function getAccountInfo(): Promise<void> {
   try {
-    const hangoutInfo: HangoutInfo = (await getAccountInfoService()).data;
-    // TODO: continue implementation
+    const { accountDetails, friends, friendRequests, hangoutHistory, hangoutsJoinedCount, ongoingHangoutsCount } = (await getAccountInfoService()).data;
+
+    accountState.data = {
+      accountDetails,
+      friends,
+      friendRequests,
+      hangoutHistory,
+
+      hangoutsJoinedCount,
+      ongoingHangoutsCount,
+    };
+
+    initAccountDetails();
+    initAccountFriends();
+
+    removeLoadingSkeleton();
 
   } catch (err: unknown) {
     console.log(err);
 
-  };
-};
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
-function removeLoadingSkeleton(): void {
-  document.querySelector('#loading-skeleton')?.remove();
-  document.querySelectorAll('section').forEach((section: HTMLElement) => section.classList.remove('hidden'));;
+    if (!asyncErrorData) {
+      popup('Failed to load account details.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
 };

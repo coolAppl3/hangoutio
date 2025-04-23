@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.83] (2025-04-24)
+
+### Features
+
+- Added rendering logic to the account's details in `account.html`.
+- Added `deletion_emails_sent` column to `account_deletion` table, and updated DELETE `accounts/deletion/start` accordingly.
+- Added GET `accounts/deletion/resendEmail`.
+- Added all the account services to correspond with all the account router's endpoints.
+- Implemented details-update form in `account.html` to handle all potential update requests in one form.
+
+
+### Bug Fixes
+
+- Fixed DELETE `accounts/deletion/start` and DELETE `accounts/deletion/confirm` using a request body.
+- Fixed DELETE `accounts/friends/requests/decline` and DELETE `accounts/friends/manage/remove` using a request body.
+
+
+### Code Refactoring
+
+- Renamed DELETE `accounts/friends/requests/decline` to DELETE `accounts/friends/requests/reject`.
+
+
 ## [0.4.82] (2025-04-22)
 
 ### Features

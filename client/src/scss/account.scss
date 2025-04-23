@@ -601,6 +601,52 @@
 
 #details {
   word-break: break-word;
+
+  &-header {
+
+    #details-dropdown {
+      @apply relative ml-1 z-5;
+
+      &.expanded {
+
+        #details-dropdown-menu {
+          @apply block;
+        }
+      }
+
+      &-menu {
+        @apply absolute top-0 right-3 w-fit h-fit rounded-sm overflow-hidden whitespace-nowrap z-3 hidden;
+
+        button {
+          @apply block w-full p-1 px-2 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
+
+          &#delete-account-btn {
+            @apply text-danger dark:text-danger-dark;
+          }
+        }
+      }
+    }
+  }
+
+  &-update-form {
+
+    &.danger {
+
+      .btn-container {
+
+        #details-update-form-confirm-btn {
+          @apply bg-danger text-title-dark;
+        }
+      }
+    }
+
+    .btn-container {
+
+      #details-update-form-confirm-btn {
+        @apply btn bg-cta dark:bg-cta-dark mr-1 md:mr-0 md:mb-1 md:w-full;
+      }
+    }
+  }
 }
 
 #friends {
