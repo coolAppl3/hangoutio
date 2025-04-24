@@ -1,6 +1,12 @@
+import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../global/authUtils";
 import { getFullDateSTring } from "../global/dateTimeUtils";
 import ErrorSpan from "../global/ErrorSpan";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
+import { InfoModal } from "../global/InfoModal";
+import LoadingModal from "../global/LoadingModal";
+import popup from "../global/popup";
 import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
+import { updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { accountState } from "./initAccount";
 
 type DetailsUpdateFormPurpose = 'emailUpdate' | 'displayNameUpdate' | 'passwordUpdate' | 'deleteAccount';
@@ -67,15 +73,231 @@ function renderAccountDetails(): void {
 async function handleFormSubmission(e: SubmitEvent): Promise<void> {
   e.preventDefault();
 
-  // TODO: implement
+  if (accountDetailsState.detailsUpdateFormPurpose === 'displayNameUpdate') {
+    await updateDisplayName();
+    return;
+  };
+
+  if (accountDetailsState.detailsUpdateFormPurpose === 'passwordUpdate') {
+    await updatePassword();
+    return;
+  };
+
+  if (accountDetailsState.detailsUpdateFormPurpose === 'emailUpdate') {
+    await startUpdateEmail();
+    return;
+  };
+
+  if (accountDetailsState.detailsUpdateFormPurpose === 'deleteAccount') {
+    await startAccountDeletion();
+    return;
+  };
+
+  popup('Something went wrong.', 'error');
+  hideDetailsUpdateForm();
 };
 
 async function updateDisplayName(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!newDisplayNameInput || !passwordInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidPassword: boolean = validatePassword(passwordInput);
+  const isValidDisplayName: boolean = validateDisplayName(newDisplayNameInput);
+
+  if (!isValidPassword || !isValidDisplayName) {
+    popup('Invalid details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const password: string = passwordInput.value;
+  const newDisplayName: string = newDisplayNameInput.value;
+
+  if (newDisplayName === accountState.data.accountDetails.display_name) {
+    popup(`Your display name is already ${newDisplayName}.`, 'info');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await updateDisplayNameService({ password, newDisplayName });
+    accountState.data.accountDetails.display_name = newDisplayName;
+
+    hideDetailsUpdateForm();
+    renderAccountDetails();
+
+    popup('Display name updated.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400) {
+      if (errReason === 'password') {
+        ErrorSpan.display(passwordInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'displayName') {
+        ErrorSpan.display(newDisplayNameInput, errMessage);
+      };
+    };
+  };
 };
 
 async function updatePassword(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!passwordInput || !newPasswordInput || !confirmNewPasswordInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidPassword: boolean = validatePassword(passwordInput);
+  const isValidNewPassword: boolean = validateNewPassword(newPasswordInput);
+  const isValidConfirmPassword: boolean = validateConfirmPassword(confirmNewPasswordInput, newPasswordInput);
+
+  if (!isValidConfirmPassword) {
+    popup(`New password inputs don't match.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!isValidNewPassword || !isValidPassword) {
+    popup('Invalid details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const password: string = passwordInput.value;
+  const newPassword: string = newPasswordInput.value;
+
+  if (newPassword === accountState.data.accountDetails.username) {
+    ErrorSpan.display(newPasswordInput, `New password can't be identical to your username.`);
+
+    popup(`New password can't be identical to your username.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    const authSessionCreated: boolean = (await updatePasswordService({ currentPassword: password, newPassword })).data.authSessionCreated;
+
+    hideDetailsUpdateForm();
+
+    popup('Password updated.', 'success');
+    LoadingModal.remove();
+
+    if (authSessionCreated) {
+      return;
+    };
+
+    const infoModal: HTMLDivElement = InfoModal.display({
+      title: 'Password updated successfully.',
+      description: `You'll just have to sign in again to complete the process.`,
+      btnTitle: 'Okay',
+    });
+
+    infoModal.addEventListener('click', (e: MouseEvent) => {
+      if (!(e.target instanceof HTMLButtonElement)) {
+        return;
+      };
+
+      if (e.target.id === 'info-modal-btn') {
+        window.location.href = 'sign-in';
+      };
+    });
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 409) {
+      ErrorSpan.display(newPasswordInput, errMessage);
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400) {
+      if (errReason === 'currentPassword') {
+        ErrorSpan.display(passwordInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'newPassword') {
+        ErrorSpan.display(newPasswordInput, errMessage);
+      };
+    };
+  };
 };
 
 async function startUpdateEmail(): Promise<void> {

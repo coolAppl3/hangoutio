@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.84] (2025-04-24)
+
+### Features
+
+- Implemented logic for users to update their account's display name.
+- Implemented logic for users to update their account's password.
+
+
 ## [0.4.83] (2025-04-24)
 
 ### Features
