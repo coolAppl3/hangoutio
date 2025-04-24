@@ -767,13 +767,13 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ message: 'Invalid password.' });
+        res.status(400).json({ message: 'Invalid password.', reason: 'password' });
         return;
     }
     ;
     let connection;
     if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
-        res.status(400).json({ message: 'Invalid display name.' });
+        res.status(400).json({ message: 'Invalid display name.', reason: 'displayName' });
         return;
     }
     ;
@@ -825,7 +825,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         }
         ;
         if (requestData.newDisplayName === accountDetails.display_name) {
-            res.status(409).json({ message: `New display name can't be identical to current display name` });
+            res.status(409).json({ message: `Your display name is already ${requestData.newDisplayName}.` });
             return;
         }
         ;
@@ -911,12 +911,12 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
     }
     ;
     if (!userValidation.isValidPassword(requestData.currentPassword)) {
-        res.status(400).json({ message: 'Invalid password.' });
+        res.status(400).json({ message: 'Invalid password.', reason: 'currentPassword' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-        res.status(400).json({ message: 'Invalid new password.' });
+        res.status(400).json({ message: 'Invalid new password.', reason: 'newPassword' });
         return;
     }
     ;
@@ -927,7 +927,7 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         user_type,
         expiry_timestamp
       FROM
-        accounts
+        auth_sessions
       WHERE
         session_id = ?;`, [authSessionId]);
         const authSessionDetails = authSessionRows[0];
@@ -969,15 +969,12 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
         ;
         const areIdenticalPasswords = await bcrypt_1.default.compare(requestData.newPassword, accountDetails.hashed_password);
         if (areIdenticalPasswords) {
-            res.status(409).json({
-                message: `New password can't be identical to current password.`,
-                reason: 'identicalPasswords'
-            });
+            res.status(409).json({ message: `New password can't be identical to your current password.`, reason: 'identicalPasswords' });
             return;
         }
         ;
         if (accountDetails.username === requestData.newPassword) {
-            res.status(409).json({ message: `New password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+            res.status(409).json({ message: `New password can't be identical to your username.`, reason: 'passwordEqualsUsername' });
             return;
         }
         ;
