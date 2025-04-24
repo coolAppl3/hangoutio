@@ -942,14 +942,14 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
   };
 
   if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'password' });
     return;
   };
 
   let connection;
 
   if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
-    res.status(400).json({ message: 'Invalid display name.' });
+    res.status(400).json({ message: 'Invalid display name.', reason: 'displayName' });
     return;
   };
 
@@ -1024,7 +1024,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     };
 
     if (requestData.newDisplayName === accountDetails.display_name) {
-      res.status(409).json({ message: `New display name can't be identical to current display name` });
+      res.status(409).json({ message: `Your display name is already ${requestData.newDisplayName}.` });
       return;
     };
 

@@ -1,6 +1,11 @@
+import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../global/authUtils";
 import { getFullDateSTring } from "../global/dateTimeUtils";
 import ErrorSpan from "../global/ErrorSpan";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
+import LoadingModal from "../global/LoadingModal";
+import popup from "../global/popup";
 import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
+import { updateDisplayNameService } from "../services/accountServices";
 import { accountState } from "./initAccount";
 
 type DetailsUpdateFormPurpose = 'emailUpdate' | 'displayNameUpdate' | 'passwordUpdate' | 'deleteAccount';
@@ -67,11 +72,114 @@ function renderAccountDetails(): void {
 async function handleFormSubmission(e: SubmitEvent): Promise<void> {
   e.preventDefault();
 
-  // TODO: implement
+  if (accountDetailsState.detailsUpdateFormPurpose === 'displayNameUpdate') {
+    await updateDisplayName();
+    return;
+  };
+
+  if (accountDetailsState.detailsUpdateFormPurpose === 'passwordUpdate') {
+    await updatePassword();
+    return;
+  };
+
+  if (accountDetailsState.detailsUpdateFormPurpose === 'emailUpdate') {
+    await startUpdateEmail();
+    return;
+  };
+
+  if (accountDetailsState.detailsUpdateFormPurpose === 'deleteAccount') {
+    await startAccountDeletion();
+    return;
+  };
+
+  popup('Something went wrong.', 'error');
+  hideDetailsUpdateForm();
 };
 
 async function updateDisplayName(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!newDisplayNameInput || !passwordInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+
+  const isValidDisplayName: boolean = validateDisplayName(newDisplayNameInput);
+  const isValidPassword: boolean = validatePassword(passwordInput);
+
+  if (!isValidDisplayName || !isValidPassword) {
+    popup('Invalid update details.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const password: string = passwordInput.value;
+  const newDisplayName: string = newDisplayNameInput.value;
+
+  if (newDisplayName === accountState.data.accountDetails.display_name) {
+    popup(`Your display name is already ${newDisplayName}.`, 'info');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await updateDisplayNameService({ password, newDisplayName });
+    accountState.data.accountDetails.display_name = newDisplayName;
+
+    hideDetailsUpdateForm();
+    renderAccountDetails();
+
+    popup('Display name updated.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400) {
+      if (errReason === 'password') {
+        ErrorSpan.display(passwordInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'displayName') {
+        ErrorSpan.display(newDisplayNameInput, errMessage);
+      };
+    };
+  };
 };
 
 async function updatePassword(): Promise<void> {
