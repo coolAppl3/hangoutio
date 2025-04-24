@@ -1138,12 +1138,12 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 
   if (!userValidation.isValidPassword(requestData.currentPassword)) {
-    res.status(400).json({ message: 'Invalid password.' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'currentPassword' });
     return;
   };
 
   if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-    res.status(400).json({ message: 'Invalid new password.' });
+    res.status(400).json({ message: 'Invalid new password.', reason: 'newPassword' });
     return;
   };
 
@@ -1160,7 +1160,7 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
         user_type,
         expiry_timestamp
       FROM
-        accounts
+        auth_sessions
       WHERE
         session_id = ?;`,
       [authSessionId]
@@ -1219,16 +1219,12 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     const areIdenticalPasswords: boolean = await bcrypt.compare(requestData.newPassword, accountDetails.hashed_password);
     if (areIdenticalPasswords) {
-      res.status(409).json({
-        message: `New password can't be identical to current password.`,
-        reason: 'identicalPasswords'
-      });
-
+      res.status(409).json({ message: `New password can't be identical to your current password.`, reason: 'identicalPasswords' });
       return;
     };
 
     if (accountDetails.username === requestData.newPassword) {
-      res.status(409).json({ message: `New password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+      res.status(409).json({ message: `New password can't be identical to your username.`, reason: 'passwordEqualsUsername' });
       return;
     };
 
