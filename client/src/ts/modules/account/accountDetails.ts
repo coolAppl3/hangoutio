@@ -174,6 +174,16 @@ async function updateDisplayName(): Promise<void> {
     popup(errMessage, 'error');
 
     if (status === 401) {
+      if (errReason === 'accountLocked') {
+        handleAccountLocked();
+        return;
+      };
+
+      if (errReason === 'incorrectPassword') {
+        ErrorSpan.display(passwordInput, errMessage);
+        return;
+      };
+
       if (errReason === 'authSessionExpired') {
         handleAuthSessionExpired();
         return;
@@ -292,6 +302,16 @@ async function updatePassword(): Promise<void> {
     };
 
     if (status === 401) {
+      if (errReason === 'accountLocked') {
+        handleAccountLocked();
+        return;
+      };
+
+      if (errReason === 'incorrectPassword') {
+        ErrorSpan.display(passwordInput, errMessage);
+        return;
+      };
+
       if (errReason === 'authSessionExpired') {
         handleAuthSessionExpired();
         return;
