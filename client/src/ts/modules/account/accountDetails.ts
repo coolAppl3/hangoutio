@@ -5,18 +5,22 @@ import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
+import { startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest } from "./accountUtils";
 import { accountState } from "./initAccount";
 
 type DetailsUpdateFormPurpose = 'emailUpdate' | 'displayNameUpdate' | 'passwordUpdate' | 'deleteAccount';
+type ConfirmationFormPurpose = 'confirmEmailUpdate' | 'confirmAccountDeletion';
 
 interface AccountDetailsState {
   detailsUpdateFormPurpose: DetailsUpdateFormPurpose | null,
+  confirmationFormPurpose: ConfirmationFormPurpose | null,
 };
 
 const accountDetailsState: AccountDetailsState = {
   detailsUpdateFormPurpose: null,
+  confirmationFormPurpose: null,
 };
 
 const detailsElement: HTMLDivElement | null = document.querySelector('#details');
@@ -24,13 +28,15 @@ const detailsDropdownElement: HTMLDivElement | null = document.querySelector('#d
 
 const detailsUpdateForm: HTMLFormElement | null = document.querySelector('#details-update-form');
 const detailsUpdateFormTitle: HTMLHeadingElement | null = document.querySelector('#details-update-form-title');
-const deleteAccountWarningElement: HTMLParagraphElement | null = document.querySelector('#delete-account-warning');
-
 const newEmailInput: HTMLInputElement | null = document.querySelector('#new-email-input');
 const newDisplayNameInput: HTMLInputElement | null = document.querySelector('#new-display-name-input');
 const passwordInput: HTMLInputElement | null = document.querySelector('#password-input');
 const newPasswordInput: HTMLInputElement | null = document.querySelector('#new-password-input');
 const confirmNewPasswordInput: HTMLInputElement | null = document.querySelector('#confirm-new-password-input');
+
+const confirmationForm: HTMLFormElement | null = document.querySelector('#confirmation-form');
+const confirmationFormTitle: HTMLHeadElement | null = document.querySelector('#confirmation-form-title');
+const confirmationCodeInput: HTMLInputElement | null = document.querySelector('#confirmation-code-input');
 
 export function initAccountDetails(): void {
   loadEventListeners();
@@ -40,7 +46,9 @@ export function initAccountDetails(): void {
 };
 
 function loadEventListeners(): void {
-  detailsUpdateForm?.addEventListener('submit', handleFormSubmission);
+  detailsUpdateForm?.addEventListener('submit', handleDetailsUpdateFormSubmission);
+  confirmationForm?.addEventListener('submit', handleConfirmationFormSubmission);
+
   detailsElement?.addEventListener('click', handleDetailsElementClicks);
 };
 
@@ -70,7 +78,7 @@ function renderAccountDetails(): void {
   ongoingHangoutsSpan && (ongoingHangoutsSpan.textContent = `${ongoingHangoutsCount}`);
 };
 
-async function handleFormSubmission(e: SubmitEvent): Promise<void> {
+async function handleDetailsUpdateFormSubmission(e: SubmitEvent): Promise<void> {
   e.preventDefault();
 
   if (accountDetailsState.detailsUpdateFormPurpose === 'displayNameUpdate') {
@@ -84,7 +92,7 @@ async function handleFormSubmission(e: SubmitEvent): Promise<void> {
   };
 
   if (accountDetailsState.detailsUpdateFormPurpose === 'emailUpdate') {
-    await startUpdateEmail();
+    await startEmailUpdate();
     return;
   };
 
@@ -97,6 +105,12 @@ async function handleFormSubmission(e: SubmitEvent): Promise<void> {
   hideDetailsUpdateForm();
 };
 
+async function handleConfirmationFormSubmission(e: SubmitEvent): Promise<void> {
+  e.preventDefault();
+
+  // TODO: implement
+};
+
 async function updateDisplayName(): Promise<void> {
   LoadingModal.display();
 
@@ -107,7 +121,7 @@ async function updateDisplayName(): Promise<void> {
     return;
   };
 
-  if (!newDisplayNameInput || !passwordInput) {
+  if (!passwordInput || !newDisplayNameInput) {
     popup('Something went wrong.', 'error');
     LoadingModal.remove();
 
@@ -300,8 +314,116 @@ async function updatePassword(): Promise<void> {
   };
 };
 
-async function startUpdateEmail(): Promise<void> {
-  // TODO: implement
+async function startEmailUpdate(): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!passwordInput || !newEmailInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidNewEmail: boolean = validateEmail(newEmailInput);
+  const isValidPassword: boolean = validatePassword(passwordInput);
+
+  if (!isValidPassword || !isValidNewEmail) {
+    popup('Invalid confirmation data.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const password: string = passwordInput.value;
+  const newEmail: string = newEmailInput.value;
+
+  if (newEmail === accountState.data.accountDetails.email) {
+    popup('This email is already assigned to your account..', 'info');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await startEmailUpdateService({ password, newEmail });
+
+    accountDetailsState.confirmationFormPurpose = 'confirmEmailUpdate';
+    displayConfirmationForm();
+
+    popup('Email update started.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 409) {
+      if (errReason === 'ongoingRequest') {
+        handleOngoingRequest(errResData, 'email update');
+        return;
+      };
+
+      if (errReason === 'ongoingAccountDeletion') {
+        handleOngoingOpposingRequest('account deletion');
+        return;
+      };
+
+      if (errReason === 'identicalEmail' || errReason === 'emailTaken') {
+        ErrorSpan.display(newEmailInput, errMessage);
+      };
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'accountLocked') {
+        handleAccountLocked();
+        return;
+      };
+
+      if (errReason === 'incorrectPassword') {
+        ErrorSpan.display(passwordInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400) {
+      if (errReason === 'email') {
+        ErrorSpan.display(newEmailInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'password') {
+        ErrorSpan.display(passwordInput, errMessage);
+      };
+    };
+  };
 };
 
 async function startAccountDeletion(): Promise<void> {
@@ -318,11 +440,6 @@ function handleDetailsElementClicks(e: MouseEvent): void {
     return;
   };
 
-  if (e.target.id === 'update-email-btn') {
-    displayDetailsUpdateForm('emailUpdate', 'Update email address');
-    return;
-  };
-
   if (e.target.id === 'update-display-name-btn') {
     displayDetailsUpdateForm('displayNameUpdate', 'Update display name');
     return;
@@ -333,8 +450,13 @@ function handleDetailsElementClicks(e: MouseEvent): void {
     return;
   };
 
+  if (e.target.id === 'update-email-btn') {
+    displayDetailsUpdateForm('emailUpdate', 'Start email update process');
+    return;
+  };
+
   if (e.target.id === 'delete-account-btn') {
-    displayDetailsUpdateForm('deleteAccount', 'Delete account');
+    displayDetailsUpdateForm('deleteAccount', 'Start account deletion process');
     return;
   };
 
@@ -371,15 +493,6 @@ function displayDetailsUpdateForm(purpose: DetailsUpdateFormPurpose, purposeTitl
 
   detailsUpdateFormTitle && (detailsUpdateFormTitle.textContent = purposeTitle);
 
-  if (purpose === 'deleteAccount') {
-    deleteAccountWarningElement?.classList.remove('hidden');
-    detailsUpdateForm.classList.add('danger');
-
-  } else {
-    deleteAccountWarningElement?.classList.add('hidden');
-    detailsUpdateForm.classList.remove('danger');
-  };
-
   detailsUpdateForm.classList.remove('hidden');
   detailsDropdownElement?.classList.remove('expanded');
 };
@@ -411,10 +524,24 @@ function hideDetailsUpdateForm(): void {
   ErrorSpan.hide(confirmNewPasswordInput);
 };
 
+function displayConfirmationForm(): void {
+  if (!confirmationForm || !confirmationFormTitle) {
+    return;
+  };
+
+  if (!accountDetailsState.confirmationFormPurpose) {
+    return;
+  };
+
+  confirmationFormTitle.textContent = `Complete your ${accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? 'email update' : 'account deletion'} request.`;
+  confirmationForm.classList.remove('hidden');
+};
+
 function setActiveValidation(): void {
   newEmailInput?.addEventListener('input', () => validateEmail(newEmailInput));
   newDisplayNameInput?.addEventListener('input', () => validateDisplayName(newDisplayNameInput));
   passwordInput?.addEventListener('input', () => validatePassword(passwordInput));
+  confirmationCodeInput?.addEventListener('input', () => validateCode(confirmationCodeInput));
 
   newPasswordInput?.addEventListener('input', () => {
     validateNewPassword(newPasswordInput);

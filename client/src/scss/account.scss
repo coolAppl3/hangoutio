@@ -627,26 +627,6 @@
       }
     }
   }
-
-  &-update-form {
-
-    &.danger {
-
-      .btn-container {
-
-        #details-update-form-confirm-btn {
-          @apply bg-danger text-title-dark;
-        }
-      }
-    }
-
-    .btn-container {
-
-      #details-update-form-confirm-btn {
-        @apply btn bg-cta dark:bg-cta-dark mr-1 md:mr-0 md:mb-1 md:w-full;
-      }
-    }
-  }
 }
 
 #friends {
@@ -662,8 +642,6 @@
         @apply bg-section dark:bg-section-dark rounded-tl rounded-tr border-1 border-cta dark:border-cta-dark border-b-transparent dark:border-b-transparent hover:brightness-100;
       }
     }
-
-
   }
 
   @media(max-width: 480px) {

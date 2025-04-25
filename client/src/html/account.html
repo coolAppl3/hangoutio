@@ -572,27 +572,77 @@
             </div>
           </div>
 
+          <!-- confirmation form -->
+          <form
+            id="confirmation-form"
+            class="bg-secondary dark:bg-secondary-dark"
+          >
+            <div class="h-line my-3"></div>
+
+            <h4
+              id="confirmation-form-title"
+              class="text-lg font-medium text-title dark:text-title-dark mb-2"
+            >
+              Complete your email update request
+            </h4>
+
+            <div
+              class="form-group"
+              data-purpose="displayNameUpdate"
+            >
+              <label for="confirmation-code-input">Confirmation code</label>
+              <input
+                type="text"
+                id="confirmation-code-input"
+                autocomplete="one-time-code"
+                class="uppercase"
+              />
+              <span
+                class="error-span"
+                data-target="confirmation-code-input"
+              ></span>
+            </div>
+
+            <div class="btn-container flex justify-start items-center md:flex-col">
+              <button
+                type="submit"
+                id="confirmation-form-confirm-btn"
+                class="btn bg-cta dark:bg-cta-dark mr-1 md:mr-0 md:mb-1 md:w-full"
+              >
+                Confirm
+              </button>
+
+              <button
+                type="button"
+                id="confirmation-form-resend-btn"
+                class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title md:w-full mr-1 md:mr-0 md:mb-2"
+              >
+                Resend email
+              </button>
+
+              <button
+                type="button"
+                id="confirmation-form-abort-btn"
+                class="btn bg-secondary dark:bg-secondary-dark border-1 border-title dark:border-title-dark text-title dark:text-title-dark md:w-full"
+              >
+                Abort request
+              </button>
+            </div>
+          </form>
+
+          <!-- details update form -->
           <form
             id="details-update-form"
             class="bg-secondary dark:bg-secondary-dark hidden"
           >
             <div class="h-line my-3"></div>
 
-            <div class="form-header mb-2">
-              <h4
-                id="details-update-form-title"
-                class="text-lg font-medium text-title dark:text-title-dark"
-              >
-                Update email address
-              </h4>
-
-              <p
-                id="delete-account-warning"
-                class="text-sm md:text-base font-medium text-danger dark:text-danger-dark mt-[4px] hidden"
-              >
-                Are you sure you want to delete your account? Once confirmed via email, this action is irreversible.
-              </p>
-            </div>
+            <h4
+              id="details-update-form-title"
+              class="text-lg font-medium text-title dark:text-title-dark mb-2"
+            >
+              Update email address
+            </h4>
 
             <div
               class="form-group hidden"
@@ -741,6 +791,7 @@
               <button
                 type="submit"
                 id="details-update-form-confirm-btn"
+                class="btn bg-cta dark:bg-cta-dark mr-1 md:mr-0 md:mb-1 md:w-full"
               >
                 Confirm
               </button>
