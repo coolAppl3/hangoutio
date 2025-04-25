@@ -1288,12 +1288,12 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
   };
 
   if (!userValidation.isValidEmail(requestData.newEmail)) {
-    res.status(400).json({ message: 'Invalid email address.' });
+    res.status(400).json({ message: 'Invalid email address.', reason: 'email' });
     return;
   };
 
   if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'password' });
     return;
   };
 
@@ -1359,7 +1359,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       LEFT JOIN
         email_update ON accounts.account_id = email_update.account_id
       WHERE
-        accounts.account_id = accountId;`,
+        accounts.account_id = :accountId;`,
       { accountId: authSessionDetails.user_id }
     );
 
@@ -1383,7 +1383,6 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       if (accountDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
         res.status(403).json({
           message: 'Request is suspended due to too many failed attempts.',
-          reason: 'requestSuspended',
           resData: { expiryTimestamp: accountDetails.expiry_timestamp },
         });
 
@@ -1968,7 +1967,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     };
 
     res.status(409).json({
-      message: 'Deletion request detected.',
+      message: 'Ongoing deletion request found.',
       reason: 'requestDetected',
       resData: { expiryTimestamp: accountDetails.expiry_timestamp, failedDeletionAttempts: accountDetails.failed_deletion_attempts },
     });
