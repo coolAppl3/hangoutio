@@ -1342,6 +1342,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       failed_sign_in_attempts: number,
       expiry_timestamp: number,
       failed_update_attempts: number,
+      ongoing_deletion_request: boolean,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
@@ -1351,14 +1352,15 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         accounts.display_name,
         accounts.failed_sign_in_attempts,
         email_update.expiry_timestamp,
-        email_update.failed_update_attempts
+        email_update.failed_update_attempts,
+        (SELECT 1 FROM account_deletion WHERE account_id = :accountId) AS ongoing_deletion_request
       FROM
         accounts
       LEFT JOIN
         email_update ON accounts.account_id = email_update.account_id
       WHERE
-        accounts.account_id = ?;`,
-      [authSessionDetails.user_id]
+        accounts.account_id = accountId;`,
+      { accountId: authSessionDetails.user_id }
     );
 
     const accountDetails: AccountDetails | undefined = accountRows[0];
@@ -1394,6 +1396,11 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
+      return;
+    };
+
+    if (accountDetails.ongoing_deletion_request) {
+      res.status(409).json({ message: 'Account deletion request found.', reason: 'ongoingAccountDeletion' });
       return;
     };
 
@@ -1883,6 +1890,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       failed_sign_in_attempts: number,
       expiry_timestamp: number,
       failed_deletion_attempts: number,
+      ongoing_email_update: boolean,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
@@ -1892,12 +1900,13 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         accounts.display_name,
         accounts.failed_sign_in_attempts,
         account_deletion.expiry_timestamp,
-        account_deletion.failed_deletion_attempts
+        account_deletion.failed_deletion_attempts,
+        (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update
       FROM
         accounts
       WHERE
-        account_id = ?`,
-      [authSessionDetails.user_id]
+        account_id = :accountId;`,
+      { accountId: authSessionDetails.user_id }
     );
 
     const accountDetails: AccountDetails | undefined = accountRows[0];
@@ -1917,8 +1926,12 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     };
 
     if (!accountDetails.expiry_timestamp) {
-      const confirmationCode: string = generateRandomCode();
+      if (accountDetails.ongoing_email_update) {
+        res.status(409).json({ message: 'Ongoing email update request found.', reason: 'ongoingEmailUpdate' });
+        return;
+      };
 
+      const confirmationCode: string = generateRandomCode();
       const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
 
       await dbPool.execute(
