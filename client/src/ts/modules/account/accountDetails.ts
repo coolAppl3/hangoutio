@@ -344,6 +344,16 @@ async function startEmailUpdate(): Promise<void> {
     return;
   };
 
+  if (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate') {
+    popup(`There's already an ongoing email update request.`, 'error');
+    return;
+  };
+
+  if (accountDetailsState.confirmationFormPurpose === 'confirmAccountDeletion') {
+    handleOngoingOpposingRequest('account deletion');
+    return;
+  };
+
   if (!passwordInput || !newEmailInput) {
     popup('Something went wrong.', 'error');
     LoadingModal.remove();
