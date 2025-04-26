@@ -6,8 +6,8 @@ import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
-import { handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest } from "./accountUtils";
+import { startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { displayRequestSuspendedInfoModal, handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
 type DetailsUpdateFormPurpose = 'emailUpdate' | 'displayNameUpdate' | 'passwordUpdate' | 'deleteAccount';
@@ -16,11 +16,17 @@ type ConfirmationFormPurpose = 'confirmEmailUpdate' | 'confirmAccountDeletion';
 interface AccountDetailsState {
   detailsUpdateFormPurpose: DetailsUpdateFormPurpose | null,
   confirmationFormPurpose: ConfirmationFormPurpose | null,
+
+  accountDeletionSuspensionExpiryTimestamp: number | null,
+  emailUpdateSuspensionExpiryTimestamp: number | null,
 };
 
-const accountDetailsState: AccountDetailsState = {
+export const accountDetailsState: AccountDetailsState = {
   detailsUpdateFormPurpose: null,
   confirmationFormPurpose: null,
+
+  accountDeletionSuspensionExpiryTimestamp: null,
+  emailUpdateSuspensionExpiryTimestamp: null,
 };
 
 const detailsElement: HTMLDivElement | null = document.querySelector('#details');
@@ -457,7 +463,126 @@ async function startEmailUpdate(): Promise<void> {
 };
 
 async function startAccountDeletion(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (accountDetailsState.accountDeletionSuspensionExpiryTimestamp) {
+    displayRequestSuspendedInfoModal('account deletion', accountDetailsState.accountDeletionSuspensionExpiryTimestamp);
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (accountDetailsState.confirmationFormPurpose === 'confirmAccountDeletion') {
+    popup(`There's already an ongoing account deletion request.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate') {
+    handleOngoingOpposingRequest('email update');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!passwordInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidPassword: boolean = validatePassword(passwordInput);
+
+  if (!isValidPassword) {
+    popup('Invalid password.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const password: string = passwordInput.value;
+
+  try {
+    await startAccountDeletionService(password);
+
+    accountDetailsState.confirmationFormPurpose = 'confirmAccountDeletion';
+    displayConfirmationForm();
+
+    popup('Account deletion process started.', 'success');
+    LoadingModal.remove();
+
+    InfoModal.display({
+      title: 'Account deletion process started.',
+      description: `You'll receive an email within the next 30 seconds with a confirmation code.`,
+      btnTitle: 'Okay',
+    }, { simple: true });
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'account deletion');
+      return;
+    };
+
+    if (status === 409) {
+      if (errReason === 'ongoingRequest') {
+        handleOngoingRequest(errResData, 'account deletion');
+        return;
+      };
+
+      if (errReason === 'ongoingEmailUpdate') {
+        handleOngoingOpposingRequest('email update');
+      };
+
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'accountLocked') {
+        handleAccountLocked();
+        return;
+      };
+
+      if (errReason === 'incorrectPassword') {
+        ErrorSpan.display(passwordInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400 && errReason === 'password') {
+      ErrorSpan.display(passwordInput, errMessage);
+    };
+  };
 };
 
 function handleDetailsElementClicks(e: MouseEvent): void {
