@@ -1899,11 +1899,13 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         accounts.failed_sign_in_attempts,
         account_deletion.expiry_timestamp,
         account_deletion.failed_deletion_attempts,
-        (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update
+        EXISTS (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update
       FROM
         accounts
+      LEFT JOIN
+        account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        account_id = :accountId;`,
+        accounts.account_id = :accountId;`,
       { accountId: authSessionDetails.user_id }
     );
 
@@ -1939,7 +1941,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         expiry_timestamp,
         deletion_emails_sent,
         failed_deletion_attempts
-      ) VALUES (${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(5)});`,
         [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
       );
 
