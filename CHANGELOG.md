@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.85] (2025-04-26)
+
+### Features
+
+- Users will no longer be able to start an account deletion request alongside an email update request, or vice versa, at the same time.
+- Implemented logic to start the email update process, and partially implemented the confirmation form.
+- Implemented logic to start the account deletion process.
+
+
+### Bug Fixes
+
+- Fixed `updateDisplayName()` and `updatePassword()` in `accountDetails.ts` not accounting for incorrect password error responses.
+
+
 ## [0.4.84] (2025-04-24)
 
 ### Features
