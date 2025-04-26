@@ -6,7 +6,7 @@ import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { displayRequestSuspendedInfoModal, handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -17,16 +17,16 @@ interface AccountDetailsState {
   detailsUpdateFormPurpose: DetailsUpdateFormPurpose | null,
   confirmationFormPurpose: ConfirmationFormPurpose | null,
 
-  accountDeletionSuspensionExpiryTimestamp: number | null,
   emailUpdateSuspensionExpiryTimestamp: number | null,
+  accountDeletionSuspensionExpiryTimestamp: number | null,
 };
 
 export const accountDetailsState: AccountDetailsState = {
   detailsUpdateFormPurpose: null,
   confirmationFormPurpose: null,
 
-  accountDeletionSuspensionExpiryTimestamp: null,
   emailUpdateSuspensionExpiryTimestamp: null,
+  accountDeletionSuspensionExpiryTimestamp: null,
 };
 
 const detailsElement: HTMLDivElement | null = document.querySelector('#details');
@@ -106,7 +106,9 @@ function renderConfirmationForm(): void {
     confirmationFormTitle.textContent = 'Confirm your account deletion request.';
 
   } else {
+    accountDetailsState.confirmationFormPurpose = null;
     confirmationForm.classList.add('hidden');
+
     return;
   };
 
@@ -507,6 +509,65 @@ async function startEmailUpdate(): Promise<void> {
   };
 };
 
+async function resendEmailUpdateEmail(): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!accountState.data.accountDetails.ongoing_email_update_request) {
+    renderConfirmationForm();
+
+    popup('No ongoing email update requests found.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await resendEmailUpdateEmailService();
+
+    popup('Email resent.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountState.data.accountDetails.ongoing_email_update_request = false;
+      accountDetailsState.confirmationFormPurpose = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'email update');
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
+};
+
 async function startAccountDeletion(): Promise<void> {
   LoadingModal.display();
 
@@ -630,7 +691,11 @@ async function startAccountDeletion(): Promise<void> {
   };
 };
 
-function handleDetailsElementClicks(e: MouseEvent): void {
+async function resendAccountDeletionEmail(): Promise<void> {
+  // TODO: implement
+};
+
+async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
   if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
@@ -662,6 +727,16 @@ function handleDetailsElementClicks(e: MouseEvent): void {
 
   if (e.target.id === 'details-update-form-cancel-btn') {
     hideDetailsUpdateForm();
+    return;
+  };
+
+  if (e.target.id === 'confirmation-form-resend-btn') {
+    if (!accountDetailsState.confirmationFormPurpose) {
+      return;
+    };
+
+    await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? resendEmailUpdateEmail() : resendAccountDeletionEmail());
+    return;
   };
 };
 
