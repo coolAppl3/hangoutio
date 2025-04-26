@@ -2070,7 +2070,6 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
     if (requestSuspended) {
       res.status(403).json({
         message: 'Deletion request suspended.',
-        reason: 'requestSuspended',
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
@@ -2078,11 +2077,7 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
     };
 
     if (accountDetails.deletion_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(409).json({
-        message: `Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`,
-        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
-      });
-
+      res.status(409).json({ message: `Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.` });
       return;
     };
 
