@@ -127,13 +127,13 @@ interface StartEmailUpdateBody {
   newEmail: string,
 };
 
-export function StartEmailUpdateService(requestBody: StartEmailUpdateBody): Promise<AxiosResponse> {
-  return axios.post(`${accountsApiUrl}/details/updateEmail/start`);;
+export function startEmailUpdateService(requestBody: StartEmailUpdateBody): Promise<AxiosResponse> {
+  return axios.post(`${accountsApiUrl}/details/updateEmail/start`, requestBody);
 };
 
 // --- --- ---
 
-export function ResendEmailUpdateService(): Promise<AxiosResponse> {
+export function resendEmailUpdateService(): Promise<AxiosResponse> {
   return axios.get(`${accountsApiUrl}/details/updateEmail/resendEmail`);
 };
 

@@ -10,7 +10,7 @@ export async function signOut(): Promise<void> {
   try {
     await signOutService();
 
-    removeRelevantCookies();
+    removeSignInCookies();
     document.dispatchEvent(new CustomEvent('signedOut'));
 
     popup('Signed out.', 'success');
@@ -40,7 +40,7 @@ export async function signOut(): Promise<void> {
       popup('Not signed in.', 'error');
 
       document.dispatchEvent(new CustomEvent('signedOut'));
-      removeRelevantCookies();
+      removeSignInCookies();
 
       return;
     };
@@ -50,7 +50,7 @@ export async function signOut(): Promise<void> {
   };
 };
 
-function removeRelevantCookies(): void {
+export function removeSignInCookies(): void {
   Cookies.remove('signedInAs');
   Cookies.remove('guestHangoutId');
 };

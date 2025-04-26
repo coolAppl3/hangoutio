@@ -21,7 +21,7 @@ async function handleIncorrectAccountPassword(res, accountId, failedSignInAttemp
         ;
         res.status(401).json({
             message: `Incorrect password.${isLocked ? ' Account has been locked.' : ''}`,
-            reason: isLocked ? 'accountLocked' : undefined,
+            reason: isLocked ? 'accountLocked' : 'incorrectPassword',
         });
     }
     catch (err) {
