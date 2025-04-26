@@ -1540,14 +1540,13 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     const emailUpdateDetails: EmailUpdateDetails | undefined = emailUpdateRows[0];
 
     if (!emailUpdateDetails) {
-      res.status(404).json({ message: 'Email update request not found.' });
+      res.status(404).json({ message: 'Email update request not found or may have expired.' });
       return;
     };
 
     if (emailUpdateDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         message: 'Request is suspended due to too many failed attempts.',
-        reason: 'requestSuspended',
         resData: { expiryTimestamp: emailUpdateDetails.expiry_timestamp },
       });
 
@@ -1555,7 +1554,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     };
 
     if (emailUpdateDetails.update_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(409).json({ message: 'Update emails limit reached.' });
+      res.status(409).json({ message: `Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.` });
       return;
     };
 
@@ -2080,7 +2079,7 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
 
     if (accountDetails.deletion_emails_sent >= EMAILS_SENT_LIMIT) {
       res.status(409).json({
-        message: 'Deletion emails limit reached.',
+        message: `Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`,
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
