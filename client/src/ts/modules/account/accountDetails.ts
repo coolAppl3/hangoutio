@@ -350,13 +350,24 @@ async function startEmailUpdate(): Promise<void> {
     return;
   };
 
+  if (accountDetailsState.emailUpdateSuspensionExpiryTimestamp) {
+    displayRequestSuspendedInfoModal('email update', accountDetailsState.emailUpdateSuspensionExpiryTimestamp);
+    LoadingModal.remove();
+
+    return;
+  };
+
   if (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate') {
     popup(`There's already an ongoing email update request.`, 'error');
+    LoadingModal.remove();
+
     return;
   };
 
   if (accountDetailsState.confirmationFormPurpose === 'confirmAccountDeletion') {
     handleOngoingOpposingRequest('account deletion');
+    LoadingModal.remove();
+
     return;
   };
 
@@ -410,6 +421,11 @@ async function startEmailUpdate(): Promise<void> {
     const { status, errMessage, errReason, errResData } = asyncErrorData;
 
     popup(errMessage, 'error');
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'account deletion');
+      return;
+    };
 
     if (status === 409) {
       if (errReason === 'ongoingRequest') {
