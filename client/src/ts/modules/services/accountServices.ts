@@ -133,7 +133,7 @@ export function startEmailUpdateService(requestBody: StartEmailUpdateBody): Prom
 
 // --- --- ---
 
-export function resendEmailUpdateService(): Promise<AxiosResponse> {
+export function resendEmailUpdateEmailService(): Promise<AxiosResponse> {
   return axios.get(`${accountsApiUrl}/details/updateEmail/resendEmail`);
 };
 
