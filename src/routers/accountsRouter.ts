@@ -1959,7 +1959,6 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     if (requestSuspended) {
       res.status(403).json({
         message: 'Deletion request suspended.',
-        reason: 'requestSuspended',
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
@@ -1969,7 +1968,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     res.status(409).json({
       message: 'Ongoing deletion request found.',
       reason: 'requestDetected',
-      resData: { expiryTimestamp: accountDetails.expiry_timestamp, failedDeletionAttempts: accountDetails.failed_deletion_attempts },
+      resData: { expiryTimestamp: accountDetails.expiry_timestamp },
     });
 
   } catch (err: unknown) {
