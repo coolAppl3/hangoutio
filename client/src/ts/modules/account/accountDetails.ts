@@ -82,6 +82,35 @@ function renderAccountDetails(): void {
 
   const ongoingHangoutsSpan: HTMLSpanElement | null = document.querySelector('#ongoing-hangouts-span');
   ongoingHangoutsSpan && (ongoingHangoutsSpan.textContent = `${ongoingHangoutsCount}`);
+
+  renderConfirmationForm();
+};
+
+function renderConfirmationForm(): void {
+  if (!accountState.data) {
+    return;
+  };
+
+  if (!confirmationForm || !confirmationFormTitle) {
+    return;
+  };
+
+  const { ongoing_email_update_request, ongoing_account_deletion_request } = accountState.data.accountDetails;
+
+  if (ongoing_email_update_request) {
+    accountDetailsState.confirmationFormPurpose = 'confirmEmailUpdate';
+    confirmationFormTitle.textContent = 'Confirm your email update request.';
+
+  } else if (ongoing_account_deletion_request) {
+    accountDetailsState.confirmationFormPurpose = 'confirmAccountDeletion';
+    confirmationFormTitle.textContent = 'Confirm your account deletion request.';
+
+  } else {
+    confirmationForm.classList.add('hidden');
+    return;
+  };
+
+  confirmationForm.classList.remove('hidden');
 };
 
 async function handleDetailsUpdateFormSubmission(e: SubmitEvent): Promise<void> {
