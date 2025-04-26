@@ -2867,7 +2867,9 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
         email,
         username,
         display_name,
-        created_on_timestamp
+        created_on_timestamp,
+        EXISTS (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update_request,
+        EXISTS (SELECT 1 FROM account_deletion WHERE account_id = :accountId) AS ongoing_account_deletion_request
       FROM
         accounts
       WHERE
