@@ -2114,16 +2114,10 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     return;
   };
 
-  const password = req.query.password;
   const confirmationCode = req.query.confirmationCode;
 
-  if (typeof password !== 'string' || typeof confirmationCode !== 'string') {
+  if (typeof confirmationCode !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
-    return;
-  };
-
-  if (!userValidation.isValidPassword(password)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
@@ -2206,12 +2200,6 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-      return;
-    };
-
-    const isCorrectPassword: boolean = await bcrypt.compare(password, accountDetails.hashed_password);
-    if (!isCorrectPassword) {
-      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
