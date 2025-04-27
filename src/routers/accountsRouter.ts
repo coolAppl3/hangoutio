@@ -1426,19 +1426,19 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    const newVerificationCode: string = generateRandomCode();
+    const newConfirmationCode: string = generateRandomCode();
     const expiryTimestamp: number = Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW;
 
     await connection.execute(
       `INSERT INTO email_update (
           account_id,
           new_email,
-          verification_code,
+          confirmation_code,
           expiry_timestamp,
           update_emails_sent,
           failed_update_attempts
         ) VALUES (${generatePlaceHolders(6)});`,
-      [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]
+      [authSessionDetails.user_id, requestData.newEmail, newConfirmationCode, expiryTimestamp, 1, 0]
     );
 
     await connection.commit();
@@ -1446,7 +1446,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     await sendEmailUpdateEmail({
       to: requestData.newEmail,
-      verificationCode: newVerificationCode,
+      verificationCode: newConfirmationCode,
       displayName: accountDetails.display_name,
     });
 
@@ -1514,7 +1514,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     interface EmailUpdateDetails extends RowDataPacket {
       new_email: string,
-      verification_code: string,
+      confirmation_code: string,
       expiry_timestamp: number,
       update_emails_sent: number,
       failed_update_attempts: number,
@@ -1524,7 +1524,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     const [emailUpdateRows] = await dbPool.execute<EmailUpdateDetails[]>(
       `SELECT
         new_email,
-        verification_code,
+        confirmation_code,
         expiry_timestamp,
         update_emails_sent,
         failed_update_attempts,
@@ -1578,7 +1578,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     await sendEmailUpdateEmail({
       to: emailUpdateDetails.new_email,
-      verificationCode: emailUpdateDetails.verification_code,
+      verificationCode: emailUpdateDetails.confirmation_code,
       displayName: emailUpdateDetails.display_name,
     });
 
