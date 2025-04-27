@@ -2048,8 +2048,10 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
         account_deletion.failed_deletion_attempts
       FROM
         accounts
+      LEFT JOIN
+        account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        account_id = ?`,
+        accounts.account_id = ?`,
       [authSessionDetails.user_id]
     );
 
@@ -2083,13 +2085,29 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
       return;
     };
 
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `UPDATE
+        account_deletion
+      SET
+        deletion_emails_sent = deletion_emails_sent + 1
+      WHERE
+        account_id = ?
+      LIMIT 1;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ message: 'Internal server error.' });
+      return;
+    };
+
+    res.json({});
+
     await sendDeletionConfirmationEmail({
       to: accountDetails.email,
       confirmationCode: accountDetails.confirmation_code,
       displayName: accountDetails.display_name,
     });
-
-    res.json({});
 
   } catch (err: unknown) {
     console.log(err);
