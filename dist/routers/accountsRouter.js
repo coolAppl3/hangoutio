@@ -1128,21 +1128,21 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
             return;
         }
         ;
-        const newVerificationCode = (0, tokenGenerator_1.generateRandomCode)();
+        const newConfirmationCode = (0, tokenGenerator_1.generateRandomCode)();
         const expiryTimestamp = Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW;
         await connection.execute(`INSERT INTO email_update (
           account_id,
           new_email,
-          verification_code,
+          confirmation_code,
           expiry_timestamp,
           update_emails_sent,
           failed_update_attempts
-        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]);
+        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(6)});`, [authSessionDetails.user_id, requestData.newEmail, newConfirmationCode, expiryTimestamp, 1, 0]);
         await connection.commit();
         res.json({});
         await (0, emailServices_1.sendEmailUpdateEmail)({
             to: requestData.newEmail,
-            verificationCode: newVerificationCode,
+            confirmationCode: newConfirmationCode,
             displayName: accountDetails.display_name,
         });
     }
@@ -1196,7 +1196,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         ;
         const [emailUpdateRows] = await db_1.dbPool.execute(`SELECT
         new_email,
-        verification_code,
+        confirmation_code,
         expiry_timestamp,
         update_emails_sent,
         failed_update_attempts,
@@ -1240,7 +1240,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         res.json({});
         await (0, emailServices_1.sendEmailUpdateEmail)({
             to: emailUpdateDetails.new_email,
-            verificationCode: emailUpdateDetails.verification_code,
+            confirmationCode: emailUpdateDetails.confirmation_code,
             displayName: emailUpdateDetails.display_name,
         });
     }
@@ -1265,19 +1265,14 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
     }
     ;
     const requestData = req.body;
-    const expectedKeys = ['password', 'verificationCode'];
+    const expectedKeys = ['confirmationCode'];
     if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(401).json({ message: 'Invalid password.' });
-        return;
-    }
-    ;
-    if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-        res.status(400).json({ message: 'Invalid verification code.' });
+    if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
+        res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
         return;
     }
     ;
@@ -1309,12 +1304,10 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         ;
         const [accountRows] = await db_1.dbPool.execute(`SELECT
         accounts.email,
-        accounts.hashed_password,
-        accounts.failed_sign_in_attempts,
         accounts.display_name,
         email_update.update_id,
         email_update.new_email,
-        email_update.verification_code,
+        email_update.confirmation_code,
         email_update.expiry_timestamp,
         email_update.failed_update_attempts
       FROM
@@ -1346,13 +1339,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             return;
         }
         ;
-        const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
-        if (!isCorrectPassword) {
-            await (0, accountServices_1.handleIncorrectAccountPassword)(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
-            return;
-        }
-        ;
-        if (requestData.verificationCode !== accountDetails.verification_code) {
+        if (requestData.confirmationCode !== accountDetails.confirmation_code) {
             const requestSuspended = accountDetails.failed_update_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
             const suspendRequestQuery = requestSuspended ? `, expiry_timestamp = ${Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW}` : '';
             await db_1.dbPool.execute(`UPDATE
@@ -1368,7 +1355,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             }
             ;
             res.status(401).json({
-                message: 'Incorrect verification code.',
+                message: 'Incorrect confirmation code.',
                 reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
             });
             if (requestSuspended) {
@@ -1423,6 +1410,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
     ;
 });
 exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
+    ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
         res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -1435,13 +1423,14 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         return;
     }
     ;
-    const password = req.query.password;
-    if (typeof password !== 'string') {
+    const requestData = req.body;
+    const expectedKeys = ['password'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
         res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
-    if (!userValidation.isValidPassword(password)) {
+    if (!userValidation.isValidPassword(requestData.password)) {
         res.status(400).json({ message: 'Invalid password.' });
         return;
     }
@@ -1493,7 +1482,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
             return;
         }
         ;
-        const isCorrectPassword = await bcrypt_1.default.compare(password, accountDetails.hashed_password);
+        const isCorrectPassword = await bcrypt_1.default.compare(requestData.password, accountDetails.hashed_password);
         if (!isCorrectPassword) {
             await (0, accountServices_1.handleIncorrectAccountPassword)(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
             return;
@@ -1508,12 +1497,12 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
             const confirmationCode = (0, tokenGenerator_1.generateRandomCode)();
             const expiryTimestamp = Date.now() + constants_1.ACCOUNT_DELETION_WINDOW;
             await db_1.dbPool.execute(`INSERT INTO account_deletion (
-        account_id,
-        confirmation_code,
-        expiry_timestamp,
-        deletion_emails_sent,
-        failed_deletion_attempts
-      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]);
+          account_id,
+          confirmation_code,
+          expiry_timestamp,
+          deletion_emails_sent,
+          failed_deletion_attempts
+        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]);
             res.json({});
             await (0, emailServices_1.sendDeletionConfirmationEmail)({
                 to: accountDetails.email,
@@ -1660,15 +1649,9 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         return;
     }
     ;
-    const password = req.query.password;
     const confirmationCode = req.query.confirmationCode;
-    if (typeof password !== 'string' || typeof confirmationCode !== 'string') {
+    if (typeof confirmationCode !== 'string') {
         res.status(400).json({ message: 'Invalid request data.' });
-        return;
-    }
-    ;
-    if (!userValidation.isValidPassword(password)) {
-        res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
         return;
     }
     ;
@@ -1723,12 +1706,6 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-            return;
-        }
-        ;
-        const isCorrectPassword = await bcrypt_1.default.compare(password, accountDetails.hashed_password);
-        if (!isCorrectPassword) {
-            await (0, accountServices_1.handleIncorrectAccountPassword)(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
             return;
         }
         ;

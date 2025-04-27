@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.87] (2025-04-28)
+
+### Features
+
+- Implemented logic to reveal passwords in the account details update form.
+
+
+### Code Refactoring
+
+- Renamed `verification_code` column in `email_update` table to `confirmation_code`, and update relevant code to align with this change.
+- Reworked PATCH `accounts/details/updateEmail/confirm` to not require a password.
+- Reworked DELETE `accounts/details/deletion/confirm` to not require a password.
+- Reworked DELETE `accounts/details/deletion/start` to use a body to avoid exposing a password within the request URL.
+- Updated `sendEmailUpdateEmail()` to no longer refer to the `confirmation_code` column as `verification_code`, and improved the template slightly.
+  - Complete overhaul of the email templates is to be expected in future patches.
+
+
+### Bug Fixes
+
+- Fixed details update form not being cleared when the user changes the purpose.
+
+
 ## [0.4.86] (2025-04-27)
 
 ### Features
