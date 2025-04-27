@@ -432,11 +432,20 @@ async function startEmailUpdate(): Promise<void> {
   try {
     await startEmailUpdateService({ password, newEmail });
 
+    accountState.data.accountDetails.ongoing_email_update_request = true;
     accountDetailsState.confirmationFormPurpose = 'confirmEmailUpdate';
-    displayConfirmationForm();
 
-    popup('Email update started.', 'success');
+    hideDetailsUpdateForm();
+    renderConfirmationForm();
+
+    popup('Email update process started.', 'success');
     LoadingModal.remove();
+
+    InfoModal.display({
+      title: 'Email update process started.',
+      description: `You'll receive an email within the next 30 seconds with a confirmation code.`,
+      btnTitle: 'Okay',
+    }, { simple: true });
 
   } catch (err: unknown) {
     console.log(err);
@@ -620,8 +629,11 @@ async function startAccountDeletion(): Promise<void> {
   try {
     await startAccountDeletionService(password);
 
+    accountState.data.accountDetails.ongoing_account_deletion_request = true;
     accountDetailsState.confirmationFormPurpose = 'confirmAccountDeletion';
-    displayConfirmationForm();
+
+    hideDetailsUpdateForm();
+    renderConfirmationForm();
 
     popup('Account deletion process started.', 'success');
     LoadingModal.remove();
@@ -857,19 +869,6 @@ function hideDetailsUpdateForm(): void {
   ErrorSpan.hide(passwordInput);
   ErrorSpan.hide(newPasswordInput);
   ErrorSpan.hide(confirmNewPasswordInput);
-};
-
-function displayConfirmationForm(): void {
-  if (!confirmationForm || !confirmationFormTitle) {
-    return;
-  };
-
-  if (!accountDetailsState.confirmationFormPurpose) {
-    return;
-  };
-
-  confirmationFormTitle.textContent = `Complete your ${accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? 'email update' : 'account deletion'} request.`;
-  confirmationForm.classList.remove('hidden');
 };
 
 function setActiveValidation(): void {
