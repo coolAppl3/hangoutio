@@ -1577,7 +1577,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     res.json({});
 
     await sendEmailUpdateEmail({
-      to: emailUpdateDetails.newEmail,
+      to: emailUpdateDetails.new_email,
       verificationCode: emailUpdateDetails.verification_code,
       displayName: emailUpdateDetails.display_name,
     });
