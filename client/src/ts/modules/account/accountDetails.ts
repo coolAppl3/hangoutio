@@ -6,7 +6,7 @@ import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { displayRequestSuspendedInfoModal, handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -17,16 +17,16 @@ interface AccountDetailsState {
   detailsUpdateFormPurpose: DetailsUpdateFormPurpose | null,
   confirmationFormPurpose: ConfirmationFormPurpose | null,
 
-  accountDeletionSuspensionExpiryTimestamp: number | null,
   emailUpdateSuspensionExpiryTimestamp: number | null,
+  accountDeletionSuspensionExpiryTimestamp: number | null,
 };
 
 export const accountDetailsState: AccountDetailsState = {
   detailsUpdateFormPurpose: null,
   confirmationFormPurpose: null,
 
-  accountDeletionSuspensionExpiryTimestamp: null,
   emailUpdateSuspensionExpiryTimestamp: null,
+  accountDeletionSuspensionExpiryTimestamp: null,
 };
 
 const detailsElement: HTMLDivElement | null = document.querySelector('#details');
@@ -82,6 +82,37 @@ function renderAccountDetails(): void {
 
   const ongoingHangoutsSpan: HTMLSpanElement | null = document.querySelector('#ongoing-hangouts-span');
   ongoingHangoutsSpan && (ongoingHangoutsSpan.textContent = `${ongoingHangoutsCount}`);
+
+  renderConfirmationForm();
+};
+
+function renderConfirmationForm(): void {
+  if (!accountState.data) {
+    return;
+  };
+
+  if (!confirmationForm || !confirmationFormTitle) {
+    return;
+  };
+
+  const { ongoing_email_update_request, ongoing_account_deletion_request } = accountState.data.accountDetails;
+
+  if (ongoing_email_update_request) {
+    accountDetailsState.confirmationFormPurpose = 'confirmEmailUpdate';
+    confirmationFormTitle.textContent = 'Confirm your email update request.';
+
+  } else if (ongoing_account_deletion_request) {
+    accountDetailsState.confirmationFormPurpose = 'confirmAccountDeletion';
+    confirmationFormTitle.textContent = 'Confirm your account deletion request.';
+
+  } else {
+    accountDetailsState.confirmationFormPurpose = null;
+    confirmationForm.classList.add('hidden');
+
+    return;
+  };
+
+  confirmationForm.classList.remove('hidden');
 };
 
 async function handleDetailsUpdateFormSubmission(e: SubmitEvent): Promise<void> {
@@ -401,11 +432,20 @@ async function startEmailUpdate(): Promise<void> {
   try {
     await startEmailUpdateService({ password, newEmail });
 
+    accountState.data.accountDetails.ongoing_email_update_request = true;
     accountDetailsState.confirmationFormPurpose = 'confirmEmailUpdate';
-    displayConfirmationForm();
 
-    popup('Email update started.', 'success');
+    hideDetailsUpdateForm();
+    renderConfirmationForm();
+
+    popup('Email update process started.', 'success');
     LoadingModal.remove();
+
+    InfoModal.display({
+      title: 'Email update process started.',
+      description: `You'll receive an email within the next 30 seconds with a confirmation code.`,
+      btnTitle: 'Okay',
+    }, { simple: true });
 
   } catch (err: unknown) {
     console.log(err);
@@ -478,6 +518,65 @@ async function startEmailUpdate(): Promise<void> {
   };
 };
 
+async function resendEmailUpdateEmail(): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!accountState.data.accountDetails.ongoing_email_update_request) {
+    renderConfirmationForm();
+
+    popup('No ongoing email update requests found.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await resendEmailUpdateEmailService();
+
+    popup('Email resent.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountState.data.accountDetails.ongoing_email_update_request = false;
+      accountDetailsState.confirmationFormPurpose = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'email update');
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
+};
+
 async function startAccountDeletion(): Promise<void> {
   LoadingModal.display();
 
@@ -530,8 +629,11 @@ async function startAccountDeletion(): Promise<void> {
   try {
     await startAccountDeletionService(password);
 
+    accountState.data.accountDetails.ongoing_account_deletion_request = true;
     accountDetailsState.confirmationFormPurpose = 'confirmAccountDeletion';
-    displayConfirmationForm();
+
+    hideDetailsUpdateForm();
+    renderConfirmationForm();
 
     popup('Account deletion process started.', 'success');
     LoadingModal.remove();
@@ -601,7 +703,71 @@ async function startAccountDeletion(): Promise<void> {
   };
 };
 
-function handleDetailsElementClicks(e: MouseEvent): void {
+async function resendDeletionEmail(): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!accountState.data.accountDetails.ongoing_account_deletion_request) {
+    renderConfirmationForm();
+
+    popup('No ongoing account deletion requests found.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await resendDeletionEmailService();
+
+    popup('Email resent.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountState.data.accountDetails.ongoing_account_deletion_request = false;
+      accountDetailsState.confirmationFormPurpose = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'email update');
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
+};
+
+async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
   if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
@@ -633,6 +799,16 @@ function handleDetailsElementClicks(e: MouseEvent): void {
 
   if (e.target.id === 'details-update-form-cancel-btn') {
     hideDetailsUpdateForm();
+    return;
+  };
+
+  if (e.target.id === 'confirmation-form-resend-btn') {
+    if (!accountDetailsState.confirmationFormPurpose) {
+      return;
+    };
+
+    await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? resendEmailUpdateEmail() : resendDeletionEmail());
+    return;
   };
 };
 
@@ -693,19 +869,6 @@ function hideDetailsUpdateForm(): void {
   ErrorSpan.hide(passwordInput);
   ErrorSpan.hide(newPasswordInput);
   ErrorSpan.hide(confirmNewPasswordInput);
-};
-
-function displayConfirmationForm(): void {
-  if (!confirmationForm || !confirmationFormTitle) {
-    return;
-  };
-
-  if (!accountDetailsState.confirmationFormPurpose) {
-    return;
-  };
-
-  confirmationFormTitle.textContent = `Complete your ${accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? 'email update' : 'account deletion'} request.`;
-  confirmationForm.classList.remove('hidden');
 };
 
 function setActiveValidation(): void {

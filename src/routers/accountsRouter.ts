@@ -1540,14 +1540,13 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     const emailUpdateDetails: EmailUpdateDetails | undefined = emailUpdateRows[0];
 
     if (!emailUpdateDetails) {
-      res.status(404).json({ message: 'Email update request not found.' });
+      res.status(404).json({ message: 'Email update request not found or may have expired.' });
       return;
     };
 
     if (emailUpdateDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         message: 'Request is suspended due to too many failed attempts.',
-        reason: 'requestSuspended',
         resData: { expiryTimestamp: emailUpdateDetails.expiry_timestamp },
       });
 
@@ -1555,7 +1554,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     };
 
     if (emailUpdateDetails.update_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(409).json({ message: 'Update emails limit reached.' });
+      res.status(409).json({ message: `Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.` });
       return;
     };
 
@@ -1578,7 +1577,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     res.json({});
 
     await sendEmailUpdateEmail({
-      to: emailUpdateDetails.newEmail,
+      to: emailUpdateDetails.new_email,
       verificationCode: emailUpdateDetails.verification_code,
       displayName: emailUpdateDetails.display_name,
     });
@@ -1900,11 +1899,13 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         accounts.failed_sign_in_attempts,
         account_deletion.expiry_timestamp,
         account_deletion.failed_deletion_attempts,
-        (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update
+        EXISTS (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update
       FROM
         accounts
+      LEFT JOIN
+        account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        account_id = :accountId;`,
+        accounts.account_id = :accountId;`,
       { accountId: authSessionDetails.user_id }
     );
 
@@ -1940,7 +1941,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
         expiry_timestamp,
         deletion_emails_sent,
         failed_deletion_attempts
-      ) VALUES (${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(5)});`,
         [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
       );
 
@@ -2047,8 +2048,10 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
         account_deletion.failed_deletion_attempts
       FROM
         accounts
+      LEFT JOIN
+        account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        account_id = ?`,
+        accounts.account_id = ?`,
       [authSessionDetails.user_id]
     );
 
@@ -2071,7 +2074,6 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
     if (requestSuspended) {
       res.status(403).json({
         message: 'Deletion request suspended.',
-        reason: 'requestSuspended',
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
@@ -2079,21 +2081,33 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
     };
 
     if (accountDetails.deletion_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(409).json({
-        message: 'Deletion emails limit reached.',
-        resData: { expiryTimestamp: accountDetails.expiry_timestamp },
-      });
-
+      res.status(409).json({ message: `Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.` });
       return;
     };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `UPDATE
+        account_deletion
+      SET
+        deletion_emails_sent = deletion_emails_sent + 1
+      WHERE
+        account_id = ?
+      LIMIT 1;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ message: 'Internal server error.' });
+      return;
+    };
+
+    res.json({});
 
     await sendDeletionConfirmationEmail({
       to: accountDetails.email,
       confirmationCode: accountDetails.confirmation_code,
       displayName: accountDetails.display_name,
     });
-
-    res.json({});
 
   } catch (err: unknown) {
     console.log(err);
@@ -2867,7 +2881,9 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
         email,
         username,
         display_name,
-        created_on_timestamp
+        created_on_timestamp,
+        EXISTS (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update_request,
+        EXISTS (SELECT 1 FROM account_deletion WHERE account_id = :accountId) AS ongoing_account_deletion_request
       FROM
         accounts
       WHERE

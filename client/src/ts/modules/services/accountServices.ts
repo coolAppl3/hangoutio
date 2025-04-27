@@ -133,7 +133,7 @@ export function startEmailUpdateService(requestBody: StartEmailUpdateBody): Prom
 
 // --- --- ---
 
-export function resendEmailUpdateService(): Promise<AxiosResponse> {
+export function resendEmailUpdateEmailService(): Promise<AxiosResponse> {
   return axios.get(`${accountsApiUrl}/details/updateEmail/resendEmail`);
 };
 
@@ -161,7 +161,7 @@ export function startAccountDeletionService(password: string): Promise<AxiosResp
 // --- --- ---
 
 export function resendDeletionEmailService(): Promise<AxiosResponse> {
-  return axios.delete(`${accountsApiUrl}/deletion/resendEmail`);
+  return axios.get(`${accountsApiUrl}/deletion/resendEmail`);
 };
 
 // --- --- ---

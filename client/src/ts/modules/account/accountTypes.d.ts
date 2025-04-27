@@ -3,6 +3,8 @@ export interface AccountDetails {
   username: string,
   display_name: string,
   created_on_timestamp: number,
+  ongoing_email_update_request: boolean,
+  ongoing_account_deletion_request: boolean,
 }
 
 export interface Friend {
