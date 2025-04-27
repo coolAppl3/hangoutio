@@ -1208,21 +1208,20 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
       LIMIT 1;`, { accountId: authSessionDetails.user_id });
         const emailUpdateDetails = emailUpdateRows[0];
         if (!emailUpdateDetails) {
-            res.status(404).json({ message: 'Email update request not found.' });
+            res.status(404).json({ message: 'Email update request not found or may have expired.' });
             return;
         }
         ;
         if (emailUpdateDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 message: 'Request is suspended due to too many failed attempts.',
-                reason: 'requestSuspended',
                 resData: { expiryTimestamp: emailUpdateDetails.expiry_timestamp },
             });
             return;
         }
         ;
         if (emailUpdateDetails.update_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(409).json({ message: 'Update emails limit reached.' });
+            res.status(409).json({ message: `Confirmation emails limit of ${constants_1.EMAILS_SENT_LIMIT} reached.` });
             return;
         }
         ;
@@ -1240,7 +1239,7 @@ exports.accountsRouter.get('/details/updateEmail/resendEmail', async (req, res) 
         ;
         res.json({});
         await (0, emailServices_1.sendEmailUpdateEmail)({
-            to: emailUpdateDetails.newEmail,
+            to: emailUpdateDetails.new_email,
             verificationCode: emailUpdateDetails.verification_code,
             displayName: emailUpdateDetails.display_name,
         });
@@ -1479,11 +1478,13 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         accounts.failed_sign_in_attempts,
         account_deletion.expiry_timestamp,
         account_deletion.failed_deletion_attempts,
-        (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update
+        EXISTS (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update
       FROM
         accounts
+      LEFT JOIN
+        account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        account_id = :accountId;`, { accountId: authSessionDetails.user_id });
+        accounts.account_id = :accountId;`, { accountId: authSessionDetails.user_id });
         const accountDetails = accountRows[0];
         if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
@@ -1512,7 +1513,7 @@ exports.accountsRouter.delete(`/deletion/start`, async (req, res) => {
         expiry_timestamp,
         deletion_emails_sent,
         failed_deletion_attempts
-      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]);
             res.json({});
             await (0, emailServices_1.sendDeletionConfirmationEmail)({
                 to: accountDetails.email,
@@ -1590,8 +1591,10 @@ exports.accountsRouter.get('/deletion/resendEmail', async (req, res) => {
         account_deletion.failed_deletion_attempts
       FROM
         accounts
+      LEFT JOIN
+        account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        account_id = ?`, [authSessionDetails.user_id]);
+        accounts.account_id = ?`, [authSessionDetails.user_id]);
         const accountDetails = accountRows[0];
         if (!accountDetails) {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
@@ -1609,26 +1612,34 @@ exports.accountsRouter.get('/deletion/resendEmail', async (req, res) => {
         if (requestSuspended) {
             res.status(403).json({
                 message: 'Deletion request suspended.',
-                reason: 'requestSuspended',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
             });
             return;
         }
         ;
         if (accountDetails.deletion_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(409).json({
-                message: 'Deletion emails limit reached.',
-                resData: { expiryTimestamp: accountDetails.expiry_timestamp },
-            });
+            res.status(409).json({ message: `Confirmation emails limit of ${constants_1.EMAILS_SENT_LIMIT} reached.` });
             return;
         }
         ;
+        const [resultSetHeader] = await db_1.dbPool.execute(`UPDATE
+        account_deletion
+      SET
+        deletion_emails_sent = deletion_emails_sent + 1
+      WHERE
+        account_id = ?
+      LIMIT 1;`, [authSessionDetails.user_id]);
+        if (resultSetHeader.affectedRows === 0) {
+            res.status(500).json({ message: 'Internal server error.' });
+            return;
+        }
+        ;
+        res.json({});
         await (0, emailServices_1.sendDeletionConfirmationEmail)({
             to: accountDetails.email,
             confirmationCode: accountDetails.confirmation_code,
             displayName: accountDetails.display_name,
         });
-        res.json({});
     }
     catch (err) {
         console.log(err);
@@ -2209,7 +2220,9 @@ exports.accountsRouter.get('/', async (req, res) => {
         email,
         username,
         display_name,
-        created_on_timestamp
+        created_on_timestamp,
+        EXISTS (SELECT 1 FROM email_update WHERE account_id = :accountId) AS ongoing_email_update_request,
+        EXISTS (SELECT 1 FROM account_deletion WHERE account_id = :accountId) AS ongoing_account_deletion_request
       FROM
         accounts
       WHERE

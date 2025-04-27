@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.4.86] (2025-04-27)
+
+### Features
+
+- Updated GET `accounts/` to fetch data about any ongoing email update or account deletion requests.
+- Implemented rendering logic for the confirmation form in `account.html`.
+- Implemented email resending logic for email update requests.
+- Implemented email resending logic for account deletion requests.
+
+
+### Bug Fixes
+
+- Fixed a number of bugs in DELETE `accounts/deletion/start` and DELETE `accounts/deletion/resendEmail`.
+- Fixed `resendDeletionEmailService()` in `accountServices.ts` attempting a DELETE call instead of GET.
+- Fixed a few issues with rendering and state management when starting an email update or account deletion process.
+- Fixed a typo in GET accounts/details/updateEmail/resendEmail causing undefined to be passed as the recipient in sendEmailUpdateEmail().
+
+
+### Code Refactoring
+
+- Renamed `resendEmailUpdateService()` to `resendEmailUpdateEmailService()`.
+
+
 ## [0.4.85] (2025-04-26)
 
 ### Features
