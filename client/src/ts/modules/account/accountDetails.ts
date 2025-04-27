@@ -6,7 +6,7 @@ import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { displayRequestSuspendedInfoModal, handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -545,7 +545,7 @@ async function resendEmailUpdateEmail(): Promise<void> {
       return;
     };
 
-    const { status, errMessage, errReason, errResData } = asyncErrorData;
+    const { status, errMessage, errResData } = asyncErrorData;
 
     popup(errMessage, 'error');
 
@@ -691,8 +691,68 @@ async function startAccountDeletion(): Promise<void> {
   };
 };
 
-async function resendAccountDeletionEmail(): Promise<void> {
-  // TODO: implement
+async function resendDeletionEmail(): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!accountState.data.accountDetails.ongoing_account_deletion_request) {
+    renderConfirmationForm();
+
+    popup('No ongoing account deletion requests found.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await resendDeletionEmailService();
+
+    popup('Email resent.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountState.data.accountDetails.ongoing_account_deletion_request = false;
+      accountDetailsState.confirmationFormPurpose = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'email update');
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+    };
+  };
 };
 
 async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
@@ -735,7 +795,7 @@ async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
       return;
     };
 
-    await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? resendEmailUpdateEmail() : resendAccountDeletionEmail());
+    await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? resendEmailUpdateEmail() : resendDeletionEmail());
     return;
   };
 };
