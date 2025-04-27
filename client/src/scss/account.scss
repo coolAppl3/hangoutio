@@ -181,7 +181,7 @@
 
   &.form-group-password {
     .password-icon {
-      @apply absolute right-1 top-[35px] cursor-pointer after:absolute after:hidden after:top-0 after:left-0 after:right-0 after:mx-auto after:w-[2px] after:h-full after:z-3 after:rounded-[40px] after:rotate-45 after:transition-colors after:bg-description dark:after:bg-description-dark hover:after:bg-cta dark:hover:after:bg-cta-dark;
+      @apply absolute right-1 top-[35px] cursor-pointer after:absolute after:hidden after:top-0 after:left-0 after:right-0 after:mx-auto after:w-[2px] after:h-full after:z-3 after:rounded-[40px] after:rotate-45 after:transition-colors after:bg-description dark:after:bg-description-dark hover:after:bg-cta dark:hover:after:bg-cta-dark before:absolute before:left-0 before:top-0 before:w-full before:h-full before:z-3;
 
       &.revealed {
         @apply after:block;

@@ -346,7 +346,7 @@ function getAccountDeletionWarningTemplate(displayName) {
 exports.getAccountDeletionWarningTemplate = getAccountDeletionWarningTemplate;
 ;
 function getEmailUpdateTemplate(updateEmailConfig) {
-    const { verificationCode, displayName } = updateEmailConfig;
+    const { confirmationCode, displayName } = updateEmailConfig;
     const htmlTemplate = `
   <!DOCTYPE html>
   <html lang="en">
@@ -413,21 +413,13 @@ function getEmailUpdateTemplate(updateEmailConfig) {
       <div class="email-body">
         <p>Hey ${displayName},</p>
         <p>We've received a request to change the registered email address for your Hangoutio account.</p>
-        <p>
-          To complete the process, please use the following verification code: <span class="font-bold">${verificationCode}</span>. Alternatively, you can click
-          <a
-            target="_blank"
-            href="https://hangoutio.com/update-email?verificationCode=${verificationCode}"
-            >this link</a
-          >.
-        </p>
+        <p>To complete the process, please use the following confirmation code: <span class="font-bold">${confirmationCode}</span>.</p>
         <p>If this request wasn't made by you, feel free to ignore it.</p>
         <p id="end-of-email">Warmest regards,</p>
         <p>Hangoutio</p>
       </div>
     </body>
-</html>
-  `;
+  </html>`;
     return htmlTemplate;
 }
 exports.getEmailUpdateTemplate = getEmailUpdateTemplate;

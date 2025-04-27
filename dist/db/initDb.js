@@ -103,7 +103,7 @@ async function createEmailUpdateTable() {
         update_id INT PRIMARY KEY AUTO_INCREMENT,
         account_id INT NOT NULL UNIQUE,
         new_email VARCHAR(254) NOT NULL UNIQUE,
-        verification_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
+        confirmation_code VARCHAR(10) NOT NULL COLLATE utf8mb4_bin,
         expiry_timestamp BIGINT NOT NULL,
         update_emails_sent INT NOT NULL CHECK(update_emails_sent <= 3),
         failed_update_attempts INT NOT NULL CHECK(failed_update_attempts <= 3),

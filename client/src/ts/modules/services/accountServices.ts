@@ -140,8 +140,7 @@ export function resendEmailUpdateEmailService(): Promise<AxiosResponse> {
 // --- --- ---
 
 interface ConfirmEmailUpdateBody {
-  password: string,
-  verificationCode: string,
+  confirmationCode: string,
 };
 
 interface ConfirmEmailUpdateData {
@@ -149,13 +148,13 @@ interface ConfirmEmailUpdateData {
 };
 
 export function confirmEmailUpdateService(requestBody: ConfirmEmailUpdateBody): Promise<AxiosResponse<ConfirmEmailUpdateData>> {
-  return axios.patch(`${accountsApiUrl}/details/updateEmail/confirm`, requestBody);;
+  return axios.patch(`${accountsApiUrl}/details/updateEmail/confirm`, requestBody);
 };
 
 // --- --- ---
 
 export function startAccountDeletionService(password: string): Promise<AxiosResponse> {
-  return axios.delete(`${accountsApiUrl}/deletion/start?password=${password}`);
+  return axios.delete(`${accountsApiUrl}/deletion/start`, { data: { password } });
 };
 
 // --- --- ---
@@ -166,8 +165,8 @@ export function resendDeletionEmailService(): Promise<AxiosResponse> {
 
 // --- --- ---
 
-export function confirmAccountDeletionService(password: string, confirmationCode: string): Promise<AxiosResponse> {
-  return axios.delete(`${accountsApiUrl}/deletion/start?password=${password}&confirmationCode=${confirmationCode}`);
+export function confirmAccountDeletionService(confirmationCode: string): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/deletion/start?confirmationCode=${confirmationCode}`);
 };
 
 // --- --- ---

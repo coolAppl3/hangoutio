@@ -5,6 +5,7 @@ import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
+import revealPassword from "../global/revealPassword";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
 import { resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { displayRequestSuspendedInfoModal, handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
@@ -810,6 +811,11 @@ async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
     await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? resendEmailUpdateEmail() : resendDeletionEmail());
     return;
   };
+
+  if (e.target.classList.contains('password-icon')) {
+    revealPassword(e.target);
+    return;
+  };
 };
 
 function displayDetailsUpdateForm(purpose: DetailsUpdateFormPurpose, purposeTitle: string): void {
@@ -817,6 +823,7 @@ function displayDetailsUpdateForm(purpose: DetailsUpdateFormPurpose, purposeTitl
     return;
   };
 
+  clearDetailsUpdateForm();
   accountDetailsState.detailsUpdateFormPurpose = purpose;
 
   for (const formGroup of detailsUpdateForm.children) {
@@ -854,6 +861,10 @@ function hideDetailsUpdateForm(): void {
   detailsUpdateForm?.classList.add('hidden');
   detailsDropdownElement?.classList.remove('expanded');
 
+  clearDetailsUpdateForm();
+};
+
+function clearDetailsUpdateForm(): void {
   if (!newEmailInput || !newDisplayNameInput || !passwordInput || !newPasswordInput || !confirmNewPasswordInput) {
     return;
   };

@@ -86,7 +86,7 @@ export async function sendDeletionWarningEmail(deletionEmailWarningConfig: Delet
 
 export interface UpdateEmailConfig {
   to: string,
-  verificationCode: string,
+  confirmationCode: string,
   displayName: string,
 };
 

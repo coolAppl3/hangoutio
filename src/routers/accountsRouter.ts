@@ -1426,19 +1426,19 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
       return;
     };
 
-    const newVerificationCode: string = generateRandomCode();
+    const newConfirmationCode: string = generateRandomCode();
     const expiryTimestamp: number = Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW;
 
     await connection.execute(
       `INSERT INTO email_update (
           account_id,
           new_email,
-          verification_code,
+          confirmation_code,
           expiry_timestamp,
           update_emails_sent,
           failed_update_attempts
         ) VALUES (${generatePlaceHolders(6)});`,
-      [authSessionDetails.user_id, requestData.newEmail, newVerificationCode, expiryTimestamp, 1, 0]
+      [authSessionDetails.user_id, requestData.newEmail, newConfirmationCode, expiryTimestamp, 1, 0]
     );
 
     await connection.commit();
@@ -1446,7 +1446,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     await sendEmailUpdateEmail({
       to: requestData.newEmail,
-      verificationCode: newVerificationCode,
+      confirmationCode: newConfirmationCode,
       displayName: accountDetails.display_name,
     });
 
@@ -1514,7 +1514,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     interface EmailUpdateDetails extends RowDataPacket {
       new_email: string,
-      verification_code: string,
+      confirmation_code: string,
       expiry_timestamp: number,
       update_emails_sent: number,
       failed_update_attempts: number,
@@ -1524,7 +1524,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
     const [emailUpdateRows] = await dbPool.execute<EmailUpdateDetails[]>(
       `SELECT
         new_email,
-        verification_code,
+        confirmation_code,
         expiry_timestamp,
         update_emails_sent,
         failed_update_attempts,
@@ -1578,7 +1578,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     await sendEmailUpdateEmail({
       to: emailUpdateDetails.new_email,
-      verificationCode: emailUpdateDetails.verification_code,
+      confirmationCode: emailUpdateDetails.confirmation_code,
       displayName: emailUpdateDetails.display_name,
     });
 
@@ -1590,8 +1590,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
 accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: Response) => {
   interface RequestData {
-    password: string,
-    verificationCode: string,
+    confirmationCode: string,
   };
 
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
@@ -1610,19 +1609,14 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['password', 'verificationCode'];
+  const expectedKeys: string[] = ['confirmationCode'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(401).json({ message: 'Invalid password.' });
-    return;
-  };
-
-  if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-    res.status(400).json({ message: 'Invalid verification code.' });
+  if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
+    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
     return;
   };
 
@@ -1666,12 +1660,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
     interface AccountDetails extends RowDataPacket {
       email: string,
-      hashed_password: string,
-      failed_sign_in_attempts: number,
       display_name: string,
       update_id: number,
       new_email: string,
-      verification_code: string,
+      confirmation_code: string,
       expiry_timestamp: number,
       failed_update_attempts: number,
     };
@@ -1679,12 +1671,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
         accounts.email,
-        accounts.hashed_password,
-        accounts.failed_sign_in_attempts,
         accounts.display_name,
         email_update.update_id,
         email_update.new_email,
-        email_update.verification_code,
+        email_update.confirmation_code,
         email_update.expiry_timestamp,
         email_update.failed_update_attempts
       FROM
@@ -1722,13 +1712,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
-    if (!isCorrectPassword) {
-      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
-      return;
-    };
-
-    if (requestData.verificationCode !== accountDetails.verification_code) {
+    if (requestData.confirmationCode !== accountDetails.confirmation_code) {
       const requestSuspended: boolean = accountDetails.failed_update_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
       const suspendRequestQuery: string = requestSuspended ? `, expiry_timestamp = ${Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW}` : '';
 
@@ -1749,7 +1733,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       };
 
       res.status(401).json({
-        message: 'Incorrect verification code.',
+        message: 'Incorrect confirmation code.',
         reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
       });
 
@@ -1819,6 +1803,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 });
 
 accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => {
+  interface RequestData {
+    password: string,
+  };
+
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -1833,14 +1821,15 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     return;
   };
 
-  const password = req.query.password;
+  const requestData: RequestData = req.body;
 
-  if (typeof password !== 'string') {
+  const expectedKeys: string[] = ['password'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidPassword(password)) {
+  if (!userValidation.isValidPassword(requestData.password)) {
     res.status(400).json({ message: 'Invalid password.' });
     return;
   };
@@ -1919,7 +1908,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(password, accountDetails.hashed_password);
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
@@ -1936,12 +1925,12 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
       await dbPool.execute(
         `INSERT INTO account_deletion (
-        account_id,
-        confirmation_code,
-        expiry_timestamp,
-        deletion_emails_sent,
-        failed_deletion_attempts
-      ) VALUES (${generatePlaceHolders(5)});`,
+          account_id,
+          confirmation_code,
+          expiry_timestamp,
+          deletion_emails_sent,
+          failed_deletion_attempts
+        ) VALUES (${generatePlaceHolders(5)});`,
         [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
       );
 
@@ -2130,16 +2119,10 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     return;
   };
 
-  const password = req.query.password;
   const confirmationCode = req.query.confirmationCode;
 
-  if (typeof password !== 'string' || typeof confirmationCode !== 'string') {
+  if (typeof confirmationCode !== 'string') {
     res.status(400).json({ message: 'Invalid request data.' });
-    return;
-  };
-
-  if (!userValidation.isValidPassword(password)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
@@ -2222,12 +2205,6 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-      return;
-    };
-
-    const isCorrectPassword: boolean = await bcrypt.compare(password, accountDetails.hashed_password);
-    if (!isCorrectPassword) {
-      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
     };
 
