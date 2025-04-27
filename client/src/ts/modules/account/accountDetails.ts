@@ -823,6 +823,7 @@ function displayDetailsUpdateForm(purpose: DetailsUpdateFormPurpose, purposeTitl
     return;
   };
 
+  clearDetailsUpdateForm();
   accountDetailsState.detailsUpdateFormPurpose = purpose;
 
   for (const formGroup of detailsUpdateForm.children) {
@@ -860,6 +861,10 @@ function hideDetailsUpdateForm(): void {
   detailsUpdateForm?.classList.add('hidden');
   detailsDropdownElement?.classList.remove('expanded');
 
+  clearDetailsUpdateForm();
+};
+
+function clearDetailsUpdateForm(): void {
   if (!newEmailInput || !newDisplayNameInput || !passwordInput || !newPasswordInput || !confirmNewPasswordInput) {
     return;
   };
