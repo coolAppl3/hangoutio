@@ -1446,7 +1446,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
 
     await sendEmailUpdateEmail({
       to: requestData.newEmail,
-      verificationCode: newConfirmationCode,
+      confirmationCode: newConfirmationCode,
       displayName: accountDetails.display_name,
     });
 
@@ -1578,7 +1578,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     await sendEmailUpdateEmail({
       to: emailUpdateDetails.new_email,
-      verificationCode: emailUpdateDetails.confirmation_code,
+      confirmationCode: emailUpdateDetails.confirmation_code,
       displayName: emailUpdateDetails.display_name,
     });
 
