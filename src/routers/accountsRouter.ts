@@ -1803,6 +1803,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 });
 
 accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => {
+  interface RequestData {
+    password: string,
+  };
+
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
@@ -1817,14 +1821,15 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     return;
   };
 
-  const password = req.query.password;
+  const requestData: RequestData = req.body;
 
-  if (typeof password !== 'string') {
+  const expectedKeys: string[] = ['password'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidPassword(password)) {
+  if (!userValidation.isValidPassword(requestData.password)) {
     res.status(400).json({ message: 'Invalid password.' });
     return;
   };
@@ -1903,7 +1908,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(password, accountDetails.hashed_password);
+    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
     if (!isCorrectPassword) {
       await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
       return;
@@ -1920,12 +1925,12 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
       await dbPool.execute(
         `INSERT INTO account_deletion (
-        account_id,
-        confirmation_code,
-        expiry_timestamp,
-        deletion_emails_sent,
-        failed_deletion_attempts
-      ) VALUES (${generatePlaceHolders(5)});`,
+          account_id,
+          confirmation_code,
+          expiry_timestamp,
+          deletion_emails_sent,
+          failed_deletion_attempts
+        ) VALUES (${generatePlaceHolders(5)});`,
         [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
       );
 
