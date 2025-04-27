@@ -1590,8 +1590,7 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
 accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: Response) => {
   interface RequestData {
-    password: string,
-    verificationCode: string,
+    confirmationCode: string,
   };
 
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
@@ -1610,19 +1609,14 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
   const requestData: RequestData = req.body;
 
-  const expectedKeys: string[] = ['password', 'verificationCode'];
+  const expectedKeys: string[] = ['confirmationCode'];
   if (undefinedValuesDetected(requestData, expectedKeys)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
-  if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(401).json({ message: 'Invalid password.' });
-    return;
-  };
-
-  if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-    res.status(400).json({ message: 'Invalid verification code.' });
+  if (!userValidation.isValidRandomCode(requestData.confirmationCode)) {
+    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
     return;
   };
 
@@ -1666,12 +1660,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
     interface AccountDetails extends RowDataPacket {
       email: string,
-      hashed_password: string,
-      failed_sign_in_attempts: number,
       display_name: string,
       update_id: number,
       new_email: string,
-      verification_code: string,
+      confirmation_code: string,
       expiry_timestamp: number,
       failed_update_attempts: number,
     };
@@ -1679,12 +1671,10 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
         accounts.email,
-        accounts.hashed_password,
-        accounts.failed_sign_in_attempts,
         accounts.display_name,
         email_update.update_id,
         email_update.new_email,
-        email_update.verification_code,
+        email_update.confirmation_code,
         email_update.expiry_timestamp,
         email_update.failed_update_attempts
       FROM
@@ -1722,13 +1712,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       return;
     };
 
-    const isCorrectPassword: boolean = await bcrypt.compare(requestData.password, accountDetails.hashed_password);
-    if (!isCorrectPassword) {
-      await handleIncorrectAccountPassword(res, authSessionDetails.user_id, accountDetails.failed_sign_in_attempts);
-      return;
-    };
-
-    if (requestData.verificationCode !== accountDetails.verification_code) {
+    if (requestData.confirmationCode !== accountDetails.confirmation_code) {
       const requestSuspended: boolean = accountDetails.failed_update_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
       const suspendRequestQuery: string = requestSuspended ? `, expiry_timestamp = ${Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW}` : '';
 
@@ -1749,7 +1733,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       };
 
       res.status(401).json({
-        message: 'Incorrect verification code.',
+        message: 'Incorrect confirmation code.',
         reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
       });
 

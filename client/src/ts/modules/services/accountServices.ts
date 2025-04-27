@@ -140,8 +140,7 @@ export function resendEmailUpdateEmailService(): Promise<AxiosResponse> {
 // --- --- ---
 
 interface ConfirmEmailUpdateBody {
-  password: string,
-  verificationCode: string,
+  confirmationCode: string,
 };
 
 interface ConfirmEmailUpdateData {
