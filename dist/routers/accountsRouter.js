@@ -1286,7 +1286,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
       FROM
         auth_sessions
       WHERE
-        sessions_id = ?;`, [authSessionId]);
+        session_id = ?;`, [authSessionId]);
         const authSessionDetails = authSessionRows[0];
         if (!authSessionDetails) {
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1326,14 +1326,13 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         }
         ;
         if (!accountDetails.update_id) {
-            res.status(404).json({ message: 'Email update request not found.' });
+            res.status(404).json({ message: 'Email update request not found or may have expired.' });
             return;
         }
         ;
         if (accountDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
             res.status(403).json({
                 message: 'Email update request suspended.',
-                reason: 'requestSuspended.',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
             });
             return;
@@ -1341,7 +1340,8 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
         ;
         if (requestData.confirmationCode !== accountDetails.confirmation_code) {
             const requestSuspended = accountDetails.failed_update_attempts + 1 >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT;
-            const suspendRequestQuery = requestSuspended ? `, expiry_timestamp = ${Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW}` : '';
+            const expiryTimestamp = Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW;
+            const suspendRequestQuery = requestSuspended ? `, expiry_timestamp = ${expiryTimestamp}` : '';
             await db_1.dbPool.execute(`UPDATE
             email_update
           SET
@@ -1357,6 +1357,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             res.status(401).json({
                 message: 'Incorrect confirmation code.',
                 reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
+                data: requestSuspended ? { expiryTimestamp } : null,
             });
             if (requestSuspended) {
                 await (0, emailServices_1.sendEmailUpdateWarningEmail)(accountDetails.email, accountDetails.display_name);
@@ -1397,7 +1398,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             user_type: 'account',
             keepSignedIn: false,
         });
-        res.json({ authSessionCreated });
+        res.json({ authSessionCreated, newEmail: accountDetails.new_email });
     }
     catch (err) {
         console.log(err);
@@ -1656,7 +1657,7 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
     }
     ;
     if (!userValidation.isValidRandomCode(confirmationCode)) {
-        res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidCode' });
+        res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
         return;
     }
     ;
@@ -1692,14 +1693,14 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         accounts.display_name,
         account_deletion.deletion_id,
         account_deletion.confirmation_code,
-        account_deletion.request_timestamp,
+        account_deletion.expiry_timestamp,
         account_deletion.failed_deletion_attempts
       FROM
         accounts
       LEFT JOIN
         account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        accounts.account_id = ?;
+        accounts.account_id = ?
       LIMIT 1;`, [authSessionDetails.user_id]);
         const accountDetails = accountRows[0];
         if (!accountDetails) {
@@ -1718,7 +1719,6 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
         if (requestSuspended) {
             res.status(403).json({
                 message: 'Deletion request suspended.',
-                reason: 'requestSuspended',
                 resData: { expiryTimestamp: accountDetails.expiry_timestamp },
             });
             return;
@@ -1745,7 +1745,7 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
             res.status(401).json({
                 message: 'Incorrect confirmation code.',
                 reason: toBeSuspended ? 'requestSuspended' : 'incorrectCode',
-                resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : undefined,
+                resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : null,
             });
             if (toBeSuspended) {
                 await (0, emailServices_1.sendDeletionWarningEmail)({
@@ -1766,6 +1766,7 @@ exports.accountsRouter.delete('/deletion/confirm', async (req, res) => {
             return;
         }
         ;
+        await (0, authSessions_1.purgeAuthSessions)(authSessionDetails.user_id, 'account');
         res.json({});
     }
     catch (err) {

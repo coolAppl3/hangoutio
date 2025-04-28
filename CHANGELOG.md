@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.88] (2025-04-28)
+## [0.4.88] (2025-04-29)
 
 ### Features
 
@@ -13,12 +13,15 @@
 ### Code Refactoring
 
 - Refactored out request suspension state tracking in `account.html` to simplify the logic.
+- Slightly improved the wording in the info modal created after starting the email update process.
 
 
 ### Bug Fixes
 
 - Fixed incorrect endpoint being referenced by `confirmAccountDeletionService()` in `accountService.ts`.
 - Fixed a pair of typos in one of the SQL statements under DELETE `accounts/deletion/confirm`.
+- Fixed a typo in handleAuthSessionExpired().
+- Fixed DELETE `accounts/deletion/confirm` to purging the user's auth sessions after deleting their account.
 
 
 ## [0.4.87] (2025-04-28)
