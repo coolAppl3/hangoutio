@@ -60,7 +60,7 @@ export function handleOngoingOpposingRequest(ongoingRequestTitle: string,): void
   }, { simple: true });
 };
 
-export function handleRequestSuspended(errResData: unknown, ongoingRequestTitle: string): void {
+export function handleRequestSuspended(errResData: unknown, ongoingRequestTitle: 'email update' | 'account deletion'): void {
   if (typeof errResData !== 'object' || errResData === null) {
     return;
   };
