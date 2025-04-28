@@ -7,6 +7,7 @@ import { InfoModal } from "../global/InfoModal";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
+import { removeSignInCookies } from "../global/signOut";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
 import { confirmAccountDeletionService, confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
@@ -912,6 +913,7 @@ async function confirmAccountDeletion(): Promise<void> {
 
   try {
     await confirmAccountDeletionService(confirmationCode);
+    removeSignInCookies();
 
     popup('Account deleted.', 'error');
     setTimeout(() => window.location.href = 'home', 2000);
