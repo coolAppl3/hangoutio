@@ -464,7 +464,7 @@ async function startEmailUpdate(): Promise<void> {
 
     InfoModal.display({
       title: 'Email update process started.',
-      description: `You'll receive an email within the next 30 seconds with a confirmation code.`,
+      description: `An email will be sent to your new email address within the next 30 seconds with a confirmation code.`,
       btnTitle: 'Okay',
     }, { simple: true });
 
