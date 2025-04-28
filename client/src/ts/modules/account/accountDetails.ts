@@ -7,7 +7,7 @@ import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { displayRequestSuspendedInfoModal, handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -146,7 +146,16 @@ async function handleDetailsUpdateFormSubmission(e: SubmitEvent): Promise<void> 
 async function handleConfirmationFormSubmission(e: SubmitEvent): Promise<void> {
   e.preventDefault();
 
-  // TODO: implement
+  if (!accountDetailsState.confirmationFormPurpose) {
+    return;
+  };
+
+  if (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate') {
+    await confirmEmailUpdate();
+    return;
+  };
+
+  await confirmAccountDeletion();
 };
 
 async function updateDisplayName(): Promise<void> {
@@ -578,6 +587,116 @@ async function resendEmailUpdateEmail(): Promise<void> {
   };
 };
 
+async function confirmEmailUpdate(): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data || !confirmationCodeInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidConfirmationCode: boolean = validateCode(confirmationCodeInput);
+
+  if (!isValidConfirmationCode) {
+    popup('Invalid confirmation code.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const confirmationCode: string = confirmationCodeInput.value.toUpperCase();
+
+  try {
+    const { newEmail, authSessionCreated } = (await confirmEmailUpdateService({ confirmationCode })).data;
+
+    accountState.data.accountDetails.email = newEmail;
+    accountState.data.accountDetails.ongoing_email_update_request = false;
+
+    accountDetailsState.confirmationFormPurpose = null;
+    accountDetailsState.emailUpdateSuspensionExpiryTimestamp = null;
+
+    renderAccountDetails();
+    renderConfirmationForm();
+
+    popup('Email updated.', 'success');
+    LoadingModal.remove();
+
+    if (authSessionCreated) {
+      return;
+    };
+
+    const infoModal: HTMLDivElement = InfoModal.display({
+      title: 'Email successfully updated.',
+      description: `You'll just have to sign back into your account.`,
+      btnTitle: 'Okay',
+    });
+
+    infoModal.addEventListener('click', (e: MouseEvent) => {
+      if (!(e.target instanceof HTMLButtonElement)) {
+        return;
+      };
+
+      if (e.target.id === 'info-modal-info-btn') {
+        window.location.href = 'sign-in';
+      };
+    });
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountDetailsState.confirmationFormPurpose = null;
+      accountDetailsState.emailUpdateSuspensionExpiryTimestamp = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'email update');
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'incorrectCode') {
+        ErrorSpan.display(confirmationCodeInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'requestSuspended') {
+        handleRequestSuspended(errResData, 'email update');
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400 && errReason === 'confirmationCode') {
+      ErrorSpan.display(confirmationCodeInput, errMessage);
+    };
+  };
+};
+
 async function startAccountDeletion(): Promise<void> {
   LoadingModal.display();
 
@@ -766,6 +885,10 @@ async function resendDeletionEmail(): Promise<void> {
       handleAuthSessionDestroyed();
     };
   };
+};
+
+async function confirmAccountDeletion(): Promise<void> {
+  // TODO: implement
 };
 
 async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
