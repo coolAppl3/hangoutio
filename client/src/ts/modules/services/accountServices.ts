@@ -167,7 +167,7 @@ export function resendDeletionEmailService(): Promise<AxiosResponse> {
 // --- --- ---
 
 export function confirmAccountDeletionService(confirmationCode: string): Promise<AxiosResponse> {
-  return axios.delete(`${accountsApiUrl}/deletion/start?confirmationCode=${confirmationCode}`);
+  return axios.delete(`${accountsApiUrl}/deletion/confirm?confirmationCode=${confirmationCode}`);
 };
 
 // --- --- ---
