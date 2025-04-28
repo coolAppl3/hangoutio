@@ -144,6 +144,7 @@ interface ConfirmEmailUpdateBody {
 };
 
 interface ConfirmEmailUpdateData {
+  newEmail: string,
   authSessionCreated: boolean,
 };
 
