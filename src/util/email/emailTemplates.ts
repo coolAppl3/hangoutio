@@ -1,4 +1,4 @@
-import { ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, hourMilliseconds, minuteMilliseconds } from "../constants";
+import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_VERIFICATION_WINDOW, hourMilliseconds, minuteMilliseconds } from "../constants";
 import { DeletionEmailConfig, RecoveryEmailConfig, UpdateEmailConfig, VerificationEmailConfig } from "./emailServices";
 
 export function getVerificationEmailTemplate(verificationEmailConfig: VerificationEmailConfig): string {
@@ -27,7 +27,7 @@ export function getVerificationEmailTemplate(verificationEmailConfig: Verificati
           margin: 0;
           padding: 0;
           box-sizing: border-box;
-          font-family: 'Roboto', sans-serif;
+          font-family: 'Roboto', 'Arial';
         }
 
         body {
@@ -71,7 +71,7 @@ export function getVerificationEmailTemplate(verificationEmailConfig: Verificati
         <p>Hey ${displayName},</p>
         <p>Welcome to Hangoutio!</p>
         <p>
-          To complete your account creation, please enter the following verification code: <span class="font-bold">${verificationCode}</span>. Alternatively, you can
+          To complete your account setup, use the following verification code: <span class="font-bold">${verificationCode}</span>. Alternatively, you can
           click this
           <a
             target="_blank"
@@ -85,8 +85,7 @@ export function getVerificationEmailTemplate(verificationEmailConfig: Verificati
         <p>Hangoutio</p>
       </div>
     </body>
-  </html>
-  `;
+  </html>`;
 
   return htmlTemplate;
 };
@@ -117,7 +116,7 @@ export function getRecoveryEmailTemplate(recoveryEmailConfig: RecoveryEmailConfi
           margin: 0;
           padding: 0;
           box-sizing: border-box;
-          font-family: 'Roboto', sans-serif;
+          font-family: 'Roboto', 'Arial';
         }
 
         body {
@@ -159,23 +158,22 @@ export function getRecoveryEmailTemplate(recoveryEmailConfig: RecoveryEmailConfi
     <body>
       <div class="email-body">
         <p>Hey ${displayName},</p>
-        <p>We've received a recovery request for your account.</p>
+        <p>We've received a request to recover your Hangoutio account.</p>
         <p>
-          To proceed with the recovery process, please enter the following code: <span class="font-bold">${recoveryCode}</span>. Alternatively, you can click
+          To continue, use the following recovery code: <span class="font-bold">${recoveryCode}</span>. Alternatively, you can click this
           <a
             target="_blank"
             href="https://hangoutio.com/account-recovery?id=${accountId}&expiryTimestamp=${expiryTimestamp}&recoveryCode=${recoveryCode}"
-            >this link</a
+            >recovery link</a
           >.
         </p>
-        <p>Please note that the recovery link is only valid for an hour.</p>
+        <p>This recovery request will expire in an hour.</p>
         <p>If this request wasn't made by you, ensure that your inbox is secure, then feel free to ignore this email.</p>
         <p id="end-of-email">Warmest regards,</p>
         <p>Hangoutio</p>
       </div>
     </body>
-  </html>
-  `;
+  </html>`;
 
   return htmlTemplate;
 };
@@ -206,7 +204,7 @@ export function getAccountDeletionConfirmationTemplate(deletionEmailConfig: Dele
           margin: 0;
           padding: 0;
           box-sizing: border-box;
-          font-family: 'Roboto', sans-serif;
+          font-family: 'Roboto', 'Arial';
         }
 
         body {
@@ -248,19 +246,16 @@ export function getAccountDeletionConfirmationTemplate(deletionEmailConfig: Dele
     <body>
       <div class="email-body">
         <p>Hey ${displayName},</p>
-        <p>We're reaching out to confirm your account deletion request.</p>
-        <p>
-          To confirm your wish to delete your account, please use the following code: <span class="font-bold">${confirmationCode}</span>. This request is only
-          valid for the next hour.
-        </p>
-        <p>If this request wasn't made by you, please sign into your account and change your password as soon as possible to ensure it's protected.</p>
-        <p>We're sad to see you leave, but wish you the best of luck moving forward!</p>
+        <p>We've received a request to delete your Hangoutio account.</p>
+        <p>To continue, please use the following confirmation code: <span class="font-bold">${confirmationCode}</span>.</p>
+        <p>This request will expire in an hour.</p>
+        <p>If this request wasn't made by you, please sign into your account to abort the request and change your password as soon as possible to ensure it's protected.</p>
+        <p>We're sad to see you leave, but wish you all the best moving forward!</p>
         <p id="end-of-email">Warmest regards,</p>
         <p>Hangoutio</p>
       </div>
     </body>
-  </html>
-  `;
+  </html>`;
 
   return htmlTemplate;
 };
@@ -289,7 +284,7 @@ export function getAccountDeletionWarningTemplate(displayName: string): string {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Roboto', 'Arial';
           }
 
           body {
@@ -332,17 +327,15 @@ export function getAccountDeletionWarningTemplate(displayName: string): string {
       <body>
         <div class="email-body">
           <p>Hey ${displayName},</p>
-          <p>We're reaching out to confirm your account deletion request.</p>
           <p>
-            We've detected 3 failed attempts to delete your account, and have therefore suspended further attempts for the next ${dayMilliseconds / hourMilliseconds} hours.
+            We've detected 3 failed attempts to delete your account, and have suspended further attempts for ${ACCOUNT_DELETION_SUSPENSION_WINDOW / hourMilliseconds} hours to protect your account.
           </p>
-          <p>If these requests were not made by you, we highly suggest changing your account's password to ensure it's secure.</p>
+          <p>If these attempts weren't made by you, we highly suggest changing your account's password to ensure it's secure.</p>
           <p id="end-of-email">Warmest regards,</p>
           <p>Hangoutio</p>
         </div>
       </body>
-    </html>
-  `;
+    </html>`;
 
   return htmlTemplate;
 };
@@ -373,7 +366,7 @@ export function getEmailUpdateTemplate(updateEmailConfig: UpdateEmailConfig): st
           margin: 0;
           padding: 0;
           box-sizing: border-box;
-          font-family: 'Roboto', sans-serif;
+          font-family: 'Roboto', 'Arial';
         }
 
         body {
@@ -415,8 +408,8 @@ export function getEmailUpdateTemplate(updateEmailConfig: UpdateEmailConfig): st
     <body>
       <div class="email-body">
         <p>Hey ${displayName},</p>
-        <p>We've received a request to change the registered email address for your Hangoutio account.</p>
-        <p>To complete the process, please use the following confirmation code: <span class="font-bold">${confirmationCode}</span>.</p>
+        <p>We've received a request to change the registered email address for your Hangoutio account to this one.</p>
+        <p>To continue, please use the following confirmation code: <span class="font-bold">${confirmationCode}</span>.</p>
         <p>If this request wasn't made by you, feel free to ignore it.</p>
         <p id="end-of-email">Warmest regards,</p>
         <p>Hangoutio</p>
@@ -451,7 +444,7 @@ export function getEmailUpdateWarningTemplate(displayName: string): string {
           margin: 0;
           padding: 0;
           box-sizing: border-box;
-          font-family: 'Roboto', sans-serif;
+          font-family: 'Roboto', 'Arial';
         }
 
         body {
@@ -493,15 +486,13 @@ export function getEmailUpdateWarningTemplate(displayName: string): string {
     <body>
       <div class="email-body">
         <p>Hey ${displayName},</p>
-        <p>We've detected 3 failed attempts to update the email address linked to your Hangoutio account.</p>
-        <p>If these requests weren't made by you, please sign in and update your password to ensure your account is safe.</p>
-        <p>Further email update attempts have been suspended for the next ${ACCOUNT_EMAIL_UPDATE_WINDOW / hourMilliseconds} hours to protect your account.</p>
+        <p>We've detected 3 failed attempts to change the registered email address for your Hangoutio account, and have suspended further attempts for ${ACCOUNT_EMAIL_UPDATE_WINDOW / hourMilliseconds} hours to protect your account.</p>
+        <p>If these attempts weren't made by you, we highly suggest changing your account's password to ensure it's secure.</p>
         <p id="end-of-email">Warmest regards,</p>
         <p>Hangoutio</p>
       </div>
     </body>
-  </html>
-  `;
+  </html>`;
 
   return htmlTemplate;
 };

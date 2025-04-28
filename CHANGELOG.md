@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.4.88] (2025-04-29)
+
+### Features
+
+- Updated the phrasing and structure of email templates in `emailTemplates.ts` to align with the changes made in the meantime.
+- PATCH `accounts/details/updateEmail/confirm` now also returns the new email in a successful response.
+- Implemented logic to confirm the account's new email.
+- Implemented logic to confirm account deletion.
+
+
+### Code Refactoring
+
+- Refactored out request suspension state tracking in `account.html` to simplify the logic.
+- Slightly improved the wording in the info modal created after starting the email update process.
+
+
+### Bug Fixes
+
+- Fixed incorrect endpoint being referenced by `confirmAccountDeletionService()` in `accountService.ts`.
+- Fixed a pair of typos in one of the SQL statements under DELETE `accounts/deletion/confirm`.
+- Fixed a typo in handleAuthSessionExpired().
+- Fixed DELETE `accounts/deletion/confirm` to purging the user's auth sessions after deleting their account.
+
+
 ## [0.4.87] (2025-04-28)
 
 ### Features
@@ -14,7 +38,6 @@
 - Reworked DELETE `accounts/details/deletion/confirm` to not require a password.
 - Reworked DELETE `accounts/details/deletion/start` to use a body to avoid exposing a password within the request URL.
 - Updated `sendEmailUpdateEmail()` to no longer refer to the `confirmation_code` column as `verification_code`, and improved the template slightly.
-  - Complete overhaul of the email templates is to be expected in future patches.
 
 
 ### Bug Fixes

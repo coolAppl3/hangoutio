@@ -3,7 +3,7 @@ import Cookies from "./Cookies";
 
 export function handleAuthSessionExpired(afterAuthRedirectHref: string = window.location.href): void {
   const title: string = 'Sign in session expired.';
-  const description: string = 'Please sign back in t continue.';
+  const description: string = 'Please sign back in to continue.';
 
   removeAuthDetails(afterAuthRedirectHref, title, description);
 };

@@ -1637,7 +1637,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       FROM
         auth_sessions
       WHERE
-        sessions_id = ?;`,
+        session_id = ?;`,
       [authSessionId]
     );
 
@@ -1698,14 +1698,13 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     };
 
     if (!accountDetails.update_id) {
-      res.status(404).json({ message: 'Email update request not found.' });
+      res.status(404).json({ message: 'Email update request not found or may have expired.' });
       return;
     };
 
     if (accountDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
       res.status(403).json({
         message: 'Email update request suspended.',
-        reason: 'requestSuspended.',
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
@@ -1714,7 +1713,8 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
     if (requestData.confirmationCode !== accountDetails.confirmation_code) {
       const requestSuspended: boolean = accountDetails.failed_update_attempts + 1 >= FAILED_ACCOUNT_UPDATE_LIMIT;
-      const suspendRequestQuery: string = requestSuspended ? `, expiry_timestamp = ${Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW}` : '';
+      const expiryTimestamp: number = Date.now() + ACCOUNT_EMAIL_UPDATE_WINDOW;
+      const suspendRequestQuery: string = requestSuspended ? `, expiry_timestamp = ${expiryTimestamp}` : '';
 
       await dbPool.execute(
         `UPDATE
@@ -1735,6 +1735,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       res.status(401).json({
         message: 'Incorrect confirmation code.',
         reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
+        data: requestSuspended ? { expiryTimestamp } : null,
       });
 
       if (requestSuspended) {
@@ -1789,7 +1790,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       keepSignedIn: false,
     });
 
-    res.json({ authSessionCreated });
+    res.json({ authSessionCreated, newEmail: accountDetails.new_email });
 
   } catch (err: unknown) {
     console.log(err);
@@ -2127,7 +2128,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
   };
 
   if (!userValidation.isValidRandomCode(confirmationCode)) {
-    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidCode' });
+    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
     return;
   };
 
@@ -2186,14 +2187,14 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
         accounts.display_name,
         account_deletion.deletion_id,
         account_deletion.confirmation_code,
-        account_deletion.request_timestamp,
+        account_deletion.expiry_timestamp,
         account_deletion.failed_deletion_attempts
       FROM
         accounts
       LEFT JOIN
         account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        accounts.account_id = ?;
+        accounts.account_id = ?
       LIMIT 1;`,
       [authSessionDetails.user_id]
     );
@@ -2217,7 +2218,6 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     if (requestSuspended) {
       res.status(403).json({
         message: 'Deletion request suspended.',
-        reason: 'requestSuspended',
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
@@ -2251,7 +2251,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       res.status(401).json({
         message: 'Incorrect confirmation code.',
         reason: toBeSuspended ? 'requestSuspended' : 'incorrectCode',
-        resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : undefined,
+        resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : null,
       });
 
       if (toBeSuspended) {
@@ -2276,6 +2276,8 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       res.status(500).json({ message: 'Internal server error.' });
       return;
     };
+
+    await purgeAuthSessions(authSessionDetails.user_id, 'account');
 
     res.json({});
 
