@@ -2277,6 +2277,8 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       return;
     };
 
+    await purgeAuthSessions(authSessionDetails.user_id, 'account');
+
     res.json({});
 
   } catch (err: unknown) {
