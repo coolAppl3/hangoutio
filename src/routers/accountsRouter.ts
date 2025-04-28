@@ -2187,14 +2187,14 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
         accounts.display_name,
         account_deletion.deletion_id,
         account_deletion.confirmation_code,
-        account_deletion.request_timestamp,
+        account_deletion.expiry_timestamp,
         account_deletion.failed_deletion_attempts
       FROM
         accounts
       LEFT JOIN
         account_deletion ON accounts.account_id = account_deletion.account_id
       WHERE
-        accounts.account_id = ?;
+        accounts.account_id = ?
       LIMIT 1;`,
       [authSessionDetails.user_id]
     );
