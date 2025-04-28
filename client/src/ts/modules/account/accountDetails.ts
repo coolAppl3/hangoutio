@@ -8,7 +8,7 @@ import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
 import { confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
-import { displayRequestSuspendedInfoModal, handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
+import { handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
 type DetailsUpdateFormPurpose = 'emailUpdate' | 'displayNameUpdate' | 'passwordUpdate' | 'deleteAccount';
@@ -17,17 +17,11 @@ type ConfirmationFormPurpose = 'confirmEmailUpdate' | 'confirmAccountDeletion';
 interface AccountDetailsState {
   detailsUpdateFormPurpose: DetailsUpdateFormPurpose | null,
   confirmationFormPurpose: ConfirmationFormPurpose | null,
-
-  emailUpdateSuspensionExpiryTimestamp: number | null,
-  accountDeletionSuspensionExpiryTimestamp: number | null,
 };
 
-export const accountDetailsState: AccountDetailsState = {
+const accountDetailsState: AccountDetailsState = {
   detailsUpdateFormPurpose: null,
   confirmationFormPurpose: null,
-
-  emailUpdateSuspensionExpiryTimestamp: null,
-  accountDeletionSuspensionExpiryTimestamp: null,
 };
 
 const detailsElement: HTMLDivElement | null = document.querySelector('#details');
@@ -391,13 +385,6 @@ async function startEmailUpdate(): Promise<void> {
     return;
   };
 
-  if (accountDetailsState.emailUpdateSuspensionExpiryTimestamp) {
-    displayRequestSuspendedInfoModal('email update', accountDetailsState.emailUpdateSuspensionExpiryTimestamp);
-    LoadingModal.remove();
-
-    return;
-  };
-
   if (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate') {
     popup(`There's already an ongoing email update request.`, 'error');
     LoadingModal.remove();
@@ -615,7 +602,6 @@ async function confirmEmailUpdate(): Promise<void> {
     accountState.data.accountDetails.ongoing_email_update_request = false;
 
     accountDetailsState.confirmationFormPurpose = null;
-    accountDetailsState.emailUpdateSuspensionExpiryTimestamp = null;
 
     renderAccountDetails();
     renderConfirmationForm();
@@ -660,9 +646,8 @@ async function confirmEmailUpdate(): Promise<void> {
 
     if (status === 404) {
       accountDetailsState.confirmationFormPurpose = null;
-      accountDetailsState.emailUpdateSuspensionExpiryTimestamp = null;
-
       renderConfirmationForm();
+
       return;
     };
 
@@ -702,13 +687,6 @@ async function startAccountDeletion(): Promise<void> {
 
   if (!accountState.data) {
     popup('Something went wrong.', 'error');
-    LoadingModal.remove();
-
-    return;
-  };
-
-  if (accountDetailsState.accountDeletionSuspensionExpiryTimestamp) {
-    displayRequestSuspendedInfoModal('account deletion', accountDetailsState.accountDeletionSuspensionExpiryTimestamp);
     LoadingModal.remove();
 
     return;
