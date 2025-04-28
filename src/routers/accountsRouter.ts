@@ -2128,7 +2128,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
   };
 
   if (!userValidation.isValidRandomCode(confirmationCode)) {
-    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidCode' });
+    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
     return;
   };
 
@@ -2218,7 +2218,6 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
     if (requestSuspended) {
       res.status(403).json({
         message: 'Deletion request suspended.',
-        reason: 'requestSuspended',
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
@@ -2252,7 +2251,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
       res.status(401).json({
         message: 'Incorrect confirmation code.',
         reason: toBeSuspended ? 'requestSuspended' : 'incorrectCode',
-        resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : undefined,
+        resData: toBeSuspended ? { expiryTimestamp: accountDetails.expiry_timestamp } : null,
       });
 
       if (toBeSuspended) {

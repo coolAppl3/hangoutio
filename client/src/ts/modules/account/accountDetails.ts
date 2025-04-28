@@ -1,4 +1,5 @@
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../global/authUtils";
+import { ConfirmModal } from "../global/ConfirmModal";
 import { getFullDateSTring } from "../global/dateTimeUtils";
 import ErrorSpan from "../global/ErrorSpan";
 import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
@@ -7,7 +8,7 @@ import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { confirmAccountDeletionService, confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -149,7 +150,29 @@ async function handleConfirmationFormSubmission(e: SubmitEvent): Promise<void> {
     return;
   };
 
-  await confirmAccountDeletion();
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: 'Are you sure want to delete your account?',
+    description: `This action is irreversible. You won't be able to recover your data if you proceed.`,
+    confirmBtnTitle: 'Delete account',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      await confirmAccountDeletion();
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
 };
 
 async function updateDisplayName(): Promise<void> {
@@ -645,9 +668,10 @@ async function confirmEmailUpdate(): Promise<void> {
     popup(errMessage, 'error');
 
     if (status === 404) {
+      accountState.data.accountDetails.ongoing_email_update_request = false;
       accountDetailsState.confirmationFormPurpose = null;
-      renderConfirmationForm();
 
+      renderConfirmationForm();
       return;
     };
 
@@ -866,7 +890,84 @@ async function resendDeletionEmail(): Promise<void> {
 };
 
 async function confirmAccountDeletion(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!accountState.data || !confirmationCodeInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidConfirmationCode: boolean = validateCode(confirmationCodeInput);
+
+  if (!isValidConfirmationCode) {
+    popup('Invalid confirmation code.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const confirmationCode: string = confirmationCodeInput.value.toUpperCase();
+
+  try {
+    await confirmAccountDeletionService(confirmationCode);
+
+    popup('Account deleted.', 'error');
+    setTimeout(() => window.location.href = 'home', 2000);
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason, errResData } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountState.data.accountDetails.ongoing_account_deletion_request = false;
+      accountDetailsState.confirmationFormPurpose = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 403) {
+      handleRequestSuspended(errResData, 'account deletion');
+      return;
+    };
+
+    if (status === 401) {
+      if (errReason === 'incorrectCode') {
+        ErrorSpan.display(confirmationCodeInput, errMessage);
+        return;
+      };
+
+      if (errReason === 'requestSuspended') {
+        handleRequestSuspended(errResData, 'account deletion');
+        return;
+      };
+
+      if (errReason === 'authSessionExpired') {
+        handleAuthSessionExpired();
+        return;
+      };
+
+      handleAuthSessionDestroyed();
+      return;
+    };
+
+    if (status === 400 && errReason === 'confirmationCode') {
+      ErrorSpan.display(confirmationCodeInput, errMessage);
+    };
+  };
 };
 
 async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
