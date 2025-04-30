@@ -712,7 +712,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
     };
 
     if (!accountDetails.recovery_code) {
-      res.status(404).json({ message: 'Recovery request not found or has expired.', reason: 'requestNotFound' });
+      res.status(404).json({ message: 'Recovery request not found or may have expired.', reason: 'requestNotFound' });
       return;
     };
 
