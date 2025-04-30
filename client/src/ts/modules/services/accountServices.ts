@@ -154,6 +154,12 @@ export function confirmEmailUpdateService(requestBody: ConfirmEmailUpdateBody): 
 
 // --- --- ---
 
+export function abortEmailUpdateService(): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/details/updateEmail/abort`);
+};
+
+// --- --- ---
+
 export function startAccountDeletionService(password: string): Promise<AxiosResponse> {
   return axios.delete(`${accountsApiUrl}/deletion/start`, { data: { password } });
 };
