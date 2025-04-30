@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.89] (2025-04-30)
+
+### Features
+
+- Added DELETE `accounts/details/updateEmail/abort`.
+- Added DELETE `accounts/deletion/abort`.
+- Implemented logic to abort ongoing email update requests.
+- Implemented logic to abort ongoing account deletion requests.
+
+
+### Bug Fixes
+
+- Fixed `ongoing_hangouts_count` being `null` if the user hasn't joined any hangouts in `GET accounts/`.
+
+
 ## [0.4.88] (2025-04-29)
 
 ### Features
