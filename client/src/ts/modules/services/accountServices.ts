@@ -178,6 +178,12 @@ export function confirmAccountDeletionService(confirmationCode: string): Promise
 
 // --- --- ---
 
+export function abortAccountDeletionService(): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/deletion/abort`);
+};
+
+// --- --- ---
+
 interface SendFriendRequestBody {
   requesteeUsername: string,
 };

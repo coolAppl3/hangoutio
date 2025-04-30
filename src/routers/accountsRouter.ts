@@ -2365,6 +2365,84 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
   };
 });
 
+accountsRouter.delete('/deletion/abort', async (req: Request, res: Response) => {
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+      await destroyAuthSession('authSessionId');
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
+        account_deletion
+      WHERE
+        account_id = ?
+      LIMIT 1;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(404).json({ message: 'Email update request not found or may have expired.' });
+      return;
+    };
+
+    res.json({});
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
+    res.status(500).json({ message: 'Internal server error.' });
+  };
+});
+
 accountsRouter.post('/friends/requests/send', async (req: Request, res: Response) => {
   interface RequestData {
     requesteeUsername: string,
