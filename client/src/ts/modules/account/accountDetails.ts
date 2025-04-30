@@ -9,7 +9,7 @@ import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { removeSignInCookies } from "../global/signOut";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { abortEmailUpdateService, confirmAccountDeletionService, confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { abortAccountDeletionService, abortEmailUpdateService, confirmAccountDeletionService, confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -1034,7 +1034,62 @@ async function confirmAccountDeletion(): Promise<void> {
 };
 
 async function abortAccountDeletion(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!accountState.data.accountDetails.ongoing_account_deletion_request) {
+    renderConfirmationForm();
+
+    popup('No ongoing account deletion requests found.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await abortAccountDeletionService();
+
+    accountState.data.accountDetails.ongoing_account_deletion_request = false;
+    accountDetailsState.confirmationFormPurpose = null;
+
+    renderConfirmationForm();
+
+    popup('Account deletion request aborted.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountState.data.accountDetails.ongoing_account_deletion_request = false;
+      accountDetailsState.confirmationFormPurpose = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
 };
 
 async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
