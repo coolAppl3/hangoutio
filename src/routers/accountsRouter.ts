@@ -2948,6 +2948,10 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
       return;
     };
 
+    if (hangoutCounts.hangouts_joined_count === 0) {
+      hangoutCounts.ongoing_hangouts_count = 0;
+    };
+
     res.json({
       accountDetails,
       friends,
