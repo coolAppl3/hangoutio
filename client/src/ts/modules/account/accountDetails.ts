@@ -9,7 +9,7 @@ import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { removeSignInCookies } from "../global/signOut";
 import { validateCode, validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validatePassword } from "../global/validation";
-import { confirmAccountDeletionService, confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
+import { abortEmailUpdateService, confirmAccountDeletionService, confirmEmailUpdateService, resendDeletionEmailService, resendEmailUpdateEmailService, startAccountDeletionService, startEmailUpdateService, updateDisplayNameService, updatePasswordService } from "../services/accountServices";
 import { handleAccountLocked, handleOngoingOpposingRequest, handleOngoingRequest, handleRequestSuspended } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -167,6 +167,8 @@ async function handleConfirmationFormSubmission(e: SubmitEvent): Promise<void> {
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
       await confirmAccountDeletion();
+      ConfirmModal.remove();
+
       return;
     };
 
@@ -707,6 +709,65 @@ async function confirmEmailUpdate(): Promise<void> {
   };
 };
 
+async function abortEmailUpdate(): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (!accountState.data.accountDetails.ongoing_email_update_request) {
+    renderConfirmationForm();
+
+    popup('No ongoing email update requests found.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await abortEmailUpdateService();
+
+    accountState.data.accountDetails.ongoing_email_update_request = false;
+    accountDetailsState.confirmationFormPurpose = null;
+
+    renderConfirmationForm();
+
+    popup('Email update request aborted.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      accountState.data.accountDetails.ongoing_email_update_request = false;
+      accountDetailsState.confirmationFormPurpose = null;
+
+      renderConfirmationForm();
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
+};
+
 async function startAccountDeletion(): Promise<void> {
   LoadingModal.display();
 
@@ -972,6 +1033,10 @@ async function confirmAccountDeletion(): Promise<void> {
   };
 };
 
+async function abortAccountDeletion(): Promise<void> {
+  // TODO: implement
+};
+
 async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
   if (!(e.target instanceof HTMLButtonElement)) {
     return;
@@ -1013,6 +1078,11 @@ async function handleDetailsElementClicks(e: MouseEvent): Promise<void> {
     };
 
     await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? resendEmailUpdateEmail() : resendDeletionEmail());
+    return;
+  };
+
+  if (e.target.id === 'confirmation-form-abort-btn') {
+    confirmAbortRequest();
     return;
   };
 
@@ -1099,5 +1169,41 @@ function setActiveValidation(): void {
 
   confirmNewPasswordInput?.addEventListener('input', () => {
     newPasswordInput && validateConfirmPassword(confirmNewPasswordInput, newPasswordInput);
+  });
+};
+
+function confirmAbortRequest(): void {
+  if (!accountDetailsState.confirmationFormPurpose) {
+    return;
+  };
+
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: null,
+    description: `Are your sure you want to abort your ${accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? 'email update request' : 'account deletion request'}?`,
+    confirmBtnTitle: 'Abort request',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!accountDetailsState.confirmationFormPurpose) {
+      return;
+    };
+
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? abortEmailUpdate() : abortAccountDeletion());
+      ConfirmModal.remove();
+
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
   });
 };
