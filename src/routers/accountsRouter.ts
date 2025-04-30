@@ -712,7 +712,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
     };
 
     if (!accountDetails.recovery_code) {
-      res.status(404).json({ message: 'Recovery request not found or has expired.', reason: 'requestNotFound' });
+      res.status(404).json({ message: 'Recovery request not found or may have expired.', reason: 'requestNotFound' });
       return;
     };
 
@@ -1803,6 +1803,84 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
   };
 });
 
+accountsRouter.delete('/details/updateEmail/abort', async (req: Request, res: Response) => {
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+      await destroyAuthSession('authSessionId');
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
+        email_update
+      WHERE
+        account_id = ?
+      LIMIT 1;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(404).json({ message: 'Email update request not found or may have expired.' });
+      return;
+    };
+
+    res.json({});
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
+    res.status(500).json({ message: 'Internal server error.' });
+  };
+});
+
 accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => {
   interface RequestData {
     password: string,
@@ -2283,6 +2361,84 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
   } catch (err: unknown) {
     console.log(err);
+    res.status(500).json({ message: 'Internal server error.' });
+  };
+});
+
+accountsRouter.delete('/deletion/abort', async (req: Request, res: Response) => {
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+      await destroyAuthSession('authSessionId');
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
+        account_deletion
+      WHERE
+        account_id = ?
+      LIMIT 1;`,
+      [authSessionDetails.user_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(404).json({ message: 'Email update request not found or may have expired.' });
+      return;
+    };
+
+    res.json({});
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
     res.status(500).json({ message: 'Internal server error.' });
   };
 });
@@ -2946,6 +3102,10 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
     if (!hangoutCounts) {
       res.status(500).json({ message: 'Internal server error.' });
       return;
+    };
+
+    if (hangoutCounts.hangouts_joined_count === 0) {
+      hangoutCounts.ongoing_hangouts_count = 0;
     };
 
     res.json({
