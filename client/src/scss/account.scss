@@ -614,6 +614,18 @@
         }
       }
 
+      &.ongoing-request {
+
+        #details-dropdown-menu {
+
+          #update-email-btn,
+          #delete-account-btn,
+          .h-line {
+            @apply hidden;
+          }
+        }
+      }
+
       &-menu {
         @apply absolute top-0 right-3 w-fit h-fit rounded-sm overflow-hidden whitespace-nowrap z-3 hidden;
 
@@ -757,7 +769,7 @@
 }
 
 
-// hangout loading skeleton --- ---
+// loading skeleton --- ---
 #loading-skeleton {
   @apply py-3;
 
