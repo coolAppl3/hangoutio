@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.90] (2025-05-01)
+
+### Features
+
+- Account details dropdown menu will now hide the email update and account deletion buttons, if either requests are ongoing.
+- Implemented rendering logic for the friends list in `account.html`.
+- Implemented logic to search friends in `account.html`.
+
+
 ## [0.4.89] (2025-04-30)
 
 ### Features
