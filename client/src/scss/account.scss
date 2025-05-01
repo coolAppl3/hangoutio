@@ -674,7 +674,6 @@
   &-list {
 
     #friends-container {
-      @apply mb-2;
 
       &-inner {
         @apply grid grid-cols-3 lg:grid-cols-2 sm:grid-cols-1 gap-1;
@@ -717,6 +716,10 @@
               }
             }
           }
+        }
+
+        p.no-friends {
+          @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 my-1 mx-auto w-fit rounded-[20rem] col-span-3;
         }
       }
     }
