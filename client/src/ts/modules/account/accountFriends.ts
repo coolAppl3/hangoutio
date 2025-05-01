@@ -24,7 +24,13 @@ const showAllFriendsBtn: HTMLButtonElement | null = document.querySelector('#sho
 
 
 export function initAccountFriends(): void {
+  LoadEventListeners();
+
   renderFriendsContainer();
+};
+
+function LoadEventListeners(): void {
+  friendsElement?.addEventListener('click', handleFriendsElementClicks);
 };
 
 function renderFriendsContainer(): void {
@@ -50,4 +56,22 @@ function renderFriendsContainer(): void {
 
   friendsContainer.firstElementChild?.remove();
   friendsContainer.appendChild(innerFriendsContainer);
+
+  if (accountFriendsState.renderLimit && accountFriendsState.renderLimit < accountState.data.friends.length) {
+    showAllFriendsBtn?.classList.remove('hidden');
+  };
+};
+
+function handleFriendsElementClicks(e: MouseEvent): void {
+  if (!(e.target instanceof HTMLButtonElement)) {
+    return;
+  };
+
+  if (e.target.id === 'show-all-friends-btn') {
+    accountFriendsState.renderLimit = null;
+    e.target.classList.add('hidden');
+
+    renderFriendsContainer();
+    return;
+  };
 };
