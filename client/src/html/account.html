@@ -808,6 +808,7 @@
       </div>
     </section>
 
+    <!-- friends -->
     <section class="hidden">
       <div class="container">
         <div
@@ -839,7 +840,7 @@
             <button
               type="button"
               data-selectedTab="friends-list"
-              class="selected"
+              class="friends-tabs-button selected"
             >
               Friends list
             </button>
@@ -847,6 +848,7 @@
             <button
               type="button"
               data-selectedTab="pending-requests"
+              class="friends-tabs-button"
             >
               Pending requests
             </button>
@@ -854,6 +856,7 @@
             <button
               type="button"
               data-selectedTab="add-friends-from"
+              class="friends-tabs-button"
             >
               Add a friend
             </button>
@@ -876,166 +879,12 @@
               ></span>
             </div>
 
-            <div id="friends-container">
-              <div id="friends-container-inner">
-                <div
-                  class="friend"
-                  data-friendId="23"
-                >
-                  <div>
-                    <p>Sam Smith</p>
-                    <p>@someUserName123</p>
-                    <p>Since: September 24th, 2024</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    title="Remove friend"
-                    aria-label="Remove friend"
-                  >
-                    <svg
-                      width="601"
-                      height="600"
-                      viewBox="0 0 601 600"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M500.066 425C508.35 425 515.066 431.716 515.066 440C515.066 448.284 508.35 455 500.066 455H390.066C381.782 455 375.066 448.284 375.066 440C375.066 431.716 381.782 425 390.066 425H500.066Z"
-                        class="fill-description dark:fill-description-dark"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M445.066 310C516.863 310 575.066 368.203 575.066 440C575.066 511.797 516.863 570 445.066 570C399.255 570 358.98 546.303 335.826 510.5H45.066C34.0203 510.5 24.9559 501.518 26.0972 490.531C36.081 394.43 117.323 319.5 216.066 319.5H369.066C377.086 319.5 384.99 319.997 392.75 320.957C392.623 321.013 392.497 321.07 392.371 321.126C408.478 313.975 426.308 310 445.066 310ZM445.066 340C389.838 340 345.066 384.772 345.066 440C345.066 495.228 389.838 540 445.066 540C500.294 540 545.066 495.228 545.066 440C545.066 384.772 500.294 340 445.066 340Z"
-                      />
-                      <path
-                        d="M292.066 29C361.101 29.0002 417.066 84.9645 417.066 154C417.066 223.035 361.101 279 292.066 279C223.03 279 167.066 223.036 167.066 154C167.066 84.9644 223.03 29.0001 292.066 29Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div
-                  class="friend"
-                  data-friendId="23"
-                >
-                  <div>
-                    <p>Sam Smith</p>
-                    <p>@someUserName123</p>
-                    <p>Since: September 24th, 2024</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    title="Remove friend"
-                    aria-label="Remove friend"
-                  >
-                    <svg
-                      width="601"
-                      height="600"
-                      viewBox="0 0 601 600"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M500.066 425C508.35 425 515.066 431.716 515.066 440C515.066 448.284 508.35 455 500.066 455H390.066C381.782 455 375.066 448.284 375.066 440C375.066 431.716 381.782 425 390.066 425H500.066Z"
-                        class="fill-description dark:fill-description-dark"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M445.066 310C516.863 310 575.066 368.203 575.066 440C575.066 511.797 516.863 570 445.066 570C399.255 570 358.98 546.303 335.826 510.5H45.066C34.0203 510.5 24.9559 501.518 26.0972 490.531C36.081 394.43 117.323 319.5 216.066 319.5H369.066C377.086 319.5 384.99 319.997 392.75 320.957C392.623 321.013 392.497 321.07 392.371 321.126C408.478 313.975 426.308 310 445.066 310ZM445.066 340C389.838 340 345.066 384.772 345.066 440C345.066 495.228 389.838 540 445.066 540C500.294 540 545.066 495.228 545.066 440C545.066 384.772 500.294 340 445.066 340Z"
-                      />
-                      <path
-                        d="M292.066 29C361.101 29.0002 417.066 84.9645 417.066 154C417.066 223.035 361.101 279 292.066 279C223.03 279 167.066 223.036 167.066 154C167.066 84.9644 223.03 29.0001 292.066 29Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div
-                  class="friend"
-                  data-friendId="23"
-                >
-                  <div>
-                    <p>Sam Smith</p>
-                    <p>@someUserName123</p>
-                    <p>Since: September 24th, 2024</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    title="Remove friend"
-                    aria-label="Remove friend"
-                  >
-                    <svg
-                      width="601"
-                      height="600"
-                      viewBox="0 0 601 600"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M500.066 425C508.35 425 515.066 431.716 515.066 440C515.066 448.284 508.35 455 500.066 455H390.066C381.782 455 375.066 448.284 375.066 440C375.066 431.716 381.782 425 390.066 425H500.066Z"
-                        class="fill-description dark:fill-description-dark"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M445.066 310C516.863 310 575.066 368.203 575.066 440C575.066 511.797 516.863 570 445.066 570C399.255 570 358.98 546.303 335.826 510.5H45.066C34.0203 510.5 24.9559 501.518 26.0972 490.531C36.081 394.43 117.323 319.5 216.066 319.5H369.066C377.086 319.5 384.99 319.997 392.75 320.957C392.623 321.013 392.497 321.07 392.371 321.126C408.478 313.975 426.308 310 445.066 310ZM445.066 340C389.838 340 345.066 384.772 345.066 440C345.066 495.228 389.838 540 445.066 540C500.294 540 545.066 495.228 545.066 440C545.066 384.772 500.294 340 445.066 340Z"
-                      />
-                      <path
-                        d="M292.066 29C361.101 29.0002 417.066 84.9645 417.066 154C417.066 223.035 361.101 279 292.066 279C223.03 279 167.066 223.036 167.066 154C167.066 84.9644 223.03 29.0001 292.066 29Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div
-                  class="friend"
-                  data-friendId="23"
-                >
-                  <div>
-                    <p>Sam Smith</p>
-                    <p>@someUserName123</p>
-                    <p>Since: September 24th, 2024</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    title="Remove friend"
-                    aria-label="Remove friend"
-                  >
-                    <svg
-                      width="601"
-                      height="600"
-                      viewBox="0 0 601 600"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M500.066 425C508.35 425 515.066 431.716 515.066 440C515.066 448.284 508.35 455 500.066 455H390.066C381.782 455 375.066 448.284 375.066 440C375.066 431.716 381.782 425 390.066 425H500.066Z"
-                        class="fill-description dark:fill-description-dark"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M445.066 310C516.863 310 575.066 368.203 575.066 440C575.066 511.797 516.863 570 445.066 570C399.255 570 358.98 546.303 335.826 510.5H45.066C34.0203 510.5 24.9559 501.518 26.0972 490.531C36.081 394.43 117.323 319.5 216.066 319.5H369.066C377.086 319.5 384.99 319.997 392.75 320.957C392.623 321.013 392.497 321.07 392.371 321.126C408.478 313.975 426.308 310 445.066 310ZM445.066 340C389.838 340 345.066 384.772 345.066 440C345.066 495.228 389.838 540 445.066 540C500.294 540 545.066 495.228 545.066 440C545.066 384.772 500.294 340 445.066 340Z"
-                      />
-                      <path
-                        d="M292.066 29C361.101 29.0002 417.066 84.9645 417.066 154C417.066 223.035 361.101 279 292.066 279C223.03 279 167.066 223.036 167.066 154C167.066 84.9644 223.03 29.0001 292.066 29Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <div id="friends-container"></div>
 
             <button
               type="button"
               id="show-all-friends-btn"
-              class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title md:w-full"
+              class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title md:w-full mt-2 hidden"
             >
               Show all friends
             </button>

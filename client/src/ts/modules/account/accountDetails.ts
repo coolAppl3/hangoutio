@@ -81,6 +81,7 @@ function renderAccountDetails(): void {
   ongoingHangoutsSpan && (ongoingHangoutsSpan.textContent = `${ongoingHangoutsCount}`);
 
   renderConfirmationForm();
+  renderDetailsDropdownMenu();
 };
 
 function renderConfirmationForm(): void {
@@ -106,10 +107,21 @@ function renderConfirmationForm(): void {
     accountDetailsState.confirmationFormPurpose = null;
     confirmationForm.classList.add('hidden');
 
+    renderDetailsDropdownMenu();
     return;
   };
 
   confirmationForm.classList.remove('hidden');
+  renderDetailsDropdownMenu();
+};
+
+function renderDetailsDropdownMenu(): void {
+  if (accountDetailsState.confirmationFormPurpose) {
+    detailsDropdownElement?.classList.add('ongoing-request');
+    return;
+  };
+
+  detailsDropdownElement?.classList.remove('ongoing-request');
 };
 
 async function handleDetailsUpdateFormSubmission(e: SubmitEvent): Promise<void> {
