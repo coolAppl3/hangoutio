@@ -1,4 +1,6 @@
+import { debounce } from "../global/debounce";
 import { createDivElement, createParagraphElement } from "../global/domUtils";
+import popup from "../global/popup";
 import { Friend } from "./accountTypes";
 import { createFriendElement } from "./accountUtils";
 import { accountState } from "./initAccount";
@@ -8,13 +10,16 @@ type SelectTab = 'friends-list' | 'pending-requests' | 'add-friends-form';
 interface AccountFriendsState {
   selectedTab: SelectTab,
   renderLimit: number | null,
+
+  filteredFriends: Friend[],
 };
 
 const accountFriendsState: AccountFriendsState = {
   selectedTab: 'friends-list',
   renderLimit: 6,
-};
 
+  filteredFriends: [],
+};
 
 const friendsElement: HTMLDivElement | null = document.querySelector('#friends');
 
@@ -22,30 +27,40 @@ const friendsContainer: HTMLDivElement | null = document.querySelector('#friends
 const friendsSearchInput: HTMLInputElement | null = document.querySelector('#friends-search-input');
 const showAllFriendsBtn: HTMLButtonElement | null = document.querySelector('#show-all-friends-btn');
 
-
 export function initAccountFriends(): void {
-  LoadEventListeners();
+  if (!accountState.data) {
+    popup('Failed to load friends list.', 'error');
+    return;
+  };
 
+  accountFriendsState.filteredFriends = [...accountState.data.friends];
+
+  LoadEventListeners();
+  renderAccountFriends();
+};
+
+function renderAccountFriends(): void {
   renderFriendsContainer();
 };
 
 function LoadEventListeners(): void {
   friendsElement?.addEventListener('click', handleFriendsElementClicks);
+  friendsSearchInput?.addEventListener('input', debounceSearchFriends);
 };
 
 function renderFriendsContainer(): void {
-  if (!accountState.data || !friendsContainer) {
+  if (!friendsContainer) {
     return;
   };
 
   const innerFriendsContainer: HTMLDivElement = createDivElement(null, 'friends-container-inner');
 
-  if (accountState.data.friends.length === 0) {
-    innerFriendsContainer.appendChild(createParagraphElement('no-friends', 'No friends yet.'));
+  if (accountFriendsState.filteredFriends.length === 0) {
+    innerFriendsContainer.appendChild(createParagraphElement('no-friends', 'No friends found.'));
   };
 
-  for (let i = 0; i < (accountFriendsState.renderLimit || accountState.data.friends.length); i++) {
-    const friend: Friend | undefined = accountState.data.friends[i];
+  for (let i = 0; i < (accountFriendsState.renderLimit || accountFriendsState.filteredFriends.length); i++) {
+    const friend: Friend | undefined = accountFriendsState.filteredFriends[i];
 
     if (!friend) {
       continue;
@@ -57,7 +72,7 @@ function renderFriendsContainer(): void {
   friendsContainer.firstElementChild?.remove();
   friendsContainer.appendChild(innerFriendsContainer);
 
-  if (accountFriendsState.renderLimit && accountFriendsState.renderLimit < accountState.data.friends.length) {
+  if (accountFriendsState.renderLimit && accountFriendsState.renderLimit < accountFriendsState.filteredFriends.length) {
     showAllFriendsBtn?.classList.remove('hidden');
   };
 };
@@ -74,4 +89,17 @@ function handleFriendsElementClicks(e: MouseEvent): void {
     renderFriendsContainer();
     return;
   };
+};
+
+const debounceSearchFriends = debounce(searchFriends, 300);
+
+function searchFriends(): void {
+  if (!accountState.data || !friendsSearchInput) {
+    return;
+  };
+
+  const searchQuery: string = friendsSearchInput.value;
+  accountFriendsState.filteredFriends = accountState.data.friends.filter((friend: Friend) => friend.friend_display_name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  renderFriendsContainer();
 };
