@@ -82,6 +82,11 @@ function handleFriendsElementClicks(e: MouseEvent): void {
     return;
   };
 
+  if (e.target.classList.contains('friends-tab-btn')) {
+    navigateFriendsTab(e.target);
+    return;
+  };
+
   if (e.target.id === 'show-all-friends-btn') {
     accountFriendsState.renderLimit = null;
     e.target.classList.add('hidden');
@@ -89,6 +94,32 @@ function handleFriendsElementClicks(e: MouseEvent): void {
     renderFriendsContainer();
     return;
   };
+};
+
+function navigateFriendsTab(clickedBtn: HTMLButtonElement): void {
+  const selectedTab: string | null = clickedBtn.getAttribute('data-selectedTab');
+
+  if (selectedTab !== 'friends-list' && selectedTab !== 'pending-requests' && selectedTab !== 'add-friends-form') {
+    return;
+  };
+
+  if (selectedTab === accountFriendsState.selectedTab) {
+    return;
+  };
+
+  document.querySelector(`#${accountFriendsState.selectedTab}`)?.classList.add('hidden');
+  document.querySelector(`#${selectedTab}`)?.classList.remove('hidden');
+
+  for (const btn of document.querySelectorAll('.friends-tab-btn')) {
+    if (btn.getAttribute('data-selectedTab') === selectedTab) {
+      btn.classList.add('selected');
+      continue;
+    };
+
+    btn.classList.remove('selected');
+  };
+
+  accountFriendsState.selectedTab = selectedTab;
 };
 
 const debounceSearchFriends = debounce(searchFriends, 300);

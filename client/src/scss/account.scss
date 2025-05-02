@@ -659,7 +659,7 @@
   @media(max-width: 480px) {
 
     #friends-tabs {
-      @apply flex-col items-start border-b-0 border-l-1 pl-0 pt-2;
+      @apply flex-col items-start border-b-0 border-l-1 pl-0;
 
       button {
         @apply mb-0 ml-[-1px] min-w-[14rem] text-start rounded-tl-[0px] rounded-br;
