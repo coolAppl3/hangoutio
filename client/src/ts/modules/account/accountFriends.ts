@@ -23,6 +23,9 @@ const accountFriendsState: AccountFriendsState = {
 
 const friendsElement: HTMLDivElement | null = document.querySelector('#friends');
 
+const friendsCountSpan: HTMLSpanElement | null = document.querySelector('#friends-count-span');
+const pendingRequestsCountSpan: HTMLSpanElement | null = document.querySelector('#pending-requests-count-span');
+
 const friendsContainer: HTMLDivElement | null = document.querySelector('#friends-container');
 const friendsSearchInput: HTMLInputElement | null = document.querySelector('#friends-search-input');
 const showAllFriendsBtn: HTMLButtonElement | null = document.querySelector('#show-all-friends-btn');
@@ -40,12 +43,28 @@ export function initAccountFriends(): void {
 };
 
 function renderAccountFriends(): void {
+  renderCountSpans();
   renderFriendsContainer();
 };
 
 function LoadEventListeners(): void {
   friendsElement?.addEventListener('click', handleFriendsElementClicks);
   friendsSearchInput?.addEventListener('input', debounceSearchFriends);
+};
+
+function renderCountSpans(): void {
+  if (!accountState.data) {
+    return;
+  };
+
+  if (!friendsCountSpan || !pendingRequestsCountSpan) {
+    return;
+  };
+
+  const { friends, friendRequests } = accountState.data;
+
+  friendsCountSpan.textContent = `${friends.length}`;
+  pendingRequestsCountSpan.textContent = `${friendRequests.length}`;
 };
 
 function renderFriendsContainer(): void {
