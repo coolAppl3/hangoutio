@@ -64,7 +64,7 @@ function initHangoutMembers(): void {
   };
 
   hangoutMembersState.hasLeader = hangoutHasLeader();
-  hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
+  hangoutMembersState.filteredMembers = [...globalHangoutState.data.hangoutMembers];
   hangoutMembersState.isLoaded = true;
 
   renderMembersSection();
@@ -704,7 +704,7 @@ function initMembersSectionMutationObserver(): void {
           return;
         };
 
-        hangoutMembersState.filteredMembers = globalHangoutState.data.hangoutMembers;
+        hangoutMembersState.filteredMembers = [...globalHangoutState.data.hangoutMembers];
         hangoutMembersState.membersSectionMutationObserverActive = false;
         membersSearchInput && (membersSearchInput.value = '');
 

@@ -122,7 +122,7 @@ async function getHangoutEvents(): Promise<void> {
     const hangoutEvents: HangoutEvent[] = (await getHangoutEventsService(hangoutId, hangoutMemberId)).data;
 
     hangoutEventsState.hangoutEvents = hangoutEvents;
-    hangoutEventsState.filteredHangoutEvents = hangoutEvents;
+    hangoutEventsState.filteredHangoutEvents = [...hangoutEvents];
 
     hangoutEventsState.isLoaded = true;
 
@@ -178,7 +178,7 @@ function initMembersSectionMutationObserver(): void {
   const mutationObserver: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
     for (const mutation of mutations) {
       if (mutation.attributeName === 'class' && eventsSection.classList.contains('hidden')) {
-        hangoutEventsState.filteredHangoutEvents = hangoutEventsState.hangoutEvents;
+        hangoutEventsState.filteredHangoutEvents = [...hangoutEventsState.hangoutEvents];
         hangoutEventsState.eventsRenderLimit = 20;
         hangoutEventsState.membersSectionMutationObserverActive = false;
         eventsSearchInput && (eventsSearchInput.value = '');
