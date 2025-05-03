@@ -105,7 +105,7 @@ function createInnerFriendsContainer(friend: Friend): HTMLDivElement {
 };
 
 function createRemoveFriendBtn(): HTMLButtonElement {
-  const removeFriendBtn: HTMLButtonElement = createBtnElement(null, null);
+  const removeFriendBtn: HTMLButtonElement = createBtnElement('remove-friend-btn', null);
 
   removeFriendBtn.setAttribute('Title', 'Remove friend');
   removeFriendBtn.setAttribute('aria-label', 'Remove friend');

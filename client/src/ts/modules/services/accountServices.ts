@@ -211,7 +211,7 @@ export function rejectFriendRequestService(friendRequestId: number): Promise<Axi
 // --- --- ---
 
 export function removeFriendService(friendshipId: number): Promise<AxiosResponse> {
-  return axios.delete(`${accountsApiUrl}/friends/manager/remove?friendshipId=${friendshipId}`);
+  return axios.delete(`${accountsApiUrl}/friends/manage/remove?friendshipId=${friendshipId}`);
 };
 
 // --- --- ---
