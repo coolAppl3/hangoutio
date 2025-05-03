@@ -178,8 +178,8 @@ async function handleConfirmationFormSubmission(e: SubmitEvent): Promise<void> {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await confirmAccountDeletion();
       ConfirmModal.remove();
+      await confirmAccountDeletion();
 
       return;
     };
@@ -1263,8 +1263,8 @@ function confirmAbortRequest(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? abortEmailUpdate() : abortAccountDeletion());
       ConfirmModal.remove();
+      await (accountDetailsState.confirmationFormPurpose === 'confirmEmailUpdate' ? abortEmailUpdate() : abortAccountDeletion());
 
       return;
     };

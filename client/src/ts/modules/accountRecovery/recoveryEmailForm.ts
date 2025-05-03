@@ -170,10 +170,11 @@ function detectSignedInUser(): boolean {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await signOut();
       ConfirmModal.remove();
 
+      await signOut();
       await init(false);
+
       return;
     };
 

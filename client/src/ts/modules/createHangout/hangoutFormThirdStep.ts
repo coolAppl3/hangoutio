@@ -530,8 +530,8 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await signOut();
       ConfirmModal.remove();
+      await signOut();
 
       return;
     };
@@ -570,9 +570,10 @@ function handleUserSignOut(): void {
       thirdStepFormContainer?.classList.remove('disabled');
 
       hangoutThirdStepState.isSignedIn = false;
-      await signOut();
 
       ConfirmModal.remove();
+      await signOut();
+
       return;
     };
 

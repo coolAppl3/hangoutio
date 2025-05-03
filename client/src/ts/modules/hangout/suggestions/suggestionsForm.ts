@@ -724,6 +724,7 @@ function handleMajorSuggestionChanges(suggestionId: number): void {
     if (e.target.id === 'confirm-modal-confirm-btn') {
       ConfirmModal.remove();
       await editHangoutSuggestion(suggestionId);
+
       return;
     };
 
