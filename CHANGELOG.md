@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.91] (2025-05-03)
+
+### Features
+
+- Implemented tab navigation for the friends element in `account.html`.
+- Implemented logic to render the count of friends and pending friend requests in `account.html`.
+- Implemented logic to render pending friend requests in `account.html`.
+
+
+### Bug Fixes
+
+- Fixed array reference issues in `hangoutMembers.ts` and `hangoutEvents.ts`.
+
+
 ## [0.4.90] (2025-05-01)
 
 ### Features

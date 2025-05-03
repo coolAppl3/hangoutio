@@ -2,7 +2,7 @@ import { debounce } from "../global/debounce";
 import { createDivElement, createParagraphElement } from "../global/domUtils";
 import popup from "../global/popup";
 import { Friend } from "./accountTypes";
-import { createFriendElement } from "./accountUtils";
+import { createFriendElement, createFriendRequestElement } from "./accountUtils";
 import { accountState } from "./initAccount";
 
 type SelectTab = 'friends-list' | 'pending-requests' | 'add-friends-form';
@@ -23,9 +23,15 @@ const accountFriendsState: AccountFriendsState = {
 
 const friendsElement: HTMLDivElement | null = document.querySelector('#friends');
 
+const friendsCountSpan: HTMLSpanElement | null = document.querySelector('#friends-count-span');
+const pendingRequestsCountSpan: HTMLSpanElement | null = document.querySelector('#pending-requests-count-span');
+
 const friendsContainer: HTMLDivElement | null = document.querySelector('#friends-container');
 const friendsSearchInput: HTMLInputElement | null = document.querySelector('#friends-search-input');
 const showAllFriendsBtn: HTMLButtonElement | null = document.querySelector('#show-all-friends-btn');
+
+const pendingRequestsElement: HTMLDivElement | null = document.querySelector('#pending-requests');
+
 
 export function initAccountFriends(): void {
   if (!accountState.data) {
@@ -40,12 +46,29 @@ export function initAccountFriends(): void {
 };
 
 function renderAccountFriends(): void {
+  renderCountSpans();
   renderFriendsContainer();
+  renderPendingRequests();
 };
 
 function LoadEventListeners(): void {
   friendsElement?.addEventListener('click', handleFriendsElementClicks);
   friendsSearchInput?.addEventListener('input', debounceSearchFriends);
+};
+
+function renderCountSpans(): void {
+  if (!accountState.data) {
+    return;
+  };
+
+  if (!friendsCountSpan || !pendingRequestsCountSpan) {
+    return;
+  };
+
+  const { friends, friendRequests } = accountState.data;
+
+  friendsCountSpan.textContent = `${friends.length}`;
+  pendingRequestsCountSpan.textContent = `${friendRequests.length}`;
 };
 
 function renderFriendsContainer(): void {
@@ -77,8 +100,32 @@ function renderFriendsContainer(): void {
   };
 };
 
+function renderPendingRequests(): void {
+  if (!accountState.data || !pendingRequestsElement) {
+    return;
+  };
+
+  const pendingRequestsContainer: HTMLDivElement = createDivElement(null, 'pending-requests-container');
+
+  if (accountState.data.friendRequests.length === 0) {
+    pendingRequestsContainer.appendChild(createParagraphElement('no-requests', 'No pending requests.'));
+  };
+
+  for (const request of accountState.data.friendRequests) {
+    pendingRequestsContainer.appendChild(createFriendRequestElement(request));
+  };
+
+  pendingRequestsElement.firstElementChild?.remove();
+  pendingRequestsElement.appendChild(pendingRequestsContainer);
+};
+
 function handleFriendsElementClicks(e: MouseEvent): void {
   if (!(e.target instanceof HTMLButtonElement)) {
+    return;
+  };
+
+  if (e.target.classList.contains('friends-tab-btn')) {
+    navigateFriendsTab(e.target);
     return;
   };
 
@@ -89,6 +136,32 @@ function handleFriendsElementClicks(e: MouseEvent): void {
     renderFriendsContainer();
     return;
   };
+};
+
+function navigateFriendsTab(clickedBtn: HTMLButtonElement): void {
+  const selectedTab: string | null = clickedBtn.getAttribute('data-selectedTab');
+
+  if (selectedTab !== 'friends-list' && selectedTab !== 'pending-requests' && selectedTab !== 'add-friends-form') {
+    return;
+  };
+
+  if (selectedTab === accountFriendsState.selectedTab) {
+    return;
+  };
+
+  document.querySelector(`#${accountFriendsState.selectedTab}`)?.classList.add('hidden');
+  document.querySelector(`#${selectedTab}`)?.classList.remove('hidden');
+
+  for (const btn of document.querySelectorAll('.friends-tab-btn')) {
+    if (btn.getAttribute('data-selectedTab') === selectedTab) {
+      btn.classList.add('selected');
+      continue;
+    };
+
+    btn.classList.remove('selected');
+  };
+
+  accountFriendsState.selectedTab = selectedTab;
 };
 
 const debounceSearchFriends = debounce(searchFriends, 300);

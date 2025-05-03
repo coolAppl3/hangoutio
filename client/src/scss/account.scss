@@ -659,7 +659,7 @@
   @media(max-width: 480px) {
 
     #friends-tabs {
-      @apply flex-col items-start border-b-0 border-l-1 pl-0 pt-2;
+      @apply flex-col items-start border-b-0 border-l-1 pl-0;
 
       button {
         @apply mb-0 ml-[-1px] min-w-[14rem] text-start rounded-tl-[0px] rounded-br;
@@ -719,7 +719,7 @@
         }
 
         p.no-friends {
-          @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 my-1 mx-auto w-fit rounded-[20rem] col-span-3;
+          @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mx-auto w-fit rounded-[20rem] col-span-3;
         }
       }
     }
@@ -728,10 +728,9 @@
   #pending-requests {
 
     &-container {
-      @apply mb-2;
 
       .friend-request {
-        @apply flex justify-between items-end sm:flex-col sm:items-start p-1 bg-section dark:bg-section-dark rounded-sm;
+        @apply flex justify-between items-end sm:flex-col sm:items-start p-1 bg-section dark:bg-section-dark rounded-sm mb-1 last:mb-0;
 
         div p {
           @apply overflow-hidden;
@@ -762,10 +761,14 @@
             }
 
             &.accept-btn {
-              @apply btn bg-cta dark:bg-cta-dark;
+              @apply btn bg-description dark:bg-description-dark text-title-dark dark:text-title;
             }
           }
         }
+      }
+
+      p.no-requests {
+        @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mt-1 mx-auto w-fit rounded-[20rem] col-span-3;
       }
     }
   }

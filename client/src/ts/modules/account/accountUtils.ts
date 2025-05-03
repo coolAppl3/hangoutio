@@ -2,7 +2,7 @@ import { getDateAndTimeString, getFullDateSTring } from "../global/dateTimeUtils
 import { createBtnElement, createDivElement, createParagraphElement, createSvgElement } from "../global/domUtils";
 import { InfoModal } from "../global/InfoModal";
 import { removeSignInCookies } from "../global/signOut";
-import { Friend } from "./accountTypes";
+import { Friend, FriendRequest } from "./accountTypes";
 
 export function removeLoadingSkeleton(): void {
   document.querySelector('#loading-skeleton')?.remove();
@@ -129,4 +129,33 @@ function createRemoveFriendIcon(): SVGSVGElement {
   ThirdPathElement.setAttribute('d', 'M292.066 29C361.101 29.0002 417.066 84.9645 417.066 154C417.066 223.035 361.101 279 292.066 279C223.03 279 167.066 223.036 167.066 154C167.066 84.9644 223.03 29.0001 292.066 29Z');
 
   return removeFriendSvg;
+};
+
+export function createFriendRequestElement(friendRequest: FriendRequest): HTMLDivElement {
+  const friendRequestElement: HTMLDivElement = createDivElement('friend-request');
+  friendRequestElement.setAttribute('data-friendRequestId', `${friendRequest.request_id}`);
+
+  friendRequestElement.appendChild(createInnerFriendRequestContainer(friendRequest));
+  friendRequestElement.appendChild(createFriendRequestBtnContainer());
+
+  return friendRequestElement;
+};
+
+function createInnerFriendRequestContainer(friendRequest: FriendRequest): HTMLDivElement {
+  const innerContainer: HTMLDivElement = createDivElement(null);
+
+  innerContainer.appendChild(createParagraphElement(null, friendRequest.requester_display_name));
+  innerContainer.appendChild(createParagraphElement(null, `@${friendRequest.requester_username}`));
+  innerContainer.appendChild(createParagraphElement(null, `Requested on ${getFullDateSTring(friendRequest.request_timestamp)}`));
+
+  return innerContainer;
+};
+
+function createFriendRequestBtnContainer(): HTMLDivElement {
+  const btnContainer: HTMLDivElement = createDivElement('btn-container');
+
+  btnContainer.appendChild(createBtnElement('reject-btn', 'Reject'));
+  btnContainer.appendChild(createBtnElement('accept-btn', 'Accept'));
+
+  return btnContainer;
 };
