@@ -2,7 +2,7 @@ import { debounce } from "../global/debounce";
 import { createDivElement, createParagraphElement } from "../global/domUtils";
 import popup from "../global/popup";
 import { Friend } from "./accountTypes";
-import { createFriendElement } from "./accountUtils";
+import { createFriendElement, createFriendRequestElement } from "./accountUtils";
 import { accountState } from "./initAccount";
 
 type SelectTab = 'friends-list' | 'pending-requests' | 'add-friends-form';
@@ -30,6 +30,9 @@ const friendsContainer: HTMLDivElement | null = document.querySelector('#friends
 const friendsSearchInput: HTMLInputElement | null = document.querySelector('#friends-search-input');
 const showAllFriendsBtn: HTMLButtonElement | null = document.querySelector('#show-all-friends-btn');
 
+const pendingRequestsElement: HTMLDivElement | null = document.querySelector('#pending-requests');
+
+
 export function initAccountFriends(): void {
   if (!accountState.data) {
     popup('Failed to load friends list.', 'error');
@@ -45,6 +48,7 @@ export function initAccountFriends(): void {
 function renderAccountFriends(): void {
   renderCountSpans();
   renderFriendsContainer();
+  renderPendingRequests();
 };
 
 function LoadEventListeners(): void {
@@ -94,6 +98,25 @@ function renderFriendsContainer(): void {
   if (accountFriendsState.renderLimit && accountFriendsState.renderLimit < accountFriendsState.filteredFriends.length) {
     showAllFriendsBtn?.classList.remove('hidden');
   };
+};
+
+function renderPendingRequests(): void {
+  if (!accountState.data || !pendingRequestsElement) {
+    return;
+  };
+
+  const pendingRequestsContainer: HTMLDivElement = createDivElement(null, 'pending-requests-container');
+
+  if (accountState.data.friendRequests.length === 0) {
+    pendingRequestsContainer.appendChild(createParagraphElement('no-requests', 'No pending requests.'));
+  };
+
+  for (const request of accountState.data.friendRequests) {
+    pendingRequestsContainer.appendChild(createFriendRequestElement(request));
+  };
+
+  pendingRequestsElement.firstElementChild?.remove();
+  pendingRequestsElement.appendChild(pendingRequestsContainer);
 };
 
 function handleFriendsElementClicks(e: MouseEvent): void {
