@@ -14,12 +14,12 @@ import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 const recoveryEmailFormElement: HTMLFormElement | null = document.querySelector('#recovery-email-form');
 const recoveryEmailInput: HTMLInputElement | null = document.querySelector('#recovery-email-input');
 
-export function recoveryEmailForm(): void {
+export async function recoveryEmailForm(): Promise<void> {
   loadEventListeners();
-  init();
+  await initRecoverEmailForm();
 };
 
-async function init(isFirstCall: boolean = true): Promise<void> {
+async function initRecoverEmailForm(isFirstCall: boolean = true): Promise<void> {
   if (isFirstCall) {
     setActiveValidation();
   };
@@ -173,7 +173,7 @@ function detectSignedInUser(): boolean {
       ConfirmModal.remove();
 
       await signOut();
-      await init(false);
+      await initRecoverEmailForm(false);
 
       return;
     };

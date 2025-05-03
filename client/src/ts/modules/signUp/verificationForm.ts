@@ -18,16 +18,13 @@ const verificationCodeInput: HTMLInputElement | null = document.querySelector('#
 const resendVerificationCodeBtn: HTMLButtonElement | null = document.querySelector('#resend-code-btn');
 
 
-export function verificationForm(): void {
+export async function verificationForm(): Promise<void> {
   loadEventListeners();
-  init();
-};
 
-async function init(): Promise<void> {
   if (verificationLinkDetected()) {
     signUpState.inVerificationStage = true;
-
     await verifyAccount(new SubmitEvent('submit'));
+
     return;
   };
 

@@ -25,10 +25,7 @@ const keepSignedInBtn: HTMLButtonElement | null = document.querySelector('#keep-
 
 export function signUpForm(): void {
   loadEventListeners();
-  init();
-};
 
-async function init(): Promise<void> {
   setActiveValidation();
   detectSignedInUser();
 };

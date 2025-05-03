@@ -38,13 +38,9 @@ export function initHangoutGuestSignUp(hangoutId: string, isPasswordProtected: b
     keepSignedIn: false,
   };
 
-  init();
   loadEventListeners();
-};
 
-function init(): void {
   revealGuestSignUpSection();
-
   setActiveValidation();
   enableFormUtilButtons();
 };
