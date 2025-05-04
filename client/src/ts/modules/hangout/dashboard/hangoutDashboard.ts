@@ -415,8 +415,9 @@ function confirmLeaveHangout(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await leaveHangout();
       ConfirmModal.remove();
+      await leaveHangout();
+
       return;
     };
 

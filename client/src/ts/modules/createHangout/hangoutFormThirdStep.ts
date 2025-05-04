@@ -45,8 +45,10 @@ const keepSignedInBtn: HTMLButtonElement | null = document.querySelector('#keep-
 const accountPreferences: HTMLDivElement | null = document.querySelector('#account-preferences');
 
 export function hangoutFormThirdStep(): void {
-  init();
   loadEventListeners();
+
+  setActiveInputValidation();
+  detectSignedInUser();
 };
 
 function loadEventListeners(): void {
@@ -57,11 +59,6 @@ function loadEventListeners(): void {
   accountPasswordRevealBtn?.addEventListener('click', () => revealPassword(accountPasswordRevealBtn));
   guestPasswordRevealBtn?.addEventListener('click', () => revealPassword(guestPasswordRevealBtn));
   guestPasswordConfirmRevalBtn?.addEventListener('click', () => revealPassword(guestPasswordConfirmRevalBtn));
-};
-
-function init(): void {
-  setActiveInputValidation();
-  detectSignedInUser();
 };
 
 async function submitHangout(e: SubmitEvent): Promise<void> {
@@ -530,8 +527,8 @@ function detectSignedInUser(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await signOut();
       ConfirmModal.remove();
+      await signOut();
 
       return;
     };
@@ -570,9 +567,10 @@ function handleUserSignOut(): void {
       thirdStepFormContainer?.classList.remove('disabled');
 
       hangoutThirdStepState.isSignedIn = false;
-      await signOut();
 
       ConfirmModal.remove();
+      await signOut();
+
       return;
     };
 

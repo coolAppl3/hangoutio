@@ -105,7 +105,7 @@ function createInnerFriendsContainer(friend: Friend): HTMLDivElement {
 };
 
 function createRemoveFriendBtn(): HTMLButtonElement {
-  const removeFriendBtn: HTMLButtonElement = createBtnElement(null, null);
+  const removeFriendBtn: HTMLButtonElement = createBtnElement('remove-friend-btn', null);
 
   removeFriendBtn.setAttribute('Title', 'Remove friend');
   removeFriendBtn.setAttribute('aria-label', 'Remove friend');
@@ -125,8 +125,12 @@ function createRemoveFriendIcon(): SVGSVGElement {
   secondPathElement.setAttribute('clip-rule', 'evenodd');
   secondPathElement.setAttribute('d', 'M445.066 310C516.863 310 575.066 368.203 575.066 440C575.066 511.797 516.863 570 445.066 570C399.255 570 358.98 546.303 335.826 510.5H45.066C34.0203 510.5 24.9559 501.518 26.0972 490.531C36.081 394.43 117.323 319.5 216.066 319.5H369.066C377.086 319.5 384.99 319.997 392.75 320.957C392.623 321.013 392.497 321.07 392.371 321.126C408.478 313.975 426.308 310 445.066 310ZM445.066 340C389.838 340 345.066 384.772 345.066 440C345.066 495.228 389.838 540 445.066 540C500.294 540 545.066 495.228 545.066 440C545.066 384.772 500.294 340 445.066 340Z');
 
-  const ThirdPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  ThirdPathElement.setAttribute('d', 'M292.066 29C361.101 29.0002 417.066 84.9645 417.066 154C417.066 223.035 361.101 279 292.066 279C223.03 279 167.066 223.036 167.066 154C167.066 84.9644 223.03 29.0001 292.066 29Z');
+  const thirdPathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  thirdPathElement.setAttribute('d', 'M292.066 29C361.101 29.0002 417.066 84.9645 417.066 154C417.066 223.035 361.101 279 292.066 279C223.03 279 167.066 223.036 167.066 154C167.066 84.9644 223.03 29.0001 292.066 29Z');
+
+  removeFriendSvg.appendChild(firstPathElement);
+  removeFriendSvg.appendChild(secondPathElement);
+  removeFriendSvg.appendChild(thirdPathElement);
 
   return removeFriendSvg;
 };

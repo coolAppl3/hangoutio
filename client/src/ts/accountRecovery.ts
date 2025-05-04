@@ -9,5 +9,5 @@ import { recoveryPasswordUpdateForm } from './modules/accountRecovery/recoveryPa
 topNavbar();
 botNavbar();
 
-recoveryEmailForm();
+await recoveryEmailForm();
 recoveryPasswordUpdateForm();

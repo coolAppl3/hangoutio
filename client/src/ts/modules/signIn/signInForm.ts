@@ -34,11 +34,8 @@ const guestPasswordInput: HTMLInputElement | null = document.querySelector('#gue
 const guestPasswordRevealBtn: HTMLButtonElement | null = document.querySelector('#guest-password-input-reveal-btn');
 
 export function signInForm(): void {
-  init();
   loadEventListeners();
-};
 
-function init(): void {
   setActiveValidation();
   redirectSignedInUser();
 };

@@ -8,5 +8,5 @@ import { verificationForm } from './modules/signUp/verificationForm';
 topNavbar();
 botNavbar();
 
-verificationForm();
+await verificationForm();
 signUpForm();

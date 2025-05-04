@@ -1,6 +1,11 @@
+import { handleAuthSessionExpired } from "../global/authUtils";
+import { ConfirmModal } from "../global/ConfirmModal";
 import { debounce } from "../global/debounce";
 import { createDivElement, createParagraphElement } from "../global/domUtils";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
+import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
+import { removeFriendService } from "../services/accountServices";
 import { Friend } from "./accountTypes";
 import { createFriendElement, createFriendRequestElement } from "./accountUtils";
 import { accountState } from "./initAccount";
@@ -41,7 +46,7 @@ export function initAccountFriends(): void {
 
   accountFriendsState.filteredFriends = [...accountState.data.friends];
 
-  LoadEventListeners();
+  loadEventListeners();
   renderAccountFriends();
 };
 
@@ -51,7 +56,7 @@ function renderAccountFriends(): void {
   renderPendingRequests();
 };
 
-function LoadEventListeners(): void {
+function loadEventListeners(): void {
   friendsElement?.addEventListener('click', handleFriendsElementClicks);
   friendsSearchInput?.addEventListener('input', debounceSearchFriends);
 };
@@ -119,7 +124,7 @@ function renderPendingRequests(): void {
   pendingRequestsElement.appendChild(pendingRequestsContainer);
 };
 
-function handleFriendsElementClicks(e: MouseEvent): void {
+async function handleFriendsElementClicks(e: MouseEvent): Promise<void> {
   if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
@@ -135,6 +140,63 @@ function handleFriendsElementClicks(e: MouseEvent): void {
 
     renderFriendsContainer();
     return;
+  };
+
+  if (e.target.classList.contains('remove-friend-btn')) {
+    confirmFriendDeletion(e.target);
+    return;
+  };
+};
+
+async function removeFriend(friendshipId: number): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await removeFriendService(friendshipId);
+
+    accountState.data.friends = accountState.data.friends.filter((friend: Friend) => friend.friendship_id !== friendshipId);
+    accountFriendsState.filteredFriends = accountFriendsState.filteredFriends.filter((friend: Friend) => friend.friendship_id !== friendshipId);
+
+    renderFriendsContainer();
+
+    popup('Friend removed.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      renderFriendsContainer();
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
   };
 };
 
@@ -175,4 +237,47 @@ function searchFriends(): void {
   accountFriendsState.filteredFriends = accountState.data.friends.filter((friend: Friend) => friend.friend_display_name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   renderFriendsContainer();
+};
+
+function confirmFriendDeletion(clickedBtn: HTMLButtonElement): void {
+  const friendshipId: string | undefined | null = clickedBtn.parentElement?.getAttribute('data-friendshipId');
+
+  if (!friendshipId || !Number.isInteger(+friendshipId)) {
+    return;
+  };
+
+  const friend: Friend | undefined = accountState.data?.friends.find((friend: Friend) => friend.friendship_id === +friendshipId);
+
+  if (!friend) {
+    renderFriendsContainer();
+    popup('Friend not found.', 'error');
+
+    return;
+  };
+
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: null,
+    description: `Are you sure you want to remove ${friend.friend_display_name} from your friends list?`,
+    confirmBtnTitle: 'Remove friend',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      ConfirmModal.remove();
+      await removeFriend(+friendshipId);
+
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
 };

@@ -22,10 +22,6 @@ const resendRecoveryEmailBtn: HTMLButtonElement | null = document.querySelector(
 
 export function recoveryPasswordUpdateForm(): void {
   loadEventListeners();
-  init();
-};
-
-function init(): void {
   setActiveValidation();
 };
 

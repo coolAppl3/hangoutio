@@ -614,8 +614,8 @@ function confirmMemberAction<T extends (...args: any[]) => Promise<void>>(confir
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await func(...args);
       ConfirmModal.remove();
+      await func(...args);
 
       return;
     };

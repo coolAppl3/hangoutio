@@ -1086,8 +1086,8 @@ function confirmPasswordDelete(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      await updateHangoutPassword(true);
       ConfirmModal.remove();
+      await updateHangoutPassword(true);
 
       return;
     };
@@ -1178,8 +1178,8 @@ function confirmDeleteHangout(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
-      deleteHangout();
       ConfirmModal.remove();
+      await deleteHangout();
 
       return;
     };
