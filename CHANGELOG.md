@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.92] (2025-05-04)
+
+### Features
+
+- Implemented logic to remove a friend from a user's friends list.
+
+
+### Code Refactoring
+
+- Refactored a few redundant "init" functions throughout the app.
+
+
+### Bug Fixes
+
+- Fixed the button to remove friends in the friends list not being rendered properly.
+- Fixed a few instances throughout the app where the confirm modal would be removed after the async call is completed, instead of before.
+
+
 ## [0.4.91] (2025-05-03)
 
 ### Features

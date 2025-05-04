@@ -1,6 +1,6 @@
 {
   "name": "hangoutio",
-  "version": "0.4.91",
+  "version": "0.4.92",
   "description": "Hangoutio is an app designed to organize hangouts with your friends easily and efficiently.",
   "main": "app.js",
   "type": "commonjs",
