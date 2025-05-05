@@ -2710,7 +2710,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     connection = await dbPool.getConnection();
     await connection.beginTransaction();
 
-    await connection.execute(
+    const [firstResultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO friendships (
         first_account_id,
         second_account_id,
@@ -2719,7 +2719,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
       [authSessionDetails.user_id, requesterId, friendshipTimestamp]
     );
 
-    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
+    const [secondResultSetHeader] = await connection.execute<ResultSetHeader>(
       `DELETE FROM
         friend_requests
       WHERE
@@ -2729,7 +2729,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
       { accountId: authSessionDetails.user_id, requesterId }
     );
 
-    if (resultSetHeader.affectedRows === 0) {
+    if (secondResultSetHeader.affectedRows === 0) {
       await connection.rollback();
       res.status(500).json({ message: 'Internal server error.' });
 
@@ -2737,7 +2737,10 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     };
 
     await connection.commit();
-    res.json({});
+    res.json({
+      friendship_id: firstResultSetHeader.insertId,
+      friendship_timestamp: friendshipTimestamp,
+    });
 
   } catch (err: unknown) {
     console.log(err);

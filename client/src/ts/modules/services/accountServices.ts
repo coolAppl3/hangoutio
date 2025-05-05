@@ -198,7 +198,12 @@ interface AcceptFriendRequestBody {
   friendRequestId: number,
 };
 
-export function acceptFriendRequestService(requestBody: AcceptFriendRequestBody): Promise<AxiosResponse> {
+interface AcceptFriendRequestData {
+  friendship_id: number,
+  friendship_timestamp: number,
+};
+
+export function acceptFriendRequestService(requestBody: AcceptFriendRequestBody): Promise<AxiosResponse<AcceptFriendRequestData>> {
   return axios.post(`${accountsApiUrl}/friends/requests/accept`, requestBody);
 };
 
