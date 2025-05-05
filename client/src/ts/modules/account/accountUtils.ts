@@ -158,8 +158,8 @@ function createInnerFriendRequestContainer(friendRequest: FriendRequest): HTMLDi
 function createFriendRequestBtnContainer(): HTMLDivElement {
   const btnContainer: HTMLDivElement = createDivElement('btn-container');
 
-  btnContainer.appendChild(createBtnElement('reject-btn', 'Reject'));
-  btnContainer.appendChild(createBtnElement('accept-btn', 'Accept'));
+  btnContainer.appendChild(createBtnElement('reject-request-btn friend-request-btn', 'Reject'));
+  btnContainer.appendChild(createBtnElement('accept-request-btn friend-request-btn', 'Accept'));
 
   return btnContainer;
 };
