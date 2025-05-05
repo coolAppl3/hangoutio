@@ -2841,7 +2841,7 @@ accountsRouter.delete('/friends/requests/reject', async (req: Request, res: Resp
     );
 
     if (resultSetHeader.affectedRows === 0) {
-      res.status(404).json({ message: 'Friend request not found.' });
+      res.json({});
       return;
     };
 
