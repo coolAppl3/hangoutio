@@ -2471,7 +2471,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
   };
 
   if (!userValidation.isValidUsername(requestData.requesteeUsername)) {
-    res.status(400).json({ message: 'Invalid requestee username.' });
+    res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
     return;
   };
 
@@ -2529,12 +2529,12 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     const requesteeId: number | undefined = requesteeRows[0]?.requestee_id;
 
     if (!requesteeId) {
-      res.status(404).json({ message: 'User not found.' });
+      res.status(404).json({ message: 'No users found with this username.' });
       return;
     };
 
     if (requesteeId === authSessionDetails.user_id) {
-      res.status(409).json({ message: 'Can not add yourself as a friend.' });
+      res.status(409).json({ message: `You can't send a friend request to yourself.` });
       return;
     };
 
@@ -2576,12 +2576,12 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     const requestAlreadySent: boolean = friendshipRows[1][0] ? friendshipRows[1][0].request_already_sent === 1 : false;
 
     if (alreadyFriends) {
-      res.status(409).json({ message: 'Already friends.' });
+      res.status(409).json({ message: `You're already friends with this user.` });
       return;
     };
 
     if (requestAlreadySent) {
-      res.status(409).json({ message: 'Friend request already sent.' });
+      res.status(409).json({ message: `You've already sent a friend request to this user.` });
       return;
     };
 
@@ -2600,13 +2600,17 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
   } catch (err: unknown) {
     console.log(err);
 
+    if (res.headersSent) {
+      return;
+    };
+
     if (!isSqlError(err)) {
       res.status(500).json({ message: 'Internal server error.' });
       return;
     };
 
     if (err.errno === 1062) {
-      res.status(409).json({ message: 'Friend request already sent.' });
+      res.status(409).json({ message: `You've already sent a friend request to this user.` });
       return;
     };
 
