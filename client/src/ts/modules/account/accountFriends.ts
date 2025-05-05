@@ -170,6 +170,7 @@ async function removeFriend(friendshipId: number): Promise<void> {
     accountFriendsState.filteredFriends = accountFriendsState.filteredFriends.filter((friend: Friend) => friend.friendship_id !== friendshipId);
 
     renderFriendsContainer();
+    renderCountSpans();
 
     popup('Friend removed.', 'success');
     LoadingModal.remove();
