@@ -2710,16 +2710,20 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     connection = await dbPool.getConnection();
     await connection.beginTransaction();
 
-    await connection.execute(
+    const insertValues: string = `
+      (${authSessionDetails.user_id}, ${requesterId}, ${friendshipTimestamp}),
+      (${requesterId}, ${authSessionDetails.user_id}, ${friendshipTimestamp})
+    `;
+
+    const [firstResultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO friendships (
-        first_account_id,
-        second_account_id,
+        account_id,
+        friend_id,
         friendship_timestamp
-      ) VALUES (${generatePlaceHolders(3)});`,
-      [authSessionDetails.user_id, requesterId, friendshipTimestamp]
+      ) VALUES ${insertValues};`
     );
 
-    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
+    const [secondResultSetHeader] = await connection.execute<ResultSetHeader>(
       `DELETE FROM
         friend_requests
       WHERE
@@ -2729,7 +2733,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
       { accountId: authSessionDetails.user_id, requesterId }
     );
 
-    if (resultSetHeader.affectedRows === 0) {
+    if (secondResultSetHeader.affectedRows === 0) {
       await connection.rollback();
       res.status(500).json({ message: 'Internal server error.' });
 
@@ -2737,7 +2741,10 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     };
 
     await connection.commit();
-    res.json({});
+    res.json({
+      friendship_id: firstResultSetHeader.insertId,
+      friendship_timestamp: friendshipTimestamp,
+    });
 
   } catch (err: unknown) {
     console.log(err);
@@ -2751,7 +2758,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     const sqlError: SqlError = err;
 
     if (sqlError.errno === 1062) {
-      res.status(409).json({ message: 'Already friends.' });
+      res.status(409).json({ message: 'Already friends with this user.' });
       return;
     };
 

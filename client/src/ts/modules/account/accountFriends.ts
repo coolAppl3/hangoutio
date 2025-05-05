@@ -5,8 +5,8 @@ import { createDivElement, createParagraphElement } from "../global/domUtils";
 import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { removeFriendService } from "../services/accountServices";
-import { Friend } from "./accountTypes";
+import { acceptFriendRequestService, rejectFriendRequestService, removeFriendService } from "../services/accountServices";
+import { Friend, FriendRequest } from "./accountTypes";
 import { createFriendElement, createFriendRequestElement } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -146,6 +146,11 @@ async function handleFriendsElementClicks(e: MouseEvent): Promise<void> {
     confirmFriendDeletion(e.target);
     return;
   };
+
+  if (e.target.classList.contains('friend-request-btn')) {
+    await handleFriendRequestAction(e.target);
+    return;
+  };
 };
 
 async function removeFriend(friendshipId: number): Promise<void> {
@@ -198,6 +203,71 @@ async function removeFriend(friendshipId: number): Promise<void> {
       handleAuthSessionExpired();
     };
   };
+};
+
+async function acceptFriendRequest(friendRequest: FriendRequest, friendRequestElement: HTMLDivElement): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    const { friendship_id, friendship_timestamp } = (await acceptFriendRequestService({ friendRequestId: friendRequest.request_id })).data;
+
+    accountState.data.friendRequests = accountState.data.friendRequests.filter((request: FriendRequest) => request.request_id !== friendRequest.request_id);
+    accountState.data.friends.push({
+      friendship_id,
+      friend_username: friendRequest.requester_username,
+      friend_display_name: friendRequest.requester_display_name,
+      friendship_timestamp,
+    });
+
+    accountFriendsState.filteredFriends = [...accountState.data.friends];
+    renderFriendsContainer();
+
+    slideAndRemoveRequestElement(friendRequestElement);
+    renderCountSpans();
+
+    popup('Request accepted.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404 || status === 409) {
+      slideAndRemoveRequestElement(friendRequestElement);
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
+};
+
+async function rejectFriendRequest(friendRequest: FriendRequest, friendRequestElement: HTMLDivElement): Promise<void> {
+  // TODO: implement
 };
 
 function navigateFriendsTab(clickedBtn: HTMLButtonElement): void {
@@ -280,4 +350,44 @@ function confirmFriendDeletion(clickedBtn: HTMLButtonElement): void {
       ConfirmModal.remove();
     };
   });
+};
+
+async function handleFriendRequestAction(clickedBtn: HTMLButtonElement): Promise<void> {
+  if (!accountState.data) {
+    return;
+  };
+
+  const friendRequestElement: HTMLElement | null | undefined = clickedBtn.parentElement?.parentElement;
+
+  if (!friendRequestElement || !(friendRequestElement instanceof HTMLDivElement)) {
+    return;
+  };
+
+  const friendRequestId: string | null = friendRequestElement.getAttribute('data-friendRequestId');
+
+  if (!friendRequestId || !Number.isInteger(+friendRequestId)) {
+    return;
+  };
+
+  const friendRequest: FriendRequest | undefined = accountState.data.friendRequests.find((request: FriendRequest) => request.request_id === +friendRequestId);
+  const isRejectionAction: boolean = clickedBtn.classList.contains('reject-request-btn');
+
+  if (!friendRequest) {
+    popup(isRejectionAction ? 'Request rejected.' : 'Request not found.', 'error');
+    slideAndRemoveRequestElement(friendRequestElement);
+
+    return;
+  };
+
+  if (isRejectionAction) {
+    await rejectFriendRequest(friendRequest, friendRequestElement);
+    return;
+  };
+
+  await acceptFriendRequest(friendRequest, friendRequestElement);
+};
+
+function slideAndRemoveRequestElement(friendRequestElement: HTMLDivElement): void {
+  friendRequestElement.classList.add('remove');
+  setTimeout(() => friendRequestElement.remove(), 250);
 };

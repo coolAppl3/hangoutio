@@ -728,9 +728,14 @@
   #pending-requests {
 
     &-container {
+      @apply overflow-hidden;
 
       .friend-request {
-        @apply flex justify-between items-end sm:flex-col sm:items-start p-1 bg-section dark:bg-section-dark rounded-sm mb-1 last:mb-0;
+        @apply flex justify-between items-end sm:flex-col sm:items-start p-1 bg-section dark:bg-section-dark rounded-sm mb-1 last:mb-0 transition-transform duration-300;
+
+        &.remove {
+          transform: translate3d(-150rem, 0, 0);
+        }
 
         div p {
           @apply overflow-hidden;
@@ -756,11 +761,11 @@
           button {
             @apply first:mr-1 sm:w-full;
 
-            &.reject-btn {
+            &.reject-request-btn {
               @apply btn bg-section dark:bg-section-dark text-title dark:text-title-dark border-1 border-title dark:border-title-dark;
             }
 
-            &.accept-btn {
+            &.accept-request-btn {
               @apply btn bg-description dark:bg-description-dark text-title-dark dark:text-title;
             }
           }
