@@ -2089,25 +2089,32 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
         const friendshipTimestamp = Date.now();
         connection = await db_1.dbPool.getConnection();
         await connection.beginTransaction();
-        await connection.execute(`INSERT INTO friendships (
-        first_account_id,
-        second_account_id,
+        const insertValues = `
+      (${authSessionDetails.user_id}, ${requesterId}, ${friendshipTimestamp}),
+      (${requesterId}, ${authSessionDetails.user_id}, ${friendshipTimestamp})
+    `;
+        const [firstResultSetHeader] = await connection.execute(`INSERT INTO friendships (
+        account_id,
+        friend_id,
         friendship_timestamp
-      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [authSessionDetails.user_id, requesterId, friendshipTimestamp]);
-        const [resultSetHeader] = await connection.execute(`DELETE FROM
+      ) VALUES ${insertValues};`);
+        const [secondResultSetHeader] = await connection.execute(`DELETE FROM
         friend_requests
       WHERE
         (requester_id = :requesterId AND requestee_id = :accountId) OR
         (requester_id = :accountId AND requestee_id = :requesterId)
       LIMIT 2;`, { accountId: authSessionDetails.user_id, requesterId });
-        if (resultSetHeader.affectedRows === 0) {
+        if (secondResultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         await connection.commit();
-        res.json({});
+        res.json({
+            friendship_id: firstResultSetHeader.insertId,
+            friendship_timestamp: friendshipTimestamp,
+        });
     }
     catch (err) {
         console.log(err);
@@ -2119,7 +2126,7 @@ exports.accountsRouter.post('/friends/requests/accept', async (req, res) => {
         ;
         const sqlError = err;
         if (sqlError.errno === 1062) {
-            res.status(409).json({ message: 'Already friends.' });
+            res.status(409).json({ message: 'Already friends with this user.' });
             return;
         }
         ;

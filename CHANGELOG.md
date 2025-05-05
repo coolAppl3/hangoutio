@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.93] (2025-05-05)
+
+### Features
+
+- POST `accounts/friends/requests/accept` now returns the `friendship_id` and `friendship_timestamp` to help build a friend object on the client side.
+- Implemented logic to accept friend requests.
+
+
+### Bug Fixes
+
+- Fixed a bug with how `friendships` rows are created in POST `accounts/friends/requests/accept`.
+
+
 ## [0.4.92] (2025-05-04)
 
 ### Features
