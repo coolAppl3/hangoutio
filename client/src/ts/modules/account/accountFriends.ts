@@ -2,10 +2,12 @@ import { handleAuthSessionExpired } from "../global/authUtils";
 import { ConfirmModal } from "../global/ConfirmModal";
 import { debounce } from "../global/debounce";
 import { createDivElement, createParagraphElement } from "../global/domUtils";
+import ErrorSpan from "../global/ErrorSpan";
 import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { acceptFriendRequestService, rejectFriendRequestService, removeFriendService } from "../services/accountServices";
+import { validateUsername } from "../global/validation";
+import { acceptFriendRequestService, rejectFriendRequestService, removeFriendService, sendFriendRequestService } from "../services/accountServices";
 import { Friend, FriendRequest } from "./accountTypes";
 import { createFriendElement, createFriendRequestElement } from "./accountUtils";
 import { accountState } from "./initAccount";
@@ -37,6 +39,8 @@ const showAllFriendsBtn: HTMLButtonElement | null = document.querySelector('#sho
 
 const pendingRequestsElement: HTMLDivElement | null = document.querySelector('#pending-requests');
 
+const addFriendsForm: HTMLDivElement | null = document.querySelector('#add-friends-form');
+const findUserInput: HTMLInputElement | null = document.querySelector('#find-user-input');
 
 export function initAccountFriends(): void {
   if (!accountState.data) {
@@ -47,7 +51,9 @@ export function initAccountFriends(): void {
   accountFriendsState.filteredFriends = [...accountState.data.friends];
 
   loadEventListeners();
+
   renderAccountFriends();
+  setActiveValidation();
 };
 
 function renderAccountFriends(): void {
@@ -59,6 +65,7 @@ function renderAccountFriends(): void {
 function loadEventListeners(): void {
   friendsElement?.addEventListener('click', handleFriendsElementClicks);
   friendsSearchInput?.addEventListener('input', debounceSearchFriends);
+  addFriendsForm?.addEventListener('submit', sendFriendRequest);
 };
 
 function renderCountSpans(): void {
@@ -315,6 +322,60 @@ async function rejectFriendRequest(friendRequest: FriendRequest, friendRequestEl
   };
 };
 
+async function sendFriendRequest(e: SubmitEvent): Promise<void> {
+  e.preventDefault();
+  LoadingModal.display();
+
+  if (!accountState.data || !findUserInput) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const isValidUsername: boolean = validateUsername(findUserInput);
+  if (!isValidUsername) {
+    popup('Invalid username.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  const requesteeUsername: string = findUserInput.value;
+
+  try {
+    await sendFriendRequestService({ requesteeUsername });
+
+    findUserInput.value = '';
+    ErrorSpan.hide(findUserInput);
+
+    popup('Friend request sent.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    if (status === 400 || status === 404 || status === 409) {
+      ErrorSpan.display(findUserInput, errMessage);
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
+};
+
 function navigateFriendsTab(clickedBtn: HTMLButtonElement): void {
   const selectedTab: string | null = clickedBtn.getAttribute('data-selectedTab');
 
@@ -439,4 +500,8 @@ function slideAndRemoveRequestElement(friendRequestElement: HTMLDivElement): voi
   if (accountState.data?.friendRequests.length === 0) {
     renderPendingRequests();
   };
+};
+
+function setActiveValidation(): void {
+  findUserInput?.addEventListener('input', () => validateUsername(findUserInput));
 };
