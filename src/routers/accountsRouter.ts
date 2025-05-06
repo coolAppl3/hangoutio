@@ -2523,7 +2523,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
       WHERE
         username = ?
       LIMIT 1;`,
-      [requestData.requesteeUsername, authSessionDetails.user_id]
+      [requestData.requesteeUsername]
     );
 
     const requesteeId: number | undefined = requesteeRows[0]?.requestee_id;
