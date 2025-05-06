@@ -178,6 +178,12 @@ export function validateUsername(input: HTMLInputElement): boolean {
     return false;
   };
 
+  const regex: RegExp = /^[A-Za-z0-9_.]+$/;
+  if (!regex.test(username)) {
+    ErrorSpan.display(input, 'Only English alphanumerical characters, dots, and underscores are possible.');
+    return false;
+  };
+
   ErrorSpan.hide(input);
   return true;
 };

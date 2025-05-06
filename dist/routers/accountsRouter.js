@@ -1915,7 +1915,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
     }
     ;
     if (!userValidation.isValidUsername(requestData.requesteeUsername)) {
-        res.status(400).json({ message: 'Invalid requestee username.' });
+        res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
         return;
     }
     ;
@@ -1950,15 +1950,15 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         accounts
       WHERE
         username = ?
-      LIMIT 1;`, [requestData.requesteeUsername, authSessionDetails.user_id]);
+      LIMIT 1;`, [requestData.requesteeUsername]);
         const requesteeId = requesteeRows[0]?.requestee_id;
         if (!requesteeId) {
-            res.status(404).json({ message: 'User not found.' });
+            res.status(404).json({ message: 'No users found with this username.' });
             return;
         }
         ;
         if (requesteeId === authSessionDetails.user_id) {
-            res.status(409).json({ message: 'Can not add yourself as a friend.' });
+            res.status(409).json({ message: `You can't send a friend request to yourself.` });
             return;
         }
         ;
@@ -1989,12 +1989,12 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         const alreadyFriends = friendshipRows[0][0] ? friendshipRows[0][0].already_friends === 1 : false;
         const requestAlreadySent = friendshipRows[1][0] ? friendshipRows[1][0].request_already_sent === 1 : false;
         if (alreadyFriends) {
-            res.status(409).json({ message: 'Already friends.' });
+            res.status(409).json({ message: `You're already friends with this user.` });
             return;
         }
         ;
         if (requestAlreadySent) {
-            res.status(409).json({ message: 'Friend request already sent.' });
+            res.status(409).json({ message: `You've already sent a friend request to this user.` });
             return;
         }
         ;
@@ -2008,13 +2008,17 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         if (!(0, isSqlError_1.isSqlError)(err)) {
             res.status(500).json({ message: 'Internal server error.' });
             return;
         }
         ;
         if (err.errno === 1062) {
-            res.status(409).json({ message: 'Friend request already sent.' });
+            res.status(409).json({ message: `You've already sent a friend request to this user.` });
             return;
         }
         ;
@@ -2190,7 +2194,7 @@ exports.accountsRouter.delete('/friends/requests/reject', async (req, res) => {
       WHERE
         request_id = ?;`, [+friendRequestId]);
         if (resultSetHeader.affectedRows === 0) {
-            res.status(404).json({ message: 'Friend request not found.' });
+            res.json({});
             return;
         }
         ;

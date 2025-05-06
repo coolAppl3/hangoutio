@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.94] (2025-05-06)
+
+### Features
+
+- Implemented logic to reject friend requests.
+- Implemented logic to send friend requests.
+
+
+### Bug Fixes
+
+- Fixed the total friends count not rerendering when a friend is removed.
+- Fixed a bug with how the existence of the requestee user is checked in POST `accounts/friends/requests/send`.
+
+
 ## [0.4.93] (2025-05-05)
 
 ### Features
