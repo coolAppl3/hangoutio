@@ -3154,7 +3154,7 @@ accountsRouter.get('/hangoutHistory', async (req: Request, res: Response) => {
 
   const offset = req.query.offset;
 
-  if (typeof offset !== 'string' || !Number.isInteger(offset)) {
+  if (typeof offset !== 'string' || !Number.isInteger(+offset)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
@@ -3207,11 +3207,11 @@ accountsRouter.get('/hangoutHistory', async (req: Request, res: Response) => {
       INNER JOIN
         hangouts ON hangout_members.hangout_id = hangouts.hangout_id
       WHERE
-        hangout_members.account_id = :accountId
+        hangout_members.account_id = ?
       ORDER BY
         created_on_timestamp DESC
       LIMIT ? OFFSET ?;`,
-      [authSessionDetails.user_id, ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, offset]
+      [authSessionDetails.user_id, ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, +offset]
     );
 
     res.json({ hangouts: hangoutRows });

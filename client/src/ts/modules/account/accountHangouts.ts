@@ -1,4 +1,10 @@
+import { handleAuthSessionExpired } from "../global/authUtils";
 import { ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE } from "../global/clientConstants";
+import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
+import LoadingModal from "../global/LoadingModal";
+import popup from "../global/popup";
+import { loadMoreHangoutsService } from "../services/accountServices";
+import { Hangout } from "./accountTypes";
 import { createHangoutElement } from "./accountUtils";
 import { accountState } from "./initAccount";
 
@@ -17,15 +23,19 @@ const hangoutsContainer: HTMLDivElement | null = document.querySelector('#hangou
 const loadMoreHangoutsBtn: HTMLButtonElement | null = document.querySelector('#load-more-hangouts-btn');
 
 export function initAccountHangouts(): void {
+  if (!accountState.data) {
+    return;
+  };
+
   loadEventListeners();
-  renderAccountHangouts();
+  insertAccountHangouts(accountState.data.hangoutHistory, true);
 };
 
 function loadEventListeners(): void {
   hangoutsElement?.addEventListener('click', handleHangoutsElementClicks);
 };
 
-function renderAccountHangouts(): void {
+function insertAccountHangouts(hangouts: Hangout[], isFirstCall: boolean = false): void {
   if (!accountState.data || !hangoutsContainer) {
     return;
   };
@@ -33,11 +43,13 @@ function renderAccountHangouts(): void {
   if (accountState.data.hangoutHistory.length % accountHangoutState.fetchOffset !== 0) {
     accountHangoutState.allHangoutsFetched = true;
     loadMoreHangoutsBtn?.classList.add('hidden');
+
+    isFirstCall || popup('All hangouts loaded.', 'success');
   };
 
   const fragment: DocumentFragment = new DocumentFragment();
 
-  for (const hangout of accountState.data.hangoutHistory) {
+  for (const hangout of hangouts) {
     fragment.appendChild(createHangoutElement(hangout));
   };
 
@@ -60,5 +72,53 @@ async function handleHangoutsElementClicks(e: MouseEvent): Promise<void> {
 };
 
 async function loadMoreHangouts(): Promise<void> {
-  // TODO: implement
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  if (accountHangoutState.allHangoutsFetched) {
+    popup('All hangouts loaded already.', 'success');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    const hangouts: Hangout[] = (await loadMoreHangoutsService(accountHangoutState.fetchOffset)).data.hangouts;
+
+    accountState.data.hangoutHistory.push(...hangouts);
+    accountHangoutState.fetchOffset += ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE;
+
+    insertAccountHangouts(hangouts);
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    }
+
+    popup(errMessage, 'error');;
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
 };
