@@ -599,6 +599,7 @@
 
 // ---------------------------------------------------------------------------------------------
 
+// details
 #details {
   word-break: break-word;
 
@@ -641,6 +642,7 @@
   }
 }
 
+// friends
 #friends {
   word-break: break-word;
 
@@ -754,7 +756,6 @@
           }
         }
 
-
         .btn-container {
           @apply flex justify-center items-center mt-1 sm:w-full;
 
@@ -779,6 +780,64 @@
   }
 }
 
+// hangouts
+#hangouts {
+  word-break: break-word;
+
+  &-container {
+    @apply grid grid-cols-2 md:grid-cols-1 gap-1;
+
+    .hangout {
+      @apply relative bg-section dark:bg-section-dark p-2 rounded-sm;
+
+      &-details {
+        p {
+          @apply overflow-hidden;
+
+          &:first-child {
+            @apply font-bold text-title dark:text-title-dark mb-[2px] mr-2;
+          }
+
+          &:nth-child(2) {
+            @apply font-medium;
+          }
+
+          &:nth-child(2),
+          &:nth-child(3) {
+            @apply text-sm text-description dark:text-description-dark overflow-hidden;
+          }
+
+          &:last-child {
+            @apply text-xs mt-2 font-medium;
+          }
+        }
+      }
+
+      .view-hangout-btn {
+        @apply btn bg-section dark:bg-section-dark border-1 border-title dark:border-title-dark text-title dark:text-title-dark w-full mt-1;
+      }
+
+      .leave-hangout-btn {
+        @apply absolute top-1 right-1 after:absolute after:left-0 after:top-0 after:w-full after:h-full;
+
+        &:hover {
+
+          svg path {
+            @apply fill-danger dark:fill-danger-dark;
+          }
+        }
+
+        svg {
+          @apply svg w-2 h-2;
+
+          path {
+            @apply fill-description dark:fill-description-dark transition-[fill];
+          }
+        }
+      }
+    }
+  }
+}
 
 // loading skeleton --- ---
 #loading-skeleton {

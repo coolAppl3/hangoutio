@@ -12,7 +12,7 @@ import { createAuthSession, destroyAuthSession, purgeAuthSessions } from '../aut
 import { removeRequestCookie, getRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
 import { handleIncorrectAccountPassword } from '../util/accountServices';
-import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_DELETION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_RECOVERY_WINDOW, ACCOUNT_VERIFICATION_WINDOW, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT } from '../util/constants';
+import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_DELETION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, ACCOUNT_RECOVERY_WINDOW, ACCOUNT_VERIFICATION_WINDOW, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT } from '../util/constants';
 import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 import { AccountDetails, FriendRequest, Friend, Hangout } from '../util/accountTypes';
 
@@ -3071,7 +3071,9 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
         hangouts ON hangout_members.hangout_id = hangouts.hangout_id
       WHERE
         hangout_members.account_id = :accountId
-      LIMIT 10;`,
+      ORDER BY
+        created_on_timestamp DESC
+      LIMIT ${ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE};`,
       { accountId: authSessionDetails.user_id }
     );
 
