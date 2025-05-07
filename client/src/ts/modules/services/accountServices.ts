@@ -244,3 +244,9 @@ interface LoadMoreHangoutsData {
 export function loadMoreHangoutsService(offset: number): Promise<AxiosResponse<LoadMoreHangoutsData>> {
   return axios.get(`${accountsApiUrl}/hangoutHistory?offset=${offset}`);
 };
+
+// --- --- ---
+
+export function accountLeaveHangoutService(hangoutId: string): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/leaveHangout?hangoutId=${hangoutId}`);
+};
