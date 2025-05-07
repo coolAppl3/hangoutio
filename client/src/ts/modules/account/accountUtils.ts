@@ -1,8 +1,9 @@
 import { getDateAndTimeString, getFullDateSTring } from "../global/dateTimeUtils";
-import { createBtnElement, createDivElement, createParagraphElement, createSvgElement } from "../global/domUtils";
+import { createAnchorElement, createBtnElement, createDivElement, createParagraphElement, createSvgElement } from "../global/domUtils";
 import { InfoModal } from "../global/InfoModal";
 import { removeSignInCookies } from "../global/signOut";
-import { Friend, FriendRequest } from "./accountTypes";
+import { getHangoutStageTitle } from "../hangout/dashboard/hangoutDashboardUtils";
+import { Friend, FriendRequest, Hangout } from "./accountTypes";
 
 export function removeLoadingSkeleton(): void {
   document.querySelector('#loading-skeleton')?.remove();
@@ -162,4 +163,48 @@ function createFriendRequestBtnContainer(): HTMLDivElement {
   btnContainer.appendChild(createBtnElement('accept-request-btn friend-request-btn', 'Accept'));
 
   return btnContainer;
+};
+
+// --- --- ---
+
+export function createHangoutElement(hangout: Hangout): HTMLDivElement {
+  const hangoutElement: HTMLDivElement = createDivElement('hangout');
+  hangoutElement.setAttribute('data-hangoutId', hangout.hangout_id);
+
+  hangoutElement.appendChild(createHangoutDetailsElement(hangout));
+  hangoutElement.appendChild(createAnchorElement('view-hangout-btn', 'View', `hangout?id=${hangout.hangout_id}`, true));
+  hangoutElement.appendChild(createLeaveHangoutBtn());
+  return hangoutElement;
+};
+
+function createHangoutDetailsElement(hangout: Hangout): HTMLDivElement {
+  const hangoutDetailsElement: HTMLDivElement = createDivElement('hangout-details');
+
+  hangoutDetailsElement.appendChild(createParagraphElement(null, hangout.hangout_title));
+  hangoutDetailsElement.appendChild(createParagraphElement(null, `Current stage: ${getHangoutStageTitle(hangout.current_stage)}`));
+  hangoutDetailsElement.appendChild(createParagraphElement(null, `Created on: ${getFullDateSTring(hangout.created_on_timestamp)}`));
+
+  return hangoutDetailsElement;
+};
+
+function createLeaveHangoutBtn(): HTMLButtonElement {
+  const leaveHangoutBtn: HTMLButtonElement = createBtnElement('leave-hangout-btn', null);
+
+  leaveHangoutBtn.setAttribute('title', 'Leave hangout');
+  leaveHangoutBtn.setAttribute('aria-label', 'Leave hangout');
+
+  leaveHangoutBtn.appendChild(createLeaveHangoutIcon());
+  return leaveHangoutBtn;
+};
+
+function createLeaveHangoutIcon(): SVGSVGElement {
+  const leaveHangoutSvg: SVGSVGElement = createSvgElement(500, 500);
+
+  const pathElement: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  pathElement.setAttribute('fill-rule', 'evenodd');
+  pathElement.setAttribute('clip-rule', 'evenodd');
+  pathElement.setAttribute('d', 'M450 250C450 360.457 360.457 450 250 450C139.543 450 50 360.457 50 250C50 139.543 139.543 50 250 50C360.457 50 450 139.543 450 250ZM410 250C410 338.366 338.366 410 250 410C213.236 410 179.368 397.601 152.35 376.756L376.756 152.35C397.601 179.368 410 213.236 410 250ZM123.963 348.575L348.575 123.963C321.406 102.685 287.185 90 250 90C161.634 90 90 161.634 90 250C90 287.185 102.685 321.406 123.963 348.575Z');
+
+  leaveHangoutSvg.appendChild(pathElement);
+  return leaveHangoutSvg;
 };

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.95] (2025-05-07)
+
+### Features
+
+- Added an index for the `created_on_timestamp` column in the `hangouts` table.
+- Added GET `accounts/hangoutHistory`.
+- Implemented logic to render the user's hangout history and load more if needed.
+- Added DELETE `accounts/leaveHangout`.
+- Implemented logic for users to be able to leave hangouts from their account section.
+
+
 ## [0.4.94] (2025-05-06)
 
 ### Features

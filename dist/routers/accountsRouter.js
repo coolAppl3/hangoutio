@@ -2371,7 +2371,9 @@ exports.accountsRouter.get('/', async (req, res) => {
         hangouts ON hangout_members.hangout_id = hangouts.hangout_id
       WHERE
         hangout_members.account_id = :accountId
-      LIMIT 10;`, { accountId: authSessionDetails.user_id });
+      ORDER BY
+        created_on_timestamp DESC
+      LIMIT ${constants_1.ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE};`, { accountId: authSessionDetails.user_id });
         const accountDetails = accountRows[0][0];
         const friends = accountRows[1];
         const friendRequests = accountRows[2];
@@ -2417,6 +2419,151 @@ exports.accountsRouter.get('/', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+    ;
+});
+exports.accountsRouter.get('/hangoutHistory', async (req, res) => {
+    const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
+    if (!authSessionId) {
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    if (!authUtils.isValidAuthSessionId(authSessionId)) {
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    const offset = req.query.offset;
+    if (typeof offset !== 'string' || !Number.isInteger(+offset)) {
+        res.status(400).json({ message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    try {
+        ;
+        const [authSessionRows] = await db_1.dbPool.execute(`SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`, [authSessionId]);
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+            await (0, authSessions_1.destroyAuthSession)(authSessionId);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        const [hangoutRows] = await db_1.dbPool.execute(`SELECT
+        hangouts.hangout_id,
+        hangouts.hangout_title,
+        hangouts.current_stage,
+        hangouts.is_concluded,
+        hangouts.created_on_timestamp
+      FROM
+        hangout_members
+      INNER JOIN
+        hangouts ON hangout_members.hangout_id = hangouts.hangout_id
+      WHERE
+        hangout_members.account_id = ?
+      ORDER BY
+        created_on_timestamp DESC
+      LIMIT ? OFFSET ?;`, [authSessionDetails.user_id, constants_1.ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, +offset]);
+        res.json({ hangouts: hangoutRows });
+    }
+    catch (err) {
+        console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+    ;
+});
+exports.accountsRouter.delete('/leaveHangout', async (req, res) => {
+    const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
+    if (!authSessionId) {
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    if (!authUtils.isValidAuthSessionId(authSessionId)) {
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    const hangoutId = req.query.hangoutId;
+    if (typeof hangoutId !== 'string') {
+        res.status(400).json({ message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    try {
+        ;
+        const [authSessionRows] = await db_1.dbPool.execute(`SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`, [authSessionId]);
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+            await (0, authSessions_1.destroyAuthSession)(authSessionId);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        hangout_member_id
+      FROM
+        hangout_members
+      WHERE
+        account_id = ? AND
+        hangout_id = ?
+      LIMIT 1;`, [authSessionDetails.user_id, hangoutId]);
+        res.json({});
+        const hangoutMemberDetails = hangoutMemberRows[0];
+        if (!hangoutMemberDetails) {
+            return;
+        }
+        ;
+        (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
+            type: 'hangoutMember',
+            reason: 'memberLeft',
+            data: {
+                leftMemberId: hangoutMemberDetails.hangout_member_id,
+            },
+        });
+    }
+    catch (err) {
+        console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
         res.status(500).json({ message: 'Internal server error.' });
     }
     ;

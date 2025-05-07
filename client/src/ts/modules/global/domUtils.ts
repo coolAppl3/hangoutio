@@ -32,6 +32,16 @@ export function createBtnElement(className: string | null, text: string | null):
   return btnElement;
 };
 
+export function createAnchorElement(className: string | null, text: string | null, link: string, isTargetBlank: boolean = false): HTMLAnchorElement {
+  const anchorElement: HTMLAnchorElement = document.createElement('a');
+  anchorElement.setAttribute('href', link);
+  className && (anchorElement.className = className);
+  text && anchorElement.appendChild(document.createTextNode(text));
+  isTargetBlank && anchorElement.setAttribute('target', '_blank');
+
+  return anchorElement;
+};
+
 export function createSvgElement(width: number, height: number): SVGSVGElement {
   const svgElement: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgElement.setAttribute('width', `${width}`);

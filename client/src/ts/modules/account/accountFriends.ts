@@ -44,7 +44,6 @@ const findUserInput: HTMLInputElement | null = document.querySelector('#find-use
 
 export function initAccountFriends(): void {
   if (!accountState.data) {
-    popup('Failed to load friends list.', 'error');
     return;
   };
 
@@ -56,16 +55,16 @@ export function initAccountFriends(): void {
   setActiveValidation();
 };
 
-function renderAccountFriends(): void {
-  renderCountSpans();
-  renderFriendsContainer();
-  renderPendingRequests();
-};
-
 function loadEventListeners(): void {
   friendsElement?.addEventListener('click', handleFriendsElementClicks);
   friendsSearchInput?.addEventListener('input', debounceSearchFriends);
   addFriendsForm?.addEventListener('submit', sendFriendRequest);
+};
+
+function renderAccountFriends(): void {
+  renderCountSpans();
+  renderFriendsContainer();
+  renderPendingRequests();
 };
 
 function renderCountSpans(): void {
@@ -465,7 +464,7 @@ async function handleFriendRequestAction(clickedBtn: HTMLButtonElement): Promise
 
   const friendRequestElement: HTMLElement | null | undefined = clickedBtn.parentElement?.parentElement;
 
-  if (!friendRequestElement || !(friendRequestElement instanceof HTMLDivElement)) {
+  if (!(friendRequestElement instanceof HTMLDivElement)) {
     return;
   };
 

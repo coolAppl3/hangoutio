@@ -29,3 +29,4 @@ export const HANGOUT_VOTING_STAGE: number = 3;
 export const HANGOUT_CONCLUSION_STAGE: number = 4;
 
 export const HANGOUT_CHAT_FETCH_BATCH_SIZE: number = 30;
+export const ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE: number = 10;

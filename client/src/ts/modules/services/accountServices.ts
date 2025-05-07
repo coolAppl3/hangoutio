@@ -234,3 +234,19 @@ interface AccountInfo {
 export function getAccountInfoService(): Promise<AxiosResponse<AccountInfo>> {
   return axios.get(accountsApiUrl);
 };
+
+// --- --- ---
+
+interface LoadMoreHangoutsData {
+  hangouts: Hangout[],
+};
+
+export function loadMoreHangoutsService(offset: number): Promise<AxiosResponse<LoadMoreHangoutsData>> {
+  return axios.get(`${accountsApiUrl}/hangoutHistory?offset=${offset}`);
+};
+
+// --- --- ---
+
+export function accountLeaveHangoutService(hangoutId: string): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/leaveHangout?hangoutId=${hangoutId}`);
+};

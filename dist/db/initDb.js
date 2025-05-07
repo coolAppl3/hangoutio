@@ -165,7 +165,8 @@ async function createHangoutsTable() {
         current_stage INT CHECK (current_stage BETWEEN 1 AND 4),
         stage_control_timestamp BIGINT NOT NULL,
         created_on_timestamp BIGINT NOT NULL,
-        is_concluded BOOLEAN NOT NULL
+        is_concluded BOOLEAN NOT NULL,
+        INDEX idx_created_on (created_on_timestamp)
       );`);
     }
     catch (err) {

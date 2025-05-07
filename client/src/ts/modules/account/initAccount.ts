@@ -4,6 +4,7 @@ import popup from "../global/popup";
 import { getAccountInfoService } from "../services/accountServices";
 import { initAccountDetails } from "./accountDetails";
 import { initAccountFriends } from "./accountFriends";
+import { initAccountHangouts } from "./accountHangouts";
 import { AccountDetails, Friend, FriendRequest, Hangout } from "./accountTypes";
 import { removeLoadingSkeleton } from "./accountUtils";
 
@@ -43,6 +44,7 @@ async function getAccountInfo(): Promise<void> {
 
     initAccountDetails();
     initAccountFriends();
+    initAccountHangouts();
 
     removeLoadingSkeleton();
 
