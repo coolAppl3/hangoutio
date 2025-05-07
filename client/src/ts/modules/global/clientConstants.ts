@@ -20,3 +20,4 @@ export const HANGOUT_SUGGESTIONS_LIMIT: number = 3;
 export const HANGOUT_AVAILABILITY_SLOTS_LIMIT: number = 10;
 
 export const HANGOUT_CHAT_FETCH_BATCH_SIZE: number = 30;
+export const ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE: number = 10;
