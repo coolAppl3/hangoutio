@@ -1,9 +1,10 @@
 import { handleAuthSessionExpired } from "../global/authUtils";
 import { ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE } from "../global/clientConstants";
+import { ConfirmModal } from "../global/ConfirmModal";
 import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { loadMoreHangoutsService } from "../services/accountServices";
+import { accountLeaveHangoutService, loadMoreHangoutsService } from "../services/accountServices";
 import { Hangout } from "./accountTypes";
 import { createHangoutElement } from "./accountUtils";
 import { accountState } from "./initAccount";
@@ -68,6 +69,11 @@ async function handleHangoutsElementClicks(e: MouseEvent): Promise<void> {
     };
 
     await loadMoreHangouts();
+    return;
+  };
+
+  if (e.target.classList.contains('leave-hangout-btn')) {
+    confirmLeaveHangout(e.target);
   };
 };
 
@@ -121,4 +127,97 @@ async function loadMoreHangouts(): Promise<void> {
       handleAuthSessionExpired();
     };
   };
+};
+
+async function leaveHangout(hangout: Hangout, hangoutElement: HTMLDivElement): Promise<void> {
+  LoadingModal.display();
+
+  if (!accountState.data) {
+    popup('Something went wrong.', 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await accountLeaveHangoutService(hangout.hangout_id);
+
+    hangoutElement.remove();
+
+    popup('Left hangout.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage } = asyncErrorData;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 401) {
+      handleAuthSessionExpired();
+    };
+  };
+};
+
+function confirmLeaveHangout(clickedBtn: HTMLButtonElement): void {
+  const hangoutElement: HTMLElement | null = clickedBtn.parentElement;
+
+  if (!(hangoutElement instanceof HTMLDivElement)) {
+    return;
+  };
+
+  const hangoutId: string | null = hangoutElement.getAttribute('data-hangoutId');
+
+  if (!hangoutId) {
+    return;
+  };
+
+  const hangout: Hangout | undefined = accountState.data?.hangoutHistory.find((hangout: Hangout) => hangout.hangout_id === hangoutId);
+
+  if (!hangout) {
+    hangoutElement.remove();
+    popup('Left hangout.', 'success');
+
+    return;
+  };
+
+  const confirmModal: HTMLDivElement = ConfirmModal.display({
+    title: null,
+    description: 'Are you sure you want to leave this hangout?',
+    confirmBtnTitle: 'Confirm',
+    cancelBtnTitle: 'Cancel',
+    extraBtnTitle: null,
+    isDangerousAction: true,
+  });
+
+  confirmModal.addEventListener('click', async (e: MouseEvent) => {
+    if (!(e.target instanceof HTMLButtonElement)) {
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-confirm-btn') {
+      ConfirmModal.remove();
+      await leaveHangout(hangout, hangoutElement);
+
+      return;
+    };
+
+    if (e.target.id === 'confirm-modal-cancel-btn') {
+      ConfirmModal.remove();
+    };
+  });
 };
