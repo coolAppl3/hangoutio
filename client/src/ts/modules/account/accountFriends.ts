@@ -464,7 +464,7 @@ async function handleFriendRequestAction(clickedBtn: HTMLButtonElement): Promise
 
   const friendRequestElement: HTMLElement | null | undefined = clickedBtn.parentElement?.parentElement;
 
-  if (!friendRequestElement || !(friendRequestElement instanceof HTMLDivElement)) {
+  if (!(friendRequestElement instanceof HTMLDivElement)) {
     return;
   };
 
