@@ -1,5 +1,5 @@
 import { getDateAndTimeString, getFullDateSTring } from "../global/dateTimeUtils";
-import { createBtnElement, createDivElement, createParagraphElement, createSvgElement } from "../global/domUtils";
+import { createAnchorElement, createBtnElement, createDivElement, createParagraphElement, createSvgElement } from "../global/domUtils";
 import { InfoModal } from "../global/InfoModal";
 import { removeSignInCookies } from "../global/signOut";
 import { getHangoutStageTitle } from "../hangout/dashboard/hangoutDashboardUtils";
@@ -172,9 +172,8 @@ export function createHangoutElement(hangout: Hangout): HTMLDivElement {
   hangoutElement.setAttribute('data-hangoutId', hangout.hangout_id);
 
   hangoutElement.appendChild(createHangoutDetailsElement(hangout));
-  hangoutElement.appendChild(createBtnElement('view-hangout-btn', 'View'));
+  hangoutElement.appendChild(createAnchorElement('view-hangout-btn', 'View', `hangout?id=${hangout.hangout_id}`, true));
   hangoutElement.appendChild(createLeaveHangoutBtn());
-
   return hangoutElement;
 };
 
