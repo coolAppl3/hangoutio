@@ -134,7 +134,7 @@
 
             <li class="group ml-2 account-user">
               <a
-                href="hangouts"
+                href="account?hangouts"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors after:hover:bg-cta dark:after:hover:bg-cta-dark group-[.selected]:after:bg-cta dark:group-[.selected]:after:bg-cta-dark"
                 >Hangouts</a
               >
@@ -365,7 +365,7 @@
           </svg>
         </div>
         <a
-          href="hangouts"
+          href="account?hangouts"
           class="text-sm font-bold text-title dark:text-title-dark after:absolute after:top-0 after:left-0 after:w-full after:h-full"
           >Hangouts</a
         >
@@ -934,7 +934,12 @@
           id="hangouts"
           class="bg-secondary dark:bg-secondary-dark rounded-sm mb-3 p-2"
         >
-          <h3 class="text-xl font-medium text-title dark:text-title-dark mb-1">Hangouts</h3>
+          <h3 class="text-xl font-medium text-title dark:text-title-dark mb-[4px]">Hangouts</h3>
+          <a
+            href="create-hangout"
+            class="block text-sm md:text-base font-medium link mb-2"
+            >Start a new hangout</a
+          >
 
           <div id="hangouts-container"></div>
 
