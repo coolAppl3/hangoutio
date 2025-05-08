@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0] (2025-05-08)
+
+### Features
+
+- Changed all links to `/hangouts` to aim for `/account?hangouts` in all HTML files, and updated `accountHangouts.ts` to scroll into the hangouts container.
+- Added a link to start a new hangout in `account.html`.
+
+
 ## [0.4.95] (2025-05-07)
 
 ### Features
