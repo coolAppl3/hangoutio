@@ -30,6 +30,8 @@ export function initAccountHangouts(): void {
 
   loadEventListeners();
   insertAccountHangouts(accountState.data.hangoutHistory, true);
+
+  checkForHangoutsHref();
 };
 
 function loadEventListeners(): void {
@@ -220,4 +222,15 @@ function confirmLeaveHangout(clickedBtn: HTMLButtonElement): void {
       ConfirmModal.remove();
     };
   });
+};
+
+function checkForHangoutsHref(): void {
+  const url: URL = new URL(window.location.href);
+
+  if (url.searchParams.has('hangouts')) {
+    setTimeout(() => {
+      hangoutsElement?.scrollIntoView();
+      document.documentElement.scrollTop -= 80;
+    }, 0);
+  };
 };
