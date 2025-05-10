@@ -10,11 +10,13 @@ exports.htmlRouter = express_1.default.Router();
 exports.htmlRouter.get('/:page', async (req, res, next) => {
     const page = req.params.page;
     if (!page) {
-        return next();
+        next();
+        return;
     }
     ;
     if (page.includes('.') && !page.endsWith('.html')) {
-        return next();
+        next();
+        return;
     }
     ;
     const sanitizedPage = path_1.default.basename(page, '.html');

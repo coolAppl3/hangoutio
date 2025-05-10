@@ -1,6 +1,13 @@
 # Changelog
 
-## [0.5.0] (2025-05-08)
+## [0.5.01] (2025-05-10)
+
+### Features
+
+- Implemented rate limiting.
+
+
+## [0.5.00] (2025-05-08)
 
 ### Features
 

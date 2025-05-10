@@ -26,6 +26,7 @@ const authRouter_1 = require("./routers/authRouter");
 const fallbackMiddleware_1 = require("./middleware/fallbackMiddleware");
 const cronInit_1 = require("./cron-jobs/cronInit");
 const hangoutWebSocketAuth_1 = require("./webSockets/hangout/hangoutWebSocketAuth");
+const rateLimiter_1 = require("./middleware/rateLimiter");
 const port = process.env.PORT ? +process.env.PORT : 5000;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
@@ -40,6 +41,14 @@ if (process.env.NODE_ENV === 'development') {
     }));
 }
 ;
+app.use((req, res, next) => {
+    const stagingHostName = process.env.STAGING_HOST_NAME;
+    res.set('Content-Security-Policy', `default-src 'self'; script-src 'self'; connect-src 'self' wss://www.hangoutio.com${stagingHostName ? ` wss://${stagingHostName}` : ''};`);
+    next();
+});
+app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
+app.use(htmlRouter_1.htmlRouter);
+app.use('/api/', rateLimiter_1.rateLimiter);
 app.use('/api/chat', chatRouter_1.chatRouter);
 app.use('/api/accounts', accountsRouter_1.accountsRouter);
 app.use('/api/hangouts', hangoutsRouter_1.hangoutsRouter);
@@ -49,13 +58,6 @@ app.use('/api/availabilitySlots', availabilitySlotsRouter_1.availabilitySlotsRou
 app.use('/api/suggestions', suggestionsRouter_1.suggestionsRouter);
 app.use('/api/votes', votesRouter_1.votesRouter);
 app.use('/api/auth', authRouter_1.authRouter);
-app.use((req, res, next) => {
-    const stagingHostName = process.env.STAGING_HOST_NAME;
-    res.set('Content-Security-Policy', `default-src 'self'; script-src 'self'; connect-src 'self' wss://www.hangoutio.com${stagingHostName ? ` wss://${stagingHostName}` : ''};`);
-    next();
-});
-app.use(htmlRouter_1.htmlRouter);
-app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.use(fallbackMiddleware_1.fallbackMiddleware);
 const server = http_1.default.createServer(app);
 server.on('upgrade', async (req, socket, head) => {

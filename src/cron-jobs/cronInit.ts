@@ -4,8 +4,15 @@ import * as hangoutCronJobs from './hangoutCronJobs';
 import { clearExpiredAuthSessions } from './authCronJobs';
 import { deleteStaleGuestUsers } from './guestCronJobs';
 import { removeEmptyHangoutWebSocketSets } from '../webSockets/hangout/hangoutWebSocketServer';
+import { removeStaleRateTrackerRows, replenishRateRequests } from './rateLimiterCronJobs';
+import { minuteMilliseconds } from '../util/constants';
 
 export function initCronJobs(): void {
+  // every 30 seconds
+  setInterval(async () => {
+    await replenishRateRequests();
+  }, minuteMilliseconds / 2);
+
   // every minute
   cron.schedule('* * * * *', async () => {
     await hangoutCronJobs.progressHangouts();
@@ -16,6 +23,8 @@ export function initCronJobs(): void {
     await accountCronJobs.removeExpiredRecoveryRequests();
     await accountCronJobs.removeExpiredEmailUpdateRequests();
     await accountCronJobs.removeExpiredDeletionRequests();
+
+    await removeStaleRateTrackerRows();
 
     removeEmptyHangoutWebSocketSets();
   });

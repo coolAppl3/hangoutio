@@ -30,3 +30,13 @@ export function generateHangoutId(timestamp: number): string {
 
   return `${hangoutId}_${timestamp}`;
 };
+
+export function generateRateLimitId(): string {
+  let rateLimitId: string = 'r';
+
+  while (rateLimitId.length < 32) {
+    rateLimitId += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
+  };
+
+  return rateLimitId;
+};

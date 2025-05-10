@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateHangoutId = exports.generateRandomCode = exports.generateAuthSessionId = void 0;
+exports.generateRateLimitId = exports.generateHangoutId = exports.generateRandomCode = exports.generateAuthSessionId = void 0;
 const allowedTokenCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const allowedCodeCharacters = 'ABCDEFGHIJKLMNPQRSTUVWXYZ0123456789';
 function generateAuthSessionId() {
@@ -32,4 +32,14 @@ function generateHangoutId(timestamp) {
     return `${hangoutId}_${timestamp}`;
 }
 exports.generateHangoutId = generateHangoutId;
+;
+function generateRateLimitId() {
+    let rateLimitId = 'r';
+    while (rateLimitId.length < 32) {
+        rateLimitId += allowedTokenCharacters[Math.floor(Math.random() * allowedTokenCharacters.length)];
+    }
+    ;
+    return rateLimitId;
+}
+exports.generateRateLimitId = generateRateLimitId;
 ;
