@@ -124,7 +124,6 @@ async function getHangoutSuggestions(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -407,7 +406,6 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -490,7 +488,6 @@ async function removeHangoutSuggestionLike(suggestion: Suggestion, suggestionEle
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -571,7 +568,6 @@ async function deleteHangoutSuggestion(suggestion: Suggestion, suggestionElement
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -693,7 +689,6 @@ async function deleteHangoutSuggestionAsLeader(suggestion: Suggestion, suggestio
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -836,7 +831,6 @@ async function addHangoutVote(suggestion: Suggestion, suggestionElement: HTMLDiv
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -946,7 +940,6 @@ async function removeHangoutVote(suggestion: Suggestion, suggestionElement: HTML
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 

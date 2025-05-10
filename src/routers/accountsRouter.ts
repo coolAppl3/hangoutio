@@ -1353,7 +1353,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
         accounts.failed_sign_in_attempts,
         email_update.expiry_timestamp,
         email_update.failed_update_attempts,
-        (SELECT 1 FROM account_deletion WHERE account_id = :accountId) AS ongoing_deletion_request
+        EXISTS (SELECT 1 FROM account_deletion WHERE account_id = :accountId) AS ongoing_deletion_request
       FROM
         accounts
       LEFT JOIN

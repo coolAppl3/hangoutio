@@ -112,7 +112,6 @@ async function loadMoreHangouts(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -156,7 +155,6 @@ async function leaveHangout(hangout: Hangout, hangoutElement: HTMLDivElement): P
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 

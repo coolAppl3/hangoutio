@@ -188,7 +188,6 @@ async function removeFriend(friendshipId: number): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -249,7 +248,6 @@ async function acceptFriendRequest(friendRequest: FriendRequest, friendRequestEl
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -302,7 +300,6 @@ async function rejectFriendRequest(friendRequest: FriendRequest, friendRequestEl
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -358,7 +355,6 @@ async function sendFriendRequest(e: SubmitEvent): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 

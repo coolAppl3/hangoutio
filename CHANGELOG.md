@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.02] (2025-05-10)
+
+### Features
+
+- Abstracted 429 error handling to `getAsyncErrorData()` in `errorUtils.ts`.
+- Disabled back/forward cache to avoid rare loading issues with some pages.
+
+
+### Code Refactoring
+
+- Removed "Set customizable email notification for your hangouts." from the homepage as a feature for registered users, as the app has gone in a different direction.
+- Improved some of the SELECT 1 statements to use EXISTS at the start, for better type safety.
+
+
+### Bug Fixes
+
+- Fixed buttons to add availability slots being visible when the hangout is concluded, only to let the user know that adding a slot isn't possible.
+- Fixed some password reveal buttons not having a title attribute, and revealPassword() not updating both the buttons' titles and aria-labels.
+
+
 ## [0.5.01] (2025-05-10)
 
 ### Features

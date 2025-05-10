@@ -6,10 +6,13 @@ import { hangoutFormNavigation } from './modules/createHangout/hangoutFormNaviga
 import { hangoutFormFirstStep } from './modules/createHangout/hangoutFormFirstStep';
 import { hangoutFormSecondStep } from './modules/createHangout/hangoutFormSecondStep';
 import { hangoutFormThirdStep } from './modules/createHangout/hangoutFormThirdStep';
+import { disableBackForwardCache } from './modules/global/disableBackForwardCache';
 
-// initializing imports
+disableBackForwardCache();
+
 topNavbar();
 botNavbar();
+
 hangoutFormNavigation();
 hangoutFormFirstStep();
 hangoutFormSecondStep();

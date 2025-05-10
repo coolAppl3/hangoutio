@@ -56,6 +56,10 @@ function renderAvailabilitySection(): void {
   displayPersonalAvailabilitySlots();
   updateSlotsRemaining();
   updateAvailabilityCalendar();
+
+  if (globalHangoutState.data?.hangoutDetails.is_concluded) {
+    addAvailabilityBtn?.classList.add('hidden');
+  };
 };
 
 function loadEventListeners(): void {
@@ -150,7 +154,6 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -242,7 +245,6 @@ async function addHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerData
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -377,7 +379,6 @@ async function editHangoutAvailabilitySlot(dateTimePickerData: DateTimePickerDat
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -475,7 +476,6 @@ async function deleteAvailabilitySlot(availabilitySlotId: number): Promise<void>
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -553,7 +553,6 @@ async function clearAvailabilitySlots(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 

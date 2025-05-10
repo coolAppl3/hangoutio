@@ -11,8 +11,10 @@ import { hangoutConclusion } from './modules/hangout/conclusion/hangoutConclusio
 import { hangoutMembers } from './modules/hangout/members/hangoutMembers';
 import { hangoutEvents } from './modules/hangout/events/hangoutEvents';
 import { hangoutChat } from './modules/hangout/chat/hangoutChat';
+import { disableBackForwardCache } from './modules/global/disableBackForwardCache';
 
-// initializing imports
+disableBackForwardCache();
+
 topNavbar();
 botNavbar();
 
