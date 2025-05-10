@@ -40,7 +40,7 @@ function handleRateLimitReached(): void {
 
   InfoModal.display({
     title: 'Please slow down.',
-    description: `You're making too many requests. Please wait 30 to 60 seconds to be able to make further requests.`,
+    description: `You're making too many requests.\nYou'll be allowed to make further requests within 30 to 60 seconds.`,
     btnTitle: 'Okay',
   }, { simple: true });
 };
