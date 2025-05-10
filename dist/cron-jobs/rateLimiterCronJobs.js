@@ -24,7 +24,6 @@ async function replenishRateRequests() {
 exports.replenishRateRequests = replenishRateRequests;
 ;
 async function removeStaleRateTrackerRows() {
-    console.log(true);
     const currentTimestamp = Date.now();
     try {
         await db_1.dbPool.execute(`DELETE FROM
