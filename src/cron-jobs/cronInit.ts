@@ -4,7 +4,7 @@ import * as hangoutCronJobs from './hangoutCronJobs';
 import { clearExpiredAuthSessions } from './authCronJobs';
 import { deleteStaleGuestUsers } from './guestCronJobs';
 import { removeEmptyHangoutWebSocketSets } from '../webSockets/hangout/hangoutWebSocketServer';
-import { removeStaleRateTrackerRows, replenishRateRequests } from './rateLimiterCronJobs';
+import { removeLightRateAbusers, removeStaleRateTrackerRows, replenishRateRequests } from './rateLimiterCronJobs';
 import { minuteMilliseconds } from '../util/constants';
 
 export function initCronJobs(): void {
@@ -42,6 +42,7 @@ export function initCronJobs(): void {
   // every day
   cron.schedule('0 0 * * *', async () => {
     await deleteStaleGuestUsers();
+    await removeLightRateAbusers();
   });
 
   console.log('CRON jobs started.');
