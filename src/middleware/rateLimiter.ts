@@ -26,12 +26,12 @@ export async function rateLimiter(req: Request, res: Response, next: NextFunctio
 
   if (await rateLimitReached(rateLimitId, isChatRequest, res)) {
     res.status(429).json({ message: 'Too many requests.' });
-    incrementRequestsCount(rateLimitId, isChatRequest);
+    await incrementRequestsCount(rateLimitId, isChatRequest);
 
     return;
   };
 
-  incrementRequestsCount(rateLimitId, isChatRequest);
+  await incrementRequestsCount(rateLimitId, isChatRequest);
   next();
 };
 
