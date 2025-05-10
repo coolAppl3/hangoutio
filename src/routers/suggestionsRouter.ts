@@ -604,7 +604,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
         hangouts.current_stage,
         hangout_members.account_id,
         hangout_members.guest_id,
-        (SELECT 1 FROM suggestions WHERE suggestion_id = ?) AS suggestion_found
+        EXISTS (SELECT 1 FROM suggestions WHERE suggestion_id = ?) AS suggestion_found
       FROM
         hangouts
       INNER JOIN
@@ -778,7 +778,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
         hangout_members.account_id,
         hangout_members.guest_id,
         hangout_members.is_leader,
-        (SELECT 1 FROM suggestions WHERE suggestion_id = ?) as suggestion_found
+        EXISTS (SELECT 1 FROM suggestions WHERE suggestion_id = ?) as suggestion_found
       FROM
         hangouts
       INNER JOIN
