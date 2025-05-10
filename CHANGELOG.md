@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.03] (2025-05-11)
+
+### Features
+
+- Implemented a tracker for potential abusive users.
+  - This tracker will only serve as a preemptive measure to track abusive users and take action if needed in the future.
+
+
+### Improvements
+
+- Improved the link colors in dark theme to ensure good contrast.
+- Improved the wording of the 429 error.
+
+
+### Bug Fixes
+
+- Fixed the "Start a new hangout" link in `account.html` having a width that spans the container.
+
+
 ## [0.5.02] (2025-05-10)
 
 ### Features

@@ -58,6 +58,7 @@ function initCronJobs() {
     });
     node_cron_1.default.schedule('0 0 * * *', async () => {
         await (0, guestCronJobs_1.deleteStaleGuestUsers)();
+        await (0, rateLimiterCronJobs_1.removeLightRateAbusers)();
     });
     console.log('CRON jobs started.');
 }

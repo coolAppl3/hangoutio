@@ -23,11 +23,12 @@ async function rateLimiter(req, res, next) {
     ;
     if (await rateLimitReached(rateLimitId, isChatRequest, res)) {
         res.status(429).json({ message: 'Too many requests.' });
-        incrementRequestsCount(rateLimitId, isChatRequest);
+        await incrementRequestsCount(rateLimitId, isChatRequest);
+        await addToAbusiveUsers(req);
         return;
     }
     ;
-    incrementRequestsCount(rateLimitId, isChatRequest);
+    await incrementRequestsCount(rateLimitId, isChatRequest);
     next();
 }
 exports.rateLimiter = rateLimiter;
@@ -114,5 +115,40 @@ function checkForChatRequest(req) {
     }
     ;
     return false;
+}
+;
+async function addToAbusiveUsers(req) {
+    const currentTimestamp = Date.now();
+    try {
+        ;
+        const [userRows] = await db_1.dbPool.execute(`SELECT
+        rate_limit_reached_count
+      FROM
+        abusive_users
+      WHERE
+        ip_address = ?;`, [req.ip]);
+        const userDetails = userRows[0];
+        if (!userDetails) {
+            await db_1.dbPool.execute(`INSERT INTO abusive_users (
+          ip_address,
+          first_abuse_timestamp,
+          latest_abuse_timestamp,
+          rate_limit_reached_count
+        ) VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [req.ip, currentTimestamp, currentTimestamp, 1]);
+            return;
+        }
+        ;
+        await db_1.dbPool.execute(`UPDATE
+        abusive_users
+      SET
+        rate_limit_reached_count = ?,
+        latest_abuse_timestamp = ?
+      WHERE
+        ip_address = ?;`, [userDetails.rate_limit_reached_count + 1, currentTimestamp, req.ip]);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
 }
 ;
