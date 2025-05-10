@@ -129,7 +129,6 @@ async function createHangoutAsAccount(attemptCount: number = 1): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -236,7 +235,6 @@ async function createHangoutAsGuest(attemptCount: number = 1): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -317,7 +315,6 @@ async function accountSignIn(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 

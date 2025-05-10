@@ -244,7 +244,6 @@ async function updateDisplayName(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -367,7 +366,6 @@ async function updatePassword(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -489,7 +487,6 @@ async function startEmailUpdate(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -585,7 +582,6 @@ async function resendEmailUpdateEmail(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -674,7 +670,6 @@ async function confirmEmailUpdate(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -758,7 +753,6 @@ async function abortEmailUpdate(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -847,7 +841,6 @@ async function startAccountDeletion(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -931,7 +924,6 @@ async function resendDeletionEmail(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -998,7 +990,6 @@ async function confirmAccountDeletion(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -1082,7 +1073,6 @@ async function abortAccountDeletion(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 

@@ -120,7 +120,6 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 

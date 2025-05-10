@@ -206,7 +206,6 @@ async function addHangoutSuggestion(): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
@@ -395,7 +394,6 @@ async function editHangoutSuggestion(suggestionId: number): Promise<void> {
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
     if (!asyncErrorData) {
-      popup('Something went wrong.', 'error');
       return;
     };
 
