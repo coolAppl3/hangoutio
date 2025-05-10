@@ -30,6 +30,7 @@ import { fallbackMiddleware } from './middleware/fallbackMiddleware';
 // other
 import { initCronJobs } from './cron-jobs/cronInit';
 import { authenticateHandshake } from './webSockets/hangout/hangoutWebSocketAuth';
+import { rateLimiter } from './middleware/rateLimiter';
 
 const port: number = process.env.PORT ? +process.env.PORT : 5000;
 const app: Application = express();
@@ -51,6 +52,21 @@ if (process.env.NODE_ENV === 'development') {
   );
 };
 
+// CSP
+app.use((req, res, next) => {
+  const stagingHostName: string | undefined = process.env.STAGING_HOST_NAME;
+  res.set('Content-Security-Policy', `default-src 'self'; script-src 'self'; connect-src 'self' wss://www.hangoutio.com${stagingHostName ? ` wss://${stagingHostName}` : ''};`);
+
+  next();
+});
+
+// static files
+app.use(express.static(path.join(__dirname, '../public')));
+app.use(htmlRouter);
+
+// rate limiter
+app.use('/api/', rateLimiter);
+
 // routes
 app.use('/api/chat', chatRouter);
 app.use('/api/accounts', accountsRouter);
@@ -62,23 +78,12 @@ app.use('/api/suggestions', suggestionsRouter);
 app.use('/api/votes', votesRouter);
 app.use('/api/auth', authRouter);
 
-// CSP
-app.use((req, res, next) => {
-  const stagingHostName: string | undefined = process.env.STAGING_HOST_NAME;
-  res.set('Content-Security-Policy', `default-src 'self'; script-src 'self'; connect-src 'self' wss://www.hangoutio.com${stagingHostName ? ` wss://${stagingHostName}` : ''};`);
-
-  next();
-});
-
-// static files
-app.use(htmlRouter);
-app.use(express.static(path.join(__dirname, '../public')));
-
 // fallback middleware
 app.use(fallbackMiddleware);
 
 const server = http.createServer(app);
 
+// websocket upgrade
 server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) => {
   socket.on('error', (err) => {
     if (('errno' in err) && err.errno === -4077) {
@@ -130,6 +135,7 @@ server.on('upgrade', async (req: IncomingMessage, socket: Socket, head: Buffer) 
   });
 });
 
+// init
 async function initServer(): Promise<void> {
   try {
     await initDb();

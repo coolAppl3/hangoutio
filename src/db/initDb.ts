@@ -18,6 +18,7 @@ export async function initDb(): Promise<void> {
   await createVotesTable();
   await createChatTable();
   await createAuthSessionsTable();
+  await createRateTrackerTable();
 
   console.log('Database initialized.')
 };
@@ -349,6 +350,22 @@ async function createAuthSessionsTable(): Promise<void> {
         user_type ENUM('account', 'guest') NOT NULL,
         created_on_timestamp BIGINT NOT NULL,
         expiry_timestamp BIGINT NOT NULL
+      );`
+    );
+
+  } catch (err: unknown) {
+    console.log(err);
+  };
+};
+
+async function createRateTrackerTable(): Promise<void> {
+  try {
+    await dbPool.execute(
+      `CREATE TABLE IF NOT EXISTS rate_tracker (
+        rate_limit_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
+        general_requests_count INT UNSIGNED NOT NULL,
+        chat_requests_count INT UNSIGNED NOT NULL,
+        window_timestamp BIGINT NOT NULL
       );`
     );
 

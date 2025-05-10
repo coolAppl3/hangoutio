@@ -1,6 +1,6 @@
 import { CookieOptions, Request, Response } from "express";
 
-type AllowedCookieNames = 'authSessionId' | 'guestHangoutId' | 'signedInAs';
+type AllowedCookieNames = 'authSessionId' | 'guestHangoutId' | 'signedInAs' | 'rateLimitId';
 
 export function setResponseCookie(res: Response, cookieName: AllowedCookieNames, cookieValue: string, maxAge: number, httpOnly: boolean): void {
   const cookieOptions: CookieOptions = {

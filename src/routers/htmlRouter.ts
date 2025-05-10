@@ -7,11 +7,13 @@ htmlRouter.get('/:page', async (req: Request, res: Response, next: NextFunction)
   const page: string | undefined = req.params.page;
 
   if (!page) {
-    return next();
+    next();
+    return;
   };
 
   if (page.includes('.') && !page.endsWith('.html')) {
-    return next();
+    next();
+    return;
   };
 
   const sanitizedPage: string = path.basename(page, '.html');
