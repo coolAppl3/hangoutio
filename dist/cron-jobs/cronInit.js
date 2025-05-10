@@ -33,7 +33,12 @@ const hangoutCronJobs = __importStar(require("./hangoutCronJobs"));
 const authCronJobs_1 = require("./authCronJobs");
 const guestCronJobs_1 = require("./guestCronJobs");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
+const rateLimiterCronJobs_1 = require("./rateLimiterCronJobs");
+const constants_1 = require("../util/constants");
 function initCronJobs() {
+    setInterval(async () => {
+        await (0, rateLimiterCronJobs_1.replenishRateRequests)();
+    }, constants_1.minuteMilliseconds / 2);
     node_cron_1.default.schedule('* * * * *', async () => {
         await hangoutCronJobs.progressHangouts();
         await hangoutCronJobs.concludeSingleSuggestionHangouts();
@@ -42,6 +47,7 @@ function initCronJobs() {
         await accountCronJobs.removeExpiredRecoveryRequests();
         await accountCronJobs.removeExpiredEmailUpdateRequests();
         await accountCronJobs.removeExpiredDeletionRequests();
+        await (0, rateLimiterCronJobs_1.removeStaleRateTrackerRows)();
         (0, hangoutWebSocketServer_1.removeEmptyHangoutWebSocketSets)();
     });
     node_cron_1.default.schedule('*/10 * * * *', async () => {

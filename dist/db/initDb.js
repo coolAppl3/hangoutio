@@ -20,6 +20,7 @@ async function initDb() {
     await createVotesTable();
     await createChatTable();
     await createAuthSessionsTable();
+    await createRateTrackerTable();
     console.log('Database initialized.');
 }
 exports.initDb = initDb;
@@ -334,6 +335,21 @@ async function createAuthSessionsTable() {
         user_type ENUM('account', 'guest') NOT NULL,
         created_on_timestamp BIGINT NOT NULL,
         expiry_timestamp BIGINT NOT NULL
+      );`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+;
+async function createRateTrackerTable() {
+    try {
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS rate_tracker (
+        rate_limit_id VARCHAR(65) PRIMARY KEY COLLATE utf8mb4_bin,
+        general_requests_count INT UNSIGNED NOT NULL,
+        chat_requests_count INT UNSIGNED NOT NULL,
+        window_timestamp BIGINT NOT NULL
       );`);
     }
     catch (err) {
