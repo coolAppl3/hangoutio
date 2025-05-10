@@ -4,8 +4,10 @@ import topNavbar from './modules/global/topNavbar';
 import botNavbar from './modules/global/botNavbar';
 import { recoveryEmailForm } from './modules/accountRecovery/recoveryEmailForm';
 import { recoveryPasswordUpdateForm } from './modules/accountRecovery/recoveryPasswordUpdateForm';
+import { disableBackForwardCache } from './modules/global/disableBackForwardCache';
 
-// initializing imports
+disableBackForwardCache();
+
 topNavbar();
 botNavbar();
 
