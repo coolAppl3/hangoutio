@@ -4,7 +4,7 @@ import { dbPool } from "../db/db";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { generateRateLimitId } from "../util/tokenGenerator";
 import { RowDataPacket } from "mysql2";
-import { CHAT_REQUESTS_RATE_LIMIT, GENERAL_REQUESTS_RATE_LIMIT, hourMilliseconds } from "../util/constants";
+import { CHAT_REQUESTS_RATE_LIMIT, GENERAL_REQUESTS_RATE_LIMIT, hourMilliseconds, minuteMilliseconds } from "../util/constants";
 
 export async function rateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
   const rateLimitId: string | null = getRequestCookie(req, 'rateLimitId');
@@ -26,12 +26,14 @@ export async function rateLimiter(req: Request, res: Response, next: NextFunctio
 
   if (await rateLimitReached(rateLimitId, isChatRequest, res)) {
     res.status(429).json({ message: 'Too many requests.' });
-    incrementRequestsCount(rateLimitId, isChatRequest);
+
+    await incrementRequestsCount(rateLimitId, isChatRequest);
+    await addToAbusiveUsers(req);
 
     return;
   };
 
-  incrementRequestsCount(rateLimitId, isChatRequest);
+  await incrementRequestsCount(rateLimitId, isChatRequest);
   next();
 };
 
@@ -132,4 +134,55 @@ function checkForChatRequest(req: Request): boolean {
   };
 
   return false;
+};
+
+async function addToAbusiveUsers(req: Request): Promise<void> {
+  const currentTimestamp: number = Date.now();
+
+  try {
+    interface UserDetails extends RowDataPacket {
+      rate_limit_reached_count: number,
+      latest_abuse_timestamp: number,
+    };
+
+    const [userRows] = await dbPool.execute<UserDetails[]>(
+      `SELECT
+        rate_limit_reached_count
+      FROM
+        abusive_users
+      WHERE
+        ip_address = ?;`,
+      [req.ip]
+    );
+
+    const userDetails: UserDetails | undefined = userRows[0];
+
+    if (!userDetails) {
+      await dbPool.execute(
+        `INSERT INTO abusive_users (
+          ip_address,
+          first_abuse_timestamp,
+          latest_abuse_timestamp,
+          rate_limit_reached_count
+        ) VALUES(${generatePlaceHolders(4)});`,
+        [req.ip, currentTimestamp, currentTimestamp, 1]
+      );
+
+      return;
+    };
+
+    await dbPool.execute(
+      `UPDATE
+        abusive_users
+      SET
+        rate_limit_reached_count = ?,
+        latest_abuse_timestamp = ?
+      WHERE
+        ip_address = ?;`,
+      [userDetails.rate_limit_reached_count + 1, currentTimestamp, req.ip]
+    );
+
+  } catch (err: unknown) {
+    console.log(err);
+  };
 };

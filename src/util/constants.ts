@@ -33,3 +33,5 @@ export const ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE: number = 10;
 
 export const GENERAL_REQUESTS_RATE_LIMIT: number = 60;
 export const CHAT_REQUESTS_RATE_LIMIT: number = 100;
+
+export const LIGHT_DAILY_RATE_ABUSE_COUNT: number = 10;
