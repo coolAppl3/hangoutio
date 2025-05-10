@@ -56,6 +56,10 @@ function renderAvailabilitySection(): void {
   displayPersonalAvailabilitySlots();
   updateSlotsRemaining();
   updateAvailabilityCalendar();
+
+  if (globalHangoutState.data?.hangoutDetails.is_concluded) {
+    addAvailabilityBtn?.classList.add('hidden');
+  };
 };
 
 function loadEventListeners(): void {

@@ -75,6 +75,10 @@ function render(selectedDateTimestamp: number): void {
 
   updateHeaderDate(selectedDateTimestamp);
   updateNavigationButtons();
+
+  if (globalHangoutState.data?.hangoutDetails.is_concluded) {
+    availabilityPreviewerElement?.classList.add('concluded');
+  };
 };
 
 function findPreviousDateTimestamp(selectedDateTimestamp: number): number | null {

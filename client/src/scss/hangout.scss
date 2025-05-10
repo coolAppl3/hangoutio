@@ -469,6 +469,13 @@
     }
   }
 
+  &.concluded {
+
+    #availability-previewer-add-btn {
+      @apply hidden;
+    }
+  }
+
   &-container {
     @apply w-[36rem] max-w-[36rem] py-3 px-2 mx-2 rounded-sm bg-secondary dark:bg-secondary-dark shadow-simple mt-6 md:mt-0 overflow-hidden;
     transform: translate3d(0, 3rem, 0);
