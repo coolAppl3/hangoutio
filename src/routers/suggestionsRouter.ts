@@ -1210,7 +1210,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
         suggestion_id,
         hangout_member_id,
         hangout_id
-      ) VALUES(${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(3)});`,
       [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]
     );
 
