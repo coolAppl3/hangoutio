@@ -20,6 +20,8 @@ export async function initDb(): Promise<void> {
   await createAuthSessionsTable();
   await createRateTrackerTable();
 
+  await createAbusiveUsersTable();
+
   console.log('Database initialized.')
 };
 
@@ -366,6 +368,22 @@ async function createRateTrackerTable(): Promise<void> {
         general_requests_count INT UNSIGNED NOT NULL,
         chat_requests_count INT UNSIGNED NOT NULL,
         window_timestamp BIGINT NOT NULL
+      );`
+    );
+
+  } catch (err: unknown) {
+    console.log(err);
+  };
+};
+
+async function createAbusiveUsersTable(): Promise<void> {
+  try {
+    await dbPool.execute(
+      `CREATE TABLE IF NOT EXISTS abusive_users (
+        ip_address VARCHAR(45) PRIMARY KEY,
+        first_abuse_timestamp BIGINT NOT NULL,
+        latest_abuse_timestamp BIGINT NOT NULL,
+        rate_limit_reached_count INT UNSIGNED NOT NULL
       );`
     );
 
