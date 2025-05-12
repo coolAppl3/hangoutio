@@ -1,7 +1,7 @@
 import { dayMilliseconds, HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
 import Cookies from "../../global/Cookies";
-import { createBtnElement, createDivElement, createParagraphElement, createSpanElement, createSvgElement } from "../../global/domUtils";
+import { createBtnElement, createDivElement, createParagraphElement, createSvgElement } from "../../global/domUtils";
 import { InfoModal } from "../../global/InfoModal";
 import popup from "../../global/popup";
 import { isValidHangoutId } from "../../global/validation";

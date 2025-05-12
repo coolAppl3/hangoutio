@@ -4,7 +4,7 @@ import { dbPool } from "../db/db";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { generateRateLimitId } from "../util/tokenGenerator";
 import { RowDataPacket } from "mysql2";
-import { CHAT_REQUESTS_RATE_LIMIT, GENERAL_REQUESTS_RATE_LIMIT, hourMilliseconds, minuteMilliseconds } from "../util/constants";
+import { CHAT_REQUESTS_RATE_LIMIT, GENERAL_REQUESTS_RATE_LIMIT, hourMilliseconds } from "../util/constants";
 
 export async function rateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
   const rateLimitId: string | null = getRequestCookie(req, 'rateLimitId');
