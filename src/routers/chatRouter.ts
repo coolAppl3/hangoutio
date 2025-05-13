@@ -11,6 +11,7 @@ import { destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_CHAT_FETCH_BATCH_SIZE } from '../util/constants';
 import { ChatMessage } from '../util/hangoutTypes';
 import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
+import { logUnexpectedError } from '../logs/errorLogger';
 
 export const chatRouter: Router = express.Router();
 
@@ -171,6 +172,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -293,5 +295,6 @@ chatRouter.get('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });

@@ -15,6 +15,7 @@ import { handleIncorrectAccountPassword } from '../util/accountServices';
 import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_DELETION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, ACCOUNT_RECOVERY_WINDOW, ACCOUNT_VERIFICATION_WINDOW, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT } from '../util/constants';
 import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 import { AccountDetails, FriendRequest, Friend, Hangout } from '../util/accountTypes';
+import { logUnexpectedError } from '../logs/errorLogger';
 
 export const accountsRouter: Router = express.Router();
 
@@ -109,6 +110,8 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
       };
 
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Username or email taken, but rows not returned properly.', trace: null });
+
       return;
     };
 
@@ -161,6 +164,8 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
 
     if (!isSqlError(err)) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, err);
+
       return;
     };
 
@@ -177,6 +182,7 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -265,6 +271,8 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -280,7 +288,9 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -396,7 +406,9 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
 
     if (firstResultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
 
       return;
     };
@@ -411,7 +423,9 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
 
     if (secondResultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
 
       return;
     };
@@ -431,6 +445,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
     await connection?.rollback();
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -531,6 +546,8 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     if (!authSessionCreated) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to create auth session.', trace: null });
+
       return;
     };
 
@@ -538,7 +555,9 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -655,7 +674,9 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -744,6 +765,8 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -759,7 +782,9 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -888,6 +913,8 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -909,7 +936,9 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1043,7 +1072,9 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
 
     if (resultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
 
       return;
     };
@@ -1103,6 +1134,7 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     await connection?.rollback();
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -1241,6 +1273,8 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -1255,7 +1289,9 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1455,6 +1491,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     await connection?.rollback();
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -1571,6 +1608,8 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -1584,7 +1623,9 @@ accountsRouter.get('/details/updateEmail/resendEmail', async (req: Request, res:
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1760,7 +1801,9 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
     if (firstResultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
 
       return;
     };
@@ -1776,7 +1819,9 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
     if (secondResultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
 
       return;
     };
@@ -1797,6 +1842,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
     await connection?.rollback();
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -1878,6 +1924,7 @@ accountsRouter.delete('/details/updateEmail/abort', async (req: Request, res: Re
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2042,7 +2089,9 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2166,6 +2215,8 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -2179,7 +2230,9 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2352,6 +2405,8 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -2361,7 +2416,9 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2440,6 +2497,7 @@ accountsRouter.delete('/deletion/abort', async (req: Request, res: Response) => 
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2569,6 +2627,8 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
 
     if (friendshipRows.length !== 2) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
+
       return;
     };
 
@@ -2606,6 +2666,8 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
 
     if (!isSqlError(err)) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, err);
+
       return;
     };
 
@@ -2615,6 +2677,7 @@ accountsRouter.post('/friends/requests/send', async (req: Request, res: Response
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2739,8 +2802,9 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
 
     if (secondResultSetHeader.affectedRows === 0) {
       await connection.rollback();
-      res.status(500).json({ message: 'Internal server error.' });
 
+      res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
       return;
     };
 
@@ -2756,6 +2820,8 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
 
     if (!isSqlError(err)) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, err);
+
       return;
     };
 
@@ -2767,6 +2833,7 @@ accountsRouter.post('/friends/requests/accept', async (req: Request, res: Respon
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -2853,7 +2920,9 @@ accountsRouter.delete('/friends/requests/reject', async (req: Request, res: Resp
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2953,6 +3022,8 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
 
     if (resultSetHeader.affectedRows !== 2) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -2960,7 +3031,9 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -3084,6 +3157,8 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
 
     if (!accountDetails || !friends || !friendRequests || !hangoutHistory) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
+
       return;
     };
 
@@ -3114,6 +3189,8 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
 
     if (!hangoutCounts) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
+
       return;
     };
 
@@ -3133,7 +3210,9 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
 
   } catch (err: unknown) {
     console.log(err);
+
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -3224,6 +3303,7 @@ accountsRouter.get('/hangoutHistory', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -3325,5 +3405,6 @@ accountsRouter.delete('/leaveHangout', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });

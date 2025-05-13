@@ -7,6 +7,7 @@ import { isValidPassword, isValidUsername } from "../util/validation/userValidat
 import { createAuthSession } from "../auth/authSessions";
 import { setResponseCookie } from "../util/cookieUtils";
 import { hourMilliseconds } from "../util/constants";
+import { logUnexpectedError } from "../logs/errorLogger";
 
 export const guestsRouter: Router = express.Router();
 
@@ -80,6 +81,8 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
 
     if (!authSessionCreated) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to create auth session.' });
+
       return;
     };
 
@@ -96,5 +99,6 @@ guestsRouter.post('/signIn', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
