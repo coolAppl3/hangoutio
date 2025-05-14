@@ -7,6 +7,7 @@ exports.authRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
+const errorLogger_1 = require("../logs/errorLogger");
 exports.authRouter = express_1.default.Router();
 exports.authRouter.post('/signOut', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
@@ -27,6 +28,7 @@ exports.authRouter.post('/signOut', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });

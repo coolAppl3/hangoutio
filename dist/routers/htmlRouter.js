@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.htmlRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
+const errorLogger_1 = require("../logs/errorLogger");
 exports.htmlRouter = express_1.default.Router();
 exports.htmlRouter.get('/:page', async (req, res, next) => {
     const page = req.params.page;
@@ -26,13 +27,14 @@ exports.htmlRouter.get('/:page', async (req, res, next) => {
             return;
         }
         ;
-        const notFoundPath = path_1.default.join(__dirname, '../../public/errorPages', '404.html');
-        res.sendFile(notFoundPath, (fallbackError) => {
+        const notFoundPagePath = path_1.default.join(__dirname, '../../public/errorPages', '404.html');
+        res.sendFile(notFoundPagePath, async (fallbackError) => {
             if (!fallbackError || res.headersSent) {
                 return;
             }
             ;
             res.status(500).send('Internal server error.');
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to send 404 page.', trace: null });
         });
     });
 });

@@ -12,6 +12,7 @@ const userValidation_1 = require("../util/validation/userValidation");
 const authSessions_1 = require("../auth/authSessions");
 const cookieUtils_1 = require("../util/cookieUtils");
 const constants_1 = require("../util/constants");
+const errorLogger_1 = require("../logs/errorLogger");
 exports.guestsRouter = express_1.default.Router();
 exports.guestsRouter.post('/signIn', async (req, res) => {
     ;
@@ -66,6 +67,7 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
         });
         if (!authSessionCreated) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to create auth session.' });
             return;
         }
         ;
@@ -80,6 +82,7 @@ exports.guestsRouter.post('/signIn', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });

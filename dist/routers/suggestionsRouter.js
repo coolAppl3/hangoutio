@@ -39,6 +39,7 @@ const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
 const isSqlError_1 = require("../util/isSqlError");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
+const errorLogger_1 = require("../logs/errorLogger");
 exports.suggestionsRouter = express_1.default.Router();
 exports.suggestionsRouter.post('/', async (req, res) => {
     ;
@@ -213,6 +214,7 @@ exports.suggestionsRouter.post('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();
@@ -390,6 +392,7 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
         suggestion_id = ?;`, [requestData.suggestionTitle, requestData.suggestionDescription, requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp, true, requestData.suggestionId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to update rows.', trace: null });
             return;
         }
         ;
@@ -432,6 +435,7 @@ exports.suggestionsRouter.patch('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -549,6 +553,7 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         suggestion_id = ?;`, [+suggestionId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -569,6 +574,7 @@ exports.suggestionsRouter.delete('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -692,6 +698,7 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
         suggestion_id = ?;`, [+suggestionId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -711,6 +718,7 @@ exports.suggestionsRouter.delete('/leader', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -870,6 +878,7 @@ exports.suggestionsRouter.get('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -966,6 +975,7 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
         const memberSuggestionDetails = memberSuggestionRows[0];
         if (!memberSuggestionDetails) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to fetch rows.', trace: null });
             return;
         }
         ;
@@ -988,7 +998,7 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
         suggestion_id,
         hangout_member_id,
         hangout_id
-      ) VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(3)});`, [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]);
         res.json({});
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([requestData.hangoutId], {
             type: 'like',
@@ -1007,6 +1017,7 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
         ;
         if (!(0, isSqlError_1.isSqlError)(err)) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, err);
             return;
         }
         ;
@@ -1017,6 +1028,7 @@ exports.suggestionsRouter.post('/likes', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -1105,6 +1117,7 @@ exports.suggestionsRouter.delete('/likes', async (req, res) => {
         const memberSuggestionDetails = memberSuggestionRows[0];
         if (!memberSuggestionDetails) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to fetch rows.', trace: null });
             return;
         }
         ;
@@ -1140,6 +1153,7 @@ exports.suggestionsRouter.delete('/likes', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });

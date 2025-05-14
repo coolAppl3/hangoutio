@@ -21,6 +21,8 @@ async function initDb() {
     await createChatTable();
     await createAuthSessionsTable();
     await createRateTrackerTable();
+    await createAbusiveUsersTable();
+    await createUnexpectedErrorsTable();
     console.log('Database initialized.');
 }
 exports.initDb = initDb;
@@ -350,6 +352,38 @@ async function createRateTrackerTable() {
         general_requests_count INT UNSIGNED NOT NULL,
         chat_requests_count INT UNSIGNED NOT NULL,
         window_timestamp BIGINT NOT NULL
+      );`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+;
+async function createAbusiveUsersTable() {
+    try {
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS abusive_users (
+        ip_address VARCHAR(45) PRIMARY KEY,
+        first_abuse_timestamp BIGINT NOT NULL,
+        latest_abuse_timestamp BIGINT NOT NULL,
+        rate_limit_reached_count INT UNSIGNED NOT NULL
+      );`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+;
+async function createUnexpectedErrorsTable() {
+    try {
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS unexpected_errors (
+        error_id INT PRIMARY KEY AUTO_INCREMENT,
+        request_method VARCHAR(10),
+        request_path VARCHAR(255),
+        error_timestamp BIGINT NOT NULL,
+        error_message TEXT,
+        stack_trace TEXT
       );`);
     }
     catch (err) {

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.04] (2025-05-14)
+
+### Features
+
+- Added basic error logging to all routers.
+
+
+### Test Changes
+
+- Implemented basic structure for vitest.
+
+
 ## [0.5.03] (2025-05-11)
 
 ### Features
