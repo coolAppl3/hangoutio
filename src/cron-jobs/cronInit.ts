@@ -6,6 +6,7 @@ import { deleteStaleGuestUsers } from './guestCronJobs';
 import { removeEmptyHangoutWebSocketSets } from '../webSockets/hangout/hangoutWebSocketServer';
 import { removeLightRateAbusers, removeStaleRateTrackerRows, replenishRateRequests } from './rateLimiterCronJobs';
 import { minuteMilliseconds } from '../util/constants';
+import { clearErrorLogs } from '../logs/loggerCronJobs';
 
 export function initCronJobs(): void {
   // every 30 seconds
@@ -43,6 +44,7 @@ export function initCronJobs(): void {
   cron.schedule('0 0 * * *', async () => {
     await deleteStaleGuestUsers();
     await removeLightRateAbusers();
+    await clearErrorLogs();
   });
 
   console.log('CRON jobs started.');

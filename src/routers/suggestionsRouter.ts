@@ -12,6 +12,7 @@ import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTI
 import { Suggestion, SuggestionLike, Vote } from "../util/hangoutTypes";
 import { isSqlError } from "../util/isSqlError";
 import { sendHangoutWebSocketMessage } from "../webSockets/hangout/hangoutWebSocketServer";
+import { logUnexpectedError } from "../logs/errorLogger";
 
 export const suggestionsRouter: Router = express.Router();
 
@@ -241,6 +242,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -465,6 +467,8 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -512,6 +516,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -661,6 +666,8 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -683,6 +690,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -840,6 +848,8 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -861,6 +871,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1061,6 +1072,7 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1187,6 +1199,8 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
 
     if (!memberSuggestionDetails) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
+
       return;
     };
 
@@ -1210,7 +1224,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
         suggestion_id,
         hangout_member_id,
         hangout_id
-      ) VALUES(${generatePlaceHolders(3)});`,
+      ) VALUES (${generatePlaceHolders(3)});`,
       [requestData.suggestionId, requestData.hangoutMemberId, requestData.hangoutId]
     );
 
@@ -1234,6 +1248,8 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
 
     if (!isSqlError(err)) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, err);
+
       return;
     };
 
@@ -1245,6 +1261,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1357,6 +1374,7 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
 
     if (!memberSuggestionDetails) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
       return;
     };
 
@@ -1398,5 +1416,6 @@ suggestionsRouter.delete('/likes', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });

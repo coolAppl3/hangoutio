@@ -38,6 +38,7 @@ const authUtils = __importStar(require("../auth/authUtils"));
 const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
+const errorLogger_1 = require("../logs/errorLogger");
 exports.availabilitySlotsRouter = express_1.default.Router();
 exports.availabilitySlotsRouter.post('/', async (req, res) => {
     ;
@@ -208,6 +209,7 @@ exports.availabilitySlotsRouter.post('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();
@@ -378,6 +380,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to update rows.', trace: null });
             return;
         }
         ;
@@ -404,6 +407,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();
@@ -516,6 +520,7 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
         availability_slot_id = ?;`, [+availabilitySlotId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -536,6 +541,7 @@ exports.availabilitySlotsRouter.delete('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -639,6 +645,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
       LIMIT ${constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [+hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -658,6 +665,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -749,6 +757,7 @@ exports.availabilitySlotsRouter.get('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });

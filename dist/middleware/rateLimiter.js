@@ -42,7 +42,7 @@ async function addToRateTracker(res, isChatRequest) {
         general_requests_count,
         chat_requests_count,
         window_timestamp
-      ) VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [newRateId, isChatRequest ? 0 : 1, isChatRequest ? 1 : 0, currentTimestamp]);
+      ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [newRateId, isChatRequest ? 0 : 1, isChatRequest ? 1 : 0, currentTimestamp]);
         (0, cookieUtils_1.setResponseCookie)(res, 'rateLimitId', newRateId, constants_1.hourMilliseconds, true);
     }
     catch (err) {
@@ -134,7 +134,7 @@ async function addToAbusiveUsers(req) {
           first_abuse_timestamp,
           latest_abuse_timestamp,
           rate_limit_reached_count
-        ) VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [req.ip, currentTimestamp, currentTimestamp, 1]);
+        ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [req.ip, currentTimestamp, currentTimestamp, 1]);
             return;
         }
         ;

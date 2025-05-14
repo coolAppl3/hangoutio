@@ -35,6 +35,7 @@ const guestCronJobs_1 = require("./guestCronJobs");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 const rateLimiterCronJobs_1 = require("./rateLimiterCronJobs");
 const constants_1 = require("../util/constants");
+const loggerCronJobs_1 = require("../logs/loggerCronJobs");
 function initCronJobs() {
     setInterval(async () => {
         await (0, rateLimiterCronJobs_1.replenishRateRequests)();
@@ -59,6 +60,7 @@ function initCronJobs() {
     node_cron_1.default.schedule('0 0 * * *', async () => {
         await (0, guestCronJobs_1.deleteStaleGuestUsers)();
         await (0, rateLimiterCronJobs_1.removeLightRateAbusers)();
+        await (0, loggerCronJobs_1.clearErrorLogs)();
     });
     console.log('CRON jobs started.');
 }

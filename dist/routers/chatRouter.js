@@ -38,6 +38,7 @@ const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
+const errorLogger_1 = require("../logs/errorLogger");
 exports.chatRouter = express_1.default.Router();
 exports.chatRouter.post('/', async (req, res) => {
     ;
@@ -156,6 +157,7 @@ exports.chatRouter.post('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -254,6 +256,7 @@ exports.chatRouter.get('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });

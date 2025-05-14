@@ -9,6 +9,7 @@ import { getRequestCookie, removeRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_VOTES_LIMIT, HANGOUT_VOTING_STAGE } from "../util/constants";
 import { sendHangoutWebSocketMessage } from "../webSockets/hangout/hangoutWebSocketServer";
+import { logUnexpectedError } from "../logs/errorLogger";
 
 export const votesRouter: Router = express.Router();
 
@@ -218,6 +219,7 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -370,6 +372,8 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -392,5 +396,6 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });

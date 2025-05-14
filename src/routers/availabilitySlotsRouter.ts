@@ -11,6 +11,7 @@ import { destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_AVAILABILITY_SLOTS_LIMIT, MAX_HANGOUT_MEMBERS_LIMIT } from '../util/constants';
 import { AvailabilitySlot } from '../util/hangoutTypes';
 import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
+import { logUnexpectedError } from '../logs/errorLogger';
 
 export const availabilitySlotsRouter: Router = express.Router();
 
@@ -235,6 +236,7 @@ availabilitySlotsRouter.post('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -460,7 +462,9 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
 
     if (resultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
 
       return;
     };
@@ -490,6 +494,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -633,6 +638,8 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -655,6 +662,7 @@ availabilitySlotsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -789,6 +797,8 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -810,6 +820,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -931,5 +942,6 @@ availabilitySlotsRouter.get('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });

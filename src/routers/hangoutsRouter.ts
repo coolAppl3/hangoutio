@@ -17,6 +17,7 @@ import { createAuthSession, destroyAuthSession } from '../auth/authSessions';
 import { HANGOUT_AVAILABILITY_STAGE, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, MAX_ONGOING_HANGOUTS_LIMIT } from '../util/constants';
 import { HangoutEvent, HangoutMember, HangoutMemberCountables, ChatMessage, HangoutsDetails } from '../util/hangoutTypes';
 import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
+import { logUnexpectedError } from '../logs/errorLogger';
 
 export const hangoutsRouter: Router = express.Router();
 
@@ -220,6 +221,8 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
 
     if (!isSqlError(err)) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, err);
+
       return;
     };
 
@@ -231,6 +234,7 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -393,6 +397,8 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
     if (!isSqlError(err)) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, err);
+
       return;
     };
 
@@ -404,6 +410,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -567,6 +574,8 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -597,6 +606,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -747,6 +757,8 @@ hangoutsRouter.patch('/details/updateTitle', async (req: Request, res: Response)
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
+
       return;
     };
 
@@ -775,6 +787,7 @@ hangoutsRouter.patch('/details/updateTitle', async (req: Request, res: Response)
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -951,7 +964,9 @@ hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Re
 
     if (resultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
 
       return;
     };
@@ -985,6 +1000,7 @@ hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Re
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -1170,7 +1186,9 @@ hangoutsRouter.patch('/details/stages/update', async (req: Request, res: Respons
 
     if (firstResultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
 
       return;
     };
@@ -1226,6 +1244,7 @@ hangoutsRouter.patch('/details/stages/update', async (req: Request, res: Respons
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -1416,7 +1435,9 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
 
     if (resultSetHeader.affectedRows === 0) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to update rows.', trace: null });
 
       return;
     };
@@ -1451,7 +1472,9 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
 
     if (!updatedHangoutDetails) {
       await connection.rollback();
+
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
 
       return;
     };
@@ -1488,6 +1511,7 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
 
   } finally {
     connection?.release();
@@ -1612,6 +1636,8 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
 
     if (resultSetHeader.affectedRows === 0) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
       return;
     };
 
@@ -1625,6 +1651,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1669,6 +1696,7 @@ hangoutsRouter.get('/details/hangoutExists', async (req: Request, res: Response)
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -1857,6 +1885,8 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
 
     if (hangoutData.length !== 5) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
+
       return;
     };
 
@@ -1868,6 +1898,8 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
 
     if (!hangoutDetails || !hangoutMemberCountables) {
       res.status(500).json({ message: 'Internal server error.' });
+      await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
+
       return;
     };
 
@@ -1903,6 +1935,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });
 
@@ -2014,5 +2047,6 @@ hangoutsRouter.get('/events', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });

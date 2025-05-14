@@ -37,6 +37,7 @@ const cookieUtils_1 = require("../util/cookieUtils");
 const authSessions_1 = require("../auth/authSessions");
 const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
+const errorLogger_1 = require("../logs/errorLogger");
 exports.votesRouter = express_1.default.Router();
 exports.votesRouter.post('/', async (req, res) => {
     ;
@@ -194,6 +195,7 @@ exports.votesRouter.post('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();
@@ -312,6 +314,7 @@ exports.votesRouter.delete('/', async (req, res) => {
         vote_id = ?;`, [hangoutMemberDetails.vote_id]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -332,6 +335,7 @@ exports.votesRouter.delete('/', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });

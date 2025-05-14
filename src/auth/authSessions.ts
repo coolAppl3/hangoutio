@@ -6,6 +6,7 @@ import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { isSqlError } from "../util/isSqlError";
 import { setResponseCookie } from "../util/cookieUtils";
 import { hourMilliseconds } from "../util/constants";
+import { logUnexpectedError } from "../logs/errorLogger";
 
 const authSessionLimit: number = 3;
 

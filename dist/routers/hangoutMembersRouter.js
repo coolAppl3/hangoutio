@@ -41,6 +41,7 @@ const authSessions_1 = require("../auth/authSessions");
 const encryptionUtils_1 = require("../util/encryptionUtils");
 const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
+const errorLogger_1 = require("../logs/errorLogger");
 exports.hangoutMembersRouter = express_1.default.Router();
 exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
     ;
@@ -211,6 +212,7 @@ exports.hangoutMembersRouter.post('/joinHangout/account', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();
@@ -355,6 +357,7 @@ exports.hangoutMembersRouter.post('/joinHangout/guest', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();
@@ -482,6 +485,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
           guest_id = ?;`, [memberToKick.guest_id]);
             if (resultSetHeader.affectedRows === 0) {
                 res.status(500).json({ message: 'Internal server error.' });
+                await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
                 return;
             }
             ;
@@ -507,6 +511,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         hangout_member_id = ?;`, [memberToKick.hangout_member_id]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -531,6 +536,7 @@ exports.hangoutMembersRouter.delete('/kick', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -636,6 +642,7 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
         hangout_member_id = ?;`, [+hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -665,6 +672,7 @@ exports.hangoutMembersRouter.delete('/leave', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -757,6 +765,7 @@ exports.hangoutMembersRouter.patch('/relinquishLeadership', async (req, res) => 
         hangout_member_id = ?;`, [false, requestData.hangoutMemberId]);
         if (resultSetHeader.affectedRows === 0) {
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to delete rows.', trace: null });
             return;
         }
         ;
@@ -781,6 +790,7 @@ exports.hangoutMembersRouter.patch('/relinquishLeadership', async (req, res) => 
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     ;
 });
@@ -916,6 +926,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         if (resultSetHeaderArr[0]?.affectedRows === 0 || resultSetHeaderArr[1]?.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to update rows.', trace: null });
             return;
         }
         ;
@@ -943,6 +954,7 @@ exports.hangoutMembersRouter.patch('/transferLeadership', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();
@@ -1063,6 +1075,7 @@ exports.hangoutMembersRouter.patch('/claimLeadership', async (req, res) => {
         if (resultSetHeader.affectedRows === 0) {
             await connection.rollback();
             res.status(500).json({ message: 'Internal server error.' });
+            await (0, errorLogger_1.logUnexpectedError)(req, { message: 'Failed to update rows.', trace: null });
             return;
         }
         ;
@@ -1089,6 +1102,7 @@ exports.hangoutMembersRouter.patch('/claimLeadership', async (req, res) => {
         }
         ;
         res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
     finally {
         connection?.release();

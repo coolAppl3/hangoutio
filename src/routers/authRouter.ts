@@ -1,6 +1,7 @@
 import express, { Router, Request, Response } from "express";
 import { removeRequestCookie, getRequestCookie } from "../util/cookieUtils";
 import { destroyAuthSession } from "../auth/authSessions";
+import { logUnexpectedError } from "../logs/errorLogger";
 
 export const authRouter: Router = express.Router();
 
@@ -26,5 +27,6 @@ authRouter.post('/signOut', async (req: Request, res: Response) => {
     };
 
     res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
   };
 });

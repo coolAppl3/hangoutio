@@ -4,7 +4,7 @@ import { dbPool } from "../db/db";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { generateRateLimitId } from "../util/tokenGenerator";
 import { RowDataPacket } from "mysql2";
-import { CHAT_REQUESTS_RATE_LIMIT, GENERAL_REQUESTS_RATE_LIMIT, hourMilliseconds, minuteMilliseconds } from "../util/constants";
+import { CHAT_REQUESTS_RATE_LIMIT, GENERAL_REQUESTS_RATE_LIMIT, hourMilliseconds } from "../util/constants";
 
 export async function rateLimiter(req: Request, res: Response, next: NextFunction): Promise<void> {
   const rateLimitId: string | null = getRequestCookie(req, 'rateLimitId');
@@ -48,7 +48,7 @@ async function addToRateTracker(res: Response, isChatRequest: boolean): Promise<
         general_requests_count,
         chat_requests_count,
         window_timestamp
-      ) VALUES(${generatePlaceHolders(4)});`,
+      ) VALUES (${generatePlaceHolders(4)});`,
       [newRateId, isChatRequest ? 0 : 1, isChatRequest ? 1 : 0, currentTimestamp]
     );
 
@@ -164,7 +164,7 @@ async function addToAbusiveUsers(req: Request): Promise<void> {
           first_abuse_timestamp,
           latest_abuse_timestamp,
           rate_limit_reached_count
-        ) VALUES(${generatePlaceHolders(4)});`,
+        ) VALUES (${generatePlaceHolders(4)});`,
         [req.ip, currentTimestamp, currentTimestamp, 1]
       );
 
