@@ -41,7 +41,7 @@ app.use(compression({ threshold: 1024 }));
 app.use(cookieParser());
 
 // cors policy
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV?.toLowerCase() === 'development') {
   const whitelist = ['http://localhost:3000', 'http://localhost:5000'];
 
   app.use(
