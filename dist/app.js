@@ -3,16 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.app = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
-const http_1 = __importDefault(require("http"));
-const hangoutWebSocketServer_1 = require("./webSockets/hangout/hangoutWebSocketServer");
 const express_1 = __importDefault(require("express"));
 const compression_1 = __importDefault(require("compression"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const initDb_1 = require("./db/initDb");
 const chatRouter_1 = require("./routers/chatRouter");
 const accountsRouter_1 = require("./routers/accountsRouter");
 const hangoutsRouter_1 = require("./routers/hangoutsRouter");
@@ -24,96 +22,35 @@ const votesRouter_1 = require("./routers/votesRouter");
 const htmlRouter_1 = require("./routers/htmlRouter");
 const authRouter_1 = require("./routers/authRouter");
 const fallbackMiddleware_1 = require("./middleware/fallbackMiddleware");
-const cronInit_1 = require("./cron-jobs/cronInit");
-const hangoutWebSocketAuth_1 = require("./webSockets/hangout/hangoutWebSocketAuth");
 const rateLimiter_1 = require("./middleware/rateLimiter");
-const port = process.env.PORT ? +process.env.PORT : 5000;
-const app = (0, express_1.default)();
-app.use(express_1.default.json());
-app.use(express_1.default.urlencoded({ extended: false }));
-app.use((0, compression_1.default)({ threshold: 1024 }));
-app.use((0, cookie_parser_1.default)());
-if (process.env.NODE_ENV === 'development') {
+exports.app = (0, express_1.default)();
+exports.app.use(express_1.default.json());
+exports.app.use(express_1.default.urlencoded({ extended: false }));
+exports.app.use((0, compression_1.default)({ threshold: 1024 }));
+exports.app.use((0, cookie_parser_1.default)());
+if (process.env.NODE_ENV?.toLowerCase() === 'development') {
     const whitelist = ['http://localhost:3000', 'http://localhost:5000'];
-    app.use((0, cors_1.default)({
+    exports.app.use((0, cors_1.default)({
         origin: whitelist,
         credentials: true,
     }));
 }
 ;
-app.use((req, res, next) => {
+exports.app.use((req, res, next) => {
     const stagingHostName = process.env.STAGING_HOST_NAME;
     res.set('Content-Security-Policy', `default-src 'self'; script-src 'self'; connect-src 'self' wss://www.hangoutio.com${stagingHostName ? ` wss://${stagingHostName}` : ''};`);
     next();
 });
-app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
-app.use(htmlRouter_1.htmlRouter);
-app.use('/api/', rateLimiter_1.rateLimiter);
-app.use('/api/chat', chatRouter_1.chatRouter);
-app.use('/api/accounts', accountsRouter_1.accountsRouter);
-app.use('/api/hangouts', hangoutsRouter_1.hangoutsRouter);
-app.use('/api/guests', guestsRouter_1.guestsRouter);
-app.use('/api/hangoutMembers', hangoutMembersRouter_1.hangoutMembersRouter);
-app.use('/api/availabilitySlots', availabilitySlotsRouter_1.availabilitySlotsRouter);
-app.use('/api/suggestions', suggestionsRouter_1.suggestionsRouter);
-app.use('/api/votes', votesRouter_1.votesRouter);
-app.use('/api/auth', authRouter_1.authRouter);
-app.use(fallbackMiddleware_1.fallbackMiddleware);
-const server = http_1.default.createServer(app);
-server.on('upgrade', async (req, socket, head) => {
-    socket.on('error', (err) => {
-        if (('errno' in err) && err.errno === -4077) {
-            socket.end();
-            return;
-        }
-        ;
-        console.log(err, err.stack);
-        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[500]}\r\n\r\n`);
-        socket.write('Internal server error\r\n');
-        socket.end();
-    });
-    const memoryUsageMegabytes = process.memoryUsage().rss / Math.pow(1024, 2);
-    const memoryThreshold = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500);
-    if (memoryUsageMegabytes >= memoryThreshold) {
-        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[509]}\r\n\r\n`);
-        socket.write('Temporarily unavailable\r\n');
-        socket.end();
-        return;
-    }
-    ;
-    const webSocketDetails = await (0, hangoutWebSocketAuth_1.authenticateHandshake)(req);
-    if (!webSocketDetails) {
-        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[401]}\r\n\r\n`);
-        socket.write('Invalid credentials\r\n');
-        socket.end();
-        return;
-    }
-    ;
-    hangoutWebSocketServer_1.wss.handleUpgrade(req, socket, head, (ws) => {
-        const wsSet = hangoutWebSocketServer_1.wsMap.get(webSocketDetails.hangoutId);
-        if (!wsSet) {
-            hangoutWebSocketServer_1.wsMap.set(webSocketDetails.hangoutId, new Set([ws]));
-            hangoutWebSocketServer_1.wss.emit('connection', ws, req);
-            return;
-        }
-        ;
-        wsSet.add(ws);
-        hangoutWebSocketServer_1.wss.emit('connection', ws, req);
-    });
-});
-async function initServer() {
-    try {
-        await (0, initDb_1.initDb)();
-        server.listen(port, () => {
-            console.log(`Server running on port ${port}.`);
-        });
-        (0, cronInit_1.initCronJobs)();
-    }
-    catch (err) {
-        console.log(err);
-        process.exit(1);
-    }
-    ;
-}
-;
-initServer();
+exports.app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
+exports.app.use(htmlRouter_1.htmlRouter);
+exports.app.use('/api/', rateLimiter_1.rateLimiter);
+exports.app.use('/api/chat', chatRouter_1.chatRouter);
+exports.app.use('/api/accounts', accountsRouter_1.accountsRouter);
+exports.app.use('/api/hangouts', hangoutsRouter_1.hangoutsRouter);
+exports.app.use('/api/guests', guestsRouter_1.guestsRouter);
+exports.app.use('/api/hangoutMembers', hangoutMembersRouter_1.hangoutMembersRouter);
+exports.app.use('/api/availabilitySlots', availabilitySlotsRouter_1.availabilitySlotsRouter);
+exports.app.use('/api/suggestions', suggestionsRouter_1.suggestionsRouter);
+exports.app.use('/api/votes', votesRouter_1.votesRouter);
+exports.app.use('/api/auth', authRouter_1.authRouter);
+exports.app.use(fallbackMiddleware_1.fallbackMiddleware);

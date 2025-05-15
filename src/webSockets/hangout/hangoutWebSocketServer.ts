@@ -1,7 +1,7 @@
 import WebSocket, { WebSocketServer, RawData } from "ws";
 
 export const wsMap: Map<string, Set<WebSocket>> = new Map();
-export const wss: WebSocketServer = new WebSocket.Server({
+export const wss: WebSocketServer = new WebSocketServer({
   noServer: true,
   maxPayload: 1700,
   clientTracking: false,

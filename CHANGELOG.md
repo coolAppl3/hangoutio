@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.05] (2025-05-15)
+
+### Code Refactoring
+
+- Reworked how the server is initialized in order to run tests on the backend.
+
+
+### Tests
+
+- Switched to Jest for testing.
+
+
 ## [0.5.04] (2025-05-14)
 
 ### Features
@@ -7,7 +19,7 @@
 - Added basic error logging to all routers.
 
 
-### Test Changes
+### Tests
 
 - Implemented basic structure for vitest.
 
