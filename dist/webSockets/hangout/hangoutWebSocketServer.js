@@ -1,12 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.removeEmptyHangoutWebSocketSets = exports.sendHangoutWebSocketMessage = exports.wss = exports.wsMap = void 0;
-const ws_1 = __importDefault(require("ws"));
+const ws_1 = require("ws");
 exports.wsMap = new Map();
-exports.wss = new ws_1.default.Server({
+exports.wss = new ws_1.WebSocketServer({
     noServer: true,
     maxPayload: 1700,
     clientTracking: false,

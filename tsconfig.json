@@ -11,7 +11,7 @@
     // "noUnusedParameters": true,
     "removeComments": true,
     "typeRoots": ["./node_modules/@types"],
-    "types": ["node", "express", "cors", "bcrypt", "nodemailer", "node-cron", "ws", "compression", "cookie-parser"],
+    "types": ["node", "express", "cors", "bcrypt", "nodemailer", "node-cron", "ws", "compression", "cookie-parser", "jest"],
   },
   "include": ["src/**/*", "globals.d.ts"],
   "exclude": ["node_modules"],
