@@ -1,6 +1,7 @@
 import { handleAuthSessionExpired } from "../global/authUtils";
 import { ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE } from "../global/clientConstants";
 import { ConfirmModal } from "../global/ConfirmModal";
+import { createSpanElement } from "../global/domUtils";
 import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
@@ -29,9 +30,17 @@ export function initAccountHangouts(): void {
   };
 
   loadEventListeners();
-  insertAccountHangouts(accountState.data.hangoutHistory, true);
-
   checkForHangoutsHref();
+
+  if (accountState.data.hangoutHistory.length === 0) {
+    accountHangoutState.allHangoutsFetched = true;
+    loadMoreHangoutsBtn?.classList.add('hidden');
+
+    insertNoHangoutsSpan();
+    return;
+  };
+
+  insertAccountHangouts(accountState.data.hangoutHistory, true);
 };
 
 function loadEventListeners(): void {
@@ -43,7 +52,7 @@ function insertAccountHangouts(hangouts: Hangout[], isFirstCall: boolean = false
     return;
   };
 
-  if (accountState.data.hangoutHistory.length % accountHangoutState.fetchOffset !== 0) {
+  if (accountState.data.hangoutHistory.length < accountHangoutState.fetchOffset) {
     accountHangoutState.allHangoutsFetched = true;
     loadMoreHangoutsBtn?.classList.add('hidden');
 
@@ -143,7 +152,12 @@ async function leaveHangout(hangout: Hangout, hangoutElement: HTMLDivElement): P
   try {
     await accountLeaveHangoutService(hangout.hangout_id);
 
+    accountState.data.hangoutHistory = accountState.data.hangoutHistory.filter((existingHangout: Hangout) => existingHangout.hangout_id !== hangout.hangout_id);
+
     hangoutElement.remove();
+    if (accountState.data.hangoutHistory.length === 0) {
+      insertNoHangoutsSpan();
+    };
 
     popup('Left hangout.', 'success');
     LoadingModal.remove();
@@ -231,4 +245,12 @@ function checkForHangoutsHref(): void {
       document.documentElement.scrollTop -= 80;
     }, 0);
   };
+};
+
+function insertNoHangoutsSpan(): void {
+  if (!hangoutsContainer) {
+    return;
+  };
+
+  hangoutsContainer.appendChild(createSpanElement('no-hangouts', 'No hangouts found'));
 };

@@ -787,6 +787,10 @@
   &-container {
     @apply grid grid-cols-2 md:grid-cols-1 gap-1;
 
+    .no-hangouts {
+      @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mx-auto w-fit rounded-[20rem] col-span-2;
+    }
+
     .hangout {
       @apply relative bg-section dark:bg-section-dark p-2 rounded-sm;
 
