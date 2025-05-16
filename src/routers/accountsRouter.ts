@@ -3370,9 +3370,7 @@ accountsRouter.delete('/leaveHangout', async (req: Request, res: Response) => {
     }
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
-      `SELECT
-        hangout_member_id
-      FROM
+      `DELETE FROM
         hangout_members
       WHERE
         account_id = ? AND
