@@ -19,6 +19,7 @@ module.exports = {
     accountRecovery: './src/ts/accountRecovery.ts',
     hangout: './src/ts/hangout.ts',
     account: './src/ts/account.ts',
+    termsOfService: './src/ts/termsOfService.ts',
 
     // error pages
     errorPage: './src/ts/modules/errorPages/errorPage.ts',
@@ -199,6 +200,17 @@ module.exports = {
 
       chunks: [
         "account"
+      ],
+    }),
+
+    // account.html
+    new HtmlWebpackPlugin({
+      title: 'Terms of Service - Hangoutio',
+      filename: 'terms-of-service.html',
+      template: 'src/html/terms-of-service.html',
+
+      chunks: [
+        "termsOfService"
       ],
     }),
 
