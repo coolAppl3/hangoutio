@@ -108,7 +108,7 @@
 
           <!-- links container -->
           <ul class="links-container flex justify-center items-center mx-auto md:hidden mx-a absolute top-0 left-0 right-0 bottom-0 z-0">
-            <li class="group">
+            <li class="group selected">
               <a
                 href="home"
                 class="relative font-medium text-base dark:text-title-dark hover:cursor-pointer after:absolute after:-bottom-[3px] after:left-0 after:w-full after:h-[3px] after:rounded-[20px] after:bg-transparent after:transition-colors after:hover:bg-cta dark:after:hover:bg-cta-dark group-[.selected]:after:bg-cta dark:group-[.selected]:after:bg-cta-dark group-[.selected]:font-bold"
@@ -198,13 +198,13 @@
             <div class="btn-container flex justify-center items-center ml-2 md:hidden">
               <a
                 href="sign-in"
-                class="btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark hidden"
+                class="btn btn-mini bg-nav-light dark:bg-nav-dark border-title dark:border-title-dark text-title dark:text-title-dark"
                 >Sign in</a
               >
 
               <a
                 href="sign-up"
-                class="btn btn-mini bg-cta dark:bg-cta-dark text-title"
+                class="btn btn-mini bg-cta dark:bg-cta-dark text-title ml-[4px]"
                 >Sign up</a
               >
 
@@ -271,7 +271,7 @@
       class="bot-nav fixed bottom-0 left-0 z-20 h-6 w-full bg-nav-light dark:bg-nav-dark shadow-[0_-1px_2px_0_rgba(0,0,0,0.05)] shadow-cta dark:shadow-cta-dark group grid-cols-12 hidden md:grid"
     >
       <div
-        class="bot-nav-container-item relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer"
+        class="bot-nav-container-item relative w-full h-full flex flex-col justify-center items-center border-r-1 border-light-gray dark:border-light-black cursor-pointer selected"
       >
         <div class="svg w-3 h-3 mb-[6px]">
           <svg
@@ -321,7 +321,7 @@
         >
       </div>
 
-      <div class="bot-nav-container-item relative w-full h-full flex flex-col justify-center items-center cursor-pointer selected">
+      <div class="bot-nav-container-item relative w-full h-full flex flex-col justify-center items-center cursor-pointer">
         <div class="svg w-3 h-3 mb-[6px]">
           <svg
             width="600"
@@ -469,207 +469,126 @@
       </div>
     </nav>
 
-    <!-- sign in -->
-    <section class="sign-in">
-      <div class="container py-6 h-available flex justify-center items-center">
-        <form
-          id="sign-in-form"
-          class="bg-secondary dark:bg-secondary-dark w-[36rem] max-w-[36rem] py-3 px-2 rounded-sm shadow-simple overflow-hidden group/form"
-        >
-          <div class="form-header mb-3">
-            <h3 class="text-2xl font-medium text-title text-center dark:text-title-dark mb-2">Sign into your account</h3>
+    <section
+      id="terms"
+      class="my-3"
+    >
+      <div class="container max-w-[800px]">
+        <header class="mb-4">
+          <h3 class="!text-3xl font-bold mb-[4px]">Terms of Service</h3>
+          <p class="text-sm mb-1">Effective since: May 17th, 2025</p>
+          <p>
+            Welcome to Hangoutio (“we”, “us”, or “our”). These Terms of Service (“Terms”) govern your use of our website, services, and features (collectively,
+            the “Service”). By accessing or using the Service, whether as a guest or registered user, you agree to be bound by these Terms. If you do not agree,
+            please do not use Hangoutio.
+          </p>
+        </header>
 
-            <div class="h-line mb-2"></div>
+        <div class="section">
+          <h4>1. Who Can Use Hangoutio</h4>
+          <p>
+            You must be at least 13 years old to use the Service. By using Hangoutio, you confirm that you meet this requirement and are legally allowed to
+            enter into these Terms.
+          </p>
+        </div>
 
-            <div class="w-full">
-              <div
-                id="sign-in-options"
-                class="flex justify-between items-center max-w-[20rem] mx-auto bg-light-gray dark:bg-dark rounded-3xl relative after:absolute after:left-0 after:w-1/2 after:h-full after:bg-cta dark:after:bg-cta-dark after:rounded-3xl after:transition-transform"
-              >
-                <button
-                  id="account-option-btn"
-                  class="text-sm md:text-base font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
-                  type="button"
-                >
-                  Account
-                </button>
-                <button
-                  id="guest-option-btn"
-                  class="text-sm md:text-base font-bold text-center w-full py-[6px] px-1 rounded-3xl text-title dark:text-title-dark transition-colors relative after:absolute after:bottom-[6px] after:left-0 after:right-0 after:mx-auto after:h-[2px] after:w-[30%] after:rounded-lg after:transition-colors hover:after:bg-title dark:hover:after:bg-title-dark"
-                  type="button"
-                >
-                  Guest
-                </button>
-              </div>
-            </div>
-          </div>
+        <div class="section">
+          <h4>2. Types of Users</h4>
+          <ul>
+            <li>
+              Guest Users can create temporary accounts with limited access. Guest users may still view and contribute to hangouts but will not have access to
+              all features available to registered users.
+            </li>
+            <li>Registered Users have full access to the platform's features once they complete the registration and email verification process.</li>
+          </ul>
+        </div>
 
-          <div id="sign-in-form-container">
-            <!-- account form -->
-            <div
-              id="account-form"
-              class="group-[.is-guest-user]/form:hidden"
-            >
-              <div class="form-group">
-                <label for="account-email-input">Email address</label>
-                <input
-                  type="text"
-                  id="account-email-input"
-                  autocomplete="email"
-                />
-                <span
-                  class="error-span"
-                  data-target="account-email-input"
-                ></span>
-              </div>
+        <div class="section">
+          <h4>3. A Passion Project</h4>
+          <p>
+            Hangoutio is a personal, non-commercial project built out of interest and enthusiasm for collaborative tools. It is provided free of charge, with no
+            monetization, sponsorship, or advertising.
+          </p>
+        </div>
 
-              <div class="form-group form-group-password relative">
-                <label for="account-password-input">Password</label>
-                <input
-                  type="password"
-                  id="account-password-input"
-                  autocomplete="current-password"
-                />
-                <button
-                  class="password-icon svg w-2 h-2 group"
-                  id="account-password-input-reveal-btn"
-                  type="button"
-                  title="Reveal password"
-                  aria-label="Reveal password"
-                >
-                  <svg
-                    width="500"
-                    height="500"
-                    viewBox="0 0 500 500"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M485.416 267.826C450.744 307.575 358.471 400 250.091 400C141.71 400 49.4376 307.575 14.7649 267.826C5.74504 257.485 5.74504 242.515 14.7649 232.174C49.4376 192.425 141.71 100 250.091 100C358.471 100 450.744 192.425 485.416 232.174C494.436 242.515 494.436 257.485 485.416 267.826ZM250.091 326C292.064 326 326.091 291.974 326.091 250C326.091 208.026 292.064 174 250.091 174C243.954 174 237.988 174.727 232.273 176.1C230.721 176.473 230.286 178.459 231.391 179.611C237.342 185.81 241 194.228 241 203.5C241 222.554 225.554 238 206.5 238C196.426 238 187.36 233.682 181.052 226.796C179.974 225.619 177.965 225.924 177.492 227.448C175.281 234.574 174.091 242.148 174.091 250C174.091 291.974 208.117 326 250.091 326ZM250.091 350C305.319 350 350.091 305.228 350.091 250C350.091 194.772 305.319 150 250.091 150C194.862 150 150.091 194.772 150.091 250C150.091 305.228 194.862 350 250.091 350Z"
-                    ></path>
-                  </svg>
-                </button>
-                <span
-                  class="error-span"
-                  data-target="account-password-input"
-                ></span>
-              </div>
+        <div class="section">
+          <h4>4. Account Responsibility</h4>
+          <p>
+            You are responsible for safeguarding your account credentials and for all activity under your account. Please choose a strong password and if you
+            intend on storing it, do it securely. We are not responsible for any unauthorized access to your account.
+          </p>
+        </div>
 
-              <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-2">
-                Don't have an account?
-                <a
-                  href="sign-up"
-                  class="link"
-                  >Sign up</a
-                >
-                for free with a few simple steps.
-              </p>
-            </div>
+        <div class="section">
+          <h4>5. Acceptable Use</h4>
+          <ul>
+            <p>You agree to use this app reasonably, for its intended purpose, and not:</p>
+            <li>Use the Service in any way that violates laws or regulations.</li>
+            <li>Harass, harm, or impersonate others.</li>
+            <li>Distribute spam, malware, or any malicious code.</li>
+            <li>
+              Attempt to disrupt or degrade the performance, stability, or rendering of the app, including attempts to overload or misuse system resources,
+              APIs, or database operations.
+            </li>
+            <li class="!mb-1">Reverse engineer, scrape, or interfere with the underlying software or systems.</li>
+            <p>We reserve the right to suspend or remove access to the Service for violations of this policy.</p>
+          </ul>
+        </div>
 
-            <!-- guest form -->
-            <div
-              id="guest-form"
-              class="hidden group-[.is-guest-user]/form:block"
-            >
-              <div class="form-group">
-                <label for="guest-username-input">Username</label>
-                <input
-                  type="text"
-                  id="guest-username-input"
-                  autocomplete="email"
-                />
-                <span
-                  class="error-span"
-                  data-target="guest-username-input"
-                ></span>
-              </div>
+        <div class="section">
+          <h4>6. Privacy and Data</h4>
+          <p>
+            We collect only the minimum data required to provide our Service: display name, username, email (for registered users), and a password, which is
+            securely hashed. We do not sell or share your data with third parties. Data is stored securely and handled with care.
+          </p>
+          <p>
+            While we take security seriously and aim to protect your data using industry best practices, no system is entirely immune to unforeseen issues. We
+            are not liable for data loss, breaches, or exposure arising from events beyond our reasonable control or foresight.
+          </p>
+          <p>By accepting these Terms, you also accept our <a href="privacy-policy">Privacy Policy</a> and <a href="cookie-policy">Cookie Policy</a>.</p>
+        </div>
 
-              <div class="form-group form-group-password relative">
-                <label for="guest-password-input">Password</label>
-                <input
-                  type="password"
-                  id="guest-password-input"
-                  autocomplete="current-password"
-                />
-                <button
-                  class="password-icon svg w-2 h-2 group"
-                  id="guest-password-input-reveal-btn"
-                  type="button"
-                  title="Reveal password"
-                  aria-label="Reveal password"
-                >
-                  <svg
-                    width="500"
-                    height="500"
-                    viewBox="0 0 500 500"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      class="fill-description dark:fill-description-dark group-hover:fill-cta dark:group-hover:fill-cta-dark"
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M485.416 267.826C450.744 307.575 358.471 400 250.091 400C141.71 400 49.4376 307.575 14.7649 267.826C5.74504 257.485 5.74504 242.515 14.7649 232.174C49.4376 192.425 141.71 100 250.091 100C358.471 100 450.744 192.425 485.416 232.174C494.436 242.515 494.436 257.485 485.416 267.826ZM250.091 326C292.064 326 326.091 291.974 326.091 250C326.091 208.026 292.064 174 250.091 174C243.954 174 237.988 174.727 232.273 176.1C230.721 176.473 230.286 178.459 231.391 179.611C237.342 185.81 241 194.228 241 203.5C241 222.554 225.554 238 206.5 238C196.426 238 187.36 233.682 181.052 226.796C179.974 225.619 177.965 225.924 177.492 227.448C175.281 234.574 174.091 242.148 174.091 250C174.091 291.974 208.117 326 250.091 326ZM250.091 350C305.319 350 350.091 305.228 350.091 250C350.091 194.772 305.319 150 250.091 150C194.862 150 150.091 194.772 150.091 250C150.091 305.228 194.862 350 250.091 350Z"
-                    ></path>
-                  </svg>
-                </button>
-                <span
-                  class="error-span"
-                  data-target="guest-password-input"
-                ></span>
-              </div>
+        <div class="section">
+          <h4>7. Service Availability</h4>
+          <p>
+            Hangoutio is provided “as is” and “as available.” While we strive to keep the platform functional and reliable, we make no guarantees about uptime,
+            availability, or fitness for a particular purpose. Features may change or be removed at any time without notice.
+          </p>
+        </div>
 
-              <p class="font-medium text-sm md:text-base text-description dark:text-description-dark mb-2">
-                Learn more about the benefits of signing up for a free account
-                <a
-                  href="#"
-                  class="link"
-                  >here</a
-                >.
-              </p>
-            </div>
-          </div>
+        <div class="section">
+          <h4>8. Intellectual Property</h4>
+          <p>
+            The software powering Hangoutio is open source and made available under the GNU General Public License v3.0. You are free to view, use, and modify
+            the code under the Terms of that license. However, the Hangoutio name, design, and branding may not be used without permission.
+          </p>
+        </div>
 
-          <!-- sign-in-preferences -->
-          <div class="sign-in-preferences flex justify-start items-center mb-2">
-            <button
-              id="keep-signed-in-btn"
-              class="checkbox-btn mr-1"
-              type="button"
-              aria-label="Keep me signed in"
-            >
-              <div class="svg w-2 h-2">
-                <svg
-                  width="601"
-                  height="601"
-                  viewBox="0 0 601 601"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M106.645 335.421C87.1184 315.895 87.1184 284.237 106.645 264.711C126.171 245.184 157.829 245.184 177.355 264.711L318.777 406.132L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L106.645 335.421Z"
-                    class="fill-dark dark:fill-cta-dark"
-                  />
-                  <path
-                    d="M177.355 406.132L424.843 158.645C444.369 139.118 476.027 139.118 495.553 158.645C515.08 178.171 515.08 209.829 495.553 229.355L283.421 441.487C263.895 461.014 232.237 461.014 212.711 441.487L177.355 406.132Z"
-                    class="fill-dark dark:fill-cta-dark"
-                  />
-                </svg>
-              </div>
-            </button>
-            <p class="text-sm font-medium text-title dark:text-title-dark">Keep me signed in</p>
-          </div>
+        <div class="section">
+          <h4>9. Jurisdiction</h4>
+          <p>
+            These Terms are governed by the laws of the Republic of Serbia, without regard to its conflict of laws principles. By using Hangoutio, you agree
+            that any legal matters arising from these Terms will fall under Serbian jurisdiction.
+          </p>
+        </div>
 
-          <button class="btn bg-cta dark:bg-cta-dark w-full mb-1">Sign in</button>
-          <a
-            href="account-recovery"
-            class="text-sm font-bold link block w-fit mx-auto group-[.is-guest-user]/form:hidden"
-            >Forgot my password</a
-          >
-        </form>
+        <div class="section">
+          <h4>10. Support and Contact</h4>
+          <p>Hangoutio does not offer any active customer support. It is provided as-is, with no guarantee of assistance or issue resolution.</p>
+          <p>Any emails you may receive from us through no-reply@hangoutio.com are automated, and you're treated as having read them.</p>
+          <p>
+            You're responsible for providing a valid email address if and when you choose to register an account. We're not liable for any communication,
+            automated or otherwise, you may miss due to any issues with your email service provider.
+          </p>
+        </div>
+
+        <div class="section">
+          <h4>11. Changes to These Terms</h4>
+          <p>
+            We may update these Terms from time to time, and reserve the right to do so. If significant changes are made, we'll post a notice on the site or
+            send you an email. Continued use of the Service after changes are posted constitutes your acceptance of the new Terms.
+          </p>
+        </div>
       </div>
     </section>
 

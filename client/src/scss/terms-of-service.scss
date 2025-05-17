@@ -181,7 +181,7 @@
 
   &.form-group-password {
     .password-icon {
-      @apply absolute right-1 top-[35px] cursor-pointer after:absolute after:hidden after:top-0 after:left-0 after:right-0 after:mx-auto after:w-[2px] after:h-full after:z-3 after:rounded-[40px] after:rotate-45 after:transition-colors after:bg-description dark:after:bg-description-dark hover:after:bg-cta dark:hover:after:bg-cta-dark before:absolute before:left-0 before:top-0 before:w-full before:h-full before:z-3;
+      @apply absolute right-1 top-[35px] cursor-pointer after:absolute after:hidden after:top-0 after:left-0 after:right-0 after:mx-auto after:w-[2px] after:h-full after:z-3 after:rounded-[40px] after:rotate-45 after:transition-colors after:bg-description dark:after:bg-description-dark hover:after:bg-cta dark:hover:after:bg-cta-dark;
 
       &.revealed {
         @apply after:block;
@@ -599,331 +599,40 @@
 
 // ---------------------------------------------------------------------------------------------
 
-// details
-#details {
-  word-break: break-word;
 
-  &-header {
+#terms {
 
-    #details-dropdown {
-      @apply relative ml-1 z-5;
-
-      &.expanded {
-
-        #details-dropdown-menu {
-          @apply block;
-        }
-      }
-
-      &.ongoing-request {
-
-        #details-dropdown-menu {
-
-          #update-email-btn,
-          #delete-account-btn,
-          .h-line {
-            @apply hidden;
-          }
-        }
-      }
-
-      &-menu {
-        @apply absolute top-0 right-3 w-fit h-fit rounded-sm overflow-hidden whitespace-nowrap z-3 hidden;
-
-        button {
-          @apply block w-full p-1 px-2 text-sm bg-description-dark dark:bg-description text-description dark:text-description-dark font-medium text-start cursor-pointer hover:brightness-75;
-
-          &#delete-account-btn {
-            @apply text-danger dark:text-danger-dark;
-          }
-        }
-      }
-    }
-  }
-}
-
-// friends
-#friends {
-  word-break: break-word;
-
-  &-tabs {
-    @apply flex justify-start items-center mb-2 pl-2 border-b-1 border-cta dark:border-cta-dark;
-
-    button {
-      @apply mb-[-1px] text-sm font-medium text-description dark:text-description-dark p-1 border-1 border-transparent transition-[filter] hover:brightness-75;
-
-      &.selected {
-        @apply bg-section dark:bg-section-dark rounded-tl rounded-tr border-1 border-cta dark:border-cta-dark border-b-transparent dark:border-b-transparent hover:brightness-100;
-      }
-    }
+  h3,
+  h4 {
+    @apply text-xl font-medium text-title dark:text-title-dark;
   }
 
-  @media(max-width: 480px) {
-
-    #friends-tabs {
-      @apply flex-col items-start border-b-0 border-l-1 pl-0;
-
-      button {
-        @apply mb-0 ml-[-1px] min-w-[14rem] text-start rounded-tl-[0px] rounded-br;
-
-        &.selected {
-          @apply border-b-cta dark:border-b-cta-dark border-l-transparent dark:border-l-transparent;
-        }
-      }
-    }
+  p,
+  li,
+  a {
+    @apply font-medium text-description dark:text-description-dark;
   }
 
-  &-list {
+  .section {
+    @apply mb-4 last:mb-0;
 
-    #friends-container {
-
-      &-inner {
-        @apply grid grid-cols-3 lg:grid-cols-2 sm:grid-cols-1 gap-1;
-
-        .friend {
-          @apply flex justify-between items-start p-1 bg-section dark:bg-section-dark rounded-sm;
-
-          div p {
-            @apply overflow-hidden;
-
-            &:first-child {
-              @apply font-medium text-title dark:text-title-dark mb-[2px];
-            }
-
-            &:nth-child(2),
-            &:nth-child(3) {
-              @apply text-sm text-description dark:text-description-dark overflow-hidden;
-            }
-
-            &:last-child {
-              @apply text-xs mt-2 font-medium;
-            }
-          }
-
-          button {
-            @apply relative after:absolute after:top-0 after:left-0 after:w-full after:h-full ml-1;
-
-            &:hover {
-
-              svg path {
-                @apply fill-danger dark:fill-danger-dark;
-              }
-            }
-
-            svg {
-              @apply svg w-2 h-2;
-
-              path {
-                @apply fill-description dark:fill-description-dark transition-[fill];
-              }
-            }
-          }
-        }
-
-        p.no-friends {
-          @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mx-auto w-fit rounded-[20rem] col-span-3;
-        }
-      }
-    }
-  }
-
-  #pending-requests {
-
-    &-container {
-      @apply overflow-hidden;
-
-      .friend-request {
-        @apply flex justify-between items-end sm:flex-col sm:items-start p-1 bg-section dark:bg-section-dark rounded-sm mb-1 last:mb-0 transition-transform duration-300;
-
-        &.remove {
-          transform: translate3d(-150rem, 0, 0);
-        }
-
-        div p {
-          @apply overflow-hidden;
-
-          &:first-child {
-            @apply font-medium text-title dark:text-title-dark mb-[2px];
-          }
-
-          &:nth-child(2),
-          &:nth-child(3) {
-            @apply text-sm text-description dark:text-description-dark overflow-hidden;
-          }
-
-          &:last-child {
-            @apply text-xs mt-2 font-medium;
-          }
-        }
-
-        .btn-container {
-          @apply flex justify-center items-center mt-1 sm:w-full;
-
-          button {
-            @apply first:mr-1 sm:w-full;
-
-            &.reject-request-btn {
-              @apply btn bg-section dark:bg-section-dark text-title dark:text-title-dark border-1 border-title dark:border-title-dark;
-            }
-
-            &.accept-request-btn {
-              @apply btn bg-description dark:bg-description-dark text-title-dark dark:text-title;
-            }
-          }
-        }
-      }
-
-      p.no-requests {
-        @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mt-1 mx-auto w-fit rounded-[20rem] col-span-3;
-      }
-    }
-  }
-}
-
-// hangouts
-#hangouts {
-  word-break: break-word;
-
-  &-container {
-    @apply grid grid-cols-2 md:grid-cols-1 gap-1;
-
-    .no-hangouts {
-      @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mx-auto w-fit rounded-[20rem] col-span-2;
+    h4 {
+      @apply mb-1;
     }
 
-    .hangout {
-      @apply relative bg-section dark:bg-section-dark p-2 rounded-sm;
-
-      &-details {
-        p {
-          @apply overflow-hidden;
-
-          &:first-child {
-            @apply font-bold text-title dark:text-title-dark mb-[2px] mr-2;
-          }
-
-          &:nth-child(2) {
-            @apply font-medium;
-          }
-
-          &:nth-child(2),
-          &:nth-child(3) {
-            @apply text-sm text-description dark:text-description-dark overflow-hidden;
-          }
-
-          &:last-child {
-            @apply text-xs mt-2 font-medium;
-          }
-        }
-      }
-
-      .view-hangout-btn {
-        @apply btn bg-section dark:bg-section-dark border-1 border-title dark:border-title-dark text-title dark:text-title-dark w-full mt-1;
-      }
-
-      .leave-hangout-btn {
-        @apply absolute top-1 right-1 after:absolute after:left-0 after:top-0 after:w-full after:h-full;
-
-        &:hover {
-
-          svg path {
-            @apply fill-danger dark:fill-danger-dark;
-          }
-        }
-
-        svg {
-          @apply svg w-2 h-2;
-
-          path {
-            @apply fill-description dark:fill-description-dark transition-[fill];
-          }
-        }
-      }
-    }
-  }
-}
-
-// loading skeleton --- ---
-#loading-skeleton {
-  @apply py-3;
-
-  .skeleton {
-
-    &-details {
-      @apply bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple mb-2 p-2;
-
-      &>.title {
-        @apply w-[40%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-3;
-      }
-
-      .summary {
-        @apply grid grid-cols-2 xs:grid-cols-1 gap-2 mb-3;
-
-        &-item {
-
-          div {
-            @apply h-[1.6rem] w-[70%] first:w-[40%] first:mb-1 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast;
-          }
-        }
-      }
+    p {
+      @apply mb-1 last:mb-0;
     }
 
-    &-friends {
-      @apply bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple p-2 mb-3;
-
-      &>.title {
-        @apply w-[20%] md:w-[30%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-2;
-      }
-
-      &-nav {
-        @apply h-[1.6rem] w-[70%] mb-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast;
-
-      }
-
-      &-container {
-        @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-1;
-
-        .friend {
-          @apply p-1 bg-section dark:bg-section-dark rounded-sm;
-
-          div {
-            @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast h-[1.2rem] w-[40%] mb-2 first:w-[60%] first:mb-[4px] first:h-[1.6rem] last:w-[30%] last:mb-0;
-          }
-
-        }
-      }
+    a {
+      @apply link;
     }
 
-    &-hangouts {
+    ul {
+      @apply list-disc list-outside;
 
-      &>.title {
-        @apply w-[20%] md:w-[30%] h-2 bg-title/50 dark:bg-title-dark/50 rounded-[20rem] animate-pulse-fast mb-2;
-      }
-
-      &-container {
-        @apply grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-2;
-
-        .hangout {
-          @apply p-1 bg-section dark:bg-section-dark rounded-sm;
-
-
-
-          .title {
-            @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] w-[40%] h-[1.6rem] mb-2 animate-pulse-fast;
-          }
-
-          .details {
-            @apply mb-2;
-
-            div {
-              @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] w-[30%] h-[1.2rem] first:w-[60%] last:w-[45%] mb-[6px] last:mb-0 animate-pulse-fast;
-            }
-          }
-
-          .footer {
-            @apply bg-title/50 dark:bg-title-dark/50 rounded-[20rem] w-[55%] h-1 animate-pulse-fast;
-          }
-        }
+      li {
+        @apply list-item ml-5 mb-1 last:mb-0;
       }
     }
   }

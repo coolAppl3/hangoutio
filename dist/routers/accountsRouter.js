@@ -2582,9 +2582,7 @@ exports.accountsRouter.delete('/leaveHangout', async (req, res) => {
             return;
         }
         ;
-        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
-        hangout_member_id
-      FROM
+        const [hangoutMemberRows] = await db_1.dbPool.execute(`DELETE FROM
         hangout_members
       WHERE
         account_id = ? AND
