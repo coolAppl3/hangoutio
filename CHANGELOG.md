@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.06] (2025-05-16)
+
+### Features
+
+- Added the app's Terms of Service.
+- Added the app's Privacy Policy.
+  - Added a link to the Privacy Policy in the footer.
+- Added the app's Cookie Policy.
+
+
+### Bug Fixes
+
+- Fixed DELETE `accounts/leaveHangout` using a SELECT statement instead of a DELETE statement, effectively not deleting the relevant `hangout_members` row.
+- Fixed a number of rendering-logic issues with the hangouts section in account.html.
+- Fixed the account recovery link in the footer not aiming at account-recovery.html.
+
+
 ## [0.5.05] (2025-05-15)
 
 ### Code Refactoring
