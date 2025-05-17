@@ -20,6 +20,8 @@ module.exports = {
     hangout: './src/ts/hangout.ts',
     account: './src/ts/account.ts',
     termsOfService: './src/ts/termsOfService.ts',
+    privacyPolicy: './src/ts/privacyPolicy.ts',
+    cookiePolicy: './src/ts/cookiePolicy.ts',
 
     // error pages
     errorPage: './src/ts/modules/errorPages/errorPage.ts',
@@ -203,7 +205,7 @@ module.exports = {
       ],
     }),
 
-    // account.html
+    // terms-of-service.html
     new HtmlWebpackPlugin({
       title: 'Terms of Service - Hangoutio',
       filename: 'terms-of-service.html',
@@ -211,6 +213,28 @@ module.exports = {
 
       chunks: [
         "termsOfService"
+      ],
+    }),
+
+    // privacy-policy.html
+    new HtmlWebpackPlugin({
+      title: 'Privacy Policy - Hangoutio',
+      filename: 'privacy-policy.html',
+      template: 'src/html/privacy-policy.html',
+
+      chunks: [
+        "privacyPolicy"
+      ],
+    }),
+
+    // cookie-policy.html
+    new HtmlWebpackPlugin({
+      title: 'Cookie Policy - Hangoutio',
+      filename: 'cookie-policy.html',
+      template: 'src/html/cookie-policy.html',
+
+      chunks: [
+        "cookiePolicy"
       ],
     }),
 
