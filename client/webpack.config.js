@@ -22,6 +22,7 @@ module.exports = {
     termsOfService: './src/ts/termsOfService.ts',
     privacyPolicy: './src/ts/privacyPolicy.ts',
     cookiePolicy: './src/ts/cookiePolicy.ts',
+    faq: './src/ts/faq.ts',
 
     // error pages
     errorPage: './src/ts/modules/errorPages/errorPage.ts',
@@ -235,6 +236,17 @@ module.exports = {
 
       chunks: [
         "cookiePolicy"
+      ],
+    }),
+
+    // faq.html
+    new HtmlWebpackPlugin({
+      title: 'FAQ - Hangoutio',
+      filename: 'faq.html',
+      template: 'src/html/faq.html',
+
+      chunks: [
+        "faq"
       ],
     }),
 

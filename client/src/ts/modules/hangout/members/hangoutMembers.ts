@@ -210,7 +210,7 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
     return;
   };
 
-  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersMap, hangoutMembers } = globalHangoutState.data;
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersMap: hangoutMembersMap, hangoutMembers } = globalHangoutState.data;
 
   if (!isLeader) {
     popup(`You're not the hangout leader.`, 'error');
@@ -333,7 +333,7 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
     return;
   };
 
-  const { hangoutId, hangoutMemberId, isLeader, hangoutMembersMap } = globalHangoutState.data;
+  const { hangoutId, hangoutMemberId, isLeader, hangoutMembersMap: hangoutMembersMap } = globalHangoutState.data;
 
   if (!isLeader) {
     popup(`You're not the hangout leader.`, 'error');

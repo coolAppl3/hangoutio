@@ -1,6 +1,15 @@
 # Changelog
 
-## [0.5.06] (2025-05-16)
+## [0.5.07] (2025-05-22)
+
+### Features
+
+- Added an FAQ page to the app.
+- Added most of the logic behind inviting friends to a hangout.
+  - Complete functionality and polishing to be expected in future patches.
+
+
+## [0.5.06] (2025-05-18)
 
 ### Features
 

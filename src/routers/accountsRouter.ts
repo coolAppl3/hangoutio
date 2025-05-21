@@ -12,10 +12,11 @@ import { createAuthSession, destroyAuthSession, purgeAuthSessions } from '../aut
 import { removeRequestCookie, getRequestCookie } from '../util/cookieUtils';
 import * as authUtils from '../auth/authUtils';
 import { handleIncorrectAccountPassword } from '../util/accountServices';
-import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_DELETION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, ACCOUNT_RECOVERY_WINDOW, ACCOUNT_VERIFICATION_WINDOW, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT } from '../util/constants';
+import { ACCOUNT_DELETION_SUSPENSION_WINDOW, ACCOUNT_DELETION_WINDOW, ACCOUNT_EMAIL_UPDATE_WINDOW, ACCOUNT_FRIENDS_FETCH_BATCH_SIZE, ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, ACCOUNT_RECOVERY_WINDOW, ACCOUNT_VERIFICATION_WINDOW, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT } from '../util/constants';
 import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSocketServer';
 import { AccountDetails, FriendRequest, Friend, Hangout } from '../util/accountTypes';
 import { logUnexpectedError } from '../logs/errorLogger';
+import { isValidHangoutId } from '../util/validation/hangoutValidation';
 
 export const accountsRouter: Router = express.Router();
 
@@ -3031,6 +3032,256 @@ accountsRouter.delete('/friends/manage/remove', async (req: Request, res: Respon
 
   } catch (err: unknown) {
     console.log(err);
+
+    res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
+  };
+});
+
+accountsRouter.get('/friends', async (req: Request, res: Response) => {
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  const offset = req.query.offset;
+
+  if (typeof offset !== 'string' || !Number.isInteger(+offset)) {
+    res.status(400).json({ message: 'Invalid request data.' });
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    const [friendRows] = await dbPool.execute<Friend[]>(
+      `SELECT
+        friendships.friendship_id,
+        friendships.friendship_timestamp,
+        accounts.username AS friend_username,
+        accounts.display_name AS friend_display_name
+      FROM
+        friendships
+      INNER JOIN
+        accounts ON friendships.friend_id = accounts.account_id
+      WHERE
+        friendships.account_id = ?
+      LIMIT ? OFFSET ?;`,
+      [authSessionDetails.user_id, ACCOUNT_FRIENDS_FETCH_BATCH_SIZE, +offset]
+    );
+
+    res.json({ friends: friendRows });
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
+    res.status(500).json({ message: 'Internal server error.' });
+    await logUnexpectedError(req, err);
+  };
+});
+
+accountsRouter.post('/friends/hangouts/invite', async (req: Request, res: Response) => {
+  interface RequestData {
+    friendshipId: number,
+    hangoutId: string,
+  };
+
+  const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
+
+  if (!authSessionId) {
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+    return;
+  };
+
+  if (!authUtils.isValidAuthSessionId(authSessionId)) {
+    removeRequestCookie(res, 'authSessionId', true);
+    res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+    return;
+  };
+
+  const requestData: RequestData = req.body;
+
+  const expectedKeys: string[] = ['hangoutId', 'friendshipId'];
+  if (undefinedValuesDetected(requestData, expectedKeys)) {
+    res.status(400).json({ message: 'Invalid request data.' });
+    return;
+  };
+
+  if (!isValidHangoutId(requestData.hangoutId)) {
+    res.status(400).json({ message: 'Invalid hangout ID.' });
+    return;
+  };
+
+  if (!Number.isInteger(requestData.friendshipId)) {
+    res.status(400).json({ message: 'Invalid friendship ID.' });
+    return;
+  };
+
+  try {
+    interface AuthSessionDetails extends RowDataPacket {
+      user_id: number,
+      user_type: 'account' | 'guest',
+      expiry_timestamp: number,
+    };
+
+    const [authSessionRows] = await dbPool.execute<AuthSessionDetails[]>(
+      `SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`,
+      [authSessionId]
+    );
+
+    const authSessionDetails: AuthSessionDetails | undefined = authSessionRows[0];
+
+    if (!authSessionDetails) {
+      removeRequestCookie(res, 'authSessionId');
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+
+      return;
+    };
+
+    if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+      await destroyAuthSession(authSessionId);
+      removeRequestCookie(res, 'authSessionId');
+
+      res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+      return;
+    };
+
+    interface InvitationDetails extends RowDataPacket {
+      friend_id: number,
+      hangout_exists: boolean,
+      sender_in_hangout: boolean,
+      invitee_in_hangout: boolean,
+      invitation_already_sent: boolean,
+    };
+
+    const [invitationRows] = await dbPool.execute<InvitationDetails[]>(
+      `SELECT
+        friendships.friend_id,
+        EXISTS (SELECT 1 FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_exists,
+        EXISTS (SELECT 1 FROM hangout_invites WHERE account_id = :accountId AND friend_id = friendships.friend_id) AS invitation_already_sent,
+        EXISTS (SELECT 1 FROM hangout_members WHERE hangout_id = :hangoutId AND account_id = :accountId) AS sender_in_hangout,
+        EXISTS (SELECT 1 FROM hangout_members WHERE hangout_id = :hangoutId AND account_id = friendships.friend_id) AS invitee_in_hangout
+      FROM
+        friendships
+      WHERE
+        friendships.friendship_id = :friendshipId AND
+        friendships.account_id = :accountId;`,
+      { hangoutId: requestData.hangoutId, accountId: authSessionDetails.user_id, friendshipId: requestData.friendshipId }
+    );
+
+    const invitationDetails: InvitationDetails | undefined = invitationRows[0];
+
+    if (!invitationDetails) {
+      res.status(404).json({ message: 'Friend not found.', reason: 'friendNotfound' });
+      return;
+    };
+
+    if (!invitationDetails.hangout_exists) {
+      res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
+      return;
+    };
+
+    if (invitationDetails.friend_id === authSessionDetails.user_id) {
+      res.status(409).json({ message: `Can't invite yourself to a hangout.`, reason: 'selfInvite' });
+      return;
+    };
+
+    if (invitationDetails.invitation_already_sent) {
+      res.status(409).json({ message: 'Invitation already sent.', reason: 'alreadySent' });
+      return;
+    };
+
+    if (!invitationDetails.sender_in_hangout) {
+      res.status(409).json({ message: `You can't invite friends to a hangout you're not a part of.`, reason: 'notInHangout' });
+      return;
+    };
+
+    if (invitationDetails.invitee_in_hangout) {
+      res.status(409).json({ message: 'User has already joined the hangout.', reason: 'alreadyInHangout' });
+      return;
+    };
+
+    await dbPool.execute(
+      `INSERT INTO hangout_invites (
+        account_id,
+        friend_id,
+        hangout_id,
+        invite_timestamp
+      ) VALUES(${generatePlaceHolders(4)});`,
+      [authSessionDetails.user_id, invitationDetails.friend_id, requestData.hangoutId, Date.now()]
+    );
+
+    res.json({});
+
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (res.headersSent) {
+      return;
+    };
+
+    if (!isSqlError(err)) {
+      return false;
+    };
+
+    if (err.errno === 1062 && err.sqlMessage?.endsWith(`for key 'account_id'`)) {
+      res.status(409).json({ message: 'Invitation already sent.', reason: 'alreadySent' });
+      return;
+    };
 
     res.status(500).json({ message: 'Internal server error.' });
     await logUnexpectedError(req, err);

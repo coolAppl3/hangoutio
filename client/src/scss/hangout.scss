@@ -541,6 +541,92 @@
   }
 }
 
+#friend-inviter {
+  @apply fixed top-0 left-0 w-full h-[100vh] bg-overlay dark:bg-overlay-dark z-[15] justify-center items-center outline-none overscroll-y-auto hidden;
+
+  &.revealed {
+
+    #friend-inviter-container {
+      transform: translate3d(0, 0, 0) !important;
+      opacity: 1 !important;
+    }
+  }
+
+  &-container {
+    @apply w-[36rem] max-w-[36rem] py-3 px-2 mx-2 rounded-sm bg-secondary dark:bg-secondary-dark shadow-simple mt-6 md:mt-0 overflow-y-auto;
+    transform: translate3d(0, 3rem, 0);
+    opacity: 0;
+    transition: opacity 150ms, transform 150ms;
+    max-height: calc(100svh - 8rem);
+
+    @media(max-width: 830px) {
+      max-height: calc(100svh - 16rem);
+    }
+
+    &>div {
+      @apply max-h-[50svh] overflow-y-auto mb-2;
+
+      #friend-inviter-list {
+
+        .friend {
+          @apply flex justify-between items-center p-1 bg-section dark:bg-section-dark rounded-sm mb-[6px] last:mb-0 relative;
+
+          &.sending {
+
+            button {
+              @apply invisible;
+            }
+
+            .spinner {
+              @apply block;
+            }
+          }
+
+          &.sent {
+
+            button {
+              @apply bg-success hover:brightness-100 cursor-default;
+            }
+
+            .spinner {
+              @apply hidden;
+            }
+          }
+
+          div p {
+            @apply overflow-hidden;
+
+            &:first-child {
+              @apply font-medium text-title dark:text-title-dark mb-[2px];
+            }
+
+            &:nth-child(2) {
+              @apply text-sm text-description dark:text-description-dark overflow-hidden;
+            }
+
+          }
+
+          button {
+            @apply relative after:absolute after:top-0 after:left-0 after:w-full after:h-full ml-1 p-1 bg-cta dark:bg-cta-dark rounded-[50%] transition-[filter] hover:brightness-75;
+
+            svg {
+              @apply svg w-2 h-2;
+
+              path {
+                @apply fill-title transition-[fill];
+              }
+            }
+          }
+
+          .spinner {
+            @apply absolute right-[1.5rem] top-0 bottom-0 my-auto w-3 h-3 hidden;
+          }
+        }
+      }
+    }
+  }
+}
+
 // loading modal
 #loading-modal {
   @apply fixed top-0 left-0 h-[100vh] w-full bg-overlay dark:bg-overlay-dark z-[30] grid place-items-center;
@@ -914,6 +1000,10 @@
         #dashboard-dropdown-menu {
           @apply block;
         }
+      }
+
+      &.guest-user #dashboard-dropdown-menu button#invite-friend-btn {
+        @apply hidden;
       }
 
       &-menu {

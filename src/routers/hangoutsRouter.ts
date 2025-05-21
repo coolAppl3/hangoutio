@@ -1845,6 +1845,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
         hangout_member_id,
         username,
         user_type,
+        account_id,
         display_name,
         is_leader
       FROM
