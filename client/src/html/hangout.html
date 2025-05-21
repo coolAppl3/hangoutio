@@ -783,8 +783,24 @@
                     </button>
 
                     <div id="dashboard-dropdown-menu">
-                      <button id="copy-invite-link-btn">Copy invitation link</button>
-                      <button id="leave-hangout-btn">Leave hangout</button>
+                      <button
+                        type="button"
+                        id="invite-friend-btn"
+                      >
+                        Invite a friend
+                      </button>
+                      <button
+                        type="button"
+                        id="copy-invite-link-btn"
+                      >
+                        Copy invitation link
+                      </button>
+                      <button
+                        type="button"
+                        id="leave-hangout-btn"
+                      >
+                        Leave hangout
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2709,6 +2725,33 @@
             Close
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- friend inviter -->
+    <div id="friend-inviter">
+      <div id="friend-inviter-container">
+        <p class="font-medium text-title dark:text-title-dark mb-1">Choose friends to invite</p>
+
+        <div>
+          <div id="friend-inviter-list"></div>
+
+          <button
+            type="button"
+            class="text-sm font-medium link block w-fit mx-auto mt-1"
+            id="load-more-friends-btn"
+          >
+            Load more
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title w-full"
+          id="close-friend-inviter"
+        >
+          Done
+        </button>
       </div>
     </div>
   </body>

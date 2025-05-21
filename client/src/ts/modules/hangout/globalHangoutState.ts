@@ -1,3 +1,4 @@
+import { Friend } from "../account/accountTypes";
 import { HangoutMember, HangoutsDetails } from "./hangoutTypes";
 
 interface GlobalHangoutState {
@@ -8,7 +9,9 @@ interface GlobalHangoutState {
     hangoutId: string,
     hangoutMemberId: number,
     hangoutMembers: HangoutMember[],
+
     hangoutMembersMap: Map<number, string>,
+    hangoutMembersUsernameSet: Set<string>,
 
     isLeader: boolean,
     isPasswordProtected: boolean,

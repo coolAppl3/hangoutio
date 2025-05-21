@@ -19,6 +19,7 @@ import { dayMilliseconds } from "../../global/clientConstants";
 import { createMessageDateStampElement, createMessageElement } from "../chat/hangoutChat";
 import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import { createEventElement } from "../events/hangoutEvents";
+import { initFriendInviter } from "./friendInviter";
 
 interface HangoutDashboardState {
   nextStageTimerInitiated: boolean,
@@ -61,19 +62,28 @@ export async function getInitialHangoutData(): Promise<void> {
     return;
   };
 
+  if (signedInAs === 'guest') {
+    dashboardDropdownElement?.classList.add('guest-user');
+  };
+
   try {
     const initialHangoutData: InitialHangoutData = (await getInitialHangoutDataService(hangoutId)).data;
+
     const hangoutMembersMap: Map<number, string> = new Map();
+    const hangoutMembersUsernameSet: Set<string> = new Set();
 
     for (const member of initialHangoutData.hangoutMembers) {
       hangoutMembersMap.set(member.hangout_member_id, member.display_name);
+      hangoutMembersUsernameSet.add(member.username);
     };
 
     globalHangoutState.data = {
       hangoutId,
       hangoutMemberId: initialHangoutData.hangoutMemberId,
       hangoutMembers: initialHangoutData.hangoutMembers,
+
       hangoutMembersMap,
+      hangoutMembersUsernameSet,
 
       isLeader: initialHangoutData.isLeader,
       isPasswordProtected: initialHangoutData.isPasswordProtected,
@@ -370,6 +380,20 @@ async function handleDashboardSectionClick(e: MouseEvent): Promise<void> {
   if (e.target.id === 'leave-hangout-btn') {
     dashboardDropdownElement?.classList.remove('expanded');
     confirmLeaveHangout();
+
+    return;
+  };
+
+  if (e.target.id === 'invite-friend-btn') {
+    const signedInAs: string | null = Cookies.get('signedInAs');
+
+    if (signedInAs === 'guest') {
+      popup(`Guest users can't invite friends through the app.`, 'error');
+      return;
+    };
+
+    await initFriendInviter();
+    dashboardDropdownElement?.classList.remove('expanded');
   };
 };
 
