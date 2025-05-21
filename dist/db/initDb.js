@@ -10,6 +10,7 @@ async function initDb() {
     await createEmailUpdateTable();
     await createFriendRequestsTable();
     await createFriendshipsTable();
+    await createHangoutInvitesTable();
     await createHangoutsTable();
     await createHangoutEventsTable();
     await createGuestsTable();
@@ -147,6 +148,26 @@ async function createFriendshipsTable() {
         UNIQUE(account_id, friend_id),
         FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
         FOREIGN KEY (friend_id) REFERENCES accounts(account_id) ON DELETE CASCADE
+      );`);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    ;
+}
+;
+async function createHangoutInvitesTable() {
+    try {
+        await db_1.dbPool.execute(`CREATE TABLE IF NOT EXISTS hangout_invites (
+        invite_id INT PRIMARY KEY AUTO_INCREMENT,
+        account_id INT NOT NULL,
+        friend_id INT NOT NULL,
+        hangout_id VARCHAR(65) NOT NULL COLLATE utf8mb4_bin,
+        invite_timestamp BIGINT NOT NULL,
+        UNIQUE(account_id, friend_id),
+        FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
+        FOREIGN KEY (friend_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
+        FOREIGN KEY (hangout_id) REFERENCES hangouts(hangout_id) ON DELETE CASCADE
       );`);
     }
     catch (err) {

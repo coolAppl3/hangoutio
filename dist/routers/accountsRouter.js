@@ -43,6 +43,7 @@ const accountServices_1 = require("../util/accountServices");
 const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 const errorLogger_1 = require("../logs/errorLogger");
+const hangoutValidation_1 = require("../util/validation/hangoutValidation");
 exports.accountsRouter = express_1.default.Router();
 exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
@@ -2323,6 +2324,200 @@ exports.accountsRouter.delete('/friends/manage/remove', async (req, res) => {
     }
     catch (err) {
         console.log(err);
+        res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
+    }
+    ;
+});
+exports.accountsRouter.get('/friends', async (req, res) => {
+    const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
+    if (!authSessionId) {
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    if (!authUtils.isValidAuthSessionId(authSessionId)) {
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    const offset = req.query.offset;
+    if (typeof offset !== 'string' || !Number.isInteger(+offset)) {
+        res.status(400).json({ message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    try {
+        ;
+        const [authSessionRows] = await db_1.dbPool.execute(`SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`, [authSessionId]);
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+            await (0, authSessions_1.destroyAuthSession)(authSessionId);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        const [friendRows] = await db_1.dbPool.execute(`SELECT
+        friendships.friendship_id,
+        friendships.friendship_timestamp,
+        accounts.username AS friend_username,
+        accounts.display_name AS friend_display_name
+      FROM
+        friendships
+      INNER JOIN
+        accounts ON friendships.friend_id = accounts.account_id
+      WHERE
+        friendships.account_id = ?
+      LIMIT ? OFFSET ?;`, [authSessionDetails.user_id, constants_1.ACCOUNT_FRIENDS_FETCH_BATCH_SIZE, +offset]);
+        res.json({ friends: friendRows });
+    }
+    catch (err) {
+        console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
+        res.status(500).json({ message: 'Internal server error.' });
+        await (0, errorLogger_1.logUnexpectedError)(req, err);
+    }
+    ;
+});
+exports.accountsRouter.post('/friends/hangouts/invite', async (req, res) => {
+    ;
+    const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
+    if (!authSessionId) {
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    if (!authUtils.isValidAuthSessionId(authSessionId)) {
+        (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId', true);
+        res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+        return;
+    }
+    ;
+    const requestData = req.body;
+    const expectedKeys = ['hangoutId', 'friendshipId'];
+    if ((0, requestValidation_1.undefinedValuesDetected)(requestData, expectedKeys)) {
+        res.status(400).json({ message: 'Invalid request data.' });
+        return;
+    }
+    ;
+    if (!(0, hangoutValidation_1.isValidHangoutId)(requestData.hangoutId)) {
+        res.status(400).json({ message: 'Invalid hangout ID.' });
+        return;
+    }
+    ;
+    if (!Number.isInteger(requestData.friendshipId)) {
+        res.status(400).json({ message: 'Invalid friendship ID.' });
+        return;
+    }
+    ;
+    try {
+        ;
+        const [authSessionRows] = await db_1.dbPool.execute(`SELECT
+        user_id,
+        user_type,
+        expiry_timestamp
+      FROM
+        auth_sessions
+      WHERE
+        session_id = ?;`, [authSessionId]);
+        const authSessionDetails = authSessionRows[0];
+        if (!authSessionDetails) {
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
+            await (0, authSessions_1.destroyAuthSession)(authSessionId);
+            (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
+            res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
+            return;
+        }
+        ;
+        ;
+        const [invitationRows] = await db_1.dbPool.execute(`SELECT
+        friendships.friend_id,
+        EXISTS (SELECT 1 FROM hangouts WHERE hangout_id = :hangoutId) AS hangout_exists,
+        EXISTS (SELECT 1 FROM hangout_invites WHERE account_id = :accountId AND friend_id = friendships.friend_id) AS invitation_already_sent,
+        EXISTS (SELECT 1 FROM hangout_members WHERE hangout_id = :hangoutId AND account_id = :accountId) AS sender_in_hangout,
+        EXISTS (SELECT 1 FROM hangout_members WHERE hangout_id = :hangoutId AND account_id = friendships.friend_id) AS invitee_in_hangout
+      FROM
+        friendships
+      WHERE
+        friendships.friendship_id = :friendshipId AND
+        friendships.account_id = :accountId;`, { hangoutId: requestData.hangoutId, accountId: authSessionDetails.user_id, friendshipId: requestData.friendshipId });
+        const invitationDetails = invitationRows[0];
+        if (!invitationDetails) {
+            res.status(404).json({ message: 'Friend not found.', reason: 'friendNotfound' });
+            return;
+        }
+        ;
+        if (!invitationDetails.hangout_exists) {
+            res.status(404).json({ message: 'Hangout not found.', reason: 'hangoutNotFound' });
+            return;
+        }
+        ;
+        if (invitationDetails.friend_id === authSessionDetails.user_id) {
+            res.status(409).json({ message: `Can't invite yourself to a hangout.`, reason: 'selfInvite' });
+            return;
+        }
+        ;
+        if (invitationDetails.invitation_already_sent) {
+            res.status(409).json({ message: 'Invitation already sent.', reason: 'alreadySent' });
+            return;
+        }
+        ;
+        if (!invitationDetails.sender_in_hangout) {
+            res.status(409).json({ message: `You can't invite friends to a hangout you're not a part of.`, reason: 'notInHangout' });
+            return;
+        }
+        ;
+        if (invitationDetails.invitee_in_hangout) {
+            res.status(409).json({ message: 'User has already joined the hangout.', reason: 'alreadyInHangout' });
+            return;
+        }
+        ;
+        await db_1.dbPool.execute(`INSERT INTO hangout_invites (
+        account_id,
+        friend_id,
+        hangout_id,
+        invite_timestamp
+      ) VALUES(${(0, generatePlaceHolders_1.generatePlaceHolders)(4)});`, [authSessionDetails.user_id, invitationDetails.friend_id, requestData.hangoutId, Date.now()]);
+        res.json({});
+    }
+    catch (err) {
+        console.log(err);
+        if (res.headersSent) {
+            return;
+        }
+        ;
+        if (!(0, isSqlError_1.isSqlError)(err)) {
+            return false;
+        }
+        ;
+        if (err.errno === 1062 && err.sqlMessage?.endsWith(`for key 'account_id'`)) {
+            res.status(409).json({ message: 'Invitation already sent.', reason: 'alreadySent' });
+            return;
+        }
+        ;
         res.status(500).json({ message: 'Internal server error.' });
         await (0, errorLogger_1.logUnexpectedError)(req, err);
     }
