@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
-import { AccountDetails, Hangout, Friend, FriendRequest } from "../account/accountTypes";
+import { AccountDetails, Hangout, Friend, FriendRequest, HangoutInvite } from "../account/accountTypes";
 
 axios.defaults.withCredentials = true;
 
@@ -276,4 +276,10 @@ export function inviteFriendToHangoutService(requestBody: InviteFriendToHangoutB
 
 export function acceptHangoutInvitationService(inviteId: number): Promise<AxiosResponse> {
   return axios.delete(`${accountsApiUrl}/hangoutInvite/accept?inviteId=${inviteId}`);
+};
+
+// --- --- ---
+
+export function getHangoutInvites(offset: number): Promise<AxiosResponse<HangoutInvite[]>> {
+  return axios.get(`${accountsApiUrl}/hangoutInvites?offset=${offset}`);;
 };

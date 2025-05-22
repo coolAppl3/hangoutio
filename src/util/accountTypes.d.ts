@@ -31,3 +31,11 @@ export interface Hangout extends RowDataPacket {
   is_concluded: boolean,
   created_on_timestamp: number,
 }
+
+export interface HangoutInvite extends RowDataPacket {
+  invite_id: number,
+  hangout_id: number,
+  invite_timestamp: number,
+  display_name: number,
+  username: number,
+}
