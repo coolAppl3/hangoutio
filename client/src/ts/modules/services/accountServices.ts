@@ -269,5 +269,5 @@ interface InviteFriendToHangoutBody {
 };
 
 export function inviteFriendToHangoutService(requestBody: InviteFriendToHangoutBody): Promise<AxiosResponse> {
-  return axios.post(`${accountsApiUrl}/friends/hangouts/invite`, requestBody);
+  return axios.post(`${accountsApiUrl}/hangoutInvite`, requestBody);
 };

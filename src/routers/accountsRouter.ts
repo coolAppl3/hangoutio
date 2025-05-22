@@ -3126,7 +3126,7 @@ accountsRouter.get('/friends', async (req: Request, res: Response) => {
   };
 });
 
-accountsRouter.post('/friends/hangouts/invite', async (req: Request, res: Response) => {
+accountsRouter.post('/hangoutInvite', async (req: Request, res: Response) => {
   interface RequestData {
     friendshipId: number,
     hangoutId: string,
