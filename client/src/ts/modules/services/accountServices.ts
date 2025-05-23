@@ -226,6 +226,7 @@ interface AccountInfo {
   friends: Friend[],
   friendRequests: FriendRequest[],
   hangoutHistory: Hangout[],
+  hangoutInvites: HangoutInvite[],
 
   hangoutsJoinedCount: number,
   ongoingHangoutsCount: number,

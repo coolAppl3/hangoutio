@@ -3432,7 +3432,8 @@ accountsRouter.get('/hangoutInvites', async (req: Request, res: Response) => {
         hangout_invites.hangout_id,
         hangout_invites.invite_timestamp,
         accounts.display_name,
-        accounts.username
+        accounts.username,
+        (SELECT hangout_title FROM hangouts WHERE hangout_id = hangout_invites.hangout_id) AS hangout_title
       FROM
         hangout_invites
       INNER JOIN
@@ -3507,6 +3508,7 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
       Friend[],
       FriendRequest[],
       Hangout[],
+      HangoutInvite[],
     ];
 
     const [accountRows] = await dbPool.query<AccountInfo>(
@@ -3560,7 +3562,22 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
         hangout_members.account_id = :accountId
       ORDER BY
         created_on_timestamp DESC
-      LIMIT ${ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE};`,
+      LIMIT ${ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE};
+      
+      SELECT
+        hangout_invites.invite_id,
+        hangout_invites.hangout_id,
+        hangout_invites.invite_timestamp,
+        accounts.display_name,
+        accounts.username,
+        (SELECT hangout_title FROM hangouts WHERE hangout_id = hangout_invites.hangout_id) AS hangout_title
+      FROM
+        hangout_invites
+      INNER JOIN
+        accounts ON hangout_invites.account_id = accounts.account_id
+      WHERE
+        hangout_invites.friend_id = :accountId
+      LIMIT ${HANGOUT_INVITES_FETCH_BATCH_SIZE};`,
       { accountId: authSessionDetails.user_id }
     );
 
@@ -3568,8 +3585,9 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
     const friends: Friend[] | undefined = accountRows[1];
     const friendRequests: FriendRequest[] | undefined = accountRows[2];
     const hangoutHistory: Hangout[] | undefined = accountRows[3];
+    const hangoutInvites: HangoutInvite[] | undefined = accountRows[4];
 
-    if (!accountDetails || !friends || !friendRequests || !hangoutHistory) {
+    if (!accountDetails || !friends || !friendRequests || !hangoutHistory || !hangoutInvites) {
       res.status(500).json({ message: 'Internal server error.' });
       await logUnexpectedError(req, { message: 'Failed to fetch rows.', trace: null });
 
@@ -3617,6 +3635,7 @@ accountsRouter.get('/', async (req: Request, res: Response) => {
       friends,
       friendRequests,
       hangoutHistory,
+      hangoutInvites,
 
       hangoutsJoinedCount: hangoutCounts.hangouts_joined_count,
       ongoingHangoutsCount: hangoutCounts.ongoing_hangouts_count,
