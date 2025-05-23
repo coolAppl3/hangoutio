@@ -935,7 +935,7 @@
       <div class="container">
         <div
           id="hangouts"
-          class="bg-secondary dark:bg-secondary-dark rounded-sm mb-3 p-2"
+          class="bg-secondary dark:bg-secondary-dark rounded-sm mb-2 p-2"
         >
           <h3 class="text-xl font-medium text-title dark:text-title-dark mb-[4px]">Hangouts</h3>
           <a
@@ -949,6 +949,30 @@
           <button
             type="button"
             id="load-more-hangouts-btn"
+            class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title mt-2 sm:w-full"
+          >
+            Load more
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- hangout invites -->
+    <section class="hidden">
+      <div class="container">
+        <div
+          id="hangout-invites"
+          class="bg-secondary dark:bg-secondary-dark rounded-sm mb-3 p-2"
+        >
+          <h3 class="text-xl font-medium text-title dark:text-title-dark mb-2">Hangout invites</h3>
+
+          <div id="hangout-invites-container">
+            <p class="no-invites">No invites found</p>
+          </div>
+
+          <button
+            type="button"
+            id="load-more-hangout-invites-btn"
             class="btn bg-description dark:bg-description-dark text-title-dark dark:text-title mt-2 sm:w-full"
           >
             Load more
