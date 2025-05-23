@@ -34,8 +34,9 @@ export interface Hangout extends RowDataPacket {
 
 export interface HangoutInvite extends RowDataPacket {
   invite_id: number,
-  hangout_id: number,
+  hangout_id: string,
   invite_timestamp: number,
   display_name: number,
   username: number,
+  hangout_title: string,
 }
