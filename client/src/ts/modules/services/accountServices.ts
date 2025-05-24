@@ -281,6 +281,6 @@ export function acceptHangoutInvitationService(inviteId: number): Promise<AxiosR
 
 // --- --- ---
 
-export function getHangoutInvites(offset: number): Promise<AxiosResponse<HangoutInvite[]>> {
+export function loadMoreHangoutInvitesService(offset: number): Promise<AxiosResponse<HangoutInvite[]>> {
   return axios.get(`${accountsApiUrl}/hangoutInvites?offset=${offset}`);;
 };

@@ -3444,7 +3444,7 @@ accountsRouter.get('/hangoutInvites', async (req: Request, res: Response) => {
       [authSessionDetails.user_id, HANGOUT_INVITES_FETCH_BATCH_SIZE, +offset]
     );
 
-    res.json({ hangoutInvites: hangoutInviteRows });
+    res.json(hangoutInviteRows);
 
   } catch (err: unknown) {
     console.log(err);
