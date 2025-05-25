@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.08] (2025-05-25)
+
+### Features
+
+- Added DELETE `accounts/hangoutInvite/accept`.
+- Added GET `accounts/hangoutInvites`.
+- Updated GET `accounts/` to also fetch hangout invites.
+- Implemented logic to render and take action regarding hangout invites in `account.html`.
+
+
+### Code Refactoring
+
+- Renamed POST `accounts/friends/hangouts/invite` to POST `accounts/hangoutInvite`.
+
+
 ## [0.5.07] (2025-05-22)
 
 ### Features
