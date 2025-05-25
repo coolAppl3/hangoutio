@@ -286,6 +286,7 @@ function displayFriendElementInvitation(friendElement: HTMLDivElement): void {
   friendElement.classList.add('sent');
 
   inviteFriendBtn.firstElementChild?.replaceWith(createInvitedIcon());
+  inviteFriendBtn.disabled = true;
 };
 
 // --- --- ---
