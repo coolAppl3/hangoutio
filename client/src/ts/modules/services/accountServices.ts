@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
-import { AccountDetails, Hangout, Friend, FriendRequest } from "../account/accountTypes";
+import { AccountDetails, Hangout, Friend, FriendRequest, HangoutInvite } from "../account/accountTypes";
 
 axios.defaults.withCredentials = true;
 
@@ -226,6 +226,7 @@ interface AccountInfo {
   friends: Friend[],
   friendRequests: FriendRequest[],
   hangoutHistory: Hangout[],
+  hangoutInvites: HangoutInvite[],
 
   hangoutsJoinedCount: number,
   ongoingHangoutsCount: number,
@@ -269,5 +270,17 @@ interface InviteFriendToHangoutBody {
 };
 
 export function inviteFriendToHangoutService(requestBody: InviteFriendToHangoutBody): Promise<AxiosResponse> {
-  return axios.post(`${accountsApiUrl}/friends/hangouts/invite`, requestBody);
+  return axios.post(`${accountsApiUrl}/hangoutInvite`, requestBody);
+};
+
+// --- --- ---
+
+export function acceptHangoutInvitationService(inviteId: number): Promise<AxiosResponse> {
+  return axios.delete(`${accountsApiUrl}/hangoutInvite/accept?inviteId=${inviteId}`);
+};
+
+// --- --- ---
+
+export function loadMoreHangoutInvitesService(offset: number): Promise<AxiosResponse<HangoutInvite[]>> {
+  return axios.get(`${accountsApiUrl}/hangoutInvites?offset=${offset}`);;
 };

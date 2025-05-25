@@ -31,6 +31,7 @@ export const HANGOUT_CONCLUSION_STAGE: number = 4;
 export const HANGOUT_CHAT_FETCH_BATCH_SIZE: number = 30;
 export const ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE: number = 10;
 export const ACCOUNT_FRIENDS_FETCH_BATCH_SIZE: number = 10;
+export const HANGOUT_INVITES_FETCH_BATCH_SIZE: number = 10;
 
 export const GENERAL_REQUESTS_RATE_LIMIT: number = 60;
 export const CHAT_REQUESTS_RATE_LIMIT: number = 100;

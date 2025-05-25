@@ -28,3 +28,12 @@ export interface Hangout {
   is_concluded: boolean,
   created_on_timestamp: number,
 }
+
+export interface HangoutInvite {
+  invite_id: number,
+  hangout_id: string,
+  invite_timestamp: number,
+  display_name: number,
+  username: number,
+  hangout_title: string,
+}

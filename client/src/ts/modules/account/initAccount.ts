@@ -4,8 +4,9 @@ import popup from "../global/popup";
 import { getAccountInfoService } from "../services/accountServices";
 import { initAccountDetails } from "./accountDetails";
 import { initAccountFriends } from "./accountFriends";
+import { initHangoutInvites } from "./accountHangoutInvites";
 import { initAccountHangouts } from "./accountHangouts";
-import { AccountDetails, Friend, FriendRequest, Hangout } from "./accountTypes";
+import { AccountDetails, Friend, FriendRequest, Hangout, HangoutInvite } from "./accountTypes";
 import { removeLoadingSkeleton } from "./accountUtils";
 
 interface Account {
@@ -14,6 +15,7 @@ interface Account {
     friends: Friend[],
     friendRequests: FriendRequest[],
     hangoutHistory: Hangout[],
+    hangoutInvites: HangoutInvite[],
 
     hangoutsJoinedCount: number,
     ongoingHangoutsCount: number,
@@ -30,13 +32,14 @@ export async function initAccount(): Promise<void> {
 
 async function getAccountInfo(): Promise<void> {
   try {
-    const { accountDetails, friends, friendRequests, hangoutHistory, hangoutsJoinedCount, ongoingHangoutsCount } = (await getAccountInfoService()).data;
+    const { accountDetails, friends, friendRequests, hangoutHistory, hangoutInvites, hangoutsJoinedCount, ongoingHangoutsCount } = (await getAccountInfoService()).data;
 
     accountState.data = {
       accountDetails,
       friends,
       friendRequests,
       hangoutHistory,
+      hangoutInvites,
 
       hangoutsJoinedCount,
       ongoingHangoutsCount,
@@ -45,6 +48,7 @@ async function getAccountInfo(): Promise<void> {
     initAccountDetails();
     initAccountFriends();
     initAccountHangouts();
+    initHangoutInvites();
 
     removeLoadingSkeleton();
 

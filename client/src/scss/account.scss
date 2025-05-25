@@ -843,6 +843,54 @@
   }
 }
 
+// hangout invites
+#hangout-invites {
+  // word-break: break-word;
+
+  &-container {
+
+    .no-invites {
+      @apply bg-section dark:bg-section-dark text-sm md:text-base text-title dark:text-title-dark font-medium p-1 px-2 mx-auto w-fit rounded-[20rem];
+    }
+
+    .hangout-invite {
+      @apply relative bg-section dark:bg-section-dark p-1 rounded-sm flex justify-between items-end md:flex-col md:justify-start md:items-start mb-1 last:mb-0;
+
+      &-details {
+        @apply mr-2 md:mr-0 md:mb-2;
+
+        p {
+          @apply overflow-hidden text-sm md:text-base font-medium text-description dark:text-description-dark first:mb-[4px];
+
+          span {
+            @apply text-title dark:text-title-dark;
+          }
+
+          &:last-child {
+            @apply text-xs font-medium text-description dark:text-description-dark;
+          }
+        }
+      }
+
+      .btn-container {
+        @apply flex justify-start items-center md:w-full;
+
+        button {
+          @apply btn sm:w-full;
+
+          &.reject-invite-btn {
+            @apply bg-section dark:bg-section-dark text-title dark:text-title-dark border-1 border-title dark:border-title-dark mr-1;
+          }
+
+          &.accept-invite-btn {
+            @apply bg-description dark:bg-description-dark text-title-dark dark:text-title;
+          }
+        }
+      }
+    }
+  }
+}
+
 // loading skeleton --- ---
 #loading-skeleton {
   @apply py-3;
