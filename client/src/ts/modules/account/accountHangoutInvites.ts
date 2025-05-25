@@ -5,7 +5,7 @@ import { createBtnElement, createDivElement, createParagraphElement, createSpanE
 import { AsyncErrorData, getAsyncErrorData } from "../global/errorUtils";
 import LoadingModal from "../global/LoadingModal";
 import popup from "../global/popup";
-import { loadMoreHangoutInvitesService } from "../services/accountServices";
+import { acceptHangoutInvitationService, loadMoreHangoutInvitesService } from "../services/accountServices";
 import { HangoutInvite } from "./accountTypes";
 import { accountState } from "./initAccount";
 
@@ -74,7 +74,9 @@ async function handleHangoutInvitesElementClicks(e: MouseEvent): Promise<void> {
     return;
   };
 
-  // TODO: continue implementation
+  if (e.target.classList.contains('reject-invite-btn') || e.target.classList.contains('accept-invite-btn')) {
+    await handleInvitationAction(e.target);
+  };
 };
 
 async function loadMoreHangoutInvites(): Promise<void> {
@@ -132,6 +134,42 @@ async function loadMoreHangoutInvites(): Promise<void> {
     if (status === 401) {
       handleAuthSessionExpired();
     };
+  };
+};
+
+async function handleInvitationAction(clickedBtn: HTMLButtonElement): Promise<void> {
+  if (!accountState.data) {
+    return;
+  };
+
+  const hangoutInviteElement: HTMLElement | null | undefined = clickedBtn.parentElement?.parentElement;
+
+  if (!(hangoutInviteElement instanceof HTMLDivElement)) {
+    return;
+  };
+
+  const inviteId: string | null | undefined = hangoutInviteElement.getAttribute('data-inviteId');
+
+  if (!inviteId || !Number.isInteger(+inviteId)) {
+    return;
+  };
+
+  const hangoutInvite: HangoutInvite | undefined = accountState.data.hangoutInvites.find((invite: HangoutInvite) => invite.invite_id === +inviteId);
+  const hasAcceptedRequest: boolean = clickedBtn.classList.contains('accept-invite-btn');
+
+  try {
+    await acceptHangoutInvitationService(+inviteId);
+    hangoutInviteElement.remove();
+
+    if (hasAcceptedRequest) {
+      window.location.href = `hangout?id=${hangoutInvite?.hangout_id}`;
+      return;
+    };
+
+
+  } catch (err: unknown) {
+    console.log(err);
+    // meant to fail silently
   };
 };
 
