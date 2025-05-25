@@ -128,7 +128,7 @@ async function inviteFriendToHangout(friendshipId: number, friendUsername: strin
   };
 
   if (globalHangoutState.data.hangoutMembersUsernameSet.has(friendUsername)) {
-    friendElement.remove();
+    friendElement.lastElementChild?.remove();
     popup('User has already joined the hangout.', 'success');
 
     return;
@@ -167,7 +167,7 @@ async function inviteFriendToHangout(friendshipId: number, friendUsername: strin
 
     if (status === 409 && errReason === 'alreadyInHangout') {
       popup(errMessage, 'success');
-      friendElement.remove();
+      friendElement.lastElementChild?.remove();
 
       return;
     };
