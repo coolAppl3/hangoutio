@@ -71,10 +71,15 @@ export async function getInitialHangoutData(): Promise<void> {
 
     const hangoutMembersMap: Map<number, string> = new Map();
     const hangoutMembersUsernameSet: Set<string> = new Set();
+    const hangoutMembersFriendsSet: Set<number> = new Set();
 
     for (const member of initialHangoutData.hangoutMembers) {
       hangoutMembersMap.set(member.hangout_member_id, member.display_name);
       hangoutMembersUsernameSet.add(member.username);
+
+      if (member.is_friend) {
+        hangoutMembersFriendsSet.add(member.hangout_member_id);
+      };
     };
 
     globalHangoutState.data = {
@@ -84,6 +89,7 @@ export async function getInitialHangoutData(): Promise<void> {
 
       hangoutMembersMap,
       hangoutMembersUsernameSet,
+      hangoutMembersFriendsSet,
 
       isLeader: initialHangoutData.isLeader,
       isPasswordProtected: initialHangoutData.isPasswordProtected,

@@ -24,6 +24,7 @@ export interface HangoutMember extends RowDataPacket {
   user_type: 'account' | 'guest',
   display_name: string,
   is_leader: boolean,
+  is_friend: boolean,
 }
 
 export interface HangoutMemberCountables extends RowDataPacket {
