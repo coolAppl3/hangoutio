@@ -7,6 +7,7 @@ import { createDivElement, createParagraphElement } from "../../global/domUtils"
 import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
+import { sendFriendRequestService } from "../../services/accountServices";
 import { claimHangoutLeadershipService, kickHangoutMemberService, transferHangoutLeadershipService, relinquishHangoutLeadershipService } from "../../services/hangoutMemberServices";
 import { globalHangoutState } from "../globalHangoutState";
 import { updateHangoutSettingsNavButtons } from "../hangoutNav";
@@ -135,7 +136,7 @@ async function handleMembersHeaderClicks(e: MouseEvent): Promise<void> {
   };
 };
 
-function handleMembersContainerClicks(e: MouseEvent): void {
+async function handleMembersContainerClicks(e: MouseEvent): Promise<void> {
   if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
@@ -200,6 +201,34 @@ function handleMembersContainerClicks(e: MouseEvent): void {
     );
 
     return;
+  };
+
+  if (e.target.className === 'add-friend-btn') {
+    if (globalHangoutState.data.hangoutMembersFriendsSet.has(hangoutMemberId)) {
+      popup(`Already friends with ${hangoutMemberDisplayName}.`, 'success');
+      renderMembersContainer();
+
+      return;
+    };
+
+    const hangoutMember: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === hangoutMemberId);
+
+    if (!hangoutMember) {
+      popup('Hangout member not found.', 'error');
+      renderMembersContainer();
+
+      return;
+    };
+
+    if (hangoutMember.user_type == 'guest') {
+      popup(`Can't send friend requests to guest users.`, 'error');
+      renderMembersContainer();
+
+      return;
+    };
+
+    await sendFriendRequest(hangoutMember.username);
+    e.target.parentElement?.parentElement?.classList.remove('expanded');
   };
 };
 
@@ -593,6 +622,60 @@ async function claimHangoutLeadership(): Promise<void> {
       };
 
       handleAuthSessionDestroyed();
+    };
+  };
+};
+
+async function sendFriendRequest(requesteeUsername: string): Promise<void> {
+  LoadingModal.display();
+
+  if (Cookies.get('signedInAs') === 'guest') {
+    renderMembersContainer();
+
+    popup(`Can't send friend requests as a guest user.`, 'error');
+    LoadingModal.remove();
+
+    return;
+  };
+
+  try {
+    await sendFriendRequestService({ requesteeUsername });
+
+    popup('Friend request sent.', 'success');
+    LoadingModal.remove();
+
+  } catch (err: unknown) {
+    console.log(err);
+    LoadingModal.remove();
+
+    const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
+
+    if (!asyncErrorData) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    const { status, errMessage, errReason } = asyncErrorData;
+
+    if (status === 400) {
+      popup('Something went wrong.', 'error');
+      return;
+    };
+
+    if (status === 409 && errReason === 'alreadySent') {
+      popup(errMessage, 'success');
+      return;
+    };
+
+    popup(errMessage, 'error');
+
+    if (status === 404) {
+      renderMembersContainer();
+      return;
+    };
+
+    if (status === 401) {
+      handleAuthSessionExpired();
     };
   };
 };
