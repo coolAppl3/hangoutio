@@ -56,7 +56,7 @@ export async function authenticateHandshake(req: IncomingMessage): Promise<{ han
   return { hangoutMemberId: +hangoutMemberId, hangoutId };
 };
 
-async function isValidUserData(authSessionId: string, hangoutMemberId: number, hangoutId: string): Promise<Boolean> {
+async function isValidUserData(authSessionId: string, hangoutMemberId: number, hangoutId: string): Promise<boolean> {
   try {
     interface AuthSessionDetails extends RowDataPacket {
       user_id: number,

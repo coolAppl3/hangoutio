@@ -1842,16 +1842,17 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
         hangout_id = :hangoutId;
 
       SELECT
-        hangout_member_id,
-        username,
-        user_type,
-        account_id,
-        display_name,
-        is_leader
+        hangout_members.hangout_member_id,
+        hangout_members.username,
+        hangout_members.user_type,
+        hangout_members.account_id,
+        hangout_members.display_name,
+        hangout_members.is_leader,
+        EXISTS (SELECT 1 FROM friendships WHERE account_id = hangout_members.account_id AND friend_id = :accountId) AS is_friend
       FROM
         hangout_members
       WHERE
-        hangout_id = :hangoutId;
+        hangout_members.hangout_id = :hangoutId;
 
       SELECT
         (SELECT COUNT(*) FROM availability_slots WHERE hangout_member_id = :hangoutMemberId) AS availability_slots_count,
@@ -1881,7 +1882,7 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
       ORDER BY
         event_timestamp DESC
       LIMIT 2;`,
-      { hangoutId, hangoutMemberId: requesterHangoutMemberDetails.hangout_member_id }
+      { hangoutId, hangoutMemberId: requesterHangoutMemberDetails.hangout_member_id, accountId: authSessionDetails.user_type === 'guest' ? 0 : authSessionDetails.user_id }
     );
 
     if (hangoutData.length !== 5) {

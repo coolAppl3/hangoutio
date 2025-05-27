@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.09] (2025-05-28)
+
+### Features
+
+- Implemented logic to send friend requests directly from the hangout members section.
+
+
+### Bug Fixes
+
+- Fixed the friend element being removed completely in `friendInviter.ts` if the friend is already in the hangout, instead of just removing the invitation button.
+- Fixed the invitation button for the friend inviter not being disabled after an invitation is sent and confirmed, allowing for it to be triggered again.
+
+
 ## [0.5.08] (2025-05-25)
 
 ### Features
@@ -7,7 +20,7 @@
 - Added DELETE `accounts/hangoutInvite/accept`.
 - Added GET `accounts/hangoutInvites`.
 - Updated GET `accounts/` to also fetch hangout invites.
-- Implemented logic to render and take action regarding hangout invites in `account.html`.
+- Implemented logic to render, and accept or decline, hangout invites in `account.html`.
 
 
 ### Code Refactoring

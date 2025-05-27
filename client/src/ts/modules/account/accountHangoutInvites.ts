@@ -166,7 +166,6 @@ async function handleInvitationAction(clickedBtn: HTMLButtonElement): Promise<vo
       return;
     };
 
-
   } catch (err: unknown) {
     console.log(err);
     // meant to fail silently

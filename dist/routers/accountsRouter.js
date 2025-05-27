@@ -2029,7 +2029,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         }
         ;
         if (requestAlreadySent) {
-            res.status(409).json({ message: `You've already sent a friend request to this user.` });
+            res.status(409).json({ message: `Friend request already sent.`, reason: 'alreadySent' });
             return;
         }
         ;
@@ -2054,7 +2054,7 @@ exports.accountsRouter.post('/friends/requests/send', async (req, res) => {
         }
         ;
         if (err.errno === 1062) {
-            res.status(409).json({ message: `You've already sent a friend request to this user.` });
+            res.status(409).json({ message: `Friend request already sent.`, reason: 'alreadySent' });
             return;
         }
         ;

@@ -21,6 +21,7 @@ export interface HangoutMember {
   user_type: 'account' | 'guest',
   display_name: string,
   is_leader: boolean,
+  is_friend: boolean,
 }
 
 export interface HangoutMemberCountables {
