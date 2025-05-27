@@ -2,14 +2,14 @@ import { createBtnElement, createDivElement, createParagraphElement, createSvgEl
 import { globalHangoutState } from "../globalHangoutState";
 import { HangoutMember } from "../hangoutTypes";
 
-export function createMemberElement(member: HangoutMember, renderingForLeader: boolean): HTMLDivElement {
+export function createMemberElement(member: HangoutMember, renderingForLeader: boolean, renderingForGuest: boolean): HTMLDivElement {
   const memberElement: HTMLDivElement = createDivElement('member');
   memberElement.setAttribute('data-memberId', `${member.hangout_member_id}`);
 
   member.is_leader && memberElement.classList.add('leader');
   member.hangout_member_id === globalHangoutState.data?.hangoutMemberId && memberElement.classList.add('user');
 
-  memberElement.appendChild(createMemberHeader(member, renderingForLeader));
+  memberElement.appendChild(createMemberHeader(member, renderingForLeader, renderingForGuest));
   memberElement.appendChild(createParagraphElement('member-username', `@${member.username}`));
   memberElement.appendChild(createParagraphElement('member-type', member.user_type === 'account' ? 'Registered user' : 'Guest user'));
 
@@ -25,24 +25,31 @@ export function createMemberElement(member: HangoutMember, renderingForLeader: b
   return memberElement;
 };
 
-function createMemberHeader(member: HangoutMember, renderingForLeader: boolean): HTMLDivElement {
+function createMemberHeader(member: HangoutMember, renderingForLeader: boolean, renderingForGuest: boolean): HTMLDivElement {
   const memberHeader: HTMLDivElement = createDivElement('member-header');
-
   memberHeader.appendChild(createParagraphElement('display-name', member.display_name));
 
-  if (!renderingForLeader) {
+  const isUser: boolean = member.hangout_member_id === globalHangoutState.data?.hangoutMemberId;
+  const isGuestUser: boolean = member.user_type === 'guest';
+
+  if (renderingForGuest && !renderingForLeader) {
     return memberHeader;
   };
 
-  if (globalHangoutState.data?.hangoutDetails.is_concluded && member.is_leader) {
+  if (renderingForLeader) {
+    memberHeader.appendChild(createMemberDropdownMenu(member, renderingForLeader, isUser, isGuestUser));
     return memberHeader;
   };
 
-  memberHeader.appendChild(createMemberDropdownMenu(member.is_leader));
+  if (isUser || isGuestUser || member.is_friend) {
+    return memberHeader;
+  };
+
+  memberHeader.appendChild(createMemberDropdownMenu(member, renderingForLeader, isUser, isGuestUser));
   return memberHeader;
 };
 
-function createMemberDropdownMenu(isLeader: boolean): HTMLDivElement {
+function createMemberDropdownMenu(member: HangoutMember, renderingForLeader: boolean, isUser: boolean, isGuestUser: boolean): HTMLDivElement {
   const dropdownMenu: HTMLDivElement = createDivElement('dropdown-menu');
 
   const dropdownMenuButton: HTMLButtonElement = createBtnElement('dropdown-menu-btn', null);
@@ -52,7 +59,18 @@ function createMemberDropdownMenu(isLeader: boolean): HTMLDivElement {
 
   const dropdownMenuList: HTMLDivElement = createDivElement('dropdown-menu-list');
 
-  if (isLeader) {
+  if (!isUser && !isGuestUser && !member.is_friend) {
+    dropdownMenuList.appendChild(createBtnElement('add-friend-btn', 'Send friend request'));
+  };
+
+  if (!renderingForLeader) {
+    dropdownMenu.appendChild(dropdownMenuButton);
+    dropdownMenu.appendChild(dropdownMenuList);
+
+    return dropdownMenu;
+  };
+
+  if (isUser) {
     dropdownMenuList.appendChild(createBtnElement('relinquish-leadership-btn', 'Relinquish leadership'));
 
   } else {

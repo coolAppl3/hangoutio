@@ -1,6 +1,7 @@
 import { handleAuthSessionDestroyed, handleAuthSessionExpired } from "../../global/authUtils";
 import { HANGOUT_CONCLUSION_STAGE } from "../../global/clientConstants";
 import { ConfirmModal } from "../../global/ConfirmModal";
+import Cookies from "../../global/Cookies";
 import { debounce } from "../../global/debounce";
 import { createDivElement, createParagraphElement } from "../../global/domUtils";
 import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
@@ -86,11 +87,13 @@ function renderMembersContainer(): void {
     return;
   };
 
-  const isLeader: boolean = globalHangoutState.data.isLeader;
+  const renderingForLeader: boolean = globalHangoutState.data.isLeader;
+  const renderingForGuest: boolean = Cookies.get('signedInAs') === 'guest';
+
   const innerMembersContainer: HTMLDivElement = createDivElement(null, 'members-container-inner');
 
   for (const member of hangoutMembersState.filteredMembers) {
-    innerMembersContainer.appendChild(createMemberElement(member, isLeader));
+    innerMembersContainer.appendChild(createMemberElement(member, renderingForLeader, renderingForGuest));
   };
 
   if (hangoutMembersState.filteredMembers.length === 0) {
