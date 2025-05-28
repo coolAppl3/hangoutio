@@ -69,12 +69,12 @@ export async function getInitialHangoutData(): Promise<void> {
   try {
     const initialHangoutData: InitialHangoutData = (await getInitialHangoutDataService(hangoutId)).data;
 
-    const hangoutMembersMap: Map<number, string> = new Map();
+    const hangoutMembersDisplayNameMap: Map<number, string> = new Map();
     const hangoutMembersUsernameSet: Set<string> = new Set();
     const hangoutMembersFriendsSet: Set<number> = new Set();
 
     for (const member of initialHangoutData.hangoutMembers) {
-      hangoutMembersMap.set(member.hangout_member_id, member.display_name);
+      hangoutMembersDisplayNameMap.set(member.hangout_member_id, member.display_name);
       hangoutMembersUsernameSet.add(member.username);
 
       if (member.is_friend) {
@@ -87,7 +87,7 @@ export async function getInitialHangoutData(): Promise<void> {
       hangoutMemberId: initialHangoutData.hangoutMemberId,
       hangoutMembers: initialHangoutData.hangoutMembers,
 
-      hangoutMembersMap,
+      hangoutMembersDisplayNameMap,
       hangoutMembersUsernameSet,
       hangoutMembersFriendsSet,
 

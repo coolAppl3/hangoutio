@@ -223,5 +223,5 @@ function getSuggestionDisplayName(hangoutMemberId: number | null): string {
     return 'Former member';
   };
 
-  return globalHangoutState.data?.hangoutMembersMap.get(hangoutMemberId) || 'Former member';
+  return globalHangoutState.data?.hangoutMembersDisplayNameMap.get(hangoutMemberId) || 'Former member';
 };

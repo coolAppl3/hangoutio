@@ -9,7 +9,7 @@ interface GlobalHangoutState {
     hangoutMemberId: number,
     hangoutMembers: HangoutMember[],
 
-    hangoutMembersMap: Map<number, string>,
+    hangoutMembersDisplayNameMap: Map<number, string>,
     hangoutMembersUsernameSet: Set<string>,
     hangoutMembersFriendsSet: Set<number>
 

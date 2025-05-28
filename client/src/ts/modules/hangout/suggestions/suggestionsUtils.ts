@@ -221,7 +221,7 @@ function createSuggestionDetailsContainer(suggestion: Suggestion): HTMLDivElemen
   suggestionDetailsContainer.appendChild(createDetailsElement('Start', getDateAndTimeString(suggestion.suggestion_start_timestamp)));
   suggestionDetailsContainer.appendChild(createDetailsElement('End', getDateAndTimeString(suggestion.suggestion_end_timestamp)));
 
-  const suggestionMemberDisplayName: string | null | undefined = !suggestion.hangout_member_id ? null : globalHangoutState.data?.hangoutMembersMap.get(suggestion.hangout_member_id);
+  const suggestionMemberDisplayName: string | null | undefined = !suggestion.hangout_member_id ? null : globalHangoutState.data?.hangoutMembersDisplayNameMap.get(suggestion.hangout_member_id);
   suggestionDetailsContainer.appendChild(createDetailsElement('Suggested by', suggestionMemberDisplayName ? suggestionMemberDisplayName : 'Former member'));
 
   if (globalHangoutState.data && globalHangoutState.data.hangoutDetails.current_stage >= HANGOUT_VOTING_STAGE) {

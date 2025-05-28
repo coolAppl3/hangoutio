@@ -163,7 +163,7 @@ async function handleMembersContainerClicks(e: MouseEvent): Promise<void> {
   };
 
   const hangoutMemberId: number = +memberIdString;
-  const hangoutMemberDisplayName: string | undefined = globalHangoutState.data.hangoutMembersMap.get(hangoutMemberId);
+  const hangoutMemberDisplayName: string | undefined = globalHangoutState.data.hangoutMembersDisplayNameMap.get(hangoutMemberId);
 
   if (!hangoutMemberDisplayName) {
     popup('Hangout member not found.', 'error');
@@ -242,7 +242,7 @@ async function transferHangoutLeadership(newLeaderMemberId: number): Promise<voi
     return;
   };
 
-  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersMap: hangoutMembersMap, hangoutMembers } = globalHangoutState.data;
+  const { hangoutId, hangoutMemberId, isLeader, hangoutDetails, hangoutMembersDisplayNameMap: hangoutMembersMap, hangoutMembers } = globalHangoutState.data;
 
   if (!isLeader) {
     popup(`You're not the hangout leader.`, 'error');
@@ -365,7 +365,7 @@ async function kickHangoutMember(memberToKickId: number): Promise<void> {
     return;
   };
 
-  const { hangoutId, hangoutMemberId, isLeader, hangoutMembersMap: hangoutMembersMap } = globalHangoutState.data;
+  const { hangoutId, hangoutMemberId, isLeader, hangoutMembersDisplayNameMap: hangoutMembersMap } = globalHangoutState.data;
 
   if (!isLeader) {
     popup(`You're not the hangout leader.`, 'error');
@@ -713,7 +713,7 @@ export function removeHangoutMemberData(hangoutMemberId: number): void {
     return;
   };
 
-  globalHangoutState.data.hangoutMembersMap.delete(hangoutMemberId);
+  globalHangoutState.data.hangoutMembersDisplayNameMap.delete(hangoutMemberId);
   globalHangoutState.data.hangoutMembers = globalHangoutState.data.hangoutMembers.filter((member: HangoutMember) => member.hangout_member_id !== hangoutMemberId);
 
   hangoutMembersState.filteredMembers = hangoutMembersState.filteredMembers.filter((member: HangoutMember) => member.hangout_member_id !== hangoutMemberId);

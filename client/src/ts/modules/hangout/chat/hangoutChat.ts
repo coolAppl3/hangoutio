@@ -475,7 +475,7 @@ export function createMessageElement(message: ChatMessage, isSameSender: boolean
     messageElement.classList.add('new-sender');
 
     if (!isUser) {
-      const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersMap.get(message.hangout_member_id);
+      const senderDisplayName: string | undefined = globalHangoutState.data?.hangoutMembersDisplayNameMap.get(message.hangout_member_id);
       messageElement.appendChild(createSpanElement('message-sent-by', senderDisplayName || 'Former member'));
     };
   };

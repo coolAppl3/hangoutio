@@ -281,7 +281,7 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
     const newMember = data.newMember as HangoutMember;
 
     globalHangoutState.data.hangoutMembers.push(newMember);
-    globalHangoutState.data.hangoutMembersMap.set(newMember.hangout_member_id, newMember.display_name);
+    globalHangoutState.data.hangoutMembersDisplayNameMap.set(newMember.hangout_member_id, newMember.display_name);
 
     renderDashboardMembersContainer();
     hangoutMembersState.isLoaded && searchHangoutMembers(); // will rerender
@@ -774,8 +774,8 @@ function handleHangoutMiscUpdate(webSocketData: WebSocketData): void {
       return;
     };
 
-    const memberExists: boolean = globalHangoutState.data.hangoutMembersMap.has(data.hangoutMemberId);
-    memberExists && globalHangoutState.data.hangoutMembersMap.set(data.hangoutMemberId, data.newDisplayName);
+    const memberExists: boolean = globalHangoutState.data.hangoutMembersDisplayNameMap.has(data.hangoutMemberId);
+    memberExists && globalHangoutState.data.hangoutMembersDisplayNameMap.set(data.hangoutMemberId, data.newDisplayName);
 
     for (const member of globalHangoutState.data.hangoutMembers) {
       if (member.hangout_member_id === data.hangoutMemberId) {
