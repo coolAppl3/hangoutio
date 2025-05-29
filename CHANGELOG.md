@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.10] (2025-05-30)
+
+### Bug Fixes
+
+- Removed leftover place holders in `account.html`.
+
+
+### Code Refactoring
+
+- Removed the guide link from the footer as it's not needed, and won't be implemented.
+- Renamed `hangoutMembersMap` to `hangoutMembersDisplayNameMap` in the global hangout state to avoid confusion.
+
+
 ## [0.5.09] (2025-05-28)
 
 ### Features
