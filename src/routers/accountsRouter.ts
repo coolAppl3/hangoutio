@@ -41,13 +41,13 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!userValidation.isValidDisplayName(requestData.displayName)) {
-    res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
+  if (!userValidation.isValidUsername(requestData.username)) {
+    res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
     return;
   };
 
-  if (!userValidation.isValidUsername(requestData.username)) {
-    res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
+  if (!userValidation.isValidDisplayName(requestData.displayName)) {
+    res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
     return;
   };
 
