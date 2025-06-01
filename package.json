@@ -10,7 +10,7 @@
     "dev-ts": "tsc --watch",
     "ts-clean": "tsc --build --clean",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test-watch": "jest --watch"
   },
   "author": "Yanal Mohsen",
   "license": "GPL-3.0",
