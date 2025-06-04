@@ -9,7 +9,7 @@ jest.mock('../src/middleware/rateLimiter', () => ({
 }));
 
 jest.mock('../src/logs/errorLogger', () => ({
-  logUnexpectedError: jest.fn((req: Request, res: Response, next: NextFunction) => next()),
+  logUnexpectedError: jest.fn(async () => null),
 }));
 
 jest.mock('../src/util/email/emailServices', () => ({
