@@ -355,10 +355,6 @@ describe('POST accounts/signUp', () => {
 });
 
 describe('POST accounts/verification/resendEmail', () => {
-  interface ValidRequestData {
-    accountId: number,
-  };
-
   it('should reject requests with an empty body.', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/verification/resendEmail')
@@ -508,7 +504,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(Number.isInteger(response.body.verificationEmailsSent)).toBe(true);
     expect(response.body.verificationEmailsSent).toBe(2);
 
-    const [updatedRows] = await dbPool.execute(
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
       `SELECT verification_emails_sent FROM account_verification WHERE verification_id = ?;`,
       [1]
     );
