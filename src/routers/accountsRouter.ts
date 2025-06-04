@@ -315,7 +315,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
   };
 
   if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-    res.status(400).json({ message: 'Invalid verification code.', reason: 'verificationCode' });
+    res.status(400).json({ message: 'Invalid verification code.', reason: 'invalidVerificationCode' });
     return;
   };
 
@@ -388,7 +388,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
         [accountDetails.verification_id]
       );
 
-      res.status(401).json({ message: 'Incorrect verification code.' });
+      res.status(401).json({ message: 'Incorrect verification code.', reason: 'incorrectCode' });
       return;
     };
 

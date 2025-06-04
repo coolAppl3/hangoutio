@@ -103,7 +103,7 @@ async function verifyAccount(e: SubmitEvent): Promise<void> {
     const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
-      if (errReason === 'verificationCode') {
+      if (errReason === 'invalidVerificationCode') {
         ErrorSpan.display(verificationCodeInput, errMessage);
         popup(errMessage, 'error');
 
