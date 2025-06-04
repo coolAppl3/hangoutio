@@ -59,13 +59,13 @@ exports.accountsRouter.post('/signUp', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidDisplayName(requestData.displayName)) {
-        res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
+    if (!userValidation.isValidUsername(requestData.username)) {
+        res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
         return;
     }
     ;
-    if (!userValidation.isValidUsername(requestData.username)) {
-        res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
+    if (!userValidation.isValidDisplayName(requestData.displayName)) {
+        res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
         return;
     }
     ;
@@ -197,6 +197,12 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         return;
     }
     ;
+    const existingAuthSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
+    if (existingAuthSessionId) {
+        res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
+        return;
+    }
+    ;
     try {
         ;
         const [accountRows] = await db_1.dbPool.execute(`SELECT
@@ -247,7 +253,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
             return;
         }
         ;
-        res.json({ verificationEmailsSent: accountDetails.verification_emails_sent });
+        res.json({ verificationEmailsSent: accountDetails.verification_emails_sent + 1 });
         await (0, emailServices_1.sendVerificationEmail)({
             to: accountDetails.email,
             accountId: requestData.accountId,
@@ -278,7 +284,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
     }
     ;
     if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-        res.status(400).json({ message: 'Invalid verification code.', reason: 'verificationCode' });
+        res.status(400).json({ message: 'Invalid verification code.', reason: 'invalidVerificationCode' });
         return;
     }
     ;
@@ -331,7 +337,7 @@ exports.accountsRouter.patch('/verification/verify', async (req, res) => {
           failed_verification_attempts = failed_verification_attempts + 1
         WHERE
           verification_id = ?;`, [accountDetails.verification_id]);
-            res.status(401).json({ message: 'Incorrect verification code.' });
+            res.status(401).json({ message: 'Incorrect verification code.', reason: 'incorrectCode' });
             return;
         }
         ;

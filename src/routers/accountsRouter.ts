@@ -41,13 +41,13 @@ accountsRouter.post('/signUp', async (req: Request, res: Response) => {
     return;
   };
 
-  if (!userValidation.isValidDisplayName(requestData.displayName)) {
-    res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
+  if (!userValidation.isValidUsername(requestData.username)) {
+    res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
     return;
   };
 
-  if (!userValidation.isValidUsername(requestData.username)) {
-    res.status(400).json({ message: 'Invalid username.', reason: 'invalidUsername' });
+  if (!userValidation.isValidDisplayName(requestData.displayName)) {
+    res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
     return;
   };
 
@@ -208,6 +208,12 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     return;
   };
 
+  const existingAuthSessionId: string | null = getRequestCookie(req, 'authSessionId');
+  if (existingAuthSessionId) {
+    res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
+    return;
+  };
+
   try {
     interface AccountDetails extends RowDataPacket {
       email: string,
@@ -277,7 +283,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
-    res.json({ verificationEmailsSent: accountDetails.verification_emails_sent });
+    res.json({ verificationEmailsSent: accountDetails.verification_emails_sent + 1 });
 
     await sendVerificationEmail({
       to: accountDetails.email,
@@ -315,7 +321,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
   };
 
   if (!userValidation.isValidRandomCode(requestData.verificationCode)) {
-    res.status(400).json({ message: 'Invalid verification code.', reason: 'verificationCode' });
+    res.status(400).json({ message: 'Invalid verification code.', reason: 'invalidVerificationCode' });
     return;
   };
 
@@ -388,7 +394,7 @@ accountsRouter.patch('/verification/verify', async (req: Request, res: Response)
         [accountDetails.verification_id]
       );
 
-      res.status(401).json({ message: 'Incorrect verification code.' });
+      res.status(401).json({ message: 'Incorrect verification code.', reason: 'incorrectCode' });
       return;
     };
 

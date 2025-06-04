@@ -9,6 +9,7 @@
     "noUncheckedIndexedAccess": true,
     // "noUnusedLocals": true,
     // "noUnusedParameters": true,
+    "isolatedModules": true,
     "removeComments": true,
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "express", "cors", "bcrypt", "nodemailer", "node-cron", "ws", "compression", "cookie-parser", "jest"],
