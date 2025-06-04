@@ -2,13 +2,19 @@ import request, { Response as SuperTestResponse } from 'supertest';
 import { app } from '../../src/app';
 import { dbPool } from '../../src/db/db';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
-import { dayMilliseconds } from '../../src/util/constants';
+import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT } from '../../src/util/constants';
 import * as emailServices from '../../src/util/email/emailServices';
 
 beforeEach(async () => {
   await dbPool.query(
     `DELETE FROM accounts;
+    DELETE FROM account_verification;
+    DELETE FROM account_recovery;
+    DELETE FROM account_deletion;
     DELETE FROM email_update;
+    DELETE FROM friend_requests;
+    DELETE FROM friendships;
+    DELETE FROM hangout_invites;
     DELETE FROM guests;
     DELETE FROM hangouts;`
   );
@@ -18,7 +24,7 @@ afterAll(() => {
   jest.resetAllMocks();
 });
 
-describe('POST /signUp', () => {
+describe('POST accounts/signUp', () => {
   interface ValidRequestData {
     email: string,
     displayName: string,
@@ -37,7 +43,7 @@ describe('POST /signUp', () => {
     expect(response.body.message).toBe('Invalid request data.');
   });
 
-  it('should reject requests with missing keys', async () => {
+  it('should reject requests with missing or incorrect keys', async () => {
     async function testKeys(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -53,6 +59,7 @@ describe('POST /signUp', () => {
     await testKeys({ email: 'someEmail@example.com', username: 'someUsername', password: 'somePassword' });
     await testKeys({ email: 'someEmail@example.com', displayName: 'John Doe', password: 'somePassword' });
     await testKeys({ username: 'someUsername', displayName: 'John Doe', password: 'somePassword' });
+    await testKeys({ username: 'someUsername', displayName: 'John Doe', password: 'somePassword', invalidKey: 'someValue' });
   });
 
   it('should reject request with an invalid email address', async () => {
@@ -330,5 +337,169 @@ describe('POST /signUp', () => {
     await testValidInputs({ email: 'example2@example.com', username: 'johnDoe2', displayName: 'John Doe', password: 'somePassword' });
 
     expect(sendVerificationEmailMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('POST accounts/verification/resendEmail', () => {
+  interface ValidRequestData {
+    accountId: number,
+  };
+
+  it('should reject requests with an empty body.', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/verification/resendEmail')
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/verification/resendEmail')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message).toBe('string');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ email: 'someEmail@example.com' });
+    await testKeys({ username: 'someUsername', displayName: 'John Doe' });
+  });
+
+  it('should reject request with an invalid or non-integer account ID', async () => {
+    async function testEmail(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/verification/resendEmail')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid account ID.');
+      expect(response.body.reason).toBe('invalidAccountId');
+    };
+
+    await testEmail({ accountId: 23.5 });
+    await testEmail({ accountId: 'someString' });
+    await testEmail({ accountId: NaN });
+  });
+
+  it('should reject requests with a non-existent account ID', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/verification/resendEmail')
+      .send({ accountId: 23 });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Account not found.');
+  });
+
+  it('should reject requests for accounts that are already verified', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/verification/resendEmail')
+      .send({ accountId: 1 });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Account already verified.');
+    expect(response.body.reason).toBe('alreadyVerified');
+  });
+
+  it('should reject requests if no verification request is found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/verification/resendEmail')
+      .send({ accountId: 1 });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Verification request not found.');
+  });
+
+  it('should reject requests if the verification emails limit has been reached', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_verification VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'someCode', EMAILS_SENT_LIMIT, 0, Date.now() + ACCOUNT_VERIFICATION_WINDOW]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/verification/resendEmail')
+      .send({ accountId: 1 });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Verification emails limit reached.');
+    expect(response.body.reason).toBe('emailLimitReached');
+  });
+
+  it('should update the count of emails sent in the table, return the updated count, and send a new verification email', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_verification VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'someCode', 1, 0, Date.now() + ACCOUNT_VERIFICATION_WINDOW]
+    );
+
+    const sendVerificationEmailMock = jest.spyOn(emailServices, 'sendVerificationEmail');
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/verification/resendEmail')
+      .send({ accountId: 1 });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('verificationEmailsSent');
+    expect(typeof response.body.verificationEmailsSent).toBe('number');
+    expect(Number.isInteger(response.body.verificationEmailsSent)).toBe(true);
+    expect(response.body.verificationEmailsSent).toBe(2);
+
+    const [updatedRows] = await dbPool.execute(
+      `SELECT verification_emails_sent FROM account_verification WHERE verification_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].verification_emails_sent).toBe(2);
+    expect(sendVerificationEmailMock).toHaveBeenCalled();
   });
 });
