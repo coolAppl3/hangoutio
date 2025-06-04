@@ -208,6 +208,12 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     return;
   };
 
+  const existingAuthSessionId: string | null = getRequestCookie(req, 'authSessionId');
+  if (existingAuthSessionId) {
+    res.status(403).json({ message: 'You must sign out before proceeding.', reason: 'signedIn' });
+    return;
+  };
+
   try {
     interface AccountDetails extends RowDataPacket {
       email: string,

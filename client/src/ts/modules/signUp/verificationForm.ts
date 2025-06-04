@@ -200,7 +200,7 @@ async function resendVerificationEmail(): Promise<void> {
       return;
     };
 
-    const { status, errMessage } = asyncErrorData;
+    const { status, errMessage, errReason } = asyncErrorData;
 
     if (status === 400) {
       popup('Something went wrong.', 'error');
@@ -219,7 +219,12 @@ async function resendVerificationEmail(): Promise<void> {
     };
 
     if (status === 403) {
-      signUpState.verificationEmailsSent = 3;
+      if (errReason === 'emailLimitReached') {
+        signUpState.verificationEmailsSent = 3;
+        return;
+      };
+
+      handleSignedInUser();
     };
   };
 };

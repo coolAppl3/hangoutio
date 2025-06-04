@@ -406,6 +406,24 @@ describe('POST accounts/verification/resendEmail', () => {
     await testEmail({ accountId: NaN });
   });
 
+  it('should reject requests if the user is signed in', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/verification/resendEmail')
+      .set('Cookie', 'authSessionId=someAuthSessionId')
+      .send({ accountId: 23 });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('You must sign out before proceeding.');
+    expect(response.body.reason).toBe('signedIn');
+  });
+
   it('should reject requests with a non-existent account ID', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/verification/resendEmail')
