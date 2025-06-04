@@ -2,9 +2,10 @@ import request, { Response as SuperTestResponse } from 'supertest';
 import { app } from '../../src/app';
 import { dbPool } from '../../src/db/db';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
-import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT } from '../../src/util/constants';
+import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT } from '../../src/util/constants';
 import * as emailServices from '../../src/util/email/emailServices';
 import { RowDataPacket } from 'mysql2';
+import * as authSessionModule from '../../src/auth/authSessions';
 
 beforeEach(async () => {
   await dbPool.query(
@@ -511,5 +512,225 @@ describe('POST accounts/verification/resendEmail', () => {
 
     expect(updatedRows[0].verification_emails_sent).toBe(2);
     expect(sendVerificationEmailMock).toHaveBeenCalled();
+  });
+});
+
+describe('PATCH accounts/verification/verify', () => {
+  it('should reject requests with an empty body.', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/verification/verify')
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/verification/verify')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message).toBe('string');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ accountId: 23 });
+    await testKeys({ verificationCode: 'someCode' });
+    await testKeys({ accountId: 23, someOtherKey: 'someValue' });
+  });
+
+  it('should reject requests with an invalid account ID', async () => {
+    async function testAccountId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/verification/verify')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid account ID.');
+      expect(response.body.reason).toBe('invalidAccountId');
+    };
+
+    await testAccountId({ accountId: null, verificationCode: 'ASDFGH' });
+    await testAccountId({ accountId: '', verificationCode: 'ASDFGH' });
+    await testAccountId({ accountId: '23', verificationCode: 'ASDFGH' });
+    await testAccountId({ accountId: NaN, verificationCode: 'ASDFGH' });
+    await testAccountId({ accountId: 2.4, verificationCode: 'ASDFGH' });
+  });
+
+  it('should reject requests with an invalid verification code', async () => {
+    async function testAccountId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/verification/verify')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid verification code.');
+      expect(response.body.reason).toBe('invalidVerificationCode');
+    };
+
+    await testAccountId({ accountId: 23, verificationCode: null });
+    await testAccountId({ accountId: 23, verificationCode: NaN });
+    await testAccountId({ accountId: 23, verificationCode: '' });
+    await testAccountId({ accountId: 23, verificationCode: '123' });
+    await testAccountId({ accountId: 23, verificationCode: 'ASD' });
+    await testAccountId({ accountId: 23, verificationCode: 'ASDFGHJK' });
+  });
+
+  it('should reject requests if the user is signed in', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/verification/verify')
+      .set('Cookie', 'authSessionId=someAuthSessionId')
+      .send({ accountId: 23, verificationCode: 'ASDFGH' });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('You must sign out before proceeding.');
+    expect(response.body.reason).toBe('signedIn');
+  });
+
+  it('should reject requests if the account is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/verification/verify')
+      .send({ accountId: 23, verificationCode: 'ASDFGH' });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Account not found.');
+  });
+
+  it('should reject requests if the account is already verified', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)})`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/verification/verify')
+      .send({ accountId: 1, verificationCode: 'ASDFGH' });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Account already verified.');
+  });
+
+  it('should reject requests with an incorrect verification codes and update the failed verification attempts count', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)})`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_verification VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', 1, 0, Date.now() + dayMilliseconds]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/verification/verify')
+      .send({ accountId: 1, verificationCode: 'ASDFGH' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect verification code.');
+    expect(response.body.reason).toBe('incorrectCode');
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT failed_verification_attempts FROM account_verification WHERE verification_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].failed_verification_attempts).toBe(1);
+  });
+
+  it('should reject requests with an incorrect verification code, and if this is the 3rd failed attempt, delete the account', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)})`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_verification VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1, Date.now() + dayMilliseconds]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/verification/verify')
+      .send({ accountId: 1, verificationCode: 'ASDFGH' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect verification code.');
+    expect(response.body.reason).toBe('accountDeleted');
+
+    const [removedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM accounts WHERE account_id = ?;`, [1]);
+    expect(removedRows.length).toBe(0);
+  });
+
+  it('should mark the account as verified, remove the relevant row from the account_verification table, create and auth session, and return a confirmation of whether an auth session was successfully created', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)})`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_verification VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1, Date.now() + dayMilliseconds]
+    );
+
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/verification/verify')
+      .send({ accountId: 1, verificationCode: 'AAAAAA' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('authSessionCreated');
+    expect(typeof response.body.authSessionCreated).toBe('boolean');
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT is_verified FROM accounts WHERE account_id = ?;`, [1]);
+    expect(updatedRows[0].is_verified).toBe(1);
+
+    const [removedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_verification WHERE verification_id = ?;`, [1]);
+    expect(removedRows.length).toBe(0);
+
+    expect(createAuthSessionSpy).toHaveBeenCalled();
   });
 });
