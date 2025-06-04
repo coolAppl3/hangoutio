@@ -12,6 +12,11 @@ jest.mock('../src/logs/errorLogger', () => ({
   logUnexpectedError: jest.fn((req: Request, res: Response, next: NextFunction) => next()),
 }));
 
-jest.mock('../src/util/email/initTransporter', () => ({
-  sendEmail: jest.fn(() => null),
+jest.mock('../src/util/email/emailServices', () => ({
+  sendVerificationEmail: jest.fn(async () => null),
+  sendRecoveryEmail: jest.fn(async () => null),
+  sendDeletionConfirmationEmail: jest.fn(async () => null),
+  sendDeletionWarningEmail: jest.fn(async () => null),
+  sendEmailUpdateEmail: jest.fn(async () => null),
+  sendEmailUpdateWarningEmail: jest.fn(async () => null),
 }));
