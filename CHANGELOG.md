@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.11] (2025-05-30)
+
+### Tests
+
+- Improved testing set up.
+- Implemented unit tests for POST `accounts/signUp`.
+- Implemented unit tests for POST `accounts/verification/resendEmail`.
+- Implemented unit tests for POST `accounts/verification/verify`.
+
+
+### Bug Fixes
+
+- Fixed POST `accounts/verification/resendEmail` not returning the correct updated number of verification emails that were sent.
+- Fixed POST `accounts/verification/resendEmail` not rejecting requests if the user is already signed in.
+
+
 ## [0.5.10] (2025-05-30)
 
 ### Bug Fixes
