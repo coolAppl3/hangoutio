@@ -277,7 +277,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
       return;
     };
 
-    res.json({ verificationEmailsSent: accountDetails.verification_emails_sent });
+    res.json({ verificationEmailsSent: accountDetails.verification_emails_sent + 1 });
 
     await sendVerificationEmail({
       to: accountDetails.email,
