@@ -4,6 +4,7 @@ import { dbPool } from '../../src/db/db';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
 import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT } from '../../src/util/constants';
 import * as emailServices from '../../src/util/email/emailServices';
+import { RowDataPacket } from 'mysql2';
 
 beforeEach(async () => {
   await dbPool.query(
@@ -313,7 +314,7 @@ describe('POST accounts/signUp', () => {
     await testTakenUsername({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
   });
 
-  it('should insert into rows into the relevant databases, return the account ID and verification expiry timestamp, and call sendVerificationEmail()', async () => {
+  it('should insert insert rows into the accounts and account_verification tables, return the account ID and verification expiry timestamp, and send a verification email', async () => {
     async function testValidInputs(requestData: ValidRequestData): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -335,6 +336,19 @@ describe('POST accounts/signUp', () => {
 
     await testValidInputs({ email: 'example1@example.com', username: 'johnDoe1', displayName: 'John Doe', password: 'somePassword' });
     await testValidInputs({ email: 'example2@example.com', username: 'johnDoe2', displayName: 'John Doe', password: 'somePassword' });
+
+    const [accountRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT account_id FROM accounts WHERE username = ? OR username = ?;`,
+      ['johnDoe1', 'johnDoe2']
+    );
+
+    const [accountVerificationRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS row_count FROM account_verification WHERE account_id = ? OR account_id = ?;`,
+      [accountRows[0].account_id, accountRows[1].account_id]
+    );
+
+    expect(accountRows.length).toBe(2);
+    expect(accountVerificationRows[0].row_count).toBe(2);
 
     expect(sendVerificationEmailMock).toHaveBeenCalledTimes(2);
   });
