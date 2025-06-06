@@ -137,7 +137,7 @@ async function accountSignIn(): Promise<void> {
         return;
       };
 
-      if (errReason === 'unverified') {
+      if (errReason === 'accountUnverified') {
         InfoModal.display({
           title: 'Account unverified.',
           description: 'You must verify your account to sign in.\nCheck your inbox for a verification email.',

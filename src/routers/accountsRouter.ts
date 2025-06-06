@@ -523,7 +523,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     };
 
     if (!accountDetails.is_verified) {
-      res.status(403).json({ message: 'Account unverified.', reason: 'unverified' });
+      res.status(403).json({ message: 'Account unverified.', reason: 'accountUnverified' });
       return;
     };
 
