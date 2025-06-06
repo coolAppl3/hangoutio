@@ -6,6 +6,7 @@ import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT, FAILED
 import * as emailServices from '../../src/util/email/emailServices';
 import { RowDataPacket } from 'mysql2';
 import * as authSessionModule from '../../src/auth/authSessions';
+import bcrypt from 'bcrypt';
 
 beforeEach(async () => {
   await dbPool.query(
@@ -750,5 +751,206 @@ describe('PATCH accounts/verification/verify', () => {
     expect(removedRows.length).toBe(0);
 
     expect(createAuthSessionSpy).toHaveBeenCalled();
+  });
+});
+
+describe('POST accounts/signIn', () => {
+  it('should reject requests with an empty body.', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signIn')
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/signIn')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message).toBe('string');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ password: 'somePassword', keepSignedIn: true });
+    await testKeys({ email: 'someEmail@example.com', keepSignedIn: true });
+    await testKeys({ password: 'somePassword', keepSignedIn: true });
+    await testKeys({ email: 'someEmail@example.com', password: 'somePassword', keepSignedIn: true, username: 'someUsername' });
+  });
+
+  it('should reject requests with an invalid email address', async () => {
+    async function testEmail(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/signIn')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid email address.');
+      expect(response.body.reason).toBe('invalidEmail');
+    };
+
+    await testEmail({ email: 23, password: 'somePassword', keepSignedIn: true, });
+    await testEmail({ email: '', password: 'somePassword', keepSignedIn: true, });
+    await testEmail({ email: 'invalid', password: 'somePassword', keepSignedIn: true, });
+    await testEmail({ email: 'invalid@invalid', password: 'somePassword', keepSignedIn: true, });
+    await testEmail({ email: 'invalid@invalid.23', password: 'somePassword', keepSignedIn: true, });
+  });
+
+  it('should reject requests with an invalid password, but not as strictly as the signup endpoint', async () => {
+    async function testEmail(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/signIn')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid account password.');
+      expect(response.body.reason).toBe('invalidPassword');
+    };
+
+    await testEmail({ email: 'example@example.com', password: 23, keepSignedIn: true, });
+    await testEmail({ email: 'example@example.com', password: '', keepSignedIn: true, });
+    await testEmail({ email: 'example@example.com', password: 'white space', keepSignedIn: true, });
+    await testEmail({ email: 'example@example.com', password: 'passwordIsLongerThanTwentyFourCharactersTotal', keepSignedIn: true, });
+  });
+
+  it('should reject requests if the account is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signIn')
+      .send({ email: 'example@example.com', password: 'somePassword', keepSignedIn: true, });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Account not found.');
+  });
+
+  it('should reject requests if the account is locked', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 5]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signIn')
+      .send({ email: 'example@example.com', password: 'somePassword', keepSignedIn: true, });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Account locked.');
+    expect(response.body.reason).toBe('accountLocked');
+  });
+
+  it('should reject requests if the account is unverified', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signIn')
+      .send({ email: 'example@example.com', password: 'somePassword', keepSignedIn: true, });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Account unverified.');
+    expect(response.body.reason).toBe('accountUnverified');
+  });
+
+  it('should reject requests if the password is incorrect', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signIn')
+      .send({ email: 'example@example.com', password: 'incorrectPassword', keepSignedIn: true, });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password.');
+    expect(response.body.reason).toBe('incorrectPassword');
+  });
+
+  it('should reject requests if the password is incorrect, and lock the account if a 5th failed attempt is made', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 4]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signIn')
+      .send({ email: 'example@example.com', password: 'incorrectPassword', keepSignedIn: true, });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password. Account has been locked.');
+    expect(response.body.reason).toBe('accountLocked');
+  });
+
+  it('should accept the request if the password is correct, reset the count of failed sign in attempts to 0, and create an auth session for the user', async () => {
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+    const hashedPassword: string = await bcrypt.hash('correctPassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 3]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signIn')
+      .send({ email: 'example@example.com', password: 'correctPassword', keepSignedIn: true, });
+
+    expect(response.status).toBe(200);
+    expect(createAuthSessionSpy).toHaveBeenCalled();
+
+    const [updateRows] = await dbPool.execute<RowDataPacket[]>('SELECT failed_sign_in_attempts FROM accounts WHERE account_id = ?;', [1]);
+    expect(updateRows[0].failed_sign_in_attempts).toBe(0);
   });
 });
