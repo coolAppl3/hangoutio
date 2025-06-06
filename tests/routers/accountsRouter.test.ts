@@ -64,7 +64,7 @@ describe('POST accounts/signUp', () => {
     await testKeys({ username: 'someUsername', displayName: 'John Doe', password: 'somePassword', invalidKey: 'someValue' });
   });
 
-  it('should reject request with an invalid email address', async () => {
+  it('should reject requests with an invalid email address', async () => {
     async function testEmail(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -92,7 +92,7 @@ describe('POST accounts/signUp', () => {
     await testEmail({ email: 'invalidD@invalid.ks.sd.s', username: 'someUsername', displayName: 'John Doe', password: 'somePassword' });
   });
 
-  it('should reject request with an invalid username', async () => {
+  it('should reject requests with an invalid username', async () => {
     async function testUsername(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -117,7 +117,7 @@ describe('POST accounts/signUp', () => {
     await testUsername({ email: 'example@example.com', username: 'invalidSymbols#$%^', displayName: 'John Doe', password: 'somePassword' });
   });
 
-  it('should reject request with an invalid display name', async () => {
+  it('should reject requests with an invalid display name', async () => {
     async function testDisplayName(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -142,7 +142,7 @@ describe('POST accounts/signUp', () => {
     await testDisplayName({ email: 'example@example.com', username: 'someUsername', displayName: 'Beyond Twenty Five Characters', password: 'somePassword' });
   });
 
-  it('should reject request with an invalid password', async () => {
+  it('should reject requests with an invalid password', async () => {
     async function testPassword(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -167,7 +167,7 @@ describe('POST accounts/signUp', () => {
     await testPassword({ email: 'example@example.com', username: 'johnDoe', displayName: 'John Doe', password: 'symbolOtherThanDotsAndUnderscores#%^@' });
   });
 
-  it('should reject request with identical username and password', async () => {
+  it('should reject requests with identical username and password', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/signUp')
       .send({ email: 'example@example.com', username: 'johnDoe23', displayName: 'John Doe', password: 'johnDoe23' });
@@ -383,7 +383,7 @@ describe('POST accounts/verification/resendEmail', () => {
     await testKeys({ username: 'someUsername', displayName: 'John Doe' });
   });
 
-  it('should reject request with an invalid or non-integer account ID', async () => {
+  it('should reject requests with an invalid or non-integer account ID', async () => {
     async function testEmail(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/verification/resendEmail')
