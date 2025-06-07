@@ -755,7 +755,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
     };
 
     if (accountDetails.recovery_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(403).json({ message: 'Recovery emails limit reached.', reason: 'limitReached' });
+      res.status(403).json({ message: `Recovery emails limit of ${EMAILS_SENT_LIMIT} reached.`, reason: 'limitReached' });
       return;
     };
 
