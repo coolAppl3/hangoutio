@@ -1057,7 +1057,7 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body.reason).toBe('accountUnverified');
   });
 
-  it('should reject requests if an existing recovery request is found, but too many failed attempts have been made, returning the account recovery expiry timestamp', async () => {
+  it('should reject requests if an existing recovery request is found, but too many failed attempts have been made, returning the account recovery request expiry timestamp', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
