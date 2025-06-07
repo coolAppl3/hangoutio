@@ -28,13 +28,6 @@ afterAll(() => {
 });
 
 describe('POST accounts/signUp', () => {
-  interface ValidRequestData {
-    email: string,
-    displayName: string,
-    username: string,
-    password: string,
-  };
-
   it('should reject requests with an empty body.', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/signUp')
@@ -214,7 +207,7 @@ describe('POST accounts/signUp', () => {
       [1, 1, 'example2@example.com', 'someCode', Date.now() + dayMilliseconds, 1, 0]
     );
 
-    async function testTakenEmail(requestData: ValidRequestData): Promise<void> {
+    async function testTakenEmail(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
         .send(requestData);
@@ -251,7 +244,7 @@ describe('POST accounts/signUp', () => {
       [1, 'johnDoe2', 'somePassword', 'John Doe', 'someId']
     );
 
-    async function testTakenUsername(requestData: ValidRequestData): Promise<void> {
+    async function testTakenUsername(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
         .send(requestData);
@@ -293,7 +286,7 @@ describe('POST accounts/signUp', () => {
       [1, 'johnDoe2', 'somePassword', 'John Doe', 'someId']
     );
 
-    async function testTakenUsername(requestData: ValidRequestData): Promise<void> {
+    async function testTakenUsername(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
         .send(requestData);
@@ -317,7 +310,7 @@ describe('POST accounts/signUp', () => {
   });
 
   it('should accept the request, insert rows into the accounts and account_verification tables, return the account ID and verification expiry timestamp, and send a verification email', async () => {
-    async function testValidInputs(requestData: ValidRequestData): Promise<void> {
+    async function testValidInputs(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
         .send(requestData);
