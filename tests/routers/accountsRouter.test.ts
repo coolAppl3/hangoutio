@@ -2,7 +2,7 @@ import request, { Response as SuperTestResponse } from 'supertest';
 import { app } from '../../src/app';
 import { dbPool } from '../../src/db/db';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
-import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT } from '../../src/util/constants';
+import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, hourMilliseconds } from '../../src/util/constants';
 import * as emailServices from '../../src/util/email/emailServices';
 import { RowDataPacket } from 'mysql2';
 import * as authSessionModule from '../../src/auth/authSessions';
@@ -316,7 +316,7 @@ describe('POST accounts/signUp', () => {
     await testTakenUsername({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
   });
 
-  it('should insert insert rows into the accounts and account_verification tables, return the account ID and verification expiry timestamp, and send a verification email', async () => {
+  it('should accept the request, insert rows into the accounts and account_verification tables, return the account ID and verification expiry timestamp, and send a verification email', async () => {
     async function testValidInputs(requestData: ValidRequestData): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -501,7 +501,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body.reason).toBe('emailLimitReached');
   });
 
-  it('should update the count of emails sent in the table, return the updated count, and send a new verification email', async () => {
+  it('should accept the request, update the count of emails sent in the table, return the updated count, and send a new verification email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
@@ -723,7 +723,7 @@ describe('PATCH accounts/verification/verify', () => {
     expect(removedRows.length).toBe(0);
   });
 
-  it('should mark the account as verified, remove the relevant row from the account_verification table, create and auth session, and return a confirmation of whether an auth session was successfully created', async () => {
+  it('should accept the request, mark the account as verified, remove the relevant row from the account_verification table, create and auth session, and return a confirmation of whether an auth session was successfully created', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)})`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
