@@ -954,3 +954,212 @@ describe('POST accounts/signIn', () => {
     expect(updateRows[0].failed_sign_in_attempts).toBe(0);
   });
 });
+
+describe('POST accounts/recovery/start', () => {
+  it('should reject requests with an empty body.', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/recovery/start')
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/recovery/start')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message).toBe('string');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ someRandomValue: true });
+    await testKeys({ anotherRandomValue: 23 });
+  });
+
+  it('should reject requests with an invalid email address', async () => {
+    async function testEmail(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/recovery/start')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid email address.');
+      expect(response.body.reason).toBe('invalidEmail');
+    };
+
+    await testEmail({ email: 23 });
+    await testEmail({ email: '' });
+    await testEmail({ email: 'invalid@invalid.23' });
+  });
+
+  it('should reject requests if the user is signed in', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/recovery/start')
+      .set('Cookie', 'authSessionId=someAuthSessionId')
+      .send({ email: 'example@example.com' });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('You must sign out before proceeding.');
+    expect(response.body.reason).toBe('signedIn');
+  });
+
+  it('should reject requests if the account is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/recovery/start')
+      .send({ email: 'example@example.com' });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Account not found.');
+  });
+
+  it('should reject requests if the account is unverified', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/recovery/start')
+      .send({ email: 'example@example.com' });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe(`Can't recover an unverified account.`);
+    expect(response.body.reason).toBe('accountUnverified');
+  });
+
+  it('should reject requests if an existing recovery request is found, but too many failed attempts have been made, returning the account recovery expiry timestamp', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const dummyExpiryTimestamp: number = Date.now() + dayMilliseconds;
+    await dbPool.execute(
+      `INSERT INTO account_recovery VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', dummyExpiryTimestamp, 1, FAILED_ACCOUNT_UPDATE_LIMIT]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/recovery/start')
+      .send({ email: 'example@example.com' });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe(`Recovery suspended.`);
+    expect(response.body.reason).toBe('recoverySuspended');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+    expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
+  });
+
+  it(`should reject requests if an existing recovery request is found, and if the user hasn't had too many failed attempts, return the account recovery timestamp alongside the account ID`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const dummyExpiryTimestamp: number = Date.now() + dayMilliseconds;
+    await dbPool.execute(
+      `INSERT INTO account_recovery VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', dummyExpiryTimestamp, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/recovery/start')
+      .send({ email: 'example@example.com' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe(`Ongoing recovery request found.`);
+    expect(response.body.reason).toBe('ongoingRequest');
+
+    expect(response.body).toHaveProperty('resData');
+
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(response.body.resData).toHaveProperty('accountId');
+
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(typeof response.body.resData.accountId).toBe('number');
+
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+    expect(Number.isInteger(response.body.resData.accountId)).toBe(true);
+
+    expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
+    expect(response.body.resData.accountId).toBe(1);
+  });
+
+  it('should accept the request if no ongoing account recovery requests or suspensions are ongoing, insert a row into the account_recovery table, return both the account ID and request expiry timestamp, and send a recovery email', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const sendRecoveryEmailSpy = jest.spyOn(emailServices, 'sendRecoveryEmail');
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/recovery/start')
+      .send({ email: 'example@example.com' });
+
+    expect(response.status).toBe(201);
+
+    expect(response.body).toHaveProperty('accountId');
+    expect(response.body).toHaveProperty('expiryTimestamp');
+
+    expect(typeof response.body.accountId).toBe('number');
+    expect(typeof response.body.expiryTimestamp).toBe('number');
+
+    expect(Number.isInteger(response.body.accountId)).toBe(true);
+    expect(Number.isInteger(response.body.expiryTimestamp)).toBe(true);
+
+    expect(response.body.accountId).toBe(1);
+    expect(sendRecoveryEmailSpy).toHaveBeenCalled();
+
+    const [createdRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_recovery WHERE account_id = ?;`, [1]);
+    expect(createdRows.length).toBe(1);
+  });
+});
