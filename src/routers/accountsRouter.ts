@@ -669,7 +669,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       [accountDetails.account_id, recoveryCode, expiryTimestamp, 1, 0]
     );
 
-    res.json({ accountId: accountDetails.account_id, expiryTimestamp });
+    res.status(201).json({ accountId: accountDetails.account_id, expiryTimestamp });
 
     await sendRecoveryEmail({
       to: requestData.email,
