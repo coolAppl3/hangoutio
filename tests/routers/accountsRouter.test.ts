@@ -28,7 +28,7 @@ afterAll(() => {
 });
 
 describe('POST accounts/signUp', () => {
-  it('should reject requests with an empty body.', async () => {
+  it('should reject requests with an empty body', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/signUp')
       .send({});
@@ -350,7 +350,7 @@ describe('POST accounts/signUp', () => {
 });
 
 describe('POST accounts/verification/resendEmail', () => {
-  it('should reject requests with an empty body.', async () => {
+  it('should reject requests with an empty body', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/verification/resendEmail')
       .send({});
@@ -528,7 +528,7 @@ describe('POST accounts/verification/resendEmail', () => {
 });
 
 describe('PATCH accounts/verification/verify', () => {
-  it('should reject requests with an empty body.', async () => {
+  it('should reject requests with an empty body', async () => {
     const response: SuperTestResponse = await request(app)
       .patch('/api/accounts/verification/verify')
       .send({});
@@ -748,7 +748,7 @@ describe('PATCH accounts/verification/verify', () => {
 });
 
 describe('POST accounts/signIn', () => {
-  it('should reject requests with an empty body.', async () => {
+  it('should reject requests with an empty body', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/signIn')
       .send({});
@@ -949,7 +949,7 @@ describe('POST accounts/signIn', () => {
 });
 
 describe('POST accounts/recovery/start', () => {
-  it('should reject requests with an empty body.', async () => {
+  it('should reject requests with an empty body', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/recovery/start')
       .send({});
@@ -1158,7 +1158,7 @@ describe('POST accounts/recovery/start', () => {
 });
 
 describe('POST accounts/recovery/resendEmail', () => {
-  it('should reject requests with an empty body.', async () => {
+  it('should reject requests with an empty body', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/recovery/resendEmail')
       .send({});
