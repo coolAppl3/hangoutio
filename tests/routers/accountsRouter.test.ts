@@ -1324,7 +1324,11 @@ describe('POST accounts/recovery/resendEmail', () => {
     expect(response.status).toBe(200);
     expect(resendRecoveryEmailSpy).toHaveBeenCalled();
 
-    const [updatedRows] = await dbPool.execute(`SELECT recovery_emails_sent FROM account_recovery WHERE account_id = ?;`, [1]);
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT recovery_emails_sent FROM account_recovery WHERE account_id = ?;`,
+      [1]
+    );
+
     expect(updatedRows[0].recovery_emails_sent).toBe(2);
   });
 });
