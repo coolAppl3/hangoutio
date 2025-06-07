@@ -889,7 +889,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         res.status(401).json({
           message: 'Incorrect recovery code.',
           reason: 'recoverySuspended',
-          requestData: {
+          resData: {
             expiryTimestamp: recoveryDetails.expiry_timestamp,
           },
         });
