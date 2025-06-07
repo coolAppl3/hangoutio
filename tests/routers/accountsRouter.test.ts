@@ -1332,3 +1332,308 @@ describe('POST accounts/recovery/resendEmail', () => {
     expect(updatedRows[0].recovery_emails_sent).toBe(2);
   });
 });
+
+describe('PATCH accounts/recovery/updatePassword', () => {
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/recovery/updatePassword')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message).toBe('string');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+    await testKeys({ accountId: 23, newPassword: 'someNewPassword' });
+    await testKeys({ accountId: 23, recoveryCode: 'AAAAAA', });
+    await testKeys({ accountId: 23, recoveryCode: 'AAAAAA', someRandomValue: 'someValue' });
+  });
+
+  it('should reject requests with an invalid account ID', async () => {
+    async function testAccountId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/recovery/updatePassword')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message).toBe('string');
+      expect(response.body.message).toBe('Invalid account ID.');
+    };
+
+    await testAccountId({ accountId: null, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: NaN, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: '', recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 'invalid', recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: '23', recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 23.5, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+  });
+
+  it('should reject requests with an invalid recovery code', async () => {
+    async function testAccountId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/recovery/updatePassword')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid recovery code.');
+      expect(response.body.reason).toBe('invalidRecoveryCode');
+    };
+
+    await testAccountId({ accountId: 23, recoveryCode: null, newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 23, recoveryCode: NaN, newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 23, recoveryCode: 23, newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 23, recoveryCode: 23.5, newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 23, recoveryCode: 'AA', newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAAAA', newPassword: 'someNewPassword' });
+    await testAccountId({ accountId: 23, recoveryCode: 'AAA_AAA', newPassword: 'someNewPassword' });
+  });
+
+  it('should reject requests with an invalid recovery code', async () => {
+    async function testAccountId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/recovery/updatePassword')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid new password.');
+      expect(response.body.reason).toBe('invalidPassword');
+    };
+
+    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: null });
+    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: NaN });
+    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: '' });
+    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'short' });
+    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'passwordIsLongerThanTwentyFourCharactersTotal' });
+    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'illegal-$ymbols&*' });
+  });
+
+  it('should reject requests with if the user is signed in', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .set('Cookie', 'authSessionId=someAuthSessionId')
+      .send({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe(`You can't recover an account while signed in.`);
+    expect(response.body.reason).toBe('signedIn');
+  });
+
+  it('should reject requests if the recovery request is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .send({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Recovery request not found.');
+  });
+
+  it('should reject requests if the recovery request is suspended and return the expiry timestamp', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const dummyExpiryTimestamp: number = Date.now() + dayMilliseconds;
+    await dbPool.execute(
+      `INSERT INTO account_recovery VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', dummyExpiryTimestamp, 1, FAILED_ACCOUNT_UPDATE_LIMIT]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .send({ accountId: 1, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(403);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Recovery suspended.');
+    expect(response.body.reason).toBe('recoverySuspended');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+    expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
+  });
+
+  it('should reject requests if the recovery code is incorrect and update the failed_recovery_attempts count in the table', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_recovery VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + hourMilliseconds, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .send({ accountId: 1, recoveryCode: 'BBBBBB', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect recovery code.');
+    expect(response.body.reason).toBe('incorrectRecoveryCode');
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT failed_recovery_attempts FROM account_recovery WHERE account_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].failed_recovery_attempts).toBe(1);
+  });
+
+  it('should reject requests if the recovery code is incorrect, update the failed_recovery_attempts count in the table, and if the user has reached the failed attempts limit, suspend the recovery request', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const dummyExpiryTimestamp: number = Date.now() + dayMilliseconds;
+    await dbPool.execute(
+      `INSERT INTO account_recovery VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', dummyExpiryTimestamp, 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .send({ accountId: 1, recoveryCode: 'BBBBBB', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect recovery code.');
+    expect(response.body.reason).toBe('recoverySuspended');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+    expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT failed_recovery_attempts FROM account_recovery WHERE account_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].failed_recovery_attempts).toBe(FAILED_ACCOUNT_UPDATE_LIMIT);
+  });
+
+  it('should reject requests if the recovery code is correct, but the new password is identical to the accounts username', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe23', 'John Doe', Date.now(), true, 0]
+    );
+
+    const dummyExpiryTimestamp: number = Date.now() + dayMilliseconds;
+    await dbPool.execute(
+      `INSERT INTO account_recovery VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', dummyExpiryTimestamp, 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .send({ accountId: 1, recoveryCode: 'AAAAAA', newPassword: 'johnDoe23' });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe(`New password can't be identical to username.`);
+  });
+
+  it(`should accept the request if the recovery code is correct, update the values of hashed_password and failed_sign_in_attempts in the accounts table, delete the recovery request from the account_recovery table, and create auth session for the user`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 3]
+    );
+
+    const dummyExpiryTimestamp: number = Date.now() + dayMilliseconds;
+    await dbPool.execute(
+      `INSERT INTO account_recovery VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', dummyExpiryTimestamp, 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1]
+    );
+
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/recovery/updatePassword')
+      .send({ accountId: 1, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(200);
+    expect(createAuthSessionSpy).toHaveBeenCalled();
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT
+        hashed_password,
+        failed_sign_in_attempts
+      FROM
+        accounts
+      WHERE
+        account_id = ?;`,
+      [1]
+    );
+
+    const passwordUpdatedCorrectly: boolean = await bcrypt.compare('someNewPassword', updatedRows[0].hashed_password);
+
+    expect(passwordUpdatedCorrectly).toBe(true);
+    expect(updatedRows[0].failed_sign_in_attempts).toBe(0);
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_recovery WHERE account_id = ?;`, [1]);
+    expect(deletedRows.length).toBe(0);
+  });
+});
