@@ -262,7 +262,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     };
 
     if (accountDetails.verification_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(403).json({ message: 'Verification emails limit reached.', reason: 'emailLimitReached' });
+      res.status(403).json({ message: `Verification emails limit of ${EMAILS_SENT_LIMIT} reached.`, reason: 'emailLimitReached' });
       return;
     };
 

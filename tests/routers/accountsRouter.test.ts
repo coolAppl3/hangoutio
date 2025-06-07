@@ -497,7 +497,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(typeof response.body.message).toBe('string');
     expect(typeof response.body.reason).toBe('string');
 
-    expect(response.body.message).toBe('Verification emails limit reached.');
+    expect(response.body.message).toBe(`Verification emails limit of ${EMAILS_SENT_LIMIT} reached.`);
     expect(response.body.reason).toBe('emailLimitReached');
   });
 
