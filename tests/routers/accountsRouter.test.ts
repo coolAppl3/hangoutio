@@ -58,7 +58,7 @@ describe('POST accounts/signUp', () => {
     await testKeys({ username: 'someUsername', displayName: 'John Doe', password: 'somePassword', invalidKey: 'someValue' });
   });
 
-  it('should reject requests with an invalid email address', async () => {
+  it('should reject requests with an invalid email', async () => {
     async function testEmail(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -286,7 +286,7 @@ describe('POST accounts/signUp', () => {
       [1, 'johnDoe2', 'somePassword', 'John Doe', 'someId']
     );
 
-    async function testTakenUsername(requestData: any): Promise<void> {
+    async function testTakenCredentials(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
         .send(requestData);
@@ -303,13 +303,13 @@ describe('POST accounts/signUp', () => {
       expect(response.body.reason).toBe('emailAndUsernameTaken');
     };
 
-    await testTakenUsername({ email: 'example1@example.com', username: 'johnDoe1', displayName: 'John Doe', password: 'somePassword' });
-    await testTakenUsername({ email: 'example2@example.com', username: 'JohnDoe1', displayName: 'John Doe', password: 'somePassword' });
-    await testTakenUsername({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
-    await testTakenUsername({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
+    await testTakenCredentials({ email: 'example1@example.com', username: 'johnDoe1', displayName: 'John Doe', password: 'somePassword' });
+    await testTakenCredentials({ email: 'example2@example.com', username: 'JohnDoe1', displayName: 'John Doe', password: 'somePassword' });
+    await testTakenCredentials({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
+    await testTakenCredentials({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
   });
 
-  it('should accept the request, insert rows into the accounts and account_verification tables, return the account ID and verification expiry timestamp, and send a verification email', async () => {
+  it('should accept the request, insert rows into the accounts and account_verification table, return the account ID and verification expiry timestamp, and send a verification email', async () => {
     async function testValidInputs(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signUp')
@@ -377,8 +377,8 @@ describe('POST accounts/verification/resendEmail', () => {
     await testKeys({ username: 'someUsername', displayName: 'John Doe' });
   });
 
-  it('should reject requests with an invalid or non-integer account ID', async () => {
-    async function testEmail(requestData: any): Promise<void> {
+  it('should reject requests with an invalid account ID', async () => {
+    async function testAccountId(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/verification/resendEmail')
         .send(requestData);
@@ -395,9 +395,9 @@ describe('POST accounts/verification/resendEmail', () => {
       expect(response.body.reason).toBe('invalidAccountId');
     };
 
-    await testEmail({ accountId: 23.5 });
-    await testEmail({ accountId: 'someString' });
-    await testEmail({ accountId: NaN });
+    await testAccountId({ accountId: 23.5 });
+    await testAccountId({ accountId: 'someString' });
+    await testAccountId({ accountId: NaN });
   });
 
   it('should reject requests if the user is signed in', async () => {
@@ -418,7 +418,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body.reason).toBe('signedIn');
   });
 
-  it('should reject requests with a non-existent account ID', async () => {
+  it('should reject requests if the account is not found', async () => {
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/verification/resendEmail')
       .send({ accountId: 23 });
@@ -429,7 +429,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body.message).toBe('Account not found.');
   });
 
-  it('should reject requests for accounts that are already verified', async () => {
+  it('should reject requests if the account already verified', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -451,7 +451,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body.reason).toBe('alreadyVerified');
   });
 
-  it('should reject requests if no verification request is found', async () => {
+  it('should reject requests if the verification request is not found', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
@@ -582,7 +582,7 @@ describe('PATCH accounts/verification/verify', () => {
   });
 
   it('should reject requests with an invalid verification code', async () => {
-    async function testAccountId(requestData: any): Promise<void> {
+    async function testVerificationCode(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .patch('/api/accounts/verification/verify')
         .send(requestData);
@@ -599,12 +599,12 @@ describe('PATCH accounts/verification/verify', () => {
       expect(response.body.reason).toBe('invalidVerificationCode');
     };
 
-    await testAccountId({ accountId: 23, verificationCode: null });
-    await testAccountId({ accountId: 23, verificationCode: NaN });
-    await testAccountId({ accountId: 23, verificationCode: '' });
-    await testAccountId({ accountId: 23, verificationCode: '123' });
-    await testAccountId({ accountId: 23, verificationCode: 'ASD' });
-    await testAccountId({ accountId: 23, verificationCode: 'ASDFGHJK' });
+    await testVerificationCode({ accountId: 23, verificationCode: null });
+    await testVerificationCode({ accountId: 23, verificationCode: NaN });
+    await testVerificationCode({ accountId: 23, verificationCode: '' });
+    await testVerificationCode({ accountId: 23, verificationCode: '123' });
+    await testVerificationCode({ accountId: 23, verificationCode: 'ASD' });
+    await testVerificationCode({ accountId: 23, verificationCode: 'ASDFGHJK' });
   });
 
   it('should reject requests if the user is signed in', async () => {
@@ -652,7 +652,7 @@ describe('PATCH accounts/verification/verify', () => {
     expect(response.body.message).toBe('Account already verified.');
   });
 
-  it('should reject requests with an incorrect verification codes and update the failed verification attempts count', async () => {
+  it('should reject requests with an incorrect verification code and update the failed verification attempts count', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)})`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
@@ -686,7 +686,7 @@ describe('PATCH accounts/verification/verify', () => {
     expect(updatedRows[0].failed_verification_attempts).toBe(1);
   });
 
-  it('should reject requests with an incorrect verification code, and if this is the 3rd failed attempt, delete the account', async () => {
+  it('should reject requests with an incorrect verification code, and if this is the failed verification limit has been reached, delete the account', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)})`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
@@ -777,7 +777,7 @@ describe('POST accounts/signIn', () => {
     await testKeys({ email: 'someEmail@example.com', password: 'somePassword', keepSignedIn: true, username: 'someUsername' });
   });
 
-  it('should reject requests with an invalid email address', async () => {
+  it('should reject requests with an invalid email', async () => {
     async function testEmail(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signIn')
@@ -802,8 +802,8 @@ describe('POST accounts/signIn', () => {
     await testEmail({ email: 'invalid@invalid.23', password: 'somePassword', keepSignedIn: true, });
   });
 
-  it('should reject requests with an invalid password, but not as strictly as the signup endpoint', async () => {
-    async function testEmail(requestData: any): Promise<void> {
+  it('should reject requests with an invalid password', async () => {
+    async function testPassword(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/signIn')
         .send(requestData);
@@ -820,10 +820,10 @@ describe('POST accounts/signIn', () => {
       expect(response.body.reason).toBe('invalidPassword');
     };
 
-    await testEmail({ email: 'example@example.com', password: 23, keepSignedIn: true, });
-    await testEmail({ email: 'example@example.com', password: '', keepSignedIn: true, });
-    await testEmail({ email: 'example@example.com', password: 'white space', keepSignedIn: true, });
-    await testEmail({ email: 'example@example.com', password: 'passwordIsLongerThanTwentyFourCharactersTotal', keepSignedIn: true, });
+    await testPassword({ email: 'example@example.com', password: 23, keepSignedIn: true, });
+    await testPassword({ email: 'example@example.com', password: '', keepSignedIn: true, });
+    await testPassword({ email: 'example@example.com', password: 'white space', keepSignedIn: true, });
+    await testPassword({ email: 'example@example.com', password: 'passwordIsLongerThanTwentyFourCharactersTotal', keepSignedIn: true, });
   });
 
   it('should reject requests if the account is not found', async () => {
@@ -904,7 +904,7 @@ describe('POST accounts/signIn', () => {
     expect(response.body.reason).toBe('incorrectPassword');
   });
 
-  it('should reject requests if the password is incorrect, and lock the account if a 5th failed attempt is made', async () => {
+  it('should reject requests if the password is incorrect, and lock the failed sign in attempts limit has been reached', async () => {
     const hashedPassword: string = await bcrypt.hash('somePassword', 10);
 
     await dbPool.execute(
@@ -927,7 +927,7 @@ describe('POST accounts/signIn', () => {
     expect(response.body.reason).toBe('accountLocked');
   });
 
-  it('should accept the request if the password is correct, reset the count of failed sign in attempts to 0, and create an auth session for the user', async () => {
+  it('should accept the request if the password is correct, reset the count of failed sign in attempts count, and create an auth session for the user', async () => {
     const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
     const hashedPassword: string = await bcrypt.hash('correctPassword', 10);
 
@@ -976,7 +976,7 @@ describe('POST accounts/recovery/start', () => {
     await testKeys({ anotherRandomValue: 23 });
   });
 
-  it('should reject requests with an invalid email address', async () => {
+  it('should reject requests with an invalid email', async () => {
     async function testEmail(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .post('/api/accounts/recovery/start')
@@ -1050,7 +1050,7 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body.reason).toBe('accountUnverified');
   });
 
-  it('should reject requests if an existing recovery request is found, but too many failed attempts have been made, returning the account recovery request expiry timestamp', async () => {
+  it('should reject requests if an existing recovery request is found, but too many failed recovery attempts have been made, returning the account recovery request expiry timestamp', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -1084,7 +1084,7 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
   });
 
-  it(`should reject requests if an existing recovery request is found, and if the user hasn't had too many failed attempts, return the account recovery timestamp alongside the account ID`, async () => {
+  it(`should reject requests if an existing recovery request is found, and if the user hasn't had too many failed recovery attempts, return the account recovery timestamp alongside the account ID`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -1126,7 +1126,7 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body.resData.accountId).toBe(1);
   });
 
-  it('should accept the request if no ongoing account recovery requests or suspensions are ongoing, insert a row into the account_recovery table, return both the account ID and request expiry timestamp, and send a recovery email', async () => {
+  it('should accept the request if there are no ongoing account recovery requests or suspensions, insert a row into the account_recovery table, return both the account ID and request expiry timestamp, and send a recovery email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -1243,7 +1243,7 @@ describe('POST accounts/recovery/resendEmail', () => {
     expect(response.body.reason).toBe('requestNotFound');
   });
 
-  it('should reject requests if an existing recovery request is found, but too many failed attempts have been made, returning the account recovery request expiry timestamp', async () => {
+  it('should reject requests if an existing recovery request is found, but too many failed recovery attempts have been made, returning the account recovery request expiry timestamp', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -1384,7 +1384,7 @@ describe('PATCH accounts/recovery/updatePassword', () => {
   });
 
   it('should reject requests with an invalid recovery code', async () => {
-    async function testAccountId(requestData: any): Promise<void> {
+    async function testRecoveryCode(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .patch('/api/accounts/recovery/updatePassword')
         .send(requestData);
@@ -1401,17 +1401,17 @@ describe('PATCH accounts/recovery/updatePassword', () => {
       expect(response.body.reason).toBe('invalidRecoveryCode');
     };
 
-    await testAccountId({ accountId: 23, recoveryCode: null, newPassword: 'someNewPassword' });
-    await testAccountId({ accountId: 23, recoveryCode: NaN, newPassword: 'someNewPassword' });
-    await testAccountId({ accountId: 23, recoveryCode: 23, newPassword: 'someNewPassword' });
-    await testAccountId({ accountId: 23, recoveryCode: 23.5, newPassword: 'someNewPassword' });
-    await testAccountId({ accountId: 23, recoveryCode: 'AA', newPassword: 'someNewPassword' });
-    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAAAA', newPassword: 'someNewPassword' });
-    await testAccountId({ accountId: 23, recoveryCode: 'AAA_AAA', newPassword: 'someNewPassword' });
+    await testRecoveryCode({ accountId: 23, recoveryCode: null, newPassword: 'someNewPassword' });
+    await testRecoveryCode({ accountId: 23, recoveryCode: NaN, newPassword: 'someNewPassword' });
+    await testRecoveryCode({ accountId: 23, recoveryCode: 23, newPassword: 'someNewPassword' });
+    await testRecoveryCode({ accountId: 23, recoveryCode: 23.5, newPassword: 'someNewPassword' });
+    await testRecoveryCode({ accountId: 23, recoveryCode: 'AA', newPassword: 'someNewPassword' });
+    await testRecoveryCode({ accountId: 23, recoveryCode: 'AAAAAAAA', newPassword: 'someNewPassword' });
+    await testRecoveryCode({ accountId: 23, recoveryCode: 'AAA_AAA', newPassword: 'someNewPassword' });
   });
 
-  it('should reject requests with an invalid recovery code', async () => {
-    async function testAccountId(requestData: any): Promise<void> {
+  it('should reject requests with an invalid new password', async () => {
+    async function testNewPassword(requestData: any): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .patch('/api/accounts/recovery/updatePassword')
         .send(requestData);
@@ -1428,15 +1428,15 @@ describe('PATCH accounts/recovery/updatePassword', () => {
       expect(response.body.reason).toBe('invalidPassword');
     };
 
-    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: null });
-    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: NaN });
-    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: '' });
-    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'short' });
-    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'passwordIsLongerThanTwentyFourCharactersTotal' });
-    await testAccountId({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'illegal-$ymbols&*' });
+    await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: null });
+    await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: NaN });
+    await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: '' });
+    await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'short' });
+    await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'passwordIsLongerThanTwentyFourCharactersTotal' });
+    await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'illegal-$ymbols&*' });
   });
 
-  it('should reject requests with if the user is signed in', async () => {
+  it('should reject requests if the user is signed in', async () => {
     const response: SuperTestResponse = await request(app)
       .patch('/api/accounts/recovery/updatePassword')
       .set('Cookie', 'authSessionId=someAuthSessionId')
@@ -1465,7 +1465,7 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     expect(response.body.message).toBe('Recovery request not found.');
   });
 
-  it('should reject requests if the recovery request is suspended and return the expiry timestamp', async () => {
+  it('should reject requests if the recovery request is suspended and return the recovery request expiry timestamp', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -1533,7 +1533,7 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     expect(updatedRows[0].failed_recovery_attempts).toBe(1);
   });
 
-  it('should reject requests if the recovery code is incorrect, update the failed_recovery_attempts count in the table, and if the user has reached the failed attempts limit, suspend the recovery request', async () => {
+  it('should reject requests if the recovery code is incorrect, update the failed_recovery_attempts count in the table, and if the user has reached the failed recovery attempts limit, suspend the recovery request', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -1574,7 +1574,7 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     expect(updatedRows[0].failed_recovery_attempts).toBe(FAILED_ACCOUNT_UPDATE_LIMIT);
   });
 
-  it('should reject requests if the recovery code is correct, but the new password is identical to the accounts username', async () => {
+  it(`should reject requests if the recovery code is correct, but the new password is identical to the account's username`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES(${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe23', 'John Doe', Date.now(), true, 0]
