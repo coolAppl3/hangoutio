@@ -23,7 +23,15 @@ function isValidNewPassword(password) {
 exports.isValidNewPassword = isValidNewPassword;
 ;
 function isValidPassword(password) {
-    if (typeof password !== 'string' || password.trim() === '') {
+    if (typeof password !== 'string') {
+        return false;
+    }
+    ;
+    if (password.trim() === '' || password.includes(' ')) {
+        return false;
+    }
+    ;
+    if (password.length > 40) {
         return false;
     }
     ;

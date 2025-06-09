@@ -262,7 +262,7 @@ accountsRouter.post('/verification/resendEmail', async (req: Request, res: Respo
     };
 
     if (accountDetails.verification_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(403).json({ message: 'Verification emails limit reached.', reason: 'emailLimitReached' });
+      res.status(403).json({ message: `Verification emails limit of ${EMAILS_SENT_LIMIT} reached.`, reason: 'emailLimitReached' });
       return;
     };
 
@@ -523,7 +523,7 @@ accountsRouter.post('/signIn', async (req: Request, res: Response) => {
     };
 
     if (!accountDetails.is_verified) {
-      res.status(403).json({ message: 'Account unverified.', reason: 'unverified' });
+      res.status(403).json({ message: 'Account unverified.', reason: 'accountUnverified' });
       return;
     };
 
@@ -669,7 +669,7 @@ accountsRouter.post('/recovery/start', async (req: Request, res: Response) => {
       [accountDetails.account_id, recoveryCode, expiryTimestamp, 1, 0]
     );
 
-    res.json({ accountId: accountDetails.account_id, expiryTimestamp });
+    res.status(201).json({ accountId: accountDetails.account_id, expiryTimestamp });
 
     await sendRecoveryEmail({
       to: requestData.email,
@@ -755,7 +755,7 @@ accountsRouter.post('/recovery/resendEmail', async (req: Request, res: Response)
     };
 
     if (accountDetails.recovery_emails_sent >= EMAILS_SENT_LIMIT) {
-      res.status(403).json({ message: 'Recovery emails limit reached.', reason: 'limitReached' });
+      res.status(403).json({ message: `Recovery emails limit of ${EMAILS_SENT_LIMIT} reached.`, reason: 'limitReached' });
       return;
     };
 
@@ -889,7 +889,7 @@ accountsRouter.patch('/recovery/updatePassword', async (req: Request, res: Respo
         res.status(401).json({
           message: 'Incorrect recovery code.',
           reason: 'recoverySuspended',
-          requestData: {
+          resData: {
             expiryTimestamp: recoveryDetails.expiry_timestamp,
           },
         });

@@ -335,7 +335,7 @@ async function accountSignIn(): Promise<void> {
     if (status === 403) {
       ErrorSpan.display(accountEmailInput, errMessage);
 
-      if (errReason === 'unverified') {
+      if (errReason === 'accountUnverified') {
         InfoModal.display({
           title: 'Account unverified.',
           description: 'You must verify your account to sign in.\nCheck your inbox for a verification email.',

@@ -1,6 +1,6 @@
 import { containsInvalidWhitespace } from "../globalUtils";
 
-export function isValidEmail(email: string): boolean {
+export function isValidEmail(email: any): boolean {
   if (typeof email !== 'string') {
     return false;
   };
@@ -10,7 +10,7 @@ export function isValidEmail(email: string): boolean {
 };
 
 
-export function isValidNewPassword(password: string): boolean {
+export function isValidNewPassword(password: any): boolean {
   if (typeof password !== 'string') {
     return false;
   };
@@ -19,15 +19,23 @@ export function isValidNewPassword(password: string): boolean {
   return regex.test(password);
 };
 
-export function isValidPassword(password: string): boolean {
-  if (typeof password !== 'string' || password.trim() === '') {
+export function isValidPassword(password: any): boolean {
+  if (typeof password !== 'string') {
+    return false;
+  };
+
+  if (password.trim() === '' || password.includes(' ')) {
+    return false;
+  };
+
+  if (password.length > 40) {
     return false;
   };
 
   return true;
 };
 
-export function isValidUsername(username: string): boolean {
+export function isValidUsername(username: any): boolean {
   if (typeof username !== 'string') {
     return false;
   };
@@ -36,7 +44,7 @@ export function isValidUsername(username: string): boolean {
   return regex.test(username);
 };
 
-export function isValidDisplayName(displayName: string): boolean {
+export function isValidDisplayName(displayName: any): boolean {
   if (typeof displayName !== 'string') {
     return false;
   };
@@ -49,7 +57,7 @@ export function isValidDisplayName(displayName: string): boolean {
   return regex.test(displayName);
 };
 
-export function isValidRandomCode(verificationCode: string): boolean {
+export function isValidRandomCode(verificationCode: any): boolean {
   if (typeof verificationCode !== 'string') {
     return false;
   };
