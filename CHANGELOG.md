@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.12] (2025-06-09)
+
+### Tests
+
+- Fixed a few typos in `accountsRouter.test.ts` test suite descriptions.
+- Implemented unit tests for POST `accounts/signIn`.
+- Implemented unit tests for POST `accounts/recovery/start`.
+- Implemented unit tests for POST `accounts/recovery/resendEmail`.
+- Implemented unit tests for POST `accounts/recovery/updatePassword`.
+- Fixed a number of incorrectly named test functions, alongside typos and bad grammar in the test descriptions throughout `accountRouter.test.ts`.
+
+
+### Bug Fixes
+
+- Fixed `isValidPassword()` in `userValidation.ts` not rejecting passwords if they contain whitespace or are longer than 40 characters long.
+- Fixed the functions in `userValidation.ts` predefining the types of the values they're testing.
+- Fixed an error response including `requestData` instead of `resData` in POST `accounts/recovery/updatePassword`.
+
+
 ## [0.5.11] (2025-06-04)
 
 ### Tests

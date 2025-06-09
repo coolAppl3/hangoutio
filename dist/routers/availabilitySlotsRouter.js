@@ -583,7 +583,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         expiry_timestamp
       FROM
         auth_sessions
-      WHERe
+      WHERE
         session_id = ?;`, [authSessionId]);
         const authSessionDetails = authSessionRows[0];
         if (!authSessionDetails) {

@@ -237,7 +237,7 @@ exports.accountsRouter.post('/verification/resendEmail', async (req, res) => {
         }
         ;
         if (accountDetails.verification_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(403).json({ message: 'Verification emails limit reached.', reason: 'emailLimitReached' });
+            res.status(403).json({ message: `Verification emails limit of ${constants_1.EMAILS_SENT_LIMIT} reached.`, reason: 'emailLimitReached' });
             return;
         }
         ;
@@ -433,7 +433,7 @@ exports.accountsRouter.post('/signIn', async (req, res) => {
         }
         ;
         if (!accountDetails.is_verified) {
-            res.status(403).json({ message: 'Account unverified.', reason: 'unverified' });
+            res.status(403).json({ message: 'Account unverified.', reason: 'accountUnverified' });
             return;
         }
         ;
@@ -550,7 +550,7 @@ exports.accountsRouter.post('/recovery/start', async (req, res) => {
           recovery_emails_sent,
           failed_recovery_attempts
         ) VALUES (${(0, generatePlaceHolders_1.generatePlaceHolders)(5)});`, [accountDetails.account_id, recoveryCode, expiryTimestamp, 1, 0]);
-        res.json({ accountId: accountDetails.account_id, expiryTimestamp });
+        res.status(201).json({ accountId: accountDetails.account_id, expiryTimestamp });
         await (0, emailServices_1.sendRecoveryEmail)({
             to: requestData.email,
             accountId: accountDetails.account_id,
@@ -616,7 +616,7 @@ exports.accountsRouter.post('/recovery/resendEmail', async (req, res) => {
         }
         ;
         if (accountDetails.recovery_emails_sent >= constants_1.EMAILS_SENT_LIMIT) {
-            res.status(403).json({ message: 'Recovery emails limit reached.', reason: 'limitReached' });
+            res.status(403).json({ message: `Recovery emails limit of ${constants_1.EMAILS_SENT_LIMIT} reached.`, reason: 'limitReached' });
             return;
         }
         ;
@@ -720,7 +720,7 @@ exports.accountsRouter.patch('/recovery/updatePassword', async (req, res) => {
                 res.status(401).json({
                     message: 'Incorrect recovery code.',
                     reason: 'recoverySuspended',
-                    requestData: {
+                    resData: {
                         expiryTimestamp: recoveryDetails.expiry_timestamp,
                     },
                 });
