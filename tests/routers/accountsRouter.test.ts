@@ -23,8 +23,8 @@ beforeEach(async () => {
   );
 });
 
-afterAll(() => {
-  jest.resetAllMocks();
+afterEach(() => {
+  jest.clearAllMocks();
 });
 
 describe('POST accounts/signUp', () => {
