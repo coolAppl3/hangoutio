@@ -199,7 +199,7 @@ describe('POST accounts/signUp', () => {
   it('should reject requests with a taken email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', Date.now(), 'John Doe', true, 0]
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -231,7 +231,7 @@ describe('POST accounts/signUp', () => {
   it('should reject requests with a taken username', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example@example.com', 'someHashedPassword', 'johnDoe1', Date.now(), 'John Doe', true, 0]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe1', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -268,7 +268,7 @@ describe('POST accounts/signUp', () => {
   it('should reject requests with a taken email or username', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe1', Date.now(), 'John Doe', true, 0]
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe1', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -845,6 +845,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'somePassword', keepSignedIn: true, });
 
     expect(response.status).toBe(403);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
@@ -866,6 +867,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'somePassword', keepSignedIn: true, });
 
     expect(response.status).toBe(403);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
@@ -889,6 +891,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'incorrectPassword', keepSignedIn: true, });
 
     expect(response.status).toBe(401);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
@@ -912,6 +915,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'incorrectPassword', keepSignedIn: true, });
 
     expect(response.status).toBe(401);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
