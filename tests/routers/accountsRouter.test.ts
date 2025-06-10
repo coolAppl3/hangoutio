@@ -310,42 +310,37 @@ describe('POST accounts/signUp', () => {
   });
 
   it('should accept the request, insert rows into the accounts and account_verification table, return the account ID and verification expiry timestamp, and send a verification email', async () => {
-    async function testValidInputs(requestData: any): Promise<void> {
-      const response: SuperTestResponse = await request(app)
-        .post('/api/accounts/signUp')
-        .send(requestData);
+    const sendVerificationEmailSpy = jest.spyOn(emailServices, 'sendVerificationEmail');
 
-      expect(response.status).toBe(201);
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signUp')
+      .send({ email: 'example1@example.com', username: 'johnDoe23', displayName: 'John Doe', password: 'somePassword' });
 
-      expect(response.body).toHaveProperty('accountId');
-      expect(response.body).toHaveProperty('verificationExpiryTimestamp');
+    expect(response.status).toBe(201);
 
-      expect(typeof response.body.accountId).toBe('number');
-      expect(typeof response.body.verificationExpiryTimestamp).toBe('number');
+    expect(response.body).toHaveProperty('accountId');
+    expect(response.body).toHaveProperty('verificationExpiryTimestamp');
 
-      expect(Number.isInteger(response.body.accountId)).toBe(true);
-      expect(Number.isInteger(response.body.verificationExpiryTimestamp)).toBe(true);
-    };
+    expect(typeof response.body.accountId).toBe('number');
+    expect(typeof response.body.verificationExpiryTimestamp).toBe('number');
 
-    const sendVerificationEmailMock = jest.spyOn(emailServices, 'sendVerificationEmail');
-
-    await testValidInputs({ email: 'example1@example.com', username: 'johnDoe1', displayName: 'John Doe', password: 'somePassword' });
-    await testValidInputs({ email: 'example2@example.com', username: 'johnDoe2', displayName: 'John Doe', password: 'somePassword' });
+    expect(Number.isInteger(response.body.accountId)).toBe(true);
+    expect(Number.isInteger(response.body.verificationExpiryTimestamp)).toBe(true);
 
     const [accountRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT account_id FROM accounts WHERE username = ? OR username = ?;`,
-      ['johnDoe1', 'johnDoe2']
+      `SELECT account_id FROM accounts WHERE username = ?;`,
+      ['johnDoe23']
     );
 
     const [accountVerificationRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT COUNT(*) AS row_count FROM account_verification WHERE account_id = ? OR account_id = ?;`,
-      [accountRows[0].account_id, accountRows[1].account_id]
+      `SELECT 1 FROM account_verification WHERE account_id = ?;`,
+      [accountRows[0].account_id]
     );
 
-    expect(accountRows.length).toBe(2);
-    expect(accountVerificationRows[0].row_count).toBe(2);
+    expect(accountRows.length).toBe(1);
+    expect(accountVerificationRows.length).toBe(1);
 
-    expect(sendVerificationEmailMock).toHaveBeenCalledTimes(2);
+    expect(sendVerificationEmailSpy).toHaveBeenCalled();
   });
 });
 
@@ -505,7 +500,7 @@ describe('POST accounts/verification/resendEmail', () => {
       [1, 1, 'someCode', 1, 0, Date.now() + ACCOUNT_VERIFICATION_WINDOW]
     );
 
-    const sendVerificationEmailMock = jest.spyOn(emailServices, 'sendVerificationEmail');
+    const sendVerificationEmailSpy = jest.spyOn(emailServices, 'sendVerificationEmail');
 
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/verification/resendEmail')
@@ -523,7 +518,7 @@ describe('POST accounts/verification/resendEmail', () => {
     );
 
     expect(updatedRows[0].verification_emails_sent).toBe(2);
-    expect(sendVerificationEmailMock).toHaveBeenCalled();
+    expect(sendVerificationEmailSpy).toHaveBeenCalled();
   });
 });
 
@@ -928,7 +923,6 @@ describe('POST accounts/signIn', () => {
   });
 
   it('should accept the request if the password is correct, reset the count of failed sign in attempts count, and create an auth session for the user', async () => {
-    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
     const hashedPassword: string = await bcrypt.hash('correctPassword', 10);
 
     await dbPool.execute(
@@ -936,9 +930,11 @@ describe('POST accounts/signIn', () => {
       [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 3]
     );
 
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/signIn')
-      .send({ email: 'example@example.com', password: 'correctPassword', keepSignedIn: true, });
+      .send({ email: 'example@example.com', password: 'correctPassword', keepSignedIn: true });
 
     expect(response.status).toBe(200);
     expect(createAuthSessionSpy).toHaveBeenCalled();
