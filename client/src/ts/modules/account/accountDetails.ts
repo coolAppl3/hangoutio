@@ -272,12 +272,12 @@ async function updateDisplayName(): Promise<void> {
     };
 
     if (status === 400) {
-      if (errReason === 'password') {
+      if (errReason === 'invalidPassword') {
         ErrorSpan.display(passwordInput, errMessage);
         return;
       };
 
-      if (errReason === 'displayName') {
+      if (errReason === 'invalidDisplayName') {
         ErrorSpan.display(newDisplayNameInput, errMessage);
       };
     };

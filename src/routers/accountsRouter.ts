@@ -978,16 +978,16 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
   };
 
   if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'password' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
+    return;
+  };
+
+  if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
+    res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
     return;
   };
 
   let connection;
-
-  if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
-    res.status(400).json({ message: 'Invalid display name.', reason: 'displayName' });
-    return;
-  };
 
   try {
     interface AuthSessionDetails extends RowDataPacket {
