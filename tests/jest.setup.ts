@@ -1,5 +1,6 @@
 require('dotenv').config();
 import { Request, Response, NextFunction } from 'express';
+import { sendHangoutWebSocketMessage } from '../src/webSockets/hangout/hangoutWebSocketServer';
 
 process.env.DATABASE_NAME = process.env.TEST_DATABASE_NAME;
 process.env.PORT = '6000';
@@ -19,4 +20,14 @@ jest.mock('../src/util/email/emailServices', () => ({
   sendDeletionWarningEmail: jest.fn(async () => null),
   sendEmailUpdateEmail: jest.fn(async () => null),
   sendEmailUpdateWarningEmail: jest.fn(async () => null),
+}));
+
+interface WebSocketData {
+  type: string,
+  reason: string,
+  data: { [key: string]: unknown },
+};
+
+jest.mock('../src/webSockets/hangout/hangoutWebSocketServer', () => ({
+  sendHangoutWebSocketMessage: jest.fn(async (hangoutIds: string[], webSocketData: WebSocketData) => null),
 }));
