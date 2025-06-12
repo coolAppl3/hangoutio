@@ -1,6 +1,5 @@
 require('dotenv').config();
 import { Request, Response, NextFunction } from 'express';
-import { sendHangoutWebSocketMessage } from '../src/webSockets/hangout/hangoutWebSocketServer';
 
 process.env.DATABASE_NAME = process.env.TEST_DATABASE_NAME;
 process.env.PORT = '6000';
