@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.13] (2025-06-13)
+
+### Tests
+
+- Fixed a number of issues with the names and descriptions of tests in `accountsRouter.test.ts`.
+- Fixed mocks not being cleared after each test in `accountsRouter.test.ts`.
+- Fixed incorrect order of insertion into the accounts table in some of the tests in `accountsRouter.test.ts`.
+- All tables are now cleared before every test, instead of only relevant tables.
+- Implemented unit tests for PATCH `accounts/details/updateDisplayName`.
+- Implemented unit tests for PATCH `accounts/details/updatePassword`.
+
+
+### Bug Fixes
+
+- Fixed PATCH `accounts/details/updateDisplayName` not adding a hangout event when the user updates their display name.
+
+
 ## [0.5.12] (2025-06-09)
 
 ### Tests
