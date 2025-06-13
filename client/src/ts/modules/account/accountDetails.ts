@@ -399,12 +399,12 @@ async function updatePassword(): Promise<void> {
     };
 
     if (status === 400) {
-      if (errReason === 'currentPassword') {
+      if (errReason === 'invalidCurrentPassword') {
         ErrorSpan.display(passwordInput, errMessage);
         return;
       };
 
-      if (errReason === 'newPassword') {
+      if (errReason === 'invalidNewPassword') {
         ErrorSpan.display(newPasswordInput, errMessage);
       };
     };

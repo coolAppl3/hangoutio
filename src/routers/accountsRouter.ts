@@ -1180,12 +1180,12 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 
   if (!userValidation.isValidPassword(requestData.currentPassword)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'currentPassword' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidCurrentPassword' });
     return;
   };
 
   if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-    res.status(400).json({ message: 'Invalid new password.', reason: 'newPassword' });
+    res.status(400).json({ message: 'Invalid new password.', reason: 'invalidNewPassword' });
     return;
   };
 
