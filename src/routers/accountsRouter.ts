@@ -1333,13 +1333,13 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     return;
   };
 
-  if (!userValidation.isValidEmail(requestData.newEmail)) {
-    res.status(400).json({ message: 'Invalid email address.', reason: 'email' });
+  if (!userValidation.isValidPassword(requestData.password)) {
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
-  if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'password' });
+  if (!userValidation.isValidEmail(requestData.newEmail)) {
+    res.status(400).json({ message: 'Invalid email address.', reason: 'invalidEmail' });
     return;
   };
 
@@ -1428,7 +1428,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     if (accountDetails.expiry_timestamp) {
       if (accountDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
         res.status(403).json({
-          message: 'Request is suspended due to too many failed attempts.',
+          message: 'Request was suspended due to too many failed attempts.',
           resData: { expiryTimestamp: accountDetails.expiry_timestamp },
         });
 

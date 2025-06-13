@@ -538,12 +538,12 @@ async function startEmailUpdate(): Promise<void> {
     };
 
     if (status === 400) {
-      if (errReason === 'email') {
+      if (errReason === 'invalidEmail') {
         ErrorSpan.display(newEmailInput, errMessage);
         return;
       };
 
-      if (errReason === 'password') {
+      if (errReason === 'invalidPassword') {
         ErrorSpan.display(passwordInput, errMessage);
       };
     };
