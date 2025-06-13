@@ -318,7 +318,7 @@ describe('POST accounts/signUp', () => {
 
     await testTakenCredentials({ email: 'example1@example.com', username: 'johnDoe1', displayName: 'John Doe', password: 'somePassword' });
     await testTakenCredentials({ email: 'example2@example.com', username: 'JohnDoe1', displayName: 'John Doe', password: 'somePassword' });
-    await testTakenCredentials({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
+    await testTakenCredentials({ email: 'example1@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
     await testTakenCredentials({ email: 'example2@example.com', username: 'JohnDoe2', displayName: 'John Doe', password: 'somePassword' });
   });
 
@@ -327,7 +327,7 @@ describe('POST accounts/signUp', () => {
 
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/signUp')
-      .send({ email: 'example1@example.com', username: 'johnDoe23', displayName: 'John Doe', password: 'somePassword' });
+      .send({ email: 'example@example.com', username: 'johnDoe23', displayName: 'John Doe', password: 'somePassword' });
 
     expect(response.status).toBe(201);
 
@@ -1794,7 +1794,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
   it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -1832,7 +1832,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -1870,7 +1870,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
   it(`should reject requests if the password is incorrect`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -1898,7 +1898,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
   it(`should reject requests if the password is incorrect, and if failed sign in attempts limit is reached, lock the account, remove the authSessionId cookie, and purge all auth sessions related to the user`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
     );
 
     await dbPool.execute(
@@ -1943,7 +1943,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
     );
 
     await dbPool.execute(
@@ -1967,7 +1967,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
     );
 
     await dbPool.execute(
@@ -2157,7 +2157,7 @@ describe('PATCH accounts/details/updatePassword', () => {
   it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -2195,7 +2195,7 @@ describe('PATCH accounts/details/updatePassword', () => {
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -2235,7 +2235,7 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -2265,7 +2265,7 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
     );
 
     await dbPool.execute(
@@ -2310,7 +2310,7 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -2340,7 +2340,7 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', hashedPassword, 'johnDoe23', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', hashedPassword, 'johnDoe23', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -2370,7 +2370,7 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
