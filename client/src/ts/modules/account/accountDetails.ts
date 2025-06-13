@@ -272,12 +272,12 @@ async function updateDisplayName(): Promise<void> {
     };
 
     if (status === 400) {
-      if (errReason === 'password') {
+      if (errReason === 'invalidPassword') {
         ErrorSpan.display(passwordInput, errMessage);
         return;
       };
 
-      if (errReason === 'displayName') {
+      if (errReason === 'invalidDisplayName') {
         ErrorSpan.display(newDisplayNameInput, errMessage);
       };
     };
@@ -399,12 +399,12 @@ async function updatePassword(): Promise<void> {
     };
 
     if (status === 400) {
-      if (errReason === 'currentPassword') {
+      if (errReason === 'invalidCurrentPassword') {
         ErrorSpan.display(passwordInput, errMessage);
         return;
       };
 
-      if (errReason === 'newPassword') {
+      if (errReason === 'invalidNewPassword') {
         ErrorSpan.display(newPasswordInput, errMessage);
       };
     };

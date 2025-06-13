@@ -20,3 +20,13 @@ jest.mock('../src/util/email/emailServices', () => ({
   sendEmailUpdateEmail: jest.fn(async () => null),
   sendEmailUpdateWarningEmail: jest.fn(async () => null),
 }));
+
+interface WebSocketData {
+  type: string,
+  reason: string,
+  data: { [key: string]: unknown },
+};
+
+jest.mock('../src/webSockets/hangout/hangoutWebSocketServer', () => ({
+  sendHangoutWebSocketMessage: jest.fn(async (hangoutIds: string[], webSocketData: WebSocketData) => null),
+}));

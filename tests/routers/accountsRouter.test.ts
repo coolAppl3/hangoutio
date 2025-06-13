@@ -2,30 +2,43 @@ import request, { Response as SuperTestResponse } from 'supertest';
 import { app } from '../../src/app';
 import { dbPool } from '../../src/db/db';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
-import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, hourMilliseconds } from '../../src/util/constants';
+import { ACCOUNT_VERIFICATION_WINDOW, dayMilliseconds, EMAILS_SENT_LIMIT, FAILED_ACCOUNT_UPDATE_LIMIT, FAILED_SIGN_IN_LIMIT, hourMilliseconds } from '../../src/util/constants';
 import * as emailServices from '../../src/util/email/emailServices';
 import { RowDataPacket } from 'mysql2';
 import * as authSessionModule from '../../src/auth/authSessions';
 import bcrypt from 'bcrypt';
+import { generateAuthSessionId } from '../../src/util/tokenGenerator';
+import * as cookeUtils from '../../src/util/cookieUtils';
+import * as hangoutWebSocketServerModule from '../../src/webSockets/hangout/hangoutWebSocketServer';
+import * as addHangoutEventModule from '../../src/util/addHangoutEvent';
 
 beforeEach(async () => {
-  await dbPool.query(
-    `DELETE FROM accounts;
-    DELETE FROM account_verification;
-    DELETE FROM account_recovery;
-    DELETE FROM account_deletion;
-    DELETE FROM email_update;
-    DELETE FROM friend_requests;
-    DELETE FROM friendships;
-    DELETE FROM hangout_invites;
-    DELETE FROM guests;
-    DELETE FROM hangouts;`
+  interface TableNames extends RowDataPacket {
+    table_name: string,
+  };
+
+  const [tableRows] = await dbPool.execute<TableNames[]>(
+    `SELECT table_name FROM information_schema.tables WHERE table_schema = ?;`,
+    [process.env.TEST_DATABASE_NAME]
   );
+
+  let clearDatabaseStatement: string = '';
+
+  for (const row of tableRows) {
+    clearDatabaseStatement += `DELETE FROM ${row.table_name};`;
+  };
+
+  await dbPool.query(clearDatabaseStatement);
 });
 
-afterAll(() => {
-  jest.resetAllMocks();
+afterEach(() => {
+  jest.clearAllMocks();
 });
+
+const removeRequestCookieSpy = jest.spyOn(cookeUtils, 'removeRequestCookie');
+const destroyAuthSessionSpy = jest.spyOn(authSessionModule, 'destroyAuthSession');
+const purgeAuthSessionsSpy = jest.spyOn(authSessionModule, 'purgeAuthSessions');
+const sendHangoutWebSocketMessageSpy = jest.spyOn(hangoutWebSocketServerModule, 'sendHangoutWebSocketMessage');
 
 describe('POST accounts/signUp', () => {
   it('should reject requests with an empty body', async () => {
@@ -199,7 +212,7 @@ describe('POST accounts/signUp', () => {
   it('should reject requests with a taken email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', Date.now(), 'John Doe', true, 0]
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -231,7 +244,7 @@ describe('POST accounts/signUp', () => {
   it('should reject requests with a taken username', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example@example.com', 'someHashedPassword', 'johnDoe1', Date.now(), 'John Doe', true, 0]
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe1', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -268,7 +281,7 @@ describe('POST accounts/signUp', () => {
   it('should reject requests with a taken email or username', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe1', Date.now(), 'John Doe', true, 0]
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe1', 'John Doe', Date.now(), true, 0]
     );
 
     await dbPool.execute(
@@ -310,42 +323,37 @@ describe('POST accounts/signUp', () => {
   });
 
   it('should accept the request, insert rows into the accounts and account_verification table, return the account ID and verification expiry timestamp, and send a verification email', async () => {
-    async function testValidInputs(requestData: any): Promise<void> {
-      const response: SuperTestResponse = await request(app)
-        .post('/api/accounts/signUp')
-        .send(requestData);
+    const sendVerificationEmailSpy = jest.spyOn(emailServices, 'sendVerificationEmail');
 
-      expect(response.status).toBe(201);
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/signUp')
+      .send({ email: 'example1@example.com', username: 'johnDoe23', displayName: 'John Doe', password: 'somePassword' });
 
-      expect(response.body).toHaveProperty('accountId');
-      expect(response.body).toHaveProperty('verificationExpiryTimestamp');
+    expect(response.status).toBe(201);
 
-      expect(typeof response.body.accountId).toBe('number');
-      expect(typeof response.body.verificationExpiryTimestamp).toBe('number');
+    expect(response.body).toHaveProperty('accountId');
+    expect(response.body).toHaveProperty('verificationExpiryTimestamp');
 
-      expect(Number.isInteger(response.body.accountId)).toBe(true);
-      expect(Number.isInteger(response.body.verificationExpiryTimestamp)).toBe(true);
-    };
+    expect(typeof response.body.accountId).toBe('number');
+    expect(typeof response.body.verificationExpiryTimestamp).toBe('number');
 
-    const sendVerificationEmailMock = jest.spyOn(emailServices, 'sendVerificationEmail');
-
-    await testValidInputs({ email: 'example1@example.com', username: 'johnDoe1', displayName: 'John Doe', password: 'somePassword' });
-    await testValidInputs({ email: 'example2@example.com', username: 'johnDoe2', displayName: 'John Doe', password: 'somePassword' });
+    expect(Number.isInteger(response.body.accountId)).toBe(true);
+    expect(Number.isInteger(response.body.verificationExpiryTimestamp)).toBe(true);
 
     const [accountRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT account_id FROM accounts WHERE username = ? OR username = ?;`,
-      ['johnDoe1', 'johnDoe2']
+      `SELECT account_id FROM accounts WHERE username = ?;`,
+      ['johnDoe23']
     );
 
     const [accountVerificationRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT COUNT(*) AS row_count FROM account_verification WHERE account_id = ? OR account_id = ?;`,
-      [accountRows[0].account_id, accountRows[1].account_id]
+      `SELECT 1 FROM account_verification WHERE account_id = ?;`,
+      [accountRows[0].account_id]
     );
 
-    expect(accountRows.length).toBe(2);
-    expect(accountVerificationRows[0].row_count).toBe(2);
+    expect(accountRows.length).toBe(1);
+    expect(accountVerificationRows.length).toBe(1);
 
-    expect(sendVerificationEmailMock).toHaveBeenCalledTimes(2);
+    expect(sendVerificationEmailSpy).toHaveBeenCalled();
   });
 });
 
@@ -505,7 +513,7 @@ describe('POST accounts/verification/resendEmail', () => {
       [1, 1, 'someCode', 1, 0, Date.now() + ACCOUNT_VERIFICATION_WINDOW]
     );
 
-    const sendVerificationEmailMock = jest.spyOn(emailServices, 'sendVerificationEmail');
+    const sendVerificationEmailSpy = jest.spyOn(emailServices, 'sendVerificationEmail');
 
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/verification/resendEmail')
@@ -523,7 +531,7 @@ describe('POST accounts/verification/resendEmail', () => {
     );
 
     expect(updatedRows[0].verification_emails_sent).toBe(2);
-    expect(sendVerificationEmailMock).toHaveBeenCalled();
+    expect(sendVerificationEmailSpy).toHaveBeenCalled();
   });
 });
 
@@ -850,6 +858,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'somePassword', keepSignedIn: true, });
 
     expect(response.status).toBe(403);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
@@ -871,6 +880,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'somePassword', keepSignedIn: true, });
 
     expect(response.status).toBe(403);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
@@ -894,6 +904,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'incorrectPassword', keepSignedIn: true, });
 
     expect(response.status).toBe(401);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
@@ -917,6 +928,7 @@ describe('POST accounts/signIn', () => {
       .send({ email: 'example@example.com', password: 'incorrectPassword', keepSignedIn: true, });
 
     expect(response.status).toBe(401);
+
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
@@ -928,7 +940,6 @@ describe('POST accounts/signIn', () => {
   });
 
   it('should accept the request if the password is correct, reset the count of failed sign in attempts count, and create an auth session for the user', async () => {
-    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
     const hashedPassword: string = await bcrypt.hash('correctPassword', 10);
 
     await dbPool.execute(
@@ -936,9 +947,11 @@ describe('POST accounts/signIn', () => {
       [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 3]
     );
 
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+
     const response: SuperTestResponse = await request(app)
       .post('/api/accounts/signIn')
-      .send({ email: 'example@example.com', password: 'correctPassword', keepSignedIn: true, });
+      .send({ email: 'example@example.com', password: 'correctPassword', keepSignedIn: true });
 
     expect(response.status).toBe(200);
     expect(createAuthSessionSpy).toHaveBeenCalled();
@@ -1635,5 +1648,748 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_recovery WHERE account_id = ?;`, [1]);
     expect(deletedRows.length).toBe(0);
+  });
+});
+
+describe('PATCH accounts/details/updateDisplayName', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updateDisplayName')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message).toBe('string');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ newDisplayName: 'Sara Smith' });
+    await testKeys({ password: 'somePassword' });
+    await testKeys({ password: 'somePassword', someRandomValue: 'someString' });
+  });
+
+  it('should reject requests with an invalid password', async () => {
+    async function testPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updateDisplayName')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid password.');
+      expect(response.body.reason).toBe('invalidPassword');
+    };
+
+    await testPassword({ password: 23, newDisplayName: 'Sara Smith' });
+    await testPassword({ password: '', newDisplayName: 'Sara Smith' });
+    await testPassword({ password: 'white space', newDisplayName: 'Sara Smith' });
+    await testPassword({ password: 'passwordIsLongerThanTwentyFourCharactersTotal', newDisplayName: 'Sara Smith' });
+  });
+
+  it('should reject requests with an invalid display name', async () => {
+    async function testDisplayName(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updateDisplayName')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message).toBe('string');
+      expect(typeof response.body.reason).toBe('string');
+
+      expect(response.body.message).toBe('Invalid display name.');
+      expect(response.body.reason).toBe('invalidDisplayName');
+    };
+
+    await testDisplayName({ password: 'somePassword', newDisplayName: null });
+    await testDisplayName({ password: 'somePassword', newDisplayName: NaN });
+    await testDisplayName({ password: 'somePassword', newDisplayName: 23 });
+    await testDisplayName({ password: 'somePassword', newDisplayName: 23.5 });
+    await testDisplayName({ password: 'somePassword', newDisplayName: '' });
+    await testDisplayName({ password: 'somePassword', newDisplayName: 'Beyond Twenty Five Characters' });
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword', newDisplayName: 'Sara Smith' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword', newDisplayName: 'Sara Smith' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 23, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword', newDisplayName: 'Sara Smith' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Invalid credentials. Request denied.');
+    expect(response.body.reason).toBe('authSessionDestroyed');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the password is incorrect`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword', newDisplayName: 'Sara Smith' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password.');
+    expect(response.body.reason).toBe('incorrectPassword');
+  });
+
+  it(`should reject requests if the password is incorrect, and if failed sign in attempts limit is reached, lock the account, remove the authSessionId cookie, and purge all auth sessions related to the user`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting5678', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword', newDisplayName: 'Sara Smith' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password. Account has been locked.');
+    expect(response.body.reason).toBe('accountLocked')
+
+    expect(purgeAuthSessionsSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE user_id = ? AND user_type = ?;`,
+      [1, 'account']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the new display name is identical to the user's existing display name`, async () => {
+    const hashedPassword: string = await bcrypt.hash('someHashedPassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'someHashedPassword', newDisplayName: 'John Doe' });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Your display name is already John Doe.');
+  });
+
+  it(`should accept the request, update the user's display name alongside any hangout member rows related to them, insert an en event for every hangout the user is a part of, and send a websocket message to add the event in real time`, async () => {
+    const hashedPassword: string = await bcrypt.hash('someHashedPassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['someHangoutId', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES(${generatePlaceHolders(8)});`,
+      [1, 'someHangoutId', 'johnDoe', 'account', 1, null, 'John Doe', false]
+    );
+
+    const addHangoutEventSpy = jest.spyOn(addHangoutEventModule, 'addHangoutEvent');
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateDisplayName')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'someHashedPassword', newDisplayName: 'Sara Smith' });
+
+    expect(response.status).toBe(200);
+
+    const [updatedAccountRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT display_name FROM accounts WHERE account_id = ?;`,
+      [1]
+    );
+
+    const [updatedHangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT display_name FROM hangout_members WHERE account_id = ?;`,
+      [1]
+    );
+
+    expect(updatedAccountRows[0].display_name).toBe('Sara Smith');
+    expect(updatedHangoutMemberRows[0].display_name).toBe('Sara Smith');
+
+    expect(addHangoutEventSpy).toHaveBeenCalled();
+    expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
+  });
+});
+
+describe('PATCH accounts/details/updatePassword', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updatePassword')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ currentPassword: 'somePassword', newPassword: 'someNewPassword', someRandomValue: 23 });
+    await testKeys({ newPassword: 'someNewPassword' });
+    await testKeys({ currentPassword: 'somePassword' });
+  });
+
+  it('should reject requests with an invalid current password', async () => {
+    async function testCurrentPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updatePassword')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(typeof response.body.reason === 'string').toBe(true);
+
+      expect(response.body.message).toBe('Invalid password.');
+      expect(response.body.reason).toBe('invalidCurrentPassword');
+    };
+
+    await testCurrentPassword({ currentPassword: null, newPassword: 'someNewPassword' });
+    await testCurrentPassword({ currentPassword: NaN, newPassword: 'someNewPassword' });
+    await testCurrentPassword({ currentPassword: 23, newPassword: 'someNewPassword' });
+    await testCurrentPassword({ currentPassword: '', newPassword: 'someNewPassword' });
+    await testCurrentPassword({ currentPassword: 'white space', newPassword: 'someNewPassword' });
+    await testCurrentPassword({ currentPassword: 'passwordIsLongerThanTwentyFourCharactersTotal', newPassword: 'someNewPassword' });
+  });
+
+  it('should reject requests with an invalid new password', async () => {
+    async function testNewPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updatePassword')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(typeof response.body.reason === 'string').toBe(true);
+
+      expect(response.body.message).toBe('Invalid new password.');
+      expect(response.body.reason).toBe('invalidNewPassword');
+    };
+
+    await testNewPassword({ currentPassword: 'somePassword', newPassword: null });
+    await testNewPassword({ currentPassword: 'somePassword', newPassword: NaN });
+    await testNewPassword({ currentPassword: 'somePassword', newPassword: 23 });
+    await testNewPassword({ currentPassword: 'somePassword', newPassword: '' });
+    await testNewPassword({ currentPassword: 'somePassword', newPassword: 'white space' });
+    await testNewPassword({ currentPassword: 'somePassword', newPassword: 'passwordIsLongerThanTwentyFourCharactersTotal' });
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'somePassword', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'somePassword', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 23, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'somePassword', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Invalid credentials. Request denied.');
+    expect(response.body.reason).toBe('authSessionDestroyed');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the password is incorrect', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'incorrectPassword', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password.');
+    expect(response.body.reason).toBe('incorrectPassword');
+  });
+
+  it('should reject requests if the password is incorrect, and if failed sign in attempts limit is reached, lock the account, remove the authSessionId cookie, and purge all auth sessions related to the user', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting5678', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'incorrectPassword', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password. Account has been locked.');
+    expect(response.body.reason).toBe('accountLocked');
+
+    expect(purgeAuthSessionsSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the new password is identical to the current one', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'somePassword', newPassword: 'somePassword' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe(`New password can't be identical to your current password.`);
+    expect(response.body.reason).toBe('identicalPasswords');
+  });
+
+  it('should reject requests if the new password is identical to the current one', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', hashedPassword, 'johnDoe23', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'somePassword', newPassword: 'johnDoe23' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe(`New password can't be identical to your username.`);
+    expect(response.body.reason).toBe('passwordEqualsUsername');
+  });
+
+  it(`should accept the request, update the user's password, purge all of the user's existing auth sessions, attempt to create a new one, then return a value to confirm if the creating a new auth session was successful`, async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updatePassword')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ currentPassword: 'somePassword', newPassword: 'someNewPassword' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('authSessionCreated');
+    expect(typeof response.body.authSessionCreated).toBe('boolean');
+
+    expect(purgeAuthSessionsSpy).toHaveBeenCalled();
+    expect(createAuthSessionSpy).toHaveBeenCalled();
   });
 });

@@ -17,6 +17,7 @@ import { sendHangoutWebSocketMessage } from '../webSockets/hangout/hangoutWebSoc
 import { AccountDetails, FriendRequest, Friend, Hangout, HangoutInvite } from '../util/accountTypes';
 import { logUnexpectedError } from '../logs/errorLogger';
 import { isValidHangoutId } from '../util/validation/hangoutValidation';
+import { addHangoutEvent } from '../util/addHangoutEvent';
 
 export const accountsRouter: Router = express.Router();
 
@@ -978,16 +979,16 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
   };
 
   if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'password' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
+    return;
+  };
+
+  if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
+    res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
     return;
   };
 
   let connection;
-
-  if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
-    res.status(400).json({ message: 'Invalid display name.', reason: 'displayName' });
-    return;
-  };
 
   try {
     interface AuthSessionDetails extends RowDataPacket {
@@ -1123,6 +1124,8 @@ accountsRouter.patch('/details/updateDisplayName', async (req: Request, res: Res
     const eventDescription: string = `${accountDetails.display_name} changed his name to ${requestData.newDisplayName}.`;
 
     for (const row of hangoutMemberRows) {
+      await addHangoutEvent(row.hangout_id, eventDescription, eventTimestamp);
+
       sendHangoutWebSocketMessage([row.hangout_id], {
         type: 'misc',
         reason: 'memberUpdatedDisplayName',
@@ -1177,12 +1180,12 @@ accountsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
   };
 
   if (!userValidation.isValidPassword(requestData.currentPassword)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'currentPassword' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidCurrentPassword' });
     return;
   };
 
   if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-    res.status(400).json({ message: 'Invalid new password.', reason: 'newPassword' });
+    res.status(400).json({ message: 'Invalid new password.', reason: 'invalidNewPassword' });
     return;
   };
 

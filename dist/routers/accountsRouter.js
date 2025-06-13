@@ -44,6 +44,7 @@ const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
 const errorLogger_1 = require("../logs/errorLogger");
 const hangoutValidation_1 = require("../util/validation/hangoutValidation");
+const addHangoutEvent_1 = require("../util/addHangoutEvent");
 exports.accountsRouter = express_1.default.Router();
 exports.accountsRouter.post('/signUp', async (req, res) => {
     ;
@@ -790,16 +791,16 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
     }
     ;
     if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ message: 'Invalid password.', reason: 'password' });
+        res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
+        return;
+    }
+    ;
+    if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
+        res.status(400).json({ message: 'Invalid display name.', reason: 'invalidDisplayName' });
         return;
     }
     ;
     let connection;
-    if (!userValidation.isValidDisplayName(requestData.newDisplayName)) {
-        res.status(400).json({ message: 'Invalid display name.', reason: 'displayName' });
-        return;
-    }
-    ;
     try {
         ;
         const [authSessionRows] = await db_1.dbPool.execute(`SELECT
@@ -890,6 +891,7 @@ exports.accountsRouter.patch('/details/updateDisplayName', async (req, res) => {
         const eventTimestamp = Date.now();
         const eventDescription = `${accountDetails.display_name} changed his name to ${requestData.newDisplayName}.`;
         for (const row of hangoutMemberRows) {
+            await (0, addHangoutEvent_1.addHangoutEvent)(row.hangout_id, eventDescription, eventTimestamp);
             (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([row.hangout_id], {
                 type: 'misc',
                 reason: 'memberUpdatedDisplayName',
@@ -936,12 +938,12 @@ exports.accountsRouter.patch('/details/updatePassword', async (req, res) => {
     }
     ;
     if (!userValidation.isValidPassword(requestData.currentPassword)) {
-        res.status(400).json({ message: 'Invalid password.', reason: 'currentPassword' });
+        res.status(400).json({ message: 'Invalid password.', reason: 'invalidCurrentPassword' });
         return;
     }
     ;
     if (!userValidation.isValidNewPassword(requestData.newPassword)) {
-        res.status(400).json({ message: 'Invalid new password.', reason: 'newPassword' });
+        res.status(400).json({ message: 'Invalid new password.', reason: 'invalidNewPassword' });
         return;
     }
     ;
