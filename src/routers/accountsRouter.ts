@@ -1786,7 +1786,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       res.status(401).json({
         message: 'Incorrect confirmation code.',
         reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
-        data: requestSuspended ? { expiryTimestamp } : null,
+        resData: requestSuspended ? { expiryTimestamp } : null,
       });
 
       if (requestSuspended) {
