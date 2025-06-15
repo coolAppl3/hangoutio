@@ -3139,3 +3139,395 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
     expect(updatedRows[0].update_emails_sent).toBe(2);
   });
 });
+
+describe('PATCH accounts/details/updateEmail/confirm', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updateEmail/confirm')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ confirmationCode: 'AAAAAA', someRandomValue: 23 });
+    await testKeys({ someRandomValue: 23 });
+  });
+
+  it('should reject requests with an invalid confirmation code', async () => {
+    async function testConfirmationCode(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .patch('/api/accounts/details/updateEmail/confirm')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(typeof response.body.reason === 'string').toBe(true);
+
+      expect(response.body.message).toBe('Invalid confirmation code.');
+      expect(response.body.reason).toBe('confirmationCode');
+    };
+
+    await testConfirmationCode({ confirmationCode: 'AAA' });
+    await testConfirmationCode({ confirmationCode: 'AAAAAAAAAAAA' });
+    await testConfirmationCode({ confirmationCode: 23 });
+    await testConfirmationCode({ confirmationCode: null });
+    await testConfirmationCode({ confirmationCode: NaN });
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'AAAAAA' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'AAAAAA' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 23, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'AAAAAA' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Invalid credentials. Request denied.');
+    expect(response.body.reason).toBe('authSessionDestroyed');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the email update request is not found`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'AAAAAA' });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Email update request not found or may have expired.');
+  });
+
+  it(`should reject requests if the email update request is found but too many failed attempts have been made, returning the request's expiry timestamp`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO email_update VALUES (${generatePlaceHolders(7)});`,
+      [1, 1, 'example2@example.com', 'AAAAAA', Date.now() + dayMilliseconds, 1, FAILED_ACCOUNT_UPDATE_LIMIT]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'AAAAAA' });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Email update request suspended.');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+  });
+
+  it('should reject requests if the confirmation code is incorrect and increment the count of failed update attempts', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO email_update VALUES (${generatePlaceHolders(7)});`,
+      [1, 1, 'example2@example.com', 'AAAAAA', Date.now() + dayMilliseconds, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'BBBBBB' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect confirmation code.');
+    expect(response.body.reason).toBe('incorrectCode');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toBeNull();
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT failed_update_attempts FROM email_update WHERE update_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].failed_update_attempts).toBe(1);
+  });
+
+  it(`should reject requests if the confirmation code is incorrect, increment the count of failed update attempts, and if the limit has been reached, suspend the request, reset the expiry timestamp, remove the user's authSessionId cookie, purge all their auth sessions, and send a warning email`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const initialRequestExpiryTimestamp: number = Date.now() + dayMilliseconds;
+
+    await dbPool.execute(
+      `INSERT INTO email_update VALUES (${generatePlaceHolders(7)});`,
+      [1, 1, 'example2@example.com', 'AAAAAA', initialRequestExpiryTimestamp, 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1]
+    );
+
+    const sendEmailUpdateWarningEmailSpy = jest.spyOn(emailServices, 'sendEmailUpdateWarningEmail');
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'BBBBBB' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect confirmation code.');
+    expect(response.body.reason).toBe('requestSuspended');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+
+    expect(purgeAuthSessionsSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+    expect(sendEmailUpdateWarningEmailSpy).toHaveBeenCalled();
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT failed_update_attempts, expiry_timestamp FROM email_update WHERE update_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].failed_update_attempts).toBe(FAILED_ACCOUNT_UPDATE_LIMIT);
+    expect(updatedRows[0].expiry_timestamp).toBeGreaterThan(initialRequestExpiryTimestamp);
+  });
+
+  it(`should accept the request, update the user's email, delete the email_update row from the table, purge all the user's auth sessions, create a new one, return a boolean to confirm if it was created, and also return the new email`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'old@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const initialRequestExpiryTimestamp: number = Date.now() + dayMilliseconds;
+
+    await dbPool.execute(
+      `INSERT INTO email_update VALUES (${generatePlaceHolders(7)});`,
+      [1, 1, 'new@example.com', 'AAAAAA', initialRequestExpiryTimestamp, 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1]
+    );
+
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+
+    const response: SuperTestResponse = await request(app)
+      .patch('/api/accounts/details/updateEmail/confirm')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ confirmationCode: 'AAAAAA' });
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toHaveProperty('authSessionCreated');
+    expect(typeof response.body.authSessionCreated).toBe('boolean');
+
+    expect(response.body).toHaveProperty('newEmail');
+    expect(typeof response.body.newEmail).toBe('string');
+    expect(response.body.newEmail).toBe('new@example.com');
+
+    expect(purgeAuthSessionsSpy).toHaveBeenCalled();
+    expect(createAuthSessionSpy).toHaveBeenCalled();
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT email FROM accounts WHERE account_id = ?;`,
+      [1]
+    );
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM email_update WHERE update_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].email).toBe('new@example.com');
+    expect(deletedRows.length).toBe(0);
+  });
+});
