@@ -1333,13 +1333,13 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     return;
   };
 
-  if (!userValidation.isValidEmail(requestData.newEmail)) {
-    res.status(400).json({ message: 'Invalid email address.', reason: 'email' });
+  if (!userValidation.isValidPassword(requestData.password)) {
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
-  if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.', reason: 'password' });
+  if (!userValidation.isValidEmail(requestData.newEmail)) {
+    res.status(400).json({ message: 'Invalid email address.', reason: 'invalidEmail' });
     return;
   };
 
@@ -1428,7 +1428,7 @@ accountsRouter.post('/details/updateEmail/start', async (req: Request, res: Resp
     if (accountDetails.expiry_timestamp) {
       if (accountDetails.failed_update_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT) {
         res.status(403).json({
-          message: 'Request is suspended due to too many failed attempts.',
+          message: 'Request was suspended due to too many failed attempts.',
           resData: { expiryTimestamp: accountDetails.expiry_timestamp },
         });
 
@@ -1769,13 +1769,13 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
       await dbPool.execute(
         `UPDATE
-            email_update
-          SET
-            failed_update_attempts = failed_update_attempts + 1
-            ${suspendRequestQuery}
-          WHERE
-            update_id = ?;`,
-        [Date.now(), accountDetails.update_id]
+          email_update
+        SET
+          failed_update_attempts = failed_update_attempts + 1
+          ${suspendRequestQuery}
+        WHERE
+          update_id = ?;`,
+        [accountDetails.update_id]
       );
 
       if (requestSuspended) {
@@ -1786,7 +1786,7 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
       res.status(401).json({
         message: 'Incorrect confirmation code.',
         reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
-        data: requestSuspended ? { expiryTimestamp } : null,
+        resData: requestSuspended ? { expiryTimestamp } : null,
       });
 
       if (requestSuspended) {

@@ -1054,13 +1054,13 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         return;
     }
     ;
-    if (!userValidation.isValidEmail(requestData.newEmail)) {
-        res.status(400).json({ message: 'Invalid email address.', reason: 'email' });
+    if (!userValidation.isValidPassword(requestData.password)) {
+        res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
         return;
     }
     ;
-    if (!userValidation.isValidPassword(requestData.password)) {
-        res.status(400).json({ message: 'Invalid password.', reason: 'password' });
+    if (!userValidation.isValidEmail(requestData.newEmail)) {
+        res.status(400).json({ message: 'Invalid email address.', reason: 'invalidEmail' });
         return;
     }
     ;
@@ -1121,7 +1121,7 @@ exports.accountsRouter.post('/details/updateEmail/start', async (req, res) => {
         if (accountDetails.expiry_timestamp) {
             if (accountDetails.failed_update_attempts >= constants_1.FAILED_ACCOUNT_UPDATE_LIMIT) {
                 res.status(403).json({
-                    message: 'Request is suspended due to too many failed attempts.',
+                    message: 'Request was suspended due to too many failed attempts.',
                     resData: { expiryTimestamp: accountDetails.expiry_timestamp },
                 });
                 return;
@@ -1375,12 +1375,12 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             const expiryTimestamp = Date.now() + constants_1.ACCOUNT_EMAIL_UPDATE_WINDOW;
             const suspendRequestQuery = requestSuspended ? `, expiry_timestamp = ${expiryTimestamp}` : '';
             await db_1.dbPool.execute(`UPDATE
-            email_update
-          SET
-            failed_update_attempts = failed_update_attempts + 1
-            ${suspendRequestQuery}
-          WHERE
-            update_id = ?;`, [Date.now(), accountDetails.update_id]);
+          email_update
+        SET
+          failed_update_attempts = failed_update_attempts + 1
+          ${suspendRequestQuery}
+        WHERE
+          update_id = ?;`, [accountDetails.update_id]);
             if (requestSuspended) {
                 await (0, authSessions_1.purgeAuthSessions)(authSessionDetails.user_id, 'account');
                 (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
@@ -1389,7 +1389,7 @@ exports.accountsRouter.patch('/details/updateEmail/confirm', async (req, res) =>
             res.status(401).json({
                 message: 'Incorrect confirmation code.',
                 reason: requestSuspended ? 'requestSuspended' : 'incorrectCode',
-                data: requestSuspended ? { expiryTimestamp } : null,
+                resData: requestSuspended ? { expiryTimestamp } : null,
             });
             if (requestSuspended) {
                 await (0, emailServices_1.sendEmailUpdateWarningEmail)(accountDetails.email, accountDetails.display_name);
