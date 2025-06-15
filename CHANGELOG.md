@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.14] (2025-06-15)
+
+### Tests
+
+- Implemented unit tests for POST `accounts/details/updateEmail/start`.
+- Implemented unit tests for GET `accounts/details/updateEmail/resendEmail`.
+- Implemented unit tests for PATCH `accounts/details/updateEmail/confirm`.
+
+
+### Bug Fixes
+
+- Fixed error pages not still referring to the guide, which was scrapped.
+- Removed the "Take a tour" button from `index.html`, referring to the guide, which was scrapped.
+- Fixed PATCH `accounts/details/updateEmail/confirm` returning a key `data` instead of `resData` in one of the error responses.
+- Fixed PATCH `accounts/details/updateEmail/confirm` not correctly updating the count of `failed_update_attempts` when the user provides an incorrect confirmation code.
+
+
 ## [0.5.13] (2025-06-13)
 
 ### Tests
