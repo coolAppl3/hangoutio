@@ -1769,13 +1769,13 @@ accountsRouter.patch('/details/updateEmail/confirm', async (req: Request, res: R
 
       await dbPool.execute(
         `UPDATE
-            email_update
-          SET
-            failed_update_attempts = failed_update_attempts + 1
-            ${suspendRequestQuery}
-          WHERE
-            update_id = ?;`,
-        [Date.now(), accountDetails.update_id]
+          email_update
+        SET
+          failed_update_attempts = failed_update_attempts + 1
+          ${suspendRequestQuery}
+        WHERE
+          update_id = ?;`,
+        [accountDetails.update_id]
       );
 
       if (requestSuspended) {
