@@ -502,7 +502,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body.reason).toBe('emailLimitReached');
   });
 
-  it('should accept the request, update the count of emails sent in the table, return the updated count, and send a new verification email', async () => {
+  it('should accept the request, increment the count of emails sent in the table, return the updated count, and send a new verification email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
@@ -3105,7 +3105,7 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
     expect(response.body.message).toBe(`Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`);
   });
 
-  it('should accept the request, update the count of emails sent in the table, then send another email update email', async () => {
+  it('should accept the request, increment the count of emails sent in the table, then send another email update email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -4296,7 +4296,7 @@ describe('GET accounts/deletion/resendEmail', () => {
     expect(response.body.message).toBe(`Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`);
   });
 
-  it(`should accept the request, update the count of sent account deletion emails, and send another deletion confirmation email`, async () => {
+  it(`should accept the request, increment the count of sent account deletion emails, and send another deletion confirmation email`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
