@@ -1903,7 +1903,7 @@ accountsRouter.delete('/details/updateEmail/abort', async (req: Request, res: Re
     };
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
-      await destroyAuthSession('authSessionId');
+      await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -1966,7 +1966,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
   };
 
   if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
@@ -1999,7 +1999,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
     };
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
-      await destroyAuthSession('authSessionId');
+      await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -2050,51 +2050,51 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
       return;
     };
 
-    if (!accountDetails.expiry_timestamp) {
-      if (accountDetails.ongoing_email_update) {
-        res.status(409).json({ message: 'Ongoing email update request found.', reason: 'ongoingEmailUpdate' });
+    if (accountDetails.expiry_timestamp) {
+      const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
+      if (requestSuspended) {
+        res.status(403).json({
+          message: 'Deletion request suspended.',
+          resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+        });
+
         return;
       };
 
-      const confirmationCode: string = generateRandomCode();
-      const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
-
-      await dbPool.execute(
-        `INSERT INTO account_deletion (
-          account_id,
-          confirmation_code,
-          expiry_timestamp,
-          deletion_emails_sent,
-          failed_deletion_attempts
-        ) VALUES (${generatePlaceHolders(5)});`,
-        [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
-      );
-
-      res.json({});
-
-      await sendDeletionConfirmationEmail({
-        to: accountDetails.email,
-        confirmationCode,
-        displayName: accountDetails.display_name,
-      });
-
-      return;
-    };
-
-    const requestSuspended: boolean = accountDetails.failed_deletion_attempts >= FAILED_ACCOUNT_UPDATE_LIMIT;
-    if (requestSuspended) {
-      res.status(403).json({
-        message: 'Deletion request suspended.',
+      res.status(409).json({
+        message: 'Ongoing deletion request found.',
+        reason: 'requestDetected',
         resData: { expiryTimestamp: accountDetails.expiry_timestamp },
       });
 
       return;
     };
 
-    res.status(409).json({
-      message: 'Ongoing deletion request found.',
-      reason: 'requestDetected',
-      resData: { expiryTimestamp: accountDetails.expiry_timestamp },
+    if (accountDetails.ongoing_email_update) {
+      res.status(409).json({ message: 'Ongoing email update request found.', reason: 'ongoingEmailUpdate' });
+      return;
+    };
+
+    const confirmationCode: string = generateRandomCode();
+    const expiryTimestamp: number = Date.now() + ACCOUNT_DELETION_WINDOW;
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion (
+        account_id,
+        confirmation_code,
+        expiry_timestamp,
+        deletion_emails_sent,
+        failed_deletion_attempts
+      ) VALUES (${generatePlaceHolders(5)});`,
+      [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
+    );
+
+    res.json({});
+
+    await sendDeletionConfirmationEmail({
+      to: accountDetails.email,
+      confirmationCode,
+      displayName: accountDetails.display_name,
     });
 
   } catch (err: unknown) {
@@ -2149,7 +2149,7 @@ accountsRouter.get('/deletion/resendEmail', async (req: Request, res: Response) 
     };
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
-      await destroyAuthSession('authSessionId');
+      await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -2269,7 +2269,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
   };
 
   if (!userValidation.isValidRandomCode(confirmationCode)) {
-    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
+    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidConfirmationCode' });
     return;
   };
 
@@ -2476,7 +2476,7 @@ accountsRouter.delete('/deletion/abort', async (req: Request, res: Response) => 
     };
 
     if (!authUtils.isValidAuthSessionDetails(authSessionDetails, 'account')) {
-      await destroyAuthSession('authSessionId');
+      await destroyAuthSession(authSessionId);
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
@@ -2493,7 +2493,7 @@ accountsRouter.delete('/deletion/abort', async (req: Request, res: Response) => 
     );
 
     if (resultSetHeader.affectedRows === 0) {
-      res.status(404).json({ message: 'Email update request not found or may have expired.' });
+      res.status(404).json({ message: 'Account deletion request not found or may have expired.' });
       return;
     };
 

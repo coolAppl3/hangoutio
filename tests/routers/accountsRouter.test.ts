@@ -502,7 +502,7 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body.reason).toBe('emailLimitReached');
   });
 
-  it('should accept the request, update the count of emails sent in the table, return the updated count, and send a new verification email', async () => {
+  it('should accept the request, increment the count of emails sent in the table, return the updated count, and send a new verification email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'somePassword', 'johnDoe', 'John Doe', Date.now(), false, 0]
@@ -3105,7 +3105,7 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
     expect(response.body.message).toBe(`Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`);
   });
 
-  it('should accept the request, update the count of emails sent in the table, then send another email update email', async () => {
+  it('should accept the request, increment the count of emails sent in the table, then send another email update email', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -3528,6 +3528,1304 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     );
 
     expect(updatedRows[0].email).toBe('new@example.com');
+    expect(deletedRows.length).toBe(0);
+  });
+});
+
+describe('DELETE accounts/details/updateEmail/abort', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/details/updateEmail/abort')
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/details/updateEmail/abort')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/details/updateEmail/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/details/updateEmail/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the email update request is not found`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/details/updateEmail/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Email update request not found or may have expired.');
+
+  });
+
+  it(`should accept the request and delete the email update request`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO email_update VALUES (${generatePlaceHolders(7)});`,
+      [1, 1, 'new@example.com', 'AAAAAA', Date.now() + dayMilliseconds, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/details/updateEmail/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(200);
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM email_update WHERE update_id = ?;`,
+      [1]
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+});
+
+describe('DELETE accounts/deletion/start', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .delete('/api/accounts/deletion/start')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ someRandomValue: 23 });
+    await testKeys({ password: 'somePassword', someRandomValue: 23 });
+  });
+
+  it('should reject requests with an invalid password', async () => {
+    async function testPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .delete('/api/accounts/deletion/start')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(response.body.message).toBe('Invalid password.');
+    };
+
+    await testPassword({ password: 23 });
+    await testPassword({ password: '' });
+    await testPassword({ password: 'white space' });
+    await testPassword({ password: 'passwordIsLongerThanTwentyFourCharactersTotal' });
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 23, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Invalid credentials. Request denied.');
+    expect(response.body.reason).toBe('authSessionDestroyed');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the password is incorrect', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'incorrectPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password.');
+    expect(response.body.reason).toBe('incorrectPassword');
+  });
+
+  it('should reject requests if the password is incorrect, and if failed sign in attempts limit is reached, lock the account, remove the authSessionId cookie, and purge all auth sessions related to the user', async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting5678', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'incorrectPassword' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect password. Account has been locked.');
+    expect(response.body.reason).toBe('accountLocked');
+
+    expect(purgeAuthSessionsSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if an ongoing deletion request is found, returning the request's expiry timestamp`, async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Ongoing deletion request found.');
+    expect(response.body.reason).toBe('requestDetected');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+  });
+
+  it(`should reject requests if an ongoing deletion request is found, but too many failed attempts have been made, returning the request's expiry timestamp`, async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES(${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, FAILED_ACCOUNT_UPDATE_LIMIT]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword' });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Deletion request suspended.');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+  });
+
+  it(`should reject requests if an ongoing email update request is found`, async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO email_update VALUES (${generatePlaceHolders(7)});`,
+      [1, 1, 'new@example.com', 'AAAAAA', Date.now() + dayMilliseconds, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Ongoing email update request found.');
+    expect(response.body.reason).toBe('ongoingEmailUpdate');
+  });
+
+  it(`should accept the request, insert a row in the account_deletion table, and send a deletion confirmation email`, async () => {
+    const hashedPassword: string = await bcrypt.hash('somePassword', 10);
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', hashedPassword, 'johnDoe', 'John Doe', Date.now(), true, FAILED_SIGN_IN_LIMIT - 1]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const sendDeletionConfirmationEmailSpy = jest.spyOn(emailServices, 'sendDeletionConfirmationEmail');
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/start')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ password: 'somePassword' });
+
+    expect(response.status).toBe(200);
+    expect(sendDeletionConfirmationEmailSpy).toHaveBeenCalled();
+
+    const [createdRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM account_deletion WHERE account_id = ?;`,
+      [1]
+    );
+
+    expect(createdRows.length).toBe(1);
+  });
+});
+
+describe('GET accounts/deletion/resendEmail', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 23, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Invalid credentials. Request denied.');
+    expect(response.body.reason).toBe('authSessionDestroyed');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the deletion request is not found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Deletion request not found.');
+  });
+
+  it(`should reject requests if the deletion request is found, but too many failed attempts have been made, returning the request's expiry timestamp`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, FAILED_ACCOUNT_UPDATE_LIMIT]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(403);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Deletion request suspended.');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+  });
+
+  it(`should reject requests if the deletion request is found, but the emails sent limit has been reached`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, EMAILS_SENT_LIMIT, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe(`Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`);
+  });
+
+  it(`should accept the request, increment the count of sent account deletion emails, and send another deletion confirmation email`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, 0]
+    );
+
+    const sendDeletionConfirmationEmailSpy = jest.spyOn(emailServices, 'sendDeletionConfirmationEmail');
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/accounts/deletion/resendEmail')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(200);
+    expect(sendDeletionConfirmationEmailSpy).toHaveBeenCalled();
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT deletion_emails_sent FROM account_deletion WHERE account_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].deletion_emails_sent).toBe(2);
+  });
+});
+
+describe('DELETE accounts/deletion/confirm', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests without a confirmation code in the URL query string', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send();
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests if an invalid confirmation code is provided', async () => {
+    async function testConfirmationCode(confirmationCode: string): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .delete(`/api/accounts/deletion/confirm?confirmationCode=${confirmationCode}`)
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send();
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(typeof response.body.reason === 'string').toBe(true);
+
+      expect(response.body.message).toBe('Invalid confirmation code.');
+      expect(response.body.reason).toBe('invalidConfirmationCode');
+    };
+
+    await testConfirmationCode('AA');
+    await testConfirmationCode('AAAAAAAAA');
+    await testConfirmationCode('in_valid');
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=AAAAAA')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=AAAAAA')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 23, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=AAAAAA')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Invalid credentials. Request denied.');
+    expect(response.body.reason).toBe('authSessionDestroyed');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the account deletion request is not found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=AAAAAA')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Deletion request not found.');
+  });
+
+  it(`should reject requests if the account deletion request is found, but too many failed attempts have been made, returning the request's expiry timestamp`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, FAILED_ACCOUNT_UPDATE_LIMIT]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=AAAAAA')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(403);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Deletion request suspended.');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+  });
+
+  it(`should reject requests if the confirmation code is incorrect and increment the count of failed deletion attempts`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=BBBBBB')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect confirmation code.');
+    expect(response.body.reason).toBe('incorrectCode');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toBeNull();
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT failed_deletion_attempts FROM account_deletion WHERE deletion_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].failed_deletion_attempts).toBe(1);
+  });
+
+  it(`should reject requests if the confirmation code is incorrect, increment the count of failed deletion attempts, and if too many failed attempts have been made, suspend the request, and send a warning email`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1]
+    );
+
+    const sendDeletionWarningEmailSpy = jest.spyOn(emailServices, 'sendDeletionWarningEmail');
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=BBBBBB')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Incorrect confirmation code.');
+    expect(response.body.reason).toBe('requestSuspended');
+
+    expect(response.body).toHaveProperty('resData');
+    expect(response.body.resData).toHaveProperty('expiryTimestamp');
+    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
+    expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
+
+    expect(sendDeletionWarningEmailSpy).toHaveBeenCalled();
+
+    const [updatedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT failed_deletion_attempts FROM account_deletion WHERE deletion_id = ?;`,
+      [1]
+    );
+
+    expect(updatedRows[0].failed_deletion_attempts).toBe(FAILED_ACCOUNT_UPDATE_LIMIT);
+  });
+
+  it(`should accept the request, delete the account row in the table, and purge the user's auth sessions`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, FAILED_ACCOUNT_UPDATE_LIMIT - 1]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/confirm?confirmationCode=AAAAAA')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(200);
+    expect(purgeAuthSessionsSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM accounts WHERE account_id = ?;`,
+      [1]
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+});
+
+describe('DELETE accounts/deletion/abort', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/abort')
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/abort')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the account deletion request is not found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message).toBe('string');
+    expect(response.body.message).toBe('Account deletion request not found or may have expired.');
+  });
+
+  it('should accept the request and delete the account deletion request row from the table', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO account_deletion VALUES (${generatePlaceHolders(6)});`,
+      [1, 1, 'AAAAAA', Date.now() + dayMilliseconds, 1, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .delete('/api/accounts/deletion/abort')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(200);
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM account_deletion WHERE deletion_id = ?;`,
+      [1]
+    );
+
     expect(deletedRows.length).toBe(0);
   });
 });

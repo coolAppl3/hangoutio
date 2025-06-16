@@ -886,7 +886,7 @@ async function startAccountDeletion(): Promise<void> {
       return;
     };
 
-    if (status === 400 && errReason === 'password') {
+    if (status === 400 && errReason === 'invalidPassword') {
       ErrorSpan.display(passwordInput, errMessage);
     };
   };
@@ -1030,7 +1030,7 @@ async function confirmAccountDeletion(): Promise<void> {
       return;
     };
 
-    if (status === 400 && errReason === 'confirmationCode') {
+    if (status === 400 && errReason === 'invalidConfirmationCode') {
       ErrorSpan.display(confirmationCodeInput, errMessage);
     };
   };
