@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.15] (2025-06-17)
+
+### Tests
+
+- Implemented unit tests for PATCH `accounts/details/updateEmail/abort`.
+- Implemented unit tests for DELETE `accounts/deletion/start`.
+- Implemented unit tests for GET `accounts/deletion/resendEmail`.
+- Implemented unit tests for DELETE `accounts/deletion/confirm`.
+- Implemented unit tests for DELETE `accounts/deletion/abort`.
+
+
+### Bug Fixes
+
+- Fixed `destroyAuthSession()` being called incorrectly due to a typo in 4 locations in `accountsRouter.ts`.
+- Fixed DELETE `accounts/deletion/start` not returning an error reason when an invalid password is provided.
+
+
 ## [0.5.14] (2025-06-15)
 
 ### Tests
