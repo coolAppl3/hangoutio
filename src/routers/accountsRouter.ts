@@ -2080,12 +2080,12 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
 
     await dbPool.execute(
       `INSERT INTO account_deletion (
-          account_id,
-          confirmation_code,
-          expiry_timestamp,
-          deletion_emails_sent,
-          failed_deletion_attempts
-        ) VALUES (${generatePlaceHolders(5)});`,
+        account_id,
+        confirmation_code,
+        expiry_timestamp,
+        deletion_emails_sent,
+        failed_deletion_attempts
+      ) VALUES (${generatePlaceHolders(5)});`,
       [authSessionDetails.user_id, confirmationCode, expiryTimestamp, 1, 0]
     );
 
