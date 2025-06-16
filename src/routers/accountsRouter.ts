@@ -2269,7 +2269,7 @@ accountsRouter.delete('/deletion/confirm', async (req: Request, res: Response) =
   };
 
   if (!userValidation.isValidRandomCode(confirmationCode)) {
-    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'confirmationCode' });
+    res.status(400).json({ message: 'Invalid confirmation code.', reason: 'invalidConfirmationCode' });
     return;
   };
 
