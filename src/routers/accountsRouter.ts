@@ -2493,7 +2493,7 @@ accountsRouter.delete('/deletion/abort', async (req: Request, res: Response) => 
     );
 
     if (resultSetHeader.affectedRows === 0) {
-      res.status(404).json({ message: 'Email update request not found or may have expired.' });
+      res.status(404).json({ message: 'Account deletion request not found or may have expired.' });
       return;
     };
 
