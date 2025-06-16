@@ -886,7 +886,7 @@ async function startAccountDeletion(): Promise<void> {
       return;
     };
 
-    if (status === 400 && errReason === 'password') {
+    if (status === 400 && errReason === 'invalidPassword') {
       ErrorSpan.display(passwordInput, errMessage);
     };
   };

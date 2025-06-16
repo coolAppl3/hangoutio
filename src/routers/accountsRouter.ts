@@ -1966,7 +1966,7 @@ accountsRouter.delete(`/deletion/start`, async (req: Request, res: Response) => 
   };
 
   if (!userValidation.isValidPassword(requestData.password)) {
-    res.status(400).json({ message: 'Invalid password.' });
+    res.status(400).json({ message: 'Invalid password.', reason: 'invalidPassword' });
     return;
   };
 
