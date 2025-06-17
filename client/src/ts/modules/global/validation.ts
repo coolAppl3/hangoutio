@@ -178,7 +178,17 @@ export function validateUsername(input: HTMLInputElement): boolean {
     return false;
   };
 
-  const regex: RegExp = /^[A-Za-z0-9_.]+$/;
+  if (username.length < 5) {
+    ErrorSpan.display(input, 'Username must at least contain 5 characters.');
+    return false;
+  };
+
+  if (username.length > 25) {
+    ErrorSpan.display(input, 'Username must not exceed 25 characters.');
+    return false;
+  };
+
+  const regex: RegExp = /^[A-Za-z0-9_.]{5,25}$/;
   if (!regex.test(username)) {
     ErrorSpan.display(input, 'Only English alphanumerical characters, dots, and underscores are possible.');
     return false;
