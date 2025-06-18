@@ -3235,7 +3235,7 @@ accountsRouter.post('/hangoutInvites', async (req: Request, res: Response) => {
     const invitationDetails: InvitationDetails | undefined = invitationRows[0];
 
     if (!invitationDetails) {
-      res.status(404).json({ message: 'Friend not found.', reason: 'friendNotfound' });
+      res.status(404).json({ message: 'Friend not found.', reason: 'friendNotFound' });
       return;
     };
 
@@ -3249,18 +3249,18 @@ accountsRouter.post('/hangoutInvites', async (req: Request, res: Response) => {
       return;
     };
 
+    if (!invitationDetails.sender_in_hangout) {
+      res.status(409).json({ message: `You can't invite friends to a hangout you're not a member of.`, reason: 'notInHangout' });
+      return;
+    };
+
     if (invitationDetails.invitation_already_sent) {
       res.status(409).json({ message: 'Invitation already sent.', reason: 'alreadySent' });
       return;
     };
 
-    if (!invitationDetails.sender_in_hangout) {
-      res.status(409).json({ message: `You can't invite friends to a hangout you're not a part of.`, reason: 'notInHangout' });
-      return;
-    };
-
     if (invitationDetails.invitee_in_hangout) {
-      res.status(409).json({ message: 'User has already joined the hangout.', reason: 'alreadyInHangout' });
+      res.status(409).json({ message: 'Friend has already joined the hangout.', reason: 'alreadyInHangout' });
       return;
     };
 
