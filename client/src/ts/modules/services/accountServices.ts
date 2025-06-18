@@ -248,11 +248,7 @@ export function loadMoreHangoutsService(offset: number): Promise<AxiosResponse<L
 
 // --- --- ---
 
-interface LoadMoreFriendsData {
-  friends: Friend[],
-};
-
-export function loadMoreFriendsService(offset: number): Promise<AxiosResponse<LoadMoreFriendsData>> {
+export function loadMoreFriendsService(offset: number): Promise<AxiosResponse<Friend[]>> {
   return axios.get(`${accountsApiUrl}/friends?offset=${offset}`);
 };
 
@@ -270,13 +266,13 @@ interface InviteFriendToHangoutBody {
 };
 
 export function inviteFriendToHangoutService(requestBody: InviteFriendToHangoutBody): Promise<AxiosResponse> {
-  return axios.post(`${accountsApiUrl}/hangoutInvite`, requestBody);
+  return axios.post(`${accountsApiUrl}/hangoutInvites`, requestBody);
 };
 
 // --- --- ---
 
 export function acceptHangoutInvitationService(inviteId: number): Promise<AxiosResponse> {
-  return axios.delete(`${accountsApiUrl}/hangoutInvite/accept?inviteId=${inviteId}`);
+  return axios.delete(`${accountsApiUrl}/hangoutInvites?inviteId=${inviteId}`);
 };
 
 // --- --- ---

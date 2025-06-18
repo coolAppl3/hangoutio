@@ -69,7 +69,7 @@ async function loadMoreFriends(): Promise<void> {
   };
 
   try {
-    const friends: Friend[] = (await loadMoreFriendsService(friendInviterState.currentOffset)).data.friends;
+    const friends: Friend[] = (await loadMoreFriendsService(friendInviterState.currentOffset)).data;
 
     if (friends.length === 0) {
       friendInviterState.allFriendsFetched = true;
