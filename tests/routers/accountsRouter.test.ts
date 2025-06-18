@@ -7,7 +7,7 @@ import * as emailServices from '../../src/util/email/emailServices';
 import { RowDataPacket } from 'mysql2';
 import * as authSessionModule from '../../src/auth/authSessions';
 import bcrypt from 'bcrypt';
-import { generateAuthSessionId } from '../../src/util/tokenGenerator';
+import { generateAuthSessionId, generateHangoutId } from '../../src/util/tokenGenerator';
 import * as cookeUtils from '../../src/util/cookieUtils';
 import * as hangoutWebSocketServerModule from '../../src/webSockets/hangout/hangoutWebSocketServer';
 import * as addHangoutEventModule from '../../src/util/addHangoutEvent';
@@ -5927,5 +5927,442 @@ describe('GET accounts/friends', () => {
 
     expect(friend).toHaveProperty('friend_display_name');
     expect(typeof friend.friend_display_name).toBe('string');
+  });
+});
+
+describe('POST accounts/hangoutInvites', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(typeof response.body.reason === 'string').toBe(true);
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(typeof response.body.message === 'string').toBe(true);
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/hangoutInvites')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ hangoutId: 'someHangoutId' });
+    await testKeys({ friendshipId: 1 });
+    await testKeys({ friendshipId: 1, hangoutId: 'someHangoutId', someRandomValue: 23 });
+  });
+
+  it('should reject requests with an invalid hangout ID', async () => {
+    async function testHangoutId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/hangoutInvites')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(response.body.message).toBe('Invalid hangout ID.');
+    };
+
+    await testHangoutId({ friendshipId: 1, hangoutId: null });
+    await testHangoutId({ friendshipId: 1, hangoutId: NaN });
+    await testHangoutId({ friendshipId: 1, hangoutId: 23 });
+    await testHangoutId({ friendshipId: 1, hangoutId: '' });
+    await testHangoutId({ friendshipId: 1, hangoutId: 'tooShort' });
+    await testHangoutId({ friendshipId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR-1749132719013' });
+    await testHangoutId({ friendshipId: 1, hangoutId: '1749132719013_htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR' });
+    await testHangoutId({ friendshipId: 1, hangoutId: '1749132719013_htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+  });
+
+  it('should reject requests with an invalid friendship ID', async () => {
+    async function testFriendshipId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/accounts/hangoutInvites')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(typeof response.body.message === 'string').toBe(true);
+      expect(response.body.message).toBe('Invalid friendship ID.');
+    };
+
+    await testFriendshipId({ friendshipId: null, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testFriendshipId({ friendshipId: NaN, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testFriendshipId({ friendshipId: '', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testFriendshipId({ friendshipId: 'invalid', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testFriendshipId({ friendshipId: 23.5, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'guest', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the invitee is not found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(404);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Friend not found.');
+    expect(response.body.reason).toBe('friendNotFound');
+  });
+
+  it('should reject requests if the hangout is not found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [2, 'other@example.com', 'someHashedPassword', 'saraSmith', 'Sara Smith', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO friendships VALUES (${generatePlaceHolders(4)}), (${generatePlaceHolders(4)});`,
+      [1, 1, 2, Date.now(), 2, 2, 1, Date.now()]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(404);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Hangout not found.');
+    expect(response.body.reason).toBe('hangoutNotFound');
+  });
+
+  it('should reject requests if the user is not in the hangout', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [2, 'other@example.com', 'someHashedPassword', 'saraSmith', 'Sara Smith', Date.now(), true, 0]
+    );
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO friendships VALUES (${generatePlaceHolders(4)}), (${generatePlaceHolders(4)});`,
+      [1, 1, 2, Date.now(), 2, 2, 1, Date.now()]
+    );
+
+    const currentTimestamp: number = Date.now();
+    const tempHangoutId: string = generateHangoutId(currentTimestamp);
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      [tempHangoutId, 'Dummy Hangout', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, currentTimestamp, currentTimestamp, false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: tempHangoutId });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe(`You can't invite friends to a hangout you're not a member of.`);
+    expect(response.body.reason).toBe('notInHangout');
+  });
+
+  it('should reject requests if an invitation has already been sent', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [2, 'other@example.com', 'someHashedPassword', 'saraSmith', 'Sara Smith', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO friendships VALUES (${generatePlaceHolders(4)}), (${generatePlaceHolders(4)});`,
+      [1, 1, 2, Date.now(), 2, 2, 1, Date.now()]
+    );
+
+    const currentTimestamp: number = Date.now();
+    const tempHangoutId: string = generateHangoutId(currentTimestamp);
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      [tempHangoutId, 'Dummy Hangout', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, currentTimestamp, currentTimestamp, false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)});`,
+      [1, tempHangoutId, 'johnDoe', 'account', 1, null, 'John Doe', false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_invites VALUES (${generatePlaceHolders(5)});`,
+      [1, 1, 2, tempHangoutId, currentTimestamp]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: tempHangoutId });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Invitation already sent.');
+    expect(response.body.reason).toBe('alreadySent');
+  });
+
+  it('should reject requests if the invitee is already in the hangout', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [2, 'other@example.com', 'someHashedPassword', 'saraSmith', 'Sara Smith', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO friendships VALUES (${generatePlaceHolders(4)}), (${generatePlaceHolders(4)});`,
+      [1, 1, 2, Date.now(), 2, 2, 1, Date.now()]
+    );
+
+    const currentTimestamp: number = Date.now();
+    const tempHangoutId: string = generateHangoutId(currentTimestamp);
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      [tempHangoutId, 'Dummy Hangout', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, currentTimestamp, currentTimestamp, false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)}), (${generatePlaceHolders(8)});`,
+      [1, tempHangoutId, 'johnDoe', 'account', 1, null, 'John Doe', false, /**/ 2, tempHangoutId, 'saraSmith', 'account', 2, null, 'Sara Smith', false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: tempHangoutId });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(typeof response.body.message).toBe('string');
+    expect(typeof response.body.reason).toBe('string');
+
+    expect(response.body.message).toBe('Friend has already joined the hangout.');
+    expect(response.body.reason).toBe('alreadyInHangout');
+  });
+
+  it('should accept the request and insert a row into the hangout_invites table', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [2, 'other@example.com', 'someHashedPassword', 'saraSmith', 'Sara Smith', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO friendships VALUES (${generatePlaceHolders(4)}), (${generatePlaceHolders(4)});`,
+      [1, 1, 2, Date.now(), 2, 2, 1, Date.now()]
+    );
+
+    const currentTimestamp: number = Date.now();
+    const tempHangoutId: string = generateHangoutId(currentTimestamp);
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      [tempHangoutId, 'Dummy Hangout', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, currentTimestamp, currentTimestamp, false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)});`,
+      [1, tempHangoutId, 'johnDoe', 'account', 1, null, 'John Doe', false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/accounts/hangoutInvites')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ friendshipId: 1, hangoutId: tempHangoutId });
+
+    expect(response.status).toBe(200);
+
+    const [createdRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM hangout_invites WHERE account_id = ?;`,
+      [1]
+    );
+
+    expect(createdRows.length).toBe(1);
   });
 });
