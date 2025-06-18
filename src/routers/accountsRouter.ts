@@ -3244,11 +3244,6 @@ accountsRouter.post('/hangoutInvites', async (req: Request, res: Response) => {
       return;
     };
 
-    if (invitationDetails.friend_id === authSessionDetails.user_id) {
-      res.status(409).json({ message: `Can't invite yourself to a hangout.`, reason: 'selfInvite' });
-      return;
-    };
-
     if (!invitationDetails.sender_in_hangout) {
       res.status(409).json({ message: `You can't invite friends to a hangout you're not a member of.`, reason: 'notInHangout' });
       return;
