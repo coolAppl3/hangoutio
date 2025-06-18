@@ -248,11 +248,7 @@ export function loadMoreHangoutsService(offset: number): Promise<AxiosResponse<L
 
 // --- --- ---
 
-interface LoadMoreFriendsData {
-  friends: Friend[],
-};
-
-export function loadMoreFriendsService(offset: number): Promise<AxiosResponse<LoadMoreFriendsData>> {
+export function loadMoreFriendsService(offset: number): Promise<AxiosResponse<Friend[]>> {
   return axios.get(`${accountsApiUrl}/friends?offset=${offset}`);
 };
 

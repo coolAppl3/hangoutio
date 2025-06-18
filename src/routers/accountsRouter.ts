@@ -3121,7 +3121,7 @@ accountsRouter.get('/friends', async (req: Request, res: Response) => {
       [authSessionDetails.user_id, ACCOUNT_FRIENDS_FETCH_BATCH_SIZE, +offset]
     );
 
-    res.json({ friends: friendRows });
+    res.json(friendRows);
 
   } catch (err: unknown) {
     console.log(err);
