@@ -4381,7 +4381,7 @@ describe('DELETE accounts/deletion/confirm', () => {
     expect(response.body.message).toBe('Invalid request data.');
   });
 
-  it('should reject requests if an invalid confirmation code is provided', async () => {
+  it('should reject requests with an invalid confirmation code', async () => {
     async function testConfirmationCode(confirmationCode: string): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .delete(`/api/accounts/deletion/confirm?confirmationCode=${confirmationCode}`)
