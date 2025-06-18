@@ -3135,7 +3135,7 @@ accountsRouter.get('/friends', async (req: Request, res: Response) => {
   };
 });
 
-accountsRouter.post('/hangoutInvite', async (req: Request, res: Response) => {
+accountsRouter.post('/hangoutInvites', async (req: Request, res: Response) => {
   interface RequestData {
     friendshipId: number,
     hangoutId: string,
@@ -3297,7 +3297,7 @@ accountsRouter.post('/hangoutInvite', async (req: Request, res: Response) => {
   };
 });
 
-accountsRouter.delete('/hangoutInvite/accept', async (req: Request, res: Response) => {
+accountsRouter.delete('/hangoutInvites', async (req: Request, res: Response) => {
   const authSessionId: string | null = getRequestCookie(req, 'authSessionId');
 
   if (!authSessionId) {
