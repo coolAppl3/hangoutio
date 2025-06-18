@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.5.16] (2025-06-19)
+
+### Code Refactoring
+
+- Renamed POST `accounts/hangoutInvite` and DELETE `accounts/hangoutInvite/accept` to POST `accounts/hangoutInvites` and DELETE `accounts/hangoutInvites` accordingly.
+- Removed an unreachable condition in POST `accounts/hangoutInvites` that's meant to prevent users from inviting themselves.
+  - It's impossible to do considering the way the SQL call is structured in the endpoint. 
+
+
+### Tests
+
+- Implemented unit tests for POST `accounts/friends/requests/send`.
+- Implemented unit tests for POST `accounts/friends/requests/accept`.
+- Implemented unit tests for DELETE `accounts/friends/requests/reject`.
+- Implemented unit tests for DELETE `accounts/friends/manage/remove`.
+- Implemented unit tests for GET `accounts/friends`.
+- Implemented unit tests for POST `accounts/hangoutInvites`.
+- Implemented unit tests for DELETE `accounts/hangoutInvites`.
+
+
+### Bug Fixes
+
+- Fixed `validateUsername()` in `validation.ts` not checking the username's length.
+- Fixed GET `accounts/friends` returning the friends array within an object, instead of just returning the array directly.
+
+
 ## [0.5.15] (2025-06-17)
 
 ### Tests

@@ -2392,7 +2392,7 @@ exports.accountsRouter.get('/friends', async (req, res) => {
       WHERE
         friendships.account_id = ?
       LIMIT ? OFFSET ?;`, [authSessionDetails.user_id, constants_1.ACCOUNT_FRIENDS_FETCH_BATCH_SIZE, +offset]);
-        res.json({ friends: friendRows });
+        res.json(friendRows);
     }
     catch (err) {
         console.log(err);
@@ -2405,7 +2405,7 @@ exports.accountsRouter.get('/friends', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.post('/hangoutInvite', async (req, res) => {
+exports.accountsRouter.post('/hangoutInvites', async (req, res) => {
     ;
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
@@ -2474,7 +2474,7 @@ exports.accountsRouter.post('/hangoutInvite', async (req, res) => {
         friendships.account_id = :accountId;`, { hangoutId: requestData.hangoutId, accountId: authSessionDetails.user_id, friendshipId: requestData.friendshipId });
         const invitationDetails = invitationRows[0];
         if (!invitationDetails) {
-            res.status(404).json({ message: 'Friend not found.', reason: 'friendNotfound' });
+            res.status(404).json({ message: 'Friend not found.', reason: 'friendNotFound' });
             return;
         }
         ;
@@ -2483,8 +2483,8 @@ exports.accountsRouter.post('/hangoutInvite', async (req, res) => {
             return;
         }
         ;
-        if (invitationDetails.friend_id === authSessionDetails.user_id) {
-            res.status(409).json({ message: `Can't invite yourself to a hangout.`, reason: 'selfInvite' });
+        if (!invitationDetails.sender_in_hangout) {
+            res.status(409).json({ message: `You can't invite friends to a hangout you're not a member of.`, reason: 'notInHangout' });
             return;
         }
         ;
@@ -2493,13 +2493,8 @@ exports.accountsRouter.post('/hangoutInvite', async (req, res) => {
             return;
         }
         ;
-        if (!invitationDetails.sender_in_hangout) {
-            res.status(409).json({ message: `You can't invite friends to a hangout you're not a part of.`, reason: 'notInHangout' });
-            return;
-        }
-        ;
         if (invitationDetails.invitee_in_hangout) {
-            res.status(409).json({ message: 'User has already joined the hangout.', reason: 'alreadyInHangout' });
+            res.status(409).json({ message: 'Friend has already joined the hangout.', reason: 'alreadyInHangout' });
             return;
         }
         ;
@@ -2531,7 +2526,7 @@ exports.accountsRouter.post('/hangoutInvite', async (req, res) => {
     }
     ;
 });
-exports.accountsRouter.delete('/hangoutInvite/accept', async (req, res) => {
+exports.accountsRouter.delete('/hangoutInvites', async (req, res) => {
     const authSessionId = (0, cookieUtils_1.getRequestCookie)(req, 'authSessionId');
     if (!authSessionId) {
         res.status(401).json({ message: 'Sign in session expired.', reason: 'authSessionExpired' });
