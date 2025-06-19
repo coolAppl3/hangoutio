@@ -48,7 +48,6 @@ describe('POST accounts/signUp', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -60,7 +59,6 @@ describe('POST accounts/signUp', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -81,9 +79,6 @@ describe('POST accounts/signUp', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid email address.');
       expect(response.body.reason).toBe('invalidEmail');
@@ -110,9 +105,6 @@ describe('POST accounts/signUp', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
 
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
-
       expect(response.body.message).toBe('Invalid username.');
       expect(response.body.reason).toBe('invalidUsername');
     };
@@ -134,9 +126,6 @@ describe('POST accounts/signUp', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid display name.');
       expect(response.body.reason).toBe('invalidDisplayName');
@@ -160,9 +149,6 @@ describe('POST accounts/signUp', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
 
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
-
       expect(response.body.message).toBe('Invalid password.');
       expect(response.body.reason).toBe('invalidPassword');
     };
@@ -184,9 +170,6 @@ describe('POST accounts/signUp', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe(`Password can't be identical to username.`);
     expect(response.body.reason).toBe('passwordEqualsUsername');
   });
@@ -201,9 +184,6 @@ describe('POST accounts/signUp', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe(`You must sign out before proceeding.`);
     expect(response.body.reason).toBe('signedIn');
@@ -229,9 +209,6 @@ describe('POST accounts/signUp', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe(`Email address is already taken.`);
       expect(response.body.reason).toBe('emailTaken');
@@ -266,9 +243,6 @@ describe('POST accounts/signUp', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe(`Username is already taken.`);
       expect(response.body.reason).toBe('usernameTaken');
@@ -309,9 +283,6 @@ describe('POST accounts/signUp', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
 
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
-
       expect(response.body.message).toBe(`Email address and username are both already taken.`);
       expect(response.body.reason).toBe('emailAndUsernameTaken');
     };
@@ -333,9 +304,6 @@ describe('POST accounts/signUp', () => {
 
     expect(response.body).toHaveProperty('accountId');
     expect(response.body).toHaveProperty('verificationExpiryTimestamp');
-
-    expect(typeof response.body.accountId).toBe('number');
-    expect(typeof response.body.verificationExpiryTimestamp).toBe('number');
 
     expect(Number.isInteger(response.body.accountId)).toBe(true);
     expect(Number.isInteger(response.body.verificationExpiryTimestamp)).toBe(true);
@@ -365,7 +333,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -377,7 +344,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -395,9 +361,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid account ID.');
       expect(response.body.reason).toBe('invalidAccountId');
@@ -419,9 +382,6 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('You must sign out before proceeding.');
     expect(response.body.reason).toBe('signedIn');
   });
@@ -433,7 +393,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Account not found.');
   });
 
@@ -452,9 +411,6 @@ describe('POST accounts/verification/resendEmail', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Account already verified.');
     expect(response.body.reason).toBe('alreadyVerified');
   });
@@ -471,7 +427,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Verification request not found.');
   });
 
@@ -494,9 +449,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe(`Verification emails limit of ${EMAILS_SENT_LIMIT} reached.`);
     expect(response.body.reason).toBe('emailLimitReached');
@@ -521,7 +473,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('verificationEmailsSent');
-    expect(typeof response.body.verificationEmailsSent).toBe('number');
     expect(Number.isInteger(response.body.verificationEmailsSent)).toBe(true);
     expect(response.body.verificationEmailsSent).toBe(2);
 
@@ -543,7 +494,6 @@ describe('PATCH accounts/verification/verify', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -555,7 +505,6 @@ describe('PATCH accounts/verification/verify', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -574,9 +523,6 @@ describe('PATCH accounts/verification/verify', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid account ID.');
       expect(response.body.reason).toBe('invalidAccountId');
@@ -599,9 +545,6 @@ describe('PATCH accounts/verification/verify', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid verification code.');
       expect(response.body.reason).toBe('invalidVerificationCode');
@@ -626,9 +569,6 @@ describe('PATCH accounts/verification/verify', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('You must sign out before proceeding.');
     expect(response.body.reason).toBe('signedIn');
   });
@@ -640,7 +580,6 @@ describe('PATCH accounts/verification/verify', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Account not found.');
   });
 
@@ -656,7 +595,6 @@ describe('PATCH accounts/verification/verify', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Account already verified.');
   });
 
@@ -679,9 +617,6 @@ describe('PATCH accounts/verification/verify', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect verification code.');
     expect(response.body.reason).toBe('incorrectCode');
@@ -713,9 +648,6 @@ describe('PATCH accounts/verification/verify', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect verification code.');
     expect(response.body.reason).toBe('accountDeleted');
@@ -763,7 +695,6 @@ describe('POST accounts/signIn', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -775,7 +706,6 @@ describe('POST accounts/signIn', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -795,9 +725,6 @@ describe('POST accounts/signIn', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid email address.');
       expect(response.body.reason).toBe('invalidEmail');
@@ -821,9 +748,6 @@ describe('POST accounts/signIn', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
 
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
-
       expect(response.body.message).toBe('Invalid account password.');
       expect(response.body.reason).toBe('invalidPassword');
     };
@@ -841,7 +765,6 @@ describe('POST accounts/signIn', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Account not found.');
   });
 
@@ -862,9 +785,6 @@ describe('POST accounts/signIn', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Account locked.');
     expect(response.body.reason).toBe('accountLocked');
   });
@@ -883,9 +803,6 @@ describe('POST accounts/signIn', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Account unverified.');
     expect(response.body.reason).toBe('accountUnverified');
@@ -908,9 +825,6 @@ describe('POST accounts/signIn', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect password.');
     expect(response.body.reason).toBe('incorrectPassword');
   });
@@ -931,9 +845,6 @@ describe('POST accounts/signIn', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect password. Account has been locked.');
     expect(response.body.reason).toBe('accountLocked');
@@ -969,7 +880,6 @@ describe('POST accounts/recovery/start', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -981,7 +891,6 @@ describe('POST accounts/recovery/start', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -999,9 +908,6 @@ describe('POST accounts/recovery/start', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid email address.');
       expect(response.body.reason).toBe('invalidEmail');
@@ -1023,9 +929,6 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('You must sign out before proceeding.');
     expect(response.body.reason).toBe('signedIn');
   });
@@ -1037,7 +940,6 @@ describe('POST accounts/recovery/start', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Account not found.');
   });
 
@@ -1055,9 +957,6 @@ describe('POST accounts/recovery/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe(`Can't recover an unverified account.`);
     expect(response.body.reason).toBe('accountUnverified');
@@ -1084,15 +983,11 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe(`Recovery suspended.`);
     expect(response.body.reason).toBe('recoverySuspended');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
     expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
   });
@@ -1118,9 +1013,6 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe(`Ongoing recovery request found.`);
     expect(response.body.reason).toBe('ongoingRequest');
 
@@ -1128,9 +1020,6 @@ describe('POST accounts/recovery/start', () => {
 
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
     expect(response.body.resData).toHaveProperty('accountId');
-
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
-    expect(typeof response.body.resData.accountId).toBe('number');
 
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
     expect(Number.isInteger(response.body.resData.accountId)).toBe(true);
@@ -1156,9 +1045,6 @@ describe('POST accounts/recovery/start', () => {
     expect(response.body).toHaveProperty('accountId');
     expect(response.body).toHaveProperty('expiryTimestamp');
 
-    expect(typeof response.body.accountId).toBe('number');
-    expect(typeof response.body.expiryTimestamp).toBe('number');
-
     expect(Number.isInteger(response.body.accountId)).toBe(true);
     expect(Number.isInteger(response.body.expiryTimestamp)).toBe(true);
 
@@ -1178,7 +1064,6 @@ describe('POST accounts/recovery/resendEmail', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -1190,7 +1075,6 @@ describe('POST accounts/recovery/resendEmail', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -1206,7 +1090,6 @@ describe('POST accounts/recovery/resendEmail', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid account ID.');
     };
 
@@ -1227,9 +1110,6 @@ describe('POST accounts/recovery/resendEmail', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Account not found.');
     expect(response.body.reason).toBe('accountNotFound');
   });
@@ -1248,9 +1128,6 @@ describe('POST accounts/recovery/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Recovery request not found or may have expired.');
     expect(response.body.reason).toBe('requestNotFound');
@@ -1277,15 +1154,11 @@ describe('POST accounts/recovery/resendEmail', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe(`Recovery suspended.`);
     expect(response.body.reason).toBe('recoverySuspended');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
     expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
   });
@@ -1309,9 +1182,6 @@ describe('POST accounts/recovery/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe(`Recovery emails limit of ${EMAILS_SENT_LIMIT} reached.`);
     expect(response.body.reason).toBe('limitReached');
@@ -1354,7 +1224,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -1366,7 +1235,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -1384,7 +1252,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid account ID.');
     };
 
@@ -1406,9 +1273,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid recovery code.');
       expect(response.body.reason).toBe('invalidRecoveryCode');
@@ -1434,9 +1298,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
 
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
-
       expect(response.body.message).toBe('Invalid new password.');
       expect(response.body.reason).toBe('invalidPassword');
     };
@@ -1460,9 +1321,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe(`You can't recover an account while signed in.`);
     expect(response.body.reason).toBe('signedIn');
   });
@@ -1474,7 +1332,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Recovery request not found.');
   });
 
@@ -1499,15 +1356,11 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Recovery suspended.');
     expect(response.body.reason).toBe('recoverySuspended');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
     expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
   });
@@ -1531,9 +1384,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect recovery code.');
     expect(response.body.reason).toBe('incorrectRecoveryCode');
@@ -1567,15 +1417,11 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect recovery code.');
     expect(response.body.reason).toBe('recoverySuspended');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
     expect(response.body.resData.expiryTimestamp).toBe(dummyExpiryTimestamp);
 
@@ -1605,7 +1451,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe(`New password can't be identical to username.`);
   });
 
@@ -1662,9 +1507,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -1680,9 +1522,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -1697,7 +1536,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -1710,7 +1548,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message).toBe('string');
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -1730,9 +1567,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid password.');
       expect(response.body.reason).toBe('invalidPassword');
@@ -1756,9 +1590,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
 
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
-
       expect(response.body.message).toBe('Invalid display name.');
       expect(response.body.reason).toBe('invalidDisplayName');
     };
@@ -1781,9 +1612,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -1811,9 +1639,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -1850,9 +1675,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Invalid credentials. Request denied.');
     expect(response.body.reason).toBe('authSessionDestroyed');
 
@@ -1888,9 +1710,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect password.');
     expect(response.body.reason).toBe('incorrectPassword');
   });
@@ -1920,9 +1739,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect password. Account has been locked.');
     expect(response.body.reason).toBe('accountLocked')
@@ -1958,7 +1774,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Your display name is already John Doe.');
   });
 
@@ -2023,9 +1838,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -2041,9 +1853,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -2058,7 +1867,6 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -2071,7 +1879,6 @@ describe('PATCH accounts/details/updatePassword', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -2091,9 +1898,6 @@ describe('PATCH accounts/details/updatePassword', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message === 'string').toBe(true);
-      expect(typeof response.body.reason === 'string').toBe(true);
 
       expect(response.body.message).toBe('Invalid password.');
       expect(response.body.reason).toBe('invalidCurrentPassword');
@@ -2119,9 +1923,6 @@ describe('PATCH accounts/details/updatePassword', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
 
-      expect(typeof response.body.message === 'string').toBe(true);
-      expect(typeof response.body.reason === 'string').toBe(true);
-
       expect(response.body.message).toBe('Invalid new password.');
       expect(response.body.reason).toBe('invalidNewPassword');
     };
@@ -2144,9 +1945,6 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -2175,8 +1973,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -2212,9 +2008,6 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Invalid credentials. Request denied.');
     expect(response.body.reason).toBe('authSessionDestroyed');
@@ -2253,9 +2046,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect password.');
     expect(response.body.reason).toBe('incorrectPassword');
   });
@@ -2287,9 +2077,6 @@ describe('PATCH accounts/details/updatePassword', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect password. Account has been locked.');
     expect(response.body.reason).toBe('accountLocked');
@@ -2328,9 +2115,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe(`New password can't be identical to your current password.`);
     expect(response.body.reason).toBe('identicalPasswords');
   });
@@ -2358,8 +2142,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe(`New password can't be identical to your username.`);
     expect(response.body.reason).toBe('passwordEqualsUsername');
@@ -2405,9 +2187,6 @@ describe('POST accounts/details/updateEmail/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -2423,9 +2202,6 @@ describe('POST accounts/details/updateEmail/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -2440,7 +2216,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -2453,7 +2228,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -2473,9 +2247,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid password.');
       expect(response.body.reason).toBe('invalidPassword');
@@ -2498,9 +2269,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message).toBe('string');
-      expect(typeof response.body.reason).toBe('string');
 
       expect(response.body.message).toBe('Invalid email address.');
       expect(response.body.reason).toBe('invalidEmail');
@@ -2526,9 +2294,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -2556,9 +2321,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -2594,9 +2356,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Invalid credentials. Request denied.');
     expect(response.body.reason).toBe('authSessionDestroyed');
@@ -2635,9 +2394,6 @@ describe('POST accounts/details/updateEmail/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect password.');
     expect(response.body.reason).toBe('incorrectPassword');
   });
@@ -2669,9 +2425,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect password. Account has been locked.');
     expect(response.body.reason).toBe('accountLocked');
@@ -2712,13 +2465,11 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
+
     expect(response.body.message).toBe('Request was suspended due to too many failed attempts.');
 
     expect(response.body).toHaveProperty('resData');
-    expect(typeof response.body.resData).toBe('object');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -2750,16 +2501,11 @@ describe('POST accounts/details/updateEmail/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Ongoing email update request found.');
     expect(response.body.reason).toBe('ongoingRequest');
 
     expect(response.body).toHaveProperty('resData');
-    expect(typeof response.body.resData).toBe('object');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -2791,9 +2537,6 @@ describe('POST accounts/details/updateEmail/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Account deletion request found.');
     expect(response.body.reason).toBe('ongoingAccountDeletion');
   });
@@ -2820,9 +2563,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('This email is already assigned to your account.');
     expect(response.body.reason).toBe('identicalEmail');
@@ -2855,9 +2595,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Email address is already taken.');
     expect(response.body.reason).toBe('emailTaken');
@@ -2895,9 +2632,6 @@ describe('POST accounts/details/updateEmail/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Email address is already taken.');
     expect(response.body.reason).toBe('emailTaken');
@@ -2939,9 +2673,6 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -2956,9 +2687,6 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -2976,9 +2704,6 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3006,9 +2731,6 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3042,7 +2764,6 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Email update request not found or may have expired.');
   });
 
@@ -3069,12 +2790,10 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Request is suspended due to too many failed attempts.');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -3101,7 +2820,6 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe(`Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`);
   });
 
@@ -3151,9 +2869,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -3169,9 +2884,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -3186,7 +2898,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -3199,7 +2910,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -3218,9 +2928,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message === 'string').toBe(true);
-      expect(typeof response.body.reason === 'string').toBe(true);
 
       expect(response.body.message).toBe('Invalid confirmation code.');
       expect(response.body.reason).toBe('confirmationCode');
@@ -3243,9 +2950,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3273,9 +2977,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3312,9 +3013,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Invalid credentials. Request denied.');
     expect(response.body.reason).toBe('authSessionDestroyed');
 
@@ -3347,7 +3045,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Email update request not found or may have expired.');
   });
 
@@ -3374,12 +3071,10 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Email update request suspended.');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -3408,9 +3103,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect confirmation code.');
     expect(response.body.reason).toBe('incorrectCode');
@@ -3456,15 +3148,11 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect confirmation code.');
     expect(response.body.reason).toBe('requestSuspended');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
 
     expect(purgeAuthSessionsSpy).toHaveBeenCalled();
@@ -3511,7 +3199,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     expect(typeof response.body.authSessionCreated).toBe('boolean');
 
     expect(response.body).toHaveProperty('newEmail');
-    expect(typeof response.body.newEmail).toBe('string');
     expect(response.body.newEmail).toBe('new@example.com');
 
     expect(purgeAuthSessionsSpy).toHaveBeenCalled();
@@ -3543,9 +3230,6 @@ describe('DELETE accounts/details/updateEmail/abort', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -3560,9 +3244,6 @@ describe('DELETE accounts/details/updateEmail/abort', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3580,9 +3261,6 @@ describe('DELETE accounts/details/updateEmail/abort', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3610,9 +3288,6 @@ describe('DELETE accounts/details/updateEmail/abort', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3646,9 +3321,7 @@ describe('DELETE accounts/details/updateEmail/abort', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Email update request not found or may have expired.');
-
   });
 
   it(`should accept the request and delete the email update request`, async () => {
@@ -3694,9 +3367,6 @@ describe('DELETE accounts/deletion/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -3712,9 +3382,6 @@ describe('DELETE accounts/deletion/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -3729,7 +3396,7 @@ describe('DELETE accounts/deletion/start', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
+
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -3742,7 +3409,6 @@ describe('DELETE accounts/deletion/start', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -3759,7 +3425,6 @@ describe('DELETE accounts/deletion/start', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid password.');
     };
 
@@ -3779,9 +3444,6 @@ describe('DELETE accounts/deletion/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3809,9 +3471,6 @@ describe('DELETE accounts/deletion/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -3847,9 +3506,6 @@ describe('DELETE accounts/deletion/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Invalid credentials. Request denied.');
     expect(response.body.reason).toBe('authSessionDestroyed');
@@ -3888,9 +3544,6 @@ describe('DELETE accounts/deletion/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect password.');
     expect(response.body.reason).toBe('incorrectPassword');
   });
@@ -3922,9 +3575,6 @@ describe('DELETE accounts/deletion/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect password. Account has been locked.');
     expect(response.body.reason).toBe('accountLocked');
@@ -3968,15 +3618,11 @@ describe('DELETE accounts/deletion/start', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Ongoing deletion request found.');
     expect(response.body.reason).toBe('requestDetected');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -4005,12 +3651,10 @@ describe('DELETE accounts/deletion/start', () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Deletion request suspended.');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -4041,9 +3685,6 @@ describe('DELETE accounts/deletion/start', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Ongoing email update request found.');
     expect(response.body.reason).toBe('ongoingEmailUpdate');
@@ -4092,9 +3733,6 @@ describe('GET accounts/deletion/resendEmail', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -4109,9 +3747,6 @@ describe('GET accounts/deletion/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4129,9 +3764,6 @@ describe('GET accounts/deletion/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4159,9 +3791,6 @@ describe('GET accounts/deletion/resendEmail', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4198,9 +3827,6 @@ describe('GET accounts/deletion/resendEmail', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Invalid credentials. Request denied.');
     expect(response.body.reason).toBe('authSessionDestroyed');
 
@@ -4233,7 +3859,6 @@ describe('GET accounts/deletion/resendEmail', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Deletion request not found.');
   });
 
@@ -4260,12 +3885,10 @@ describe('GET accounts/deletion/resendEmail', () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Deletion request suspended.');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -4292,7 +3915,6 @@ describe('GET accounts/deletion/resendEmail', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe(`Confirmation emails limit of ${EMAILS_SENT_LIMIT} reached.`);
   });
 
@@ -4342,9 +3964,6 @@ describe('DELETE accounts/deletion/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -4360,9 +3979,6 @@ describe('DELETE accounts/deletion/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -4377,7 +3993,6 @@ describe('DELETE accounts/deletion/confirm', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -4392,9 +4007,6 @@ describe('DELETE accounts/deletion/confirm', () => {
 
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('reason');
-
-      expect(typeof response.body.message === 'string').toBe(true);
-      expect(typeof response.body.reason === 'string').toBe(true);
 
       expect(response.body.message).toBe('Invalid confirmation code.');
       expect(response.body.reason).toBe('invalidConfirmationCode');
@@ -4415,9 +4027,6 @@ describe('DELETE accounts/deletion/confirm', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4445,9 +4054,6 @@ describe('DELETE accounts/deletion/confirm', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4484,9 +4090,6 @@ describe('DELETE accounts/deletion/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Invalid credentials. Request denied.');
     expect(response.body.reason).toBe('authSessionDestroyed');
 
@@ -4519,7 +4122,6 @@ describe('DELETE accounts/deletion/confirm', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Deletion request not found.');
   });
 
@@ -4546,12 +4148,10 @@ describe('DELETE accounts/deletion/confirm', () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Deletion request suspended.');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
   });
 
@@ -4580,9 +4180,6 @@ describe('DELETE accounts/deletion/confirm', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Incorrect confirmation code.');
     expect(response.body.reason).toBe('incorrectCode');
@@ -4626,15 +4223,11 @@ describe('DELETE accounts/deletion/confirm', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Incorrect confirmation code.');
     expect(response.body.reason).toBe('requestSuspended');
 
     expect(response.body).toHaveProperty('resData');
     expect(response.body.resData).toHaveProperty('expiryTimestamp');
-    expect(typeof response.body.resData.expiryTimestamp).toBe('number');
     expect(Number.isInteger(response.body.resData.expiryTimestamp)).toBe(true);
 
     expect(sendDeletionWarningEmailSpy).toHaveBeenCalled();
@@ -4691,9 +4284,6 @@ describe('DELETE accounts/deletion/abort', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -4708,9 +4298,6 @@ describe('DELETE accounts/deletion/abort', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4728,9 +4315,6 @@ describe('DELETE accounts/deletion/abort', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4758,9 +4342,6 @@ describe('DELETE accounts/deletion/abort', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4794,7 +4375,6 @@ describe('DELETE accounts/deletion/abort', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Account deletion request not found or may have expired.');
   });
 
@@ -4841,9 +4421,6 @@ describe('POST accounts/friends/requests/send', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -4859,9 +4436,6 @@ describe('POST accounts/friends/requests/send', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -4876,7 +4450,6 @@ describe('POST accounts/friends/requests/send', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -4889,7 +4462,6 @@ describe('POST accounts/friends/requests/send', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -4906,7 +4478,6 @@ describe('POST accounts/friends/requests/send', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid username.');
     };
 
@@ -4929,9 +4500,6 @@ describe('POST accounts/friends/requests/send', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4959,9 +4527,6 @@ describe('POST accounts/friends/requests/send', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -4995,7 +4560,6 @@ describe('POST accounts/friends/requests/send', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('No users found with this username.');
   });
 
@@ -5017,7 +4581,6 @@ describe('POST accounts/friends/requests/send', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe(`You can't send a friend request to yourself.`);
   });
 
@@ -5049,7 +4612,6 @@ describe('POST accounts/friends/requests/send', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe(`You're already friends with this user.`);
   });
 
@@ -5083,9 +4645,6 @@ describe('POST accounts/friends/requests/send', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Friend request already sent.');
     expect(response.body.reason).toBe('alreadySent');
@@ -5134,9 +4693,6 @@ describe('POST accounts/friends/requests/accept', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -5152,9 +4708,6 @@ describe('POST accounts/friends/requests/accept', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -5169,7 +4722,6 @@ describe('POST accounts/friends/requests/accept', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -5182,7 +4734,6 @@ describe('POST accounts/friends/requests/accept', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -5199,7 +4750,6 @@ describe('POST accounts/friends/requests/accept', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid friend request ID.');
     };
 
@@ -5221,9 +4771,6 @@ describe('POST accounts/friends/requests/accept', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5251,9 +4798,6 @@ describe('POST accounts/friends/requests/accept', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5287,7 +4831,6 @@ describe('POST accounts/friends/requests/accept', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Friend request not found.');
   });
 
@@ -5324,7 +4867,6 @@ describe('POST accounts/friends/requests/accept', () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Already friends with this user.');
   });
 
@@ -5359,9 +4901,6 @@ describe('POST accounts/friends/requests/accept', () => {
     expect(response.body).toHaveProperty('friendship_id');
     expect(response.body).toHaveProperty('friendship_timestamp');
 
-    expect(typeof response.body.friendship_id).toBe('number');
-    expect(typeof response.body.friendship_timestamp).toBe('number');
-
     expect(Number.isInteger(response.body.friendship_id)).toBe(true);
     expect(Number.isInteger(response.body.friendship_timestamp)).toBe(true);
 
@@ -5392,9 +4931,6 @@ describe('DELETE accounts/friends/requests/reject', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -5410,9 +4946,6 @@ describe('DELETE accounts/friends/requests/reject', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -5427,7 +4960,6 @@ describe('DELETE accounts/friends/requests/reject', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -5440,7 +4972,6 @@ describe('DELETE accounts/friends/requests/reject', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid friend request ID.');
     };
 
@@ -5459,9 +4990,6 @@ describe('DELETE accounts/friends/requests/reject', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5489,9 +5017,6 @@ describe('DELETE accounts/friends/requests/reject', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5579,9 +5104,6 @@ describe('DELETE accounts/friends/manage/remove', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -5597,9 +5119,6 @@ describe('DELETE accounts/friends/manage/remove', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -5614,7 +5133,6 @@ describe('DELETE accounts/friends/manage/remove', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -5627,7 +5145,6 @@ describe('DELETE accounts/friends/manage/remove', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid friendship ID.');
     };
 
@@ -5646,9 +5163,6 @@ describe('DELETE accounts/friends/manage/remove', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5676,9 +5190,6 @@ describe('DELETE accounts/friends/manage/remove', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5712,7 +5223,6 @@ describe('DELETE accounts/friends/manage/remove', () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
     expect(response.body.message).toBe('Friend not found.');
   });
 
@@ -5764,9 +5274,6 @@ describe('GET accounts/friends', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -5782,9 +5289,6 @@ describe('GET accounts/friends', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -5799,7 +5303,6 @@ describe('GET accounts/friends', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -5812,7 +5315,6 @@ describe('GET accounts/friends', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -5831,9 +5333,6 @@ describe('GET accounts/friends', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5861,9 +5360,6 @@ describe('GET accounts/friends', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -5907,19 +5403,15 @@ describe('GET accounts/friends', () => {
 
     expect(response.status).toBe(200);
 
-    expect(typeof response.body).toBe('object');
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.length).toBe(1);
 
     const friend = response.body[0];
-    expect(typeof friend).toBe('object');
 
     expect(friend).toHaveProperty('friendship_id');
-    expect(typeof friend.friendship_id).toBe('number');
     expect(Number.isInteger(friend.friendship_id)).toBe(true);
 
     expect(friend).toHaveProperty('friendship_timestamp');
-    expect(typeof friend.friendship_timestamp).toBe('number');
     expect(Number.isInteger(friend.friendship_timestamp)).toBe(true);
 
     expect(friend).toHaveProperty('friend_username');
@@ -5941,9 +5433,6 @@ describe('POST accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -5959,9 +5448,6 @@ describe('POST accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -5976,7 +5462,6 @@ describe('POST accounts/hangoutInvites', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -5989,7 +5474,6 @@ describe('POST accounts/hangoutInvites', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -6007,7 +5491,6 @@ describe('POST accounts/hangoutInvites', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid hangout ID.');
     };
 
@@ -6030,7 +5513,6 @@ describe('POST accounts/hangoutInvites', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid friendship ID.');
     };
 
@@ -6051,9 +5533,6 @@ describe('POST accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -6081,9 +5560,6 @@ describe('POST accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -6120,9 +5596,6 @@ describe('POST accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Friend not found.');
     expect(response.body.reason).toBe('friendNotFound');
   });
@@ -6157,9 +5630,6 @@ describe('POST accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Hangout not found.');
     expect(response.body.reason).toBe('hangoutNotFound');
@@ -6202,9 +5672,6 @@ describe('POST accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe(`You can't invite friends to a hangout you're not a member of.`);
     expect(response.body.reason).toBe('notInHangout');
@@ -6259,9 +5726,6 @@ describe('POST accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
-
     expect(response.body.message).toBe('Invitation already sent.');
     expect(response.body.reason).toBe('alreadySent');
   });
@@ -6309,9 +5773,6 @@ describe('POST accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Friend has already joined the hangout.');
     expect(response.body.reason).toBe('alreadyInHangout');
@@ -6378,9 +5839,6 @@ describe('DELETE accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -6396,9 +5854,6 @@ describe('DELETE accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -6413,7 +5868,6 @@ describe('DELETE accounts/hangoutInvites', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid invitation ID.');
   });
 
@@ -6426,7 +5880,6 @@ describe('DELETE accounts/hangoutInvites', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid invitation ID.');
     };
 
@@ -6445,9 +5898,6 @@ describe('DELETE accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -6475,9 +5925,6 @@ describe('DELETE accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -6559,9 +6006,6 @@ describe('GET accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
   });
@@ -6577,9 +6021,6 @@ describe('GET accounts/hangoutInvites', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(typeof response.body.message === 'string').toBe(true);
-    expect(typeof response.body.reason === 'string').toBe(true);
-
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
 
@@ -6594,7 +6035,6 @@ describe('GET accounts/hangoutInvites', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message === 'string').toBe(true);
     expect(response.body.message).toBe('Invalid request data.');
   });
 
@@ -6607,7 +6047,6 @@ describe('GET accounts/hangoutInvites', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('message');
-      expect(typeof response.body.message === 'string').toBe(true);
       expect(response.body.message).toBe('Invalid request data.');
     };
 
@@ -6626,9 +6065,6 @@ describe('GET accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -6656,9 +6092,6 @@ describe('GET accounts/hangoutInvites', () => {
 
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
-
-    expect(typeof response.body.message).toBe('string');
-    expect(typeof response.body.reason).toBe('string');
 
     expect(response.body.message).toBe('Sign in session expired.');
     expect(response.body.reason).toBe('authSessionExpired');
@@ -6720,34 +6153,27 @@ describe('GET accounts/hangoutInvites', () => {
 
     expect(response.status).toBe(200);
 
-    expect(typeof response.body).toBe('object');
     expect(Array.isArray(response.body));
     expect(response.body.length).toBe(1);
 
     const hangoutInvite = response.body[0];
 
     expect(hangoutInvite).toHaveProperty('invite_id');
-    expect(typeof hangoutInvite.invite_id).toBe('number');
     expect(Number.isInteger(hangoutInvite.invite_id)).toBe(true);
 
     expect(hangoutInvite).toHaveProperty('hangout_id');
-    expect(typeof hangoutInvite.hangout_id).toBe('string');
     expect(hangoutInvite.hangout_id).toBe(tempHangoutId);
 
     expect(hangoutInvite).toHaveProperty('invite_timestamp');
-    expect(typeof hangoutInvite.invite_timestamp).toBe('number');
     expect(Number.isInteger(hangoutInvite.invite_timestamp)).toBe(true);
 
     expect(hangoutInvite).toHaveProperty('display_name');
-    expect(typeof hangoutInvite.display_name).toBe('string');
     expect(hangoutInvite.display_name).toBe('Sara Smith');
 
     expect(hangoutInvite).toHaveProperty('username');
-    expect(typeof hangoutInvite.username).toBe('string');
     expect(hangoutInvite.username).toBe('saraSmith')
 
     expect(hangoutInvite).toHaveProperty('hangout_title');
-    expect(typeof hangoutInvite.hangout_title).toBe('string');
     expect(hangoutInvite.hangout_title).toBe('Dummy Hangout')
   });
 });
