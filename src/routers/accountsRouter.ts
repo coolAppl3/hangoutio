@@ -3390,7 +3390,7 @@ accountsRouter.get('/hangoutInvites', async (req: Request, res: Response) => {
   const offset = req.query.offset;
 
   if (typeof offset !== 'string' || !Number.isInteger(+offset)) {
-    res.status(400).json({ message: 'Invalid offset value.' });
+    res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
 
