@@ -3730,7 +3730,7 @@ accountsRouter.get('/hangoutHistory', async (req: Request, res: Response) => {
       [authSessionDetails.user_id, ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, +offset]
     );
 
-    res.json({ hangouts: hangoutRows });
+    res.json(hangoutRows);
 
   } catch (err: unknown) {
     console.log(err);
