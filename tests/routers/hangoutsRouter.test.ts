@@ -364,7 +364,7 @@ describe('POST hangouts/create/accountLeader', () => {
     expect(response.body.reason).toBe('hangoutsLimitReached');
   });
 
-  it(`should should accept the request and create both a hangout and a hangout member row for the user, returning the new hangout ID`, async () => {
+  it(`should should accept the request and create both a hangout and a hangout member row for the user, returning the new hangout ID, and inserting a hangout event`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -381,22 +381,21 @@ describe('POST hangouts/create/accountLeader', () => {
       .send({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
 
     expect(response.status).toBe(201);
+    expect(addHangoutEventSpy).toHaveBeenCalled();
+
     expect(response.body).toHaveProperty('hangoutId');
     expect(typeof response.body.hangoutId).toBe('string');
 
-    const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM hangouts WHERE hangout_title = ?;`,
-      ['Some Title']
-    );
+    const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangouts WHERE hangout_title = ?;`, ['Some Title']);
+    const [hangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangout_members WHERE account_id = ?;`, [1]);
 
     expect(hangoutRows.length).toBe(1);
-
-    const [hangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM hangout_members WHERE account_id = ?;`,
-      [1]
-    );
-
     expect(hangoutMemberRows.length).toBe(1);
+
+    const [eventRows] = await dbPool.execute<RowDataPacket[]>(`SELECT event_description FROM hangout_events WHERE hangout_id = ?`, [response.body.hangoutId]);
+
+    expect(eventRows.length).toBe(1);
+    expect(eventRows[0].event_description).toBe('John Doe created the hangout.');
   });
 });
 
@@ -707,11 +706,14 @@ describe('POST hangouts/create/guestLeader', () => {
     const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangouts WHERE hangout_title = ?`, ['Some Title']);
     const [guestRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM guests WHERE username = ?;`, ['johnDoe']);
     const [hangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangout_members WHERE username = ?;`, ['johnDoe']);
-    const [eventRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangout_events WHERE hangout_id = ?`, [response.body.hangoutId]);
 
     expect(hangoutRows.length).toBe(1);
     expect(guestRows.length).toBe(1);
     expect(hangoutMemberRows.length).toBe(1);
+
+    const [eventRows] = await dbPool.execute<RowDataPacket[]>(`SELECT event_description FROM hangout_events WHERE hangout_id = ?`, [response.body.hangoutId]);
+
     expect(eventRows.length).toBe(1);
+    expect(eventRows[0].event_description).toBe('John Doe created the hangout.');
   });
 });
