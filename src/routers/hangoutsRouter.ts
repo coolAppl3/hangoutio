@@ -115,20 +115,16 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     interface AccountDetails extends RowDataPacket {
       display_name: string,
       username: string,
-      hangout_id: string,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
         accounts.display_name,
-        accounts.username,
-        hangout_members.hangout_id
+        accounts.username
       FROM
         accounts
-      LEFT JOIN
-        hangout_members on accounts.account_id = hangout_members.account_id
       WHERE
-        accounts.account_id = ?;`,
+        account_id = ?;`,
       [authSessionDetails.user_id]
     );
 
@@ -142,21 +138,21 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       return;
     };
 
-    const accountHangoutIds: string[] = accountRows.map((row: AccountDetails) => row.hangout_id);
-
     interface OngoingHangoutsDetails extends RowDataPacket {
       ongoing_hangouts_count: number,
     };
 
-    const [ongoingHangoutRows] = await dbPool.query<OngoingHangoutsDetails[]>(
+    const [ongoingHangoutRows] = await dbPool.execute<OngoingHangoutsDetails[]>(
       `SELECT
-        COUNT(*) as ongoing_hangouts_count
+        COUNT(*) AS ongoing_hangouts_count
       FROM
-        hangouts
+        hangout_members
+      LEFT JOIN
+        hangouts ON hangout_members.hangout_id = hangouts.hangout_id
       WHERE
-        hangout_id IN (?) AND
-        is_concluded = ?;`,
-      [accountHangoutIds, false]
+        hangout_members.account_id = ? AND
+        hangouts.is_concluded = ?;`,
+      [authSessionDetails.user_id, false]
     );
 
     if (ongoingHangoutRows[0] && ongoingHangoutRows[0].ongoing_hangouts_count >= MAX_ONGOING_HANGOUTS_LIMIT) {
