@@ -4,10 +4,9 @@ import { dbPool } from '../../src/db/db';
 import { dayMilliseconds, hourMilliseconds, MAX_HANGOUT_MEMBERS_LIMIT, MAX_ONGOING_HANGOUTS_LIMIT, MIN_HANGOUT_MEMBERS_LIMIT } from '../../src/util/constants';
 import { RowDataPacket } from 'mysql2';
 import * as authSessionModule from '../../src/auth/authSessions';
-import { generateAuthSessionId, generateHangoutId } from '../../src/util/tokenGenerator';
+import { generateAuthSessionId } from '../../src/util/tokenGenerator';
 import * as cookeUtils from '../../src/util/cookieUtils';
 import * as hangoutWebSocketServerModule from '../../src/webSockets/hangout/hangoutWebSocketServer';
-import * as addHangoutEventModule from '../../src/util/addHangoutEvent';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
 
 beforeEach(async () => {
@@ -93,11 +92,17 @@ describe('POST hangouts/create/accountLeader', () => {
     };
 
     await testKeys({ hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testKeys({ hangoutTitle: 'Some Title', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds });
+
     await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, someRandomValue: 23 });
   });
 
@@ -118,11 +123,17 @@ describe('POST hangouts/create/accountLeader', () => {
     };
 
     await testHangoutTitle({ hangoutTitle: null, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutTitle({ hangoutTitle: NaN, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutTitle({ hangoutTitle: 23, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutTitle({ hangoutTitle: '', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutTitle({ hangoutTitle: 'ab', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutTitle({ hangoutTitle: 'beyondTwentyFiveCharacters', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutTitle({ hangoutTitle: 'forbidden-!$%', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
   });
 
@@ -143,8 +154,11 @@ describe('POST hangouts/create/accountLeader', () => {
     };
 
     await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 23, membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 'short', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 'beyondFortyCharactersForSomeIncrediblyWeirdReason', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 'forbiddenSymbols#$%^&', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
   });
 
@@ -165,10 +179,15 @@ describe('POST hangouts/create/accountLeader', () => {
     };
 
     await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: null, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 23.5, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: '20', availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 'someSTring', availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: MIN_HANGOUT_MEMBERS_LIMIT - 1, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: MAX_HANGOUT_MEMBERS_LIMIT + 1, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
   });
 
@@ -189,7 +208,9 @@ describe('POST hangouts/create/accountLeader', () => {
     };
 
     await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
+
     await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: dayMilliseconds / 3, suggestionsPeriod: dayMilliseconds * 2.5, votingPeriod: dayMilliseconds - 45000 });
+
     await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: NaN, votingPeriod: dayMilliseconds + 0.5 });
   });
 
