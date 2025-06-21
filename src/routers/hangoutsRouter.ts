@@ -275,12 +275,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
   const { availabilityPeriod, suggestionsPeriod, votingPeriod }: RequestData = requestData;
   if (!hangoutValidation.isValidHangoutPeriods([availabilityPeriod, suggestionsPeriod, votingPeriod])) {
-    res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutStages' });
-    return;
-  };
-
-  if (!isValidDisplayName(requestData.displayName)) {
-    res.status(400).json({ message: 'Invalid guest display name.', reason: 'invalidDisplayName' });
+    res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutPeriods' });
     return;
   };
 
@@ -296,6 +291,11 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
   if (requestData.username === requestData.password) {
     res.status(409).json({ message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+    return;
+  };
+
+  if (!isValidDisplayName(requestData.displayName)) {
+    res.status(400).json({ message: 'Invalid guest display name.', reason: 'invalidDisplayName' });
     return;
   };
 
