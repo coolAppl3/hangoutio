@@ -8,6 +8,7 @@ import { generateAuthSessionId } from '../../src/util/tokenGenerator';
 import * as cookeUtils from '../../src/util/cookieUtils';
 import * as hangoutWebSocketServerModule from '../../src/webSockets/hangout/hangoutWebSocketServer';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
+import * as AddHangoutEventModule from '../../src/util/addHangoutEvent';
 
 beforeEach(async () => {
   interface TableNames extends RowDataPacket {
@@ -35,6 +36,7 @@ afterEach(() => {
 const removeRequestCookieSpy = jest.spyOn(cookeUtils, 'removeRequestCookie');
 const destroyAuthSessionSpy = jest.spyOn(authSessionModule, 'destroyAuthSession');
 const sendHangoutWebSocketMessageSpy = jest.spyOn(hangoutWebSocketServerModule, 'sendHangoutWebSocketMessage');
+const addHangoutEventSpy = jest.spyOn(AddHangoutEventModule, 'addHangoutEvent');
 
 describe('POST hangouts/create/accountLeader', () => {
   it('should reject requests if an authSessionId cookie is not found', async () => {
@@ -395,5 +397,321 @@ describe('POST hangouts/create/accountLeader', () => {
     );
 
     expect(hangoutMemberRows.length).toBe(1);
+  });
+});
+
+describe('POST hangouts/create/guestLeader', () => {
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangouts/create/guestLeader')
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', displayName: 'John Doe' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword' });
+
+    await testKeys({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe', someRandomValue: 23 });
+  });
+
+  it('should reject requests with an invalid hangout title', async () => {
+    async function testHangoutTitle(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid hangout title.');
+      expect(response.body.reason).toBe('invalidHangoutTitle');
+    };
+
+    await testHangoutTitle({ hangoutTitle: null, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutTitle({ hangoutTitle: NaN, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutTitle({ hangoutTitle: 23, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutTitle({ hangoutTitle: '', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutTitle({ hangoutTitle: 'ab', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutTitle({ hangoutTitle: 'beyondTwentyFiveCharacters', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutTitle({ hangoutTitle: 'forbidden-!$%', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it(`should reject requests with a truthy password that's invalid`, async () => {
+    async function testHangoutPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid hangout password.');
+      expect(response.body.reason).toBe('invalidHangoutPassword');
+    };
+
+    await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 23, membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 'short', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 'beyondFortyCharactersForSomeIncrediblyWeirdReason', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutPassword({ hangoutTitle: 'Some Title', hangoutPassword: 'forbiddenSymbols#$%^&', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with an invalid members limit', async () => {
+    async function testMemberLimit(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid hangout members limit.');
+      expect(response.body.reason).toBe('invalidMembersLimit');
+    };
+
+    await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: null, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 23.5, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: '20', availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 'someSTring', availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: MIN_HANGOUT_MEMBERS_LIMIT - 1, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testMemberLimit({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: MAX_HANGOUT_MEMBERS_LIMIT + 1, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with one or more invalid hangout period', async () => {
+    async function testHangoutPeriods(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid hangout stages configuration.');
+      expect(response.body.reason).toBe('invalidHangoutPeriods');
+    };
+
+    await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: dayMilliseconds / 3, suggestionsPeriod: dayMilliseconds * 2.5, votingPeriod: dayMilliseconds - 45000, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: NaN, votingPeriod: dayMilliseconds + 0.5, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with an invalid username', async () => {
+    async function testUsername(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid guest username.');
+      expect(response.body.reason).toBe('invalidUsername');
+    };
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: null, password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: NaN, password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 23, password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: '', password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'beyondTwentyFiveCharacters', password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'ab', password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'white space', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with an invalid password', async () => {
+    async function testUsername(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid guest password.');
+      expect(response.body.reason).toBe('invalidGuestPassword');
+    };
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: null, displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: NaN, displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 23, displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'short', displayName: 'John Doe' });
+
+    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'beyondFortyCharactersForSomeIncrediblyWeirdReason', displayName: 'John Doe' });
+  });
+
+  it('should reject requests where the guest username and password are identical', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangouts/create/guestLeader')
+      .send({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe23', password: 'johnDoe23', displayName: 'John Doe' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe(`Password can't be identical to username.`);
+    expect(response.body.reason).toBe('passwordEqualsUsername');
+  });
+
+  it('should reject requests with an invalid display name', async () => {
+    async function testDisplayName(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangouts/create/guestLeader')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid guest display name.');
+      expect(response.body.reason).toBe('invalidDisplayName');
+    };
+
+    await testDisplayName({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 23 });
+
+    await testDisplayName({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: NaN });
+
+    await testDisplayName({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: null });
+
+    await testDisplayName({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'beyondTwentyFiveCharacters' });
+  });
+
+  it('should reject requests if the username is taken by a registered user', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example1@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangouts/create/guestLeader')
+      .send({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Username is already taken.');
+    expect(response.body.reason).toBe('guestUsernameTaken');
+  });
+
+  it('should reject requests if the username is taken by another guest user', async () => {
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['someId', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO guests VALUES (${generatePlaceHolders(5)});`,
+      [1, 'johnDoe', 'somePassword', 'John Doe', 'someId']
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangouts/create/guestLeader')
+      .send({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Username is already taken.');
+    expect(response.body.reason).toBe('guestUsernameTaken');
+  });
+
+  it('should accept the request and insert a row in the hangouts, guests, and hangout_members tables, create an auth session for the user, add the authSessionId to the response cookie, return the hangout ID, and add a hangout event', async () => {
+    const createAuthSessionSpy = jest.spyOn(authSessionModule, 'createAuthSession');
+    const setResponseCookieSpy = jest.spyOn(cookeUtils, 'setResponseCookie');
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangouts/create/guestLeader')
+      .send({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(201);
+
+    expect(response.body).toHaveProperty('hangoutId');
+    expect(response.body).toHaveProperty('authSessionCreated');
+
+    expect(typeof response.body.hangoutId).toBe('string');
+    expect(typeof response.body.authSessionCreated).toBe('boolean');
+
+    expect(createAuthSessionSpy).toHaveBeenCalled();
+    expect(setResponseCookieSpy).toHaveBeenCalled();
+    expect(addHangoutEventSpy).toHaveBeenCalled();
+
+    const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangouts WHERE hangout_title = ?`, ['Some Title']);
+    const [guestRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM guests WHERE username = ?;`, ['johnDoe']);
+    const [hangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangout_members WHERE username = ?;`, ['johnDoe']);
+    const [eventRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangout_events WHERE hangout_id = ?`, [response.body.hangoutId]);
+
+    expect(hangoutRows.length).toBe(1);
+    expect(guestRows.length).toBe(1);
+    expect(hangoutMemberRows.length).toBe(1);
+    expect(eventRows.length).toBe(1);
   });
 });
