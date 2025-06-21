@@ -3761,7 +3761,7 @@ accountsRouter.delete('/leaveHangout', async (req: Request, res: Response) => {
 
   const hangoutId = req.query.hangoutId;
 
-  if (typeof hangoutId !== 'string') {
+  if (typeof hangoutId !== 'string' || !isValidHangoutId(hangoutId)) {
     res.status(400).json({ message: 'Invalid request data.' });
     return;
   };
