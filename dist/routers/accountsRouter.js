@@ -2601,7 +2601,7 @@ exports.accountsRouter.get('/hangoutInvites', async (req, res) => {
     ;
     const offset = req.query.offset;
     if (typeof offset !== 'string' || !Number.isInteger(+offset)) {
-        res.status(400).json({ message: 'Invalid offset value.' });
+        res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
     ;
@@ -2865,7 +2865,7 @@ exports.accountsRouter.get('/hangoutHistory', async (req, res) => {
       ORDER BY
         created_on_timestamp DESC
       LIMIT ? OFFSET ?;`, [authSessionDetails.user_id, constants_1.ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE, +offset]);
-        res.json({ hangouts: hangoutRows });
+        res.json(hangoutRows);
     }
     catch (err) {
         console.log(err);
@@ -2892,7 +2892,7 @@ exports.accountsRouter.delete('/leaveHangout', async (req, res) => {
     }
     ;
     const hangoutId = req.query.hangoutId;
-    if (typeof hangoutId !== 'string') {
+    if (typeof hangoutId !== 'string' || !(0, hangoutValidation_1.isValidHangoutId)(hangoutId)) {
         res.status(400).json({ message: 'Invalid request data.' });
         return;
     }
@@ -2921,18 +2921,31 @@ exports.accountsRouter.delete('/leaveHangout', async (req, res) => {
             return;
         }
         ;
-        const [hangoutMemberRows] = await db_1.dbPool.execute(`DELETE FROM
+        const [hangoutMemberRows] = await db_1.dbPool.execute(`SELECT
+        hangout_member_id
+      FROM
         hangout_members
       WHERE
         account_id = ? AND
         hangout_id = ?
       LIMIT 1;`, [authSessionDetails.user_id, hangoutId]);
-        res.json({});
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
+            res.json({});
             return;
         }
         ;
+        const [resultSetHeader] = await db_1.dbPool.execute(`DELETE FROM
+        hangout_members
+      WHERE
+        hangout_member_id = ?;`, [hangoutMemberDetails.hangout_member_id]);
+        if (resultSetHeader.affectedRows === 0) {
+            res.status(500).json({ message: 'Internal server error.' });
+            (0, errorLogger_1.logUnexpectedError)(req, 'Failed to delete rows.');
+            return;
+        }
+        ;
+        res.json({});
         (0, hangoutWebSocketServer_1.sendHangoutWebSocketMessage)([hangoutId], {
             type: 'hangoutMember',
             reason: 'memberLeft',
