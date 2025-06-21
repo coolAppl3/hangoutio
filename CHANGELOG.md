@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.17] (2025-06-21)
+
+### Tests
+
+- Removed a number of redundant `expects()` statements in `accountsRouter.test.ts`.
+- Implemented unit tests for GET `accounts/hangoutInvites`.
+- Implemented unit tests for GET `accounts`.
+- Implemented unit tests for GET `accounts/hangoutHistory`.
+- Implemented unit tests for DELETE `accounts/leaveHangout`.
+
+
+### Bug Fixes
+
+- Fixed GET `accounts/hangoutHistory` returning the hangouts array within an object, instead of just returning the array directly.
+- Fixed DELETE `accounts/leaveHangout` not validating the hangout ID provided by the requester.
+- Fixed DELETE `accounts/leaveHangout` not correctly fetching the `hangout_member_id` to send a websocket message about the member leaving.
+
+
 ## [0.5.16] (2025-06-19)
 
 ### Code Refactoring

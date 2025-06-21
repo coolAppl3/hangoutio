@@ -106,7 +106,7 @@ async function loadMoreHangouts(): Promise<void> {
   };
 
   try {
-    const hangouts: Hangout[] = (await loadMoreHangoutsService(accountHangoutState.fetchOffset)).data.hangouts;
+    const hangouts: Hangout[] = (await loadMoreHangoutsService(accountHangoutState.fetchOffset)).data;
 
     accountState.data.hangoutHistory.push(...hangouts);
     accountHangoutState.fetchOffset += ACCOUNT_HANGOUT_HISTORY_FETCH_BATCH_SIZE;

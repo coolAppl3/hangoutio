@@ -238,11 +238,7 @@ export function getAccountInfoService(): Promise<AxiosResponse<AccountInfo>> {
 
 // --- --- ---
 
-interface LoadMoreHangoutsData {
-  hangouts: Hangout[],
-};
-
-export function loadMoreHangoutsService(offset: number): Promise<AxiosResponse<LoadMoreHangoutsData>> {
+export function loadMoreHangoutsService(offset: number): Promise<AxiosResponse<Hangout[]>> {
   return axios.get(`${accountsApiUrl}/hangoutHistory?offset=${offset}`);
 };
 
