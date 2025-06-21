@@ -6494,7 +6494,7 @@ describe('GET accounts/hangoutHistory', () => {
   });
 
   it('should reject requests with an invalid offset', async () => {
-    async function testKeys(offset: string): Promise<void> {
+    async function testOffset(offset: string): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .get(`/api/accounts/hangoutHistory?offset=${offset}`)
         .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
@@ -6505,9 +6505,9 @@ describe('GET accounts/hangoutHistory', () => {
       expect(response.body.message).toBe('Invalid request data.');
     };
 
-    await testKeys('23.5');
-    await testKeys('white space');
-    await testKeys('!nv@l!d');
+    await testOffset('23.5');
+    await testOffset('white space');
+    await testOffset('!nv@l!d');
   });
 
   it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
