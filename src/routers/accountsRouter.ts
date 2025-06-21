@@ -3807,7 +3807,9 @@ accountsRouter.delete('/leaveHangout', async (req: Request, res: Response) => {
     }
 
     const [hangoutMemberRows] = await dbPool.execute<HangoutMemberDetails[]>(
-      `DELETE FROM
+      `SELECT
+        hangout_member_id
+      FROM
         hangout_members
       WHERE
         account_id = ? AND
@@ -3816,13 +3818,29 @@ accountsRouter.delete('/leaveHangout', async (req: Request, res: Response) => {
       [authSessionDetails.user_id, hangoutId]
     );
 
-    res.json({});
-
     const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
 
     if (!hangoutMemberDetails) {
+      res.json({});
       return;
     };
+
+    const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+      `DELETE FROM
+        hangout_members
+      WHERE
+        hangout_member_id = ?;`,
+      [hangoutMemberDetails.hangout_member_id]
+    );
+
+    if (resultSetHeader.affectedRows === 0) {
+      res.status(500).json({ message: 'Internal server error.' });
+      logUnexpectedError(req, 'Failed to delete rows.');
+
+      return;
+    };
+
+    res.json({});
 
     sendHangoutWebSocketMessage([hangoutId], {
       type: 'hangoutMember',
