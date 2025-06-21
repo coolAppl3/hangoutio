@@ -85,17 +85,17 @@ export function isValidHangoutPeriods(hangoutPeriods: number[]): boolean {
   return true;
 };
 
-function isValidHangoutPeriod(hangoutStage: number): boolean {
-  if (!Number.isInteger(hangoutStage) || hangoutStage <= 0) {
+function isValidHangoutPeriod(hangoutPeriod: number): boolean {
+  if (!Number.isInteger(hangoutPeriod) || hangoutPeriod <= 0) {
     return false;
   };
 
-  if (hangoutStage % dayMilliseconds !== 0) {
+  if (hangoutPeriod % dayMilliseconds !== 0) {
     return false;
   };
 
-  const hangoutStageDays: number = hangoutStage / dayMilliseconds;
-  if (hangoutStageDays < MIN_HANGOUT_PERIOD_DAYS || hangoutStageDays > MAX_HANGOUT_PERIOD_DAYS) {
+  const hangoutPeriodDays: number = hangoutPeriod / dayMilliseconds;
+  if (hangoutPeriodDays < MIN_HANGOUT_PERIOD_DAYS || hangoutPeriodDays > MAX_HANGOUT_PERIOD_DAYS) {
     return false;
   };
 
