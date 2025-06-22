@@ -30,13 +30,9 @@ export function initCronJobs(): void {
     removeEmptyHangoutWebSocketSets();
   });
 
-  // every 10 minutes
-  cron.schedule('*/10 * * * *', async () => {
-    await clearExpiredAuthSessions();
-  });
-
   // every hour
   cron.schedule('0 * * * *', async () => {
+    await clearExpiredAuthSessions();
     await hangoutCronJobs.deleteNoMemberHangouts();
   });
 

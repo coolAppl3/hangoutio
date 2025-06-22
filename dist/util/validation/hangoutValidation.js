@@ -90,17 +90,17 @@ function isValidHangoutPeriods(hangoutPeriods) {
 }
 exports.isValidHangoutPeriods = isValidHangoutPeriods;
 ;
-function isValidHangoutPeriod(hangoutStage) {
-    if (!Number.isInteger(hangoutStage) || hangoutStage <= 0) {
+function isValidHangoutPeriod(hangoutPeriod) {
+    if (!Number.isInteger(hangoutPeriod) || hangoutPeriod <= 0) {
         return false;
     }
     ;
-    if (hangoutStage % constants_1.dayMilliseconds !== 0) {
+    if (hangoutPeriod % constants_1.dayMilliseconds !== 0) {
         return false;
     }
     ;
-    const hangoutStageDays = hangoutStage / constants_1.dayMilliseconds;
-    if (hangoutStageDays < constants_1.MIN_HANGOUT_PERIOD_DAYS || hangoutStageDays > constants_1.MAX_HANGOUT_PERIOD_DAYS) {
+    const hangoutPeriodDays = hangoutPeriod / constants_1.dayMilliseconds;
+    if (hangoutPeriodDays < constants_1.MIN_HANGOUT_PERIOD_DAYS || hangoutPeriodDays > constants_1.MAX_HANGOUT_PERIOD_DAYS) {
         return false;
     }
     ;

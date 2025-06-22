@@ -115,20 +115,16 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
     interface AccountDetails extends RowDataPacket {
       display_name: string,
       username: string,
-      hangout_id: string,
     };
 
     const [accountRows] = await dbPool.execute<AccountDetails[]>(
       `SELECT
         accounts.display_name,
-        accounts.username,
-        hangout_members.hangout_id
+        accounts.username
       FROM
         accounts
-      LEFT JOIN
-        hangout_members on accounts.account_id = hangout_members.account_id
       WHERE
-        accounts.account_id = ?;`,
+        account_id = ?;`,
       [authSessionDetails.user_id]
     );
 
@@ -142,21 +138,21 @@ hangoutsRouter.post('/create/accountLeader', async (req: Request, res: Response)
       return;
     };
 
-    const accountHangoutIds: string[] = accountRows.map((row: AccountDetails) => row.hangout_id);
-
     interface OngoingHangoutsDetails extends RowDataPacket {
       ongoing_hangouts_count: number,
     };
 
-    const [ongoingHangoutRows] = await dbPool.query<OngoingHangoutsDetails[]>(
+    const [ongoingHangoutRows] = await dbPool.execute<OngoingHangoutsDetails[]>(
       `SELECT
-        COUNT(*) as ongoing_hangouts_count
+        COUNT(*) AS ongoing_hangouts_count
       FROM
-        hangouts
+        hangout_members
+      LEFT JOIN
+        hangouts ON hangout_members.hangout_id = hangouts.hangout_id
       WHERE
-        hangout_id IN (?) AND
-        is_concluded = ?;`,
-      [accountHangoutIds, false]
+        hangout_members.account_id = ? AND
+        hangouts.is_concluded = ?;`,
+      [authSessionDetails.user_id, false]
     );
 
     if (ongoingHangoutRows[0] && ongoingHangoutRows[0].ongoing_hangouts_count >= MAX_ONGOING_HANGOUTS_LIMIT) {
@@ -279,12 +275,7 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
   const { availabilityPeriod, suggestionsPeriod, votingPeriod }: RequestData = requestData;
   if (!hangoutValidation.isValidHangoutPeriods([availabilityPeriod, suggestionsPeriod, votingPeriod])) {
-    res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutStages' });
-    return;
-  };
-
-  if (!isValidDisplayName(requestData.displayName)) {
-    res.status(400).json({ message: 'Invalid guest display name.', reason: 'invalidDisplayName' });
+    res.status(400).json({ message: 'Invalid hangout stages configuration.', reason: 'invalidHangoutPeriods' });
     return;
   };
 
@@ -300,6 +291,11 @@ hangoutsRouter.post('/create/guestLeader', async (req: Request, res: Response) =
 
   if (requestData.username === requestData.password) {
     res.status(409).json({ message: `Password can't be identical to username.`, reason: 'passwordEqualsUsername' });
+    return;
+  };
+
+  if (!isValidDisplayName(requestData.displayName)) {
+    res.status(400).json({ message: 'Invalid guest display name.', reason: 'invalidDisplayName' });
     return;
   };
 
@@ -552,7 +548,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     };
 
     if (hangoutMemberDetails.is_concluded) {
-      res.status(403).json({ message: `Hangout has already been concluded.` });
+      res.status(403).json({ message: 'Hangout has already been concluded.' });
       return;
     };
 
@@ -731,7 +727,7 @@ hangoutsRouter.patch('/details/updateTitle', async (req: Request, res: Response)
     };
 
     if (!hangoutDetails.is_leader) {
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
       return;
     };
 
@@ -766,7 +762,7 @@ hangoutsRouter.patch('/details/updateTitle', async (req: Request, res: Response)
 
     const eventTimestamp: number = Date.now();
     const eventDescription: string = `Hangout title was updated to: ${requestData.newTitle}.`;
-    addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
 
     sendHangoutWebSocketMessage([requestData.hangoutId], {
       type: 'hangout',
@@ -926,7 +922,7 @@ hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Re
 
     if (!hangoutDetails.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
 
       return;
     };
@@ -1384,7 +1380,7 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
 
     if (!hangoutDetails.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
 
       return;
     };
