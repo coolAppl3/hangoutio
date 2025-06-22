@@ -1380,7 +1380,7 @@ hangoutsRouter.patch('/details/stages/progress', async (req: Request, res: Respo
 
     if (!hangoutDetails.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
 
       return;
     };
