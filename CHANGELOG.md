@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.18] (2025-06-23)
+
+### Code Refactoring
+
+- Improved how POST `hangouts/create/accountLeader` checks if the user is part of too many hangouts.
+- Changed `clearExpiredAuthSessions()` into a once-per-hour cron-job.
+
+
+### Tests
+
+- Implemented unit tests for POST `hangouts/create/accountLeader`.
+- Implemented unit tests for POST `hangouts/create/guestLeader`.
+- Implemented unit tests for PATCH `hangouts/details/updatePassword`.
+- Implemented unit tests for PATCH `hangouts/details/updateTitle`.
+- Implemented unit tests for PATCH `hangouts/details/updateMembersLimit`.
+- Implemented unit tests for PATCH `hangouts/details/stages/update`.
+- Implemented unit tests for PATCH `hangouts/details/stages/progress`.
+
+
 ## [0.5.17] (2025-06-21)
 
 ### Tests

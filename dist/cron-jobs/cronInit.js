@@ -51,10 +51,8 @@ function initCronJobs() {
         await (0, rateLimiterCronJobs_1.removeStaleRateTrackerRows)();
         (0, hangoutWebSocketServer_1.removeEmptyHangoutWebSocketSets)();
     });
-    node_cron_1.default.schedule('*/10 * * * *', async () => {
-        await (0, authCronJobs_1.clearExpiredAuthSessions)();
-    });
     node_cron_1.default.schedule('0 * * * *', async () => {
+        await (0, authCronJobs_1.clearExpiredAuthSessions)();
         await hangoutCronJobs.deleteNoMemberHangouts();
     });
     node_cron_1.default.schedule('0 0 * * *', async () => {
