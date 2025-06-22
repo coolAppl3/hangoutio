@@ -548,7 +548,7 @@ hangoutsRouter.patch('/details/updatePassword', async (req: Request, res: Respon
     };
 
     if (hangoutMemberDetails.is_concluded) {
-      res.status(403).json({ message: `Hangout has already been concluded.` });
+      res.status(403).json({ message: 'Hangout has already been concluded.' });
       return;
     };
 
@@ -762,7 +762,7 @@ hangoutsRouter.patch('/details/updateTitle', async (req: Request, res: Response)
 
     const eventTimestamp: number = Date.now();
     const eventDescription: string = `Hangout title was updated to: ${requestData.newTitle}.`;
-    addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
+    await addHangoutEvent(requestData.hangoutId, eventDescription, eventTimestamp);
 
     sendHangoutWebSocketMessage([requestData.hangoutId], {
       type: 'hangout',
