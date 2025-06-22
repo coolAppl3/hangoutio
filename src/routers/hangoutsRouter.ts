@@ -922,7 +922,7 @@ hangoutsRouter.patch('/details/updateMembersLimit', async (req: Request, res: Re
 
     if (!hangoutDetails.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
 
       return;
     };
