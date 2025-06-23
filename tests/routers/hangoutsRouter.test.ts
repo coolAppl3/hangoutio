@@ -2808,7 +2808,7 @@ describe('PATCH hangouts/details/stages/progress', () => {
   });
 });
 
-describe('DELETE hangouts/', () => {
+describe('DELETE hangouts', () => {
   it('should reject requests if an authSessionId cookie is not found', async () => {
     const response: SuperTestResponse = await request(app)
       .delete('/api/hangouts')

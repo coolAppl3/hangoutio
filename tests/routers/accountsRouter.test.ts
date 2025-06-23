@@ -6178,7 +6178,7 @@ describe('GET accounts/hangoutInvites', () => {
   });
 });
 
-describe('GET accounts/', () => {
+describe('GET accounts', () => {
   it('should reject requests if an authSessionId cookie is not found', async () => {
     const response: SuperTestResponse = await request(app)
       .get('/api/accounts')
