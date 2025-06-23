@@ -1618,7 +1618,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMemberDetails.is_leader) {
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
       return;
     };
 
