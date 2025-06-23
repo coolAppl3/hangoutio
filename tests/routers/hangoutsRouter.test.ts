@@ -3096,3 +3096,51 @@ describe('DELETE hangouts/', () => {
     expect(deletedHangoutMemberRows.length).toBe(0);
   });
 });
+
+describe('GET hangouts/details/hangoutExists', () => {
+  it('should reject requests without a hangoutId in the URL query string', async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/hangoutExists')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send();
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Invalid hangout ID.');
+  });
+
+  it('should reject requests with an invalid hangout ID', async () => {
+    async function testHangoutId(hangoutId: string): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .get(`/api/hangouts/details/hangoutExists?hangoutId=${hangoutId}`)
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid hangout ID.');
+    };
+
+    await testHangoutId('htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR');
+    await testHangoutId('htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR-1749132719013');
+    await testHangoutId('1749132719013_htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR');
+    await testHangoutId('1749132719013');
+  });
+
+  it('should accept the request and return a boolean to inform the user if the hangout is password protected', async () => {
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/hangoutExists?hangoutId=htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send();
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toHaveProperty('isPasswordProtected');
+    expect(typeof response.body.isPasswordProtected).toBe('boolean');
+  });
+});
