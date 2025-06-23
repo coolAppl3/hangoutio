@@ -3144,3 +3144,340 @@ describe('GET hangouts/details/hangoutExists', () => {
     expect(typeof response.body.isPasswordProtected).toBe('boolean');
   });
 });
+
+describe('GET hangouts/details/initial', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial')
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests without a hangout ID in the URL query string', async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send();
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Invalid hangout ID.');
+    expect(response.body.reason).toBe('invalidHangoutId');
+  });
+
+  it('should reject requests with an invalid hangout ID', async () => {
+    async function testHangoutId(hangoutId: string): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .get(`/api/hangouts/details/initial?hangoutId=${hangoutId}`)
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send();
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid hangout ID.');
+      expect(response.body.reason).toBe('invalidHangoutId');
+    };
+
+    await testHangoutId('htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR');
+    await testHangoutId('htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR-1749132719013');
+    await testHangoutId('1749132719013_htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR');
+    await testHangoutId('1749132719013');
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial?hangoutId=htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now() - hourMilliseconds, Date.now()]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial?hangoutId=htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if the hangout is not found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial?hangoutId=htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Hangout not found.');
+  });
+
+  it('should reject requests if the user is not a member of the hangout, returning basic data relevant to potentially joining it', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial?hangoutId=htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Not a member of this hangout.');
+    expect(response.body.reason).toBe('notMember');
+
+    expect(response.body).toHaveProperty('resData');
+
+    expect(response.body.resData).toHaveProperty('isConcluded');
+    expect(typeof response.body.resData.isConcluded).toBe('boolean');
+
+    expect(response.body.resData).toHaveProperty('isPasswordProtected');
+    expect(typeof response.body.resData.isConcluded).toBe('boolean');
+
+    expect(response.body.resData).toHaveProperty('isFull');
+    expect([null, true, false]).toContain(response.body.resData.isFull);
+  });
+
+  it('should accept the request and return the initial hangout data', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)});`,
+      [1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'johnDoe', 'account', 1, null, 'John Doe', true]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_events VALUES (${generatePlaceHolders(3)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'Some hangout event.', , Date.now()]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO chat VALUES (${generatePlaceHolders(5)});`,
+      [1, 1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'Test message.', Date.now()]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .get('/api/hangouts/details/initial?hangoutId=htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send();
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toHaveProperty('hangoutMemberId');
+    expect(Number.isInteger(response.body.hangoutMemberId)).toBe(true);
+
+    expect(response.body).toHaveProperty('isLeader');
+    expect([0, 1]).toContain(response.body.isLeader);
+
+
+    expect(response.body).toHaveProperty('isPasswordProtected');
+    expect(typeof response.body.isPasswordProtected).toBe('boolean');
+
+    expect(response.body).toHaveProperty('conclusionTimestamp');
+    expect(Number.isInteger(response.body.conclusionTimestamp)).toBe(true);
+
+
+    expect(response.body).toHaveProperty('hangoutDetails');
+    const hangoutDetails = response.body.hangoutDetails;
+
+    expect(hangoutDetails).toHaveProperty('hangout_title');
+    expect(typeof hangoutDetails.hangout_title).toBe('string');
+
+    expect(hangoutDetails).toHaveProperty('members_limit');
+    expect(Number.isInteger(hangoutDetails.members_limit)).toBe(true);
+
+    expect(hangoutDetails).toHaveProperty('availability_period');
+    expect(Number.isInteger(hangoutDetails.availability_period)).toBe(true);
+
+    expect(hangoutDetails).toHaveProperty('suggestions_period');
+    expect(Number.isInteger(hangoutDetails.suggestions_period)).toBe(true);
+
+    expect(hangoutDetails).toHaveProperty('voting_period');
+    expect(Number.isInteger(hangoutDetails.voting_period)).toBe(true);
+
+    expect(hangoutDetails).toHaveProperty('current_stage');
+    expect(Number.isInteger(hangoutDetails.current_stage)).toBe(true);
+
+    expect(hangoutDetails).toHaveProperty('stage_control_timestamp');
+    expect(Number.isInteger(hangoutDetails.stage_control_timestamp)).toBe(true);
+
+    expect(hangoutDetails).toHaveProperty('created_on_timestamp');
+    expect(Number.isInteger(hangoutDetails.created_on_timestamp)).toBe(true);
+
+    expect(hangoutDetails).toHaveProperty('is_concluded');
+    expect([0, 1]).toContain(hangoutDetails.is_concluded);
+
+
+    expect(response.body).toHaveProperty('hangoutMembers');
+    expect(Array.isArray(response.body.hangoutMembers)).toBe(true);
+
+    const hangoutMember = response.body.hangoutMembers[0];
+
+    expect(hangoutMember).toHaveProperty('hangout_member_id');
+    expect(Number.isInteger(hangoutMember.hangout_member_id)).toBe(true);
+
+    expect(hangoutMember).toHaveProperty('username');
+    expect(typeof hangoutMember.username).toBe('string');
+
+    expect(hangoutMember).toHaveProperty('user_type');
+    expect(['account', 'guest']).toContain(hangoutMember.user_type);
+
+    expect(hangoutMember).toHaveProperty('account_id');
+    expect(['number', 'object']).toContain(typeof hangoutMember.account_id); // object referring to potential null
+
+    expect(hangoutMember).toHaveProperty('display_name');
+    expect(typeof hangoutMember.display_name).toBe('string');
+
+    expect(hangoutMember).toHaveProperty('is_leader');
+    expect([0, 1]).toContain(hangoutMember.is_leader);
+
+    expect(hangoutMember).toHaveProperty('is_friend');
+    expect([0, 1]).toContain(hangoutMember.is_friend);
+
+
+    expect(response.body).toHaveProperty('hangoutMemberCountables');
+    const hangoutMemberCountables = response.body.hangoutMemberCountables;
+
+    expect(hangoutMemberCountables).toHaveProperty('availability_slots_count');
+    expect(Number.isInteger(hangoutMemberCountables.availability_slots_count)).toBe(true);
+
+    expect(hangoutMemberCountables).toHaveProperty('suggestions_count');
+    expect(Number.isInteger(hangoutMemberCountables.suggestions_count)).toBe(true);
+
+    expect(hangoutMemberCountables).toHaveProperty('votes_count');
+    expect(Number.isInteger(hangoutMemberCountables.votes_count)).toBe(true);
+
+
+    expect(response.body).toHaveProperty('latestChatMessages');
+    expect(Array.isArray(response.body.latestChatMessages)).toBe(true);
+
+    const chatMessage = response.body.latestChatMessages[0];
+
+    expect(chatMessage).toHaveProperty('message_id');
+    expect(Number.isInteger(chatMessage.message_id)).toBe(true);
+
+    expect(chatMessage).toHaveProperty('hangout_member_id');
+    expect(Number.isInteger(chatMessage.hangout_member_id)).toBe(true);
+
+    expect(chatMessage).toHaveProperty('message_content');
+    expect(typeof chatMessage.message_content).toBe('string');
+
+    expect(chatMessage).toHaveProperty('message_timestamp');
+    expect(Number.isInteger(chatMessage.message_timestamp)).toBe(true);
+
+
+    expect(response.body).toHaveProperty('latestHangoutEvents');
+    expect(Array.isArray(response.body.latestHangoutEvents)).toBe(true);
+
+    const hangoutEvent = response.body.latestHangoutEvents[0];
+
+    expect(hangoutEvent).toHaveProperty('event_description');
+    expect(typeof hangoutEvent.event_description).toBe('string');
+
+    expect(hangoutEvent).toHaveProperty('event_timestamp');
+    expect(Number.isInteger(hangoutEvent.event_timestamp)).toBe(true);
+  });
+});
