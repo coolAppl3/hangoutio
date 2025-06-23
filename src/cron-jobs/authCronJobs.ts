@@ -11,7 +11,7 @@ export async function clearExpiredAuthSessions(): Promise<void> {
       [currentTimestamp]
     );
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(`CRON JOB ERROR: ${clearExpiredAuthSessions.name}`)
     console.log(err);
   };

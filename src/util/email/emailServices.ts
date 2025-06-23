@@ -18,7 +18,7 @@ export async function sendVerificationEmail(verificationEmailConfig: Verificatio
       html: emailTemplates.getVerificationEmailTemplate(verificationEmailConfig),
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
   };
 };
@@ -40,7 +40,7 @@ export async function sendRecoveryEmail(recoveryEmailConfig: RecoveryEmailConfig
       html: emailTemplates.getRecoveryEmailTemplate(recoveryEmailConfig),
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
   };
 };
@@ -60,7 +60,7 @@ export async function sendDeletionConfirmationEmail(deletionEmailConfig: Deletio
       html: emailTemplates.getAccountDeletionConfirmationTemplate(deletionEmailConfig),
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
   };
 };
@@ -79,7 +79,7 @@ export async function sendDeletionWarningEmail(deletionEmailWarningConfig: Delet
       html: emailTemplates.getAccountDeletionWarningTemplate(deletionEmailWarningConfig.displayName),
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
   };
 };
@@ -99,7 +99,7 @@ export async function sendEmailUpdateEmail(updateEmailConfig: UpdateEmailConfig)
       html: emailTemplates.getEmailUpdateTemplate(updateEmailConfig),
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
   };
 };
@@ -113,7 +113,7 @@ export async function sendEmailUpdateWarningEmail(to: string, displayName: strin
       html: emailTemplates.getEmailUpdateWarningTemplate(displayName),
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(err);
   };
 };

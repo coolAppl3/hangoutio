@@ -1,6 +1,6 @@
 {
   "name": "hangoutio",
-  "version": "0.5.18",
+  "version": "0.5.19",
   "description": "Hangoutio is an app designed to organize hangouts with your friends easily and efficiently.",
   "main": "app.js",
   "type": "commonjs",
@@ -9,8 +9,8 @@
     "dev-nodemon": "nodemon ./dist/server.js",
     "dev-ts": "tsc --watch",
     "ts-clean": "tsc --build --clean",
-    "test": "jest",
-    "test-watch": "jest --watch"
+    "test": "jest --runInBand",
+    "test-watch": "jest --runInBand --watch"
   },
   "author": "Yanal Mohsen",
   "license": "GPL-3.0",

@@ -1618,7 +1618,7 @@ hangoutsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMemberDetails.is_leader) {
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
       return;
     };
 
@@ -1714,12 +1714,12 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
   const hangoutId = req.query.hangoutId;
 
   if (typeof hangoutId !== 'string') {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'invalidHangoutId' });
     return;
   };
 
   if (!hangoutValidation.isValidHangoutId(hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'invalidHangoutId' });
     return;
   };
 
