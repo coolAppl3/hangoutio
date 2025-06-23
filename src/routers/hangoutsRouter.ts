@@ -1714,12 +1714,12 @@ hangoutsRouter.get('/details/initial', async (req: Request, res: Response) => {
   const hangoutId = req.query.hangoutId;
 
   if (typeof hangoutId !== 'string') {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'invalidHangoutId' });
     return;
   };
 
   if (!hangoutValidation.isValidHangoutId(hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'hangoutId' });
+    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'invalidHangoutId' });
     return;
   };
 
