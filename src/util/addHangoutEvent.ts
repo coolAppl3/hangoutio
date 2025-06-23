@@ -14,7 +14,7 @@ export async function addHangoutEvent(hangoutId: string, eventDescription: strin
       [hangoutId, eventDescription, timestamp]
     );
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(`HANGOUT EVENT LOGGING ERROR: ${err}`);
   };
 };

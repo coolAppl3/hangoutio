@@ -82,7 +82,7 @@ export async function progressHangouts(): Promise<void> {
       },
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(`CRON JOB ERROR: ${progressHangouts.name}`);
     console.log(err);
   };
@@ -153,7 +153,7 @@ export async function concludeSingleSuggestionHangouts(): Promise<void> {
       },
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
     console.log(err);
   };
@@ -226,7 +226,7 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
       },
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.log(`CRON JOB ERROR: ${concludeNoSuggestionHangouts.name}`);
     console.log(err);
   };
