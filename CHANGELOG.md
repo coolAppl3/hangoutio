@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.19] (2025-06-24)
+
+### Tests
+
+- Added `--runInBand` to jest commands to prevent conflicts in the test database.
+- Implemented unit tests for DELETE `hangouts`.
+- Implemented unit tests for GET `hangouts/details/hangoutExists`.
+- Implemented unit tests for GET `hangouts/details/initial`.
+- Implemented unit tests for GET `hangouts/events`.
+
+
+### Bug Fixes
+
+- Fixed a few `try-catch` blocks typing the caught error as `any` instead of `unknown`.
+
+
 ## [0.5.18] (2025-06-23)
 
 ### Code Refactoring
