@@ -264,8 +264,6 @@ describe('POST availabilitySlots', () => {
     expect(response.body.message).toBe('Hangout not found.');
   });
 
-  // ----------
-
   it(`should reject requests if the hangout member user id doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
@@ -345,41 +343,6 @@ describe('POST availabilitySlots', () => {
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('message');
     expect(response.body.message).toBe('Hangout has already been concluded.');
-  });
-
-  it('should reject requests with an availability slot that starts before the hangout conclusion timestamp', async () => {
-    await dbPool.execute(
-      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
-      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
-    );
-
-    await dbPool.execute(
-      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
-      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
-    );
-
-    await dbPool.execute(
-      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
-      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
-    );
-
-    await dbPool.execute(
-      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)});`,
-      [1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'johnDoe', 'account', 1, null, 'John Doe', true]
-    );
-
-    const response: SuperTestResponse = await request(app)
-      .post('/api/availabilitySlots')
-      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
-      .send({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
-
-    expect(response.status).toBe(409);
-
-    expect(response.body).toHaveProperty('message');
-    expect(response.body).toHaveProperty('reason');
-
-    expect(response.body.message).toBe('Invalid availability slot start date and time.');
-    expect(response.body.reason).toBe('invalidStart');
   });
 
   it('should reject requests with an availability slot that starts before the hangout conclusion timestamp', async () => {
