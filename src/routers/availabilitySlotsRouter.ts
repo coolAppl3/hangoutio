@@ -932,7 +932,7 @@ availabilitySlotsRouter.get('/', async (req: Request, res: Response) => {
       [hangoutId]
     );
 
-    res.json({ availabilitySlots: availabilitySlotRows });
+    res.json(availabilitySlotRows);
 
   } catch (err: unknown) {
     console.log(err);
