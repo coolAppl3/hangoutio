@@ -424,7 +424,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
 
     if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
       await connection.rollback();
-      res.status(409).json({ message: 'Invalid slot start.', reason: 'invalidStart' });
+      res.status(409).json({ message: 'Invalid availability slot start date and time.', reason: 'invalidStart' });
 
       return;
     };
@@ -439,7 +439,7 @@ availabilitySlotsRouter.patch('/', async (req: Request, res: Response) => {
     if (overlappedSlot) {
       await connection.rollback();
       res.status(409).json({
-        message: 'Slot overlap detected.',
+        message: 'Overlap detected.',
         reason: 'slotOverlap',
         resData: {
           overlappedSlotId: overlappedSlot.availability_slot_id,
