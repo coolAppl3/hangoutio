@@ -555,5 +555,12 @@ describe('POST availabilitySlots', () => {
     expect(Number.isInteger(response.body.availabilitySlotId)).toBe(true);
 
     expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
+
+    const [createdRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM availability_slots WHERE availability_slot_id = ?;`,
+      [response.body.availabilitySlotId]
+    );
+
+    expect(createdRows.length).toBe(1);
   });
 });
