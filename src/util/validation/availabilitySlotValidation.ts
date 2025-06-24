@@ -22,7 +22,7 @@ export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number,
   const dateObj: Date = new Date(hangoutConclusionTimestamp);
   const furthestPossibleTimestamp: number = dateObj.setMonth(dateObj.getMonth() + 6);
 
-  if (slotStart - hangoutConclusionTimestamp > furthestPossibleTimestamp) {
+  if (slotStart > furthestPossibleTimestamp) {
     return false;
   };
 
