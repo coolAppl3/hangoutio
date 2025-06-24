@@ -782,7 +782,7 @@ availabilitySlotsRouter.delete('/clear', async (req: Request, res: Response) => 
     };
 
     if (!hangoutMemberDetails.availability_slot_id) {
-      res.status(404).json({ message: 'No slots found.', reason: 'noSlotsFound' });
+      res.status(404).json({ message: 'No availability slots found.', reason: 'noSlotsFound' });
       return;
     };
 
