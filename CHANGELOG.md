@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.20] (2025-06-25)
+
+### Tests
+
+- Implemented unit tests for POST `availabilitySlots`.
+- Implemented unit tests for PATCH `availabilitySlots`.
+- Implemented unit tests for DELETE `availabilitySlots`.
+- Implemented unit tests for DELETE `availabilitySlots/clear`.
+- Implemented unit tests for GET `availabilitySlots`.
+
+
+### Bug Fixes
+
+- Fixed the if-statement meant to prevent availability slots to start beyond 6 months after the hangout's conclusion timestamp being flawed.
+- Fixed GET `availabilitySlots` returning a redundant object containing the availability slots, instead of just the array directly.
+
+
 ## [0.5.19] (2025-06-24)
 
 ### Tests
