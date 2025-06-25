@@ -349,7 +349,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         ;
         if (!availabilitySlotValidation.isValidAvailabilitySlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.slotStartTimestamp)) {
             await connection.rollback();
-            res.status(409).json({ message: 'Invalid slot start.', reason: 'invalidStart' });
+            res.status(409).json({ message: 'Invalid availability slot start date and time.', reason: 'invalidStart' });
             return;
         }
         ;
@@ -361,7 +361,7 @@ exports.availabilitySlotsRouter.patch('/', async (req, res) => {
         if (overlappedSlot) {
             await connection.rollback();
             res.status(409).json({
-                message: 'Slot overlap detected.',
+                message: 'Overlap detected.',
                 reason: 'slotOverlap',
                 resData: {
                     overlappedSlotId: overlappedSlot.availability_slot_id,
@@ -634,7 +634,7 @@ exports.availabilitySlotsRouter.delete('/clear', async (req, res) => {
         }
         ;
         if (!hangoutMemberDetails.availability_slot_id) {
-            res.status(404).json({ message: 'No slots found.', reason: 'noSlotsFound' });
+            res.status(404).json({ message: 'No availability slots found.', reason: 'noSlotsFound' });
             return;
         }
         ;
@@ -748,7 +748,7 @@ exports.availabilitySlotsRouter.get('/', async (req, res) => {
       ORDER BY
         slot_start_timestamp ASC
       LIMIT ${constants_1.MAX_HANGOUT_MEMBERS_LIMIT * constants_1.HANGOUT_AVAILABILITY_SLOTS_LIMIT};`, [hangoutId]);
-        res.json({ availabilitySlots: availabilitySlotRows });
+        res.json(availabilitySlotRows);
     }
     catch (err) {
         console.log(err);

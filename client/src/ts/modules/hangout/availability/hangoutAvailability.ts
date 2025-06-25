@@ -143,7 +143,7 @@ async function getHangoutAvailabilitySlots(): Promise<void> {
 
   try {
     const { hangoutId, hangoutMemberId } = globalHangoutState.data;
-    const availabilitySlots: AvailabilitySlot[] = (await getHangoutAvailabilitySlotsService(hangoutId, hangoutMemberId)).data.availabilitySlots;
+    const availabilitySlots: AvailabilitySlot[] = (await getHangoutAvailabilitySlotsService(hangoutId, hangoutMemberId)).data;
 
     hangoutAvailabilityState.availabilitySlots = availabilitySlots;
     hangoutAvailabilityState.isLoaded = true;
