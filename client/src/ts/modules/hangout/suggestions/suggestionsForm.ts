@@ -266,9 +266,9 @@ async function addHangoutSuggestion(): Promise<void> {
 
     if (status === 400) {
       const inputRecord: Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLParagraphElement | undefined> = {
-        title: suggestionTitleInput,
-        description: suggestionDescriptionTextarea,
-        dateTime: suggestionStartMockInput,
+        invalidTitle: suggestionTitleInput,
+        invalidDescription: suggestionDescriptionTextarea,
+        invalidSlot: suggestionStartMockInput,
       };
 
       const input = inputRecord[`${errReason}`];
