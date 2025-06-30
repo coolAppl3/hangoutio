@@ -69,7 +69,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!suggestionValidation.isValidSuggestionTimeSlot(requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp)) {
-    res.status(400).json({ message: 'Invalid suggestion date and time.', reason: 'invalidSlot' });
+    res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
     return;
   };
 
