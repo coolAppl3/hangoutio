@@ -194,8 +194,11 @@ describe('POST suggestions', () => {
     };
 
     await testSuggestionDescription({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: null, suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
+
     await testSuggestionDescription({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: 23, suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
+
     await testSuggestionDescription({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: '', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
+
     await testSuggestionDescription({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Too short', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
 
     let extremelyLongDescription: string = '';
@@ -205,6 +208,31 @@ describe('POST suggestions', () => {
     };
 
     await testSuggestionDescription({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: extremelyLongDescription, suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
+  });
+
+  it('should reject requests with an invalid suggestion time slot.', async () => {
+    async function testSuggestionTimeSlots(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/suggestions')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid suggestion time slot.');
+      expect(response.body.reason).toBe('invalidSlot');
+    };
+
+    await testSuggestionTimeSlots({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now() + 300, suggestionEndTimestamp: Date.now() + hourMilliseconds });
+
+    await testSuggestionTimeSlots({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() / 10 });
+
+    await testSuggestionTimeSlots({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: 'invalid' });
+
+    await testSuggestionTimeSlots({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: null });
   });
 
   it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
