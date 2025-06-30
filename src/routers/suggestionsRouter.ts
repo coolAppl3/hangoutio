@@ -187,7 +187,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
     if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
       await connection.rollback();
-      res.status(400).json({ message: 'Invalid suggestion date and time.', reason: 'invalidSlot' });
+      res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
 
       return;
     };
@@ -308,7 +308,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
   };
 
   if (!suggestionValidation.isValidSuggestionTimeSlot(requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp)) {
-    res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'dateTime' });
+    res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
     return;
   };
 
@@ -409,7 +409,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -420,7 +420,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
-      res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'dateTime' });
+      res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
       return;
     };
 

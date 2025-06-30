@@ -494,7 +494,7 @@ describe('POST suggestions', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(response.body.message).toBe('Invalid suggestion date and time.');
+    expect(response.body.message).toBe('Invalid suggestion time slot.');
     expect(response.body.reason).toBe('invalidSlot');
   });
 
@@ -532,7 +532,7 @@ describe('POST suggestions', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(response.body.message).toBe('Invalid suggestion date and time.');
+    expect(response.body.message).toBe('Invalid suggestion time slot.');
     expect(response.body.reason).toBe('invalidSlot');
   });
 
