@@ -955,7 +955,7 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     );
 
     if (validationRows.length === 0) {
-      res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
+      res.status(401).json({ message: `Hangout not found or you're not a member of it.`, reason: 'notHangoutMember' });
       return;
     };
 
