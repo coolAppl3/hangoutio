@@ -1214,7 +1214,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
     };
 
     if (memberSuggestionDetails.already_liked) {
-      res.status(409).json({ message: 'Already liked this suggestion.' });
+      res.json({});
       return;
     };
 

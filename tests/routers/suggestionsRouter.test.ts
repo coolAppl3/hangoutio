@@ -2669,7 +2669,7 @@ describe('POST suggestions/likes', () => {
     expect(response.body.message).toBe('Suggestion not found.');
   });
 
-  it('should reject requests if the suggestion is already liked', async () => {
+  it('should accept the request if the suggestion is already liked without taking further action', async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -2705,9 +2705,7 @@ describe('POST suggestions/likes', () => {
       .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
       .send({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
 
-    expect(response.status).toBe(409);
-    expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toBe('Already liked this suggestion.');
+    expect(response.status).toBe(200);
   });
 
   it('should accept the request, add the suggestion like, and send a websocket message', async () => {
