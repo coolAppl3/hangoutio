@@ -308,7 +308,7 @@ describe('POST suggestions', () => {
     expect(response.body.message).toBe('Hangout not found.');
   });
 
-  it(`should reject requests if the hangout member user id doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
+  it(`should reject requests if the hangout member user ID doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -904,7 +904,7 @@ describe('PATCH suggestions', () => {
     expect(response.body.message).toBe('Hangout not found.');
   });
 
-  it(`should reject requests if the hangout member user id doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
+  it(`should reject requests if the hangout member user ID doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
@@ -1422,7 +1422,7 @@ describe('DELETE suggestions', () => {
     expect(response.body.message).toBe('Hangout not found.');
   });
 
-  it(`should reject requests if the hangout member user id doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
+  it(`should reject requests if the hangout member user ID doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
     await dbPool.execute(
       `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
       [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
