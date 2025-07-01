@@ -2438,3 +2438,317 @@ describe('GET suggestions', () => {
     expect(Number.isInteger(response.body.memberVotes[0])).toBe(true);
   });
 });
+
+describe('POST suggestions/likes', () => {
+  it('should reject requests if an authSessionId cookie is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+  });
+
+  it('should reject requests if an invalid authSessionId cookie is found, and remove it', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=invalidId`)
+      .send({});
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/suggestions/likes')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testKeys({ suggestionId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testKeys({ suggestionId: 1, hangoutMemberId: 1 });
+    await testKeys({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', someRandomValue: 23 });
+  });
+
+  it('should reject requests with an invalid suggestion ID', async () => {
+    async function testSuggestionId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/suggestions/likes')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid suggestion ID.');
+    };
+
+    await testSuggestionId({ suggestionId: null, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testSuggestionId({ suggestionId: NaN, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testSuggestionId({ suggestionId: '', hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testSuggestionId({ suggestionId: '23.5', hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testSuggestionId({ suggestionId: 23.5, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+  });
+
+  it('should reject requests with an invalid hangout member ID', async () => {
+    async function testHangoutMemberId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/suggestions/likes')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid hangout member ID.');
+    };
+
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: null, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: NaN, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: '', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: '23.5', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: 23.5, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+  });
+
+  it('should reject requests with an invalid hangout ID', async () => {
+    async function testHangoutMemberId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/suggestions/likes')
+        .set('Cookie', `authSessionId=${generateAuthSessionId()}`)
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid hangout ID.');
+    };
+
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR' });
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR-1749132719013' });
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: 1, hangoutId: '1749132719013_htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR' });
+    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: 1, hangoutId: '1749132719013' });
+  });
+
+  it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+  });
+
+  it(`should reject requests if the user's auth session is found but is invalid, removing the authSessionId cookie, and destroying the auth session`, async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now() - hourMilliseconds, Date.now()]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Sign in session expired.');
+    expect(response.body.reason).toBe('authSessionExpired');
+
+    expect(destroyAuthSessionSpy).toHaveBeenCalled();
+    expect(removeRequestCookieSpy).toHaveBeenCalled();
+
+    const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM auth_sessions WHERE session_id = ?;`,
+      ['dummyAuthSessionIdForTesting1234']
+    );
+
+    expect(deletedRows.length).toBe(0);
+  });
+
+  it('should reject requests if user is not a member of the hangout', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, HANGOUT_SUGGESTIONS_STAGE, Date.now(), Date.now(), false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Not a member of this hangout.');
+    expect(response.body.reason).toBe('notHangoutMember');
+  });
+
+  it('should reject requests if the suggestion is not found', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, HANGOUT_SUGGESTIONS_STAGE, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)});`,
+      [1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'johnDoe', 'account', 1, null, 'John Doe', true]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Suggestion not found.');
+  });
+
+  it('should reject requests if the suggestion is already liked', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, HANGOUT_SUGGESTIONS_STAGE, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)});`,
+      [1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'johnDoe', 'account', 1, null, 'John Doe', true]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO suggestions VALUES (${generatePlaceHolders(8)});`,
+      [1, 1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'Some Title', 'Some suggestion description', Date.now() + (dayMilliseconds * 4), Date.now() + (dayMilliseconds * 4) + hourMilliseconds, false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO suggestion_likes VALUES (${generatePlaceHolders(4)});`,
+      [1, 1, 1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Already liked this suggestion.');
+  });
+
+  it('should accept the request, add the suggestion like, and send a websocket message', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO auth_sessions VALUES (${generatePlaceHolders(5)});`,
+      ['dummyAuthSessionIdForTesting1234', 1, 'account', Date.now(), Date.now() + hourMilliseconds * 6]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, HANGOUT_SUGGESTIONS_STAGE, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)});`,
+      [1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'johnDoe', 'account', 1, null, 'John Doe', true]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO suggestions VALUES (${generatePlaceHolders(8)});`,
+      [1, 1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'Some Title', 'Some suggestion description', Date.now() + (dayMilliseconds * 4), Date.now() + (dayMilliseconds * 4) + hourMilliseconds, false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/suggestions/likes')
+      .set('Cookie', `authSessionId=dummyAuthSessionIdForTesting1234`)
+      .send({ suggestionId: 1, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
+
+    expect(response.status).toBe(200);
+    expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
+
+    const [createdRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM suggestion_likes WHERE suggestion_id = ?;`,
+      [1]
+    );
+
+    expect(createdRows.length).toBe(1);
+  });
+});
