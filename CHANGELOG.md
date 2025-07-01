@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.5.21] (2025-07-02)
+
+### Tests
+
+- Implemented unit tests for POST `suggestions`.
+- Implemented unit tests for PATCH `suggestions`.
+- Implemented unit tests for DELETE `suggestions`.
+- Implemented unit tests for DELETE `suggestions/leader`.
+- Implemented unit tests for GET `suggestions`.
+- Implemented unit tests for POST `suggestions/likes`.
+- Implemented unit tests for DELETE `suggestions/likes`.
+
+
+### Code Refactoring
+
+- Refactored POST suggestion/likes to be idempotent when the user has already liked the suggestion.
+
+
+### Bug Fixes
+
+- Fixed the if-statement, meant to prevent suggestions from starting beyond 6 months after the hangout's conclusion timestamp, being flawed.
+
+
 ## [0.5.20] (2025-06-25)
 
 ### Tests

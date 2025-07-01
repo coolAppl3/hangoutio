@@ -418,13 +418,6 @@ async function addHangoutSuggestionLike(suggestion: Suggestion, suggestionElemen
 
     popup(errMessage, 'error');
 
-    if (status === 409) {
-      hangoutSuggestionState.memberLikesSet.add(suggestion.suggestion_id);
-      displaySuggestionLikeIcon(suggestionElement);
-
-      return;
-    };
-
     if (status === 404) {
       hangoutSuggestionState.suggestions = hangoutSuggestionState.suggestions.filter((existingSuggestion: Suggestion) => existingSuggestion.suggestion_id !== suggestion.suggestion_id);
 

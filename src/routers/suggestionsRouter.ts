@@ -59,17 +59,17 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!suggestionValidation.isValidSuggestionTitle(requestData.suggestionTitle)) {
-    res.status(400).json({ message: 'Invalid suggestion title.', reason: 'title' });
+    res.status(400).json({ message: 'Invalid suggestion title.', reason: 'invalidTitle' });
     return;
   };
 
   if (!suggestionValidation.isValidSuggestionDescription(requestData.suggestionDescription)) {
-    res.status(400).json({ message: 'Invalid suggestion description.', reason: 'description' });
+    res.status(400).json({ message: 'Invalid suggestion description.', reason: 'invalidDescription' });
     return;
   };
 
   if (!suggestionValidation.isValidSuggestionTimeSlot(requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp)) {
-    res.status(400).json({ message: 'Invalid suggestion date and time.', reason: 'dateTime' });
+    res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
     return;
   };
 
@@ -187,7 +187,7 @@ suggestionsRouter.post('/', async (req: Request, res: Response) => {
 
     if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
       await connection.rollback();
-      res.status(400).json({ message: 'Invalid suggestion date and time.', reason: 'dateTime' });
+      res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
 
       return;
     };
@@ -308,7 +308,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
   };
 
   if (!suggestionValidation.isValidSuggestionTimeSlot(requestData.suggestionStartTimestamp, requestData.suggestionEndTimestamp)) {
-    res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'dateTime' });
+    res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
     return;
   };
 
@@ -409,7 +409,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -420,7 +420,7 @@ suggestionsRouter.patch('/', async (req: Request, res: Response) => {
     };
 
     if (!suggestionValidation.isValidSuggestionSlotStart(hangoutMemberDetails.conclusion_timestamp, requestData.suggestionStartTimestamp)) {
-      res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'dateTime' });
+      res.status(400).json({ message: 'Invalid suggestion time slot.', reason: 'invalidSlot' });
       return;
     };
 
@@ -637,7 +637,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -733,7 +733,6 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     return;
   };
 
-
   try {
     interface AuthSessionDetails extends RowDataPacket {
       user_id: number,
@@ -819,7 +818,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -956,7 +955,7 @@ suggestionsRouter.get('/', async (req: Request, res: Response) => {
     );
 
     if (validationRows.length === 0) {
-      res.status(401).json({ message: 'Not a member of this hangout.', reason: 'notHangoutMember' });
+      res.status(401).json({ message: `Hangout not found or you're not a member of it.`, reason: 'notHangoutMember' });
       return;
     };
 
@@ -1215,7 +1214,7 @@ suggestionsRouter.post('/likes', async (req: Request, res: Response) => {
     };
 
     if (memberSuggestionDetails.already_liked) {
-      res.status(409).json({ message: 'Already liked this suggestion.' });
+      res.json({});
       return;
     };
 
