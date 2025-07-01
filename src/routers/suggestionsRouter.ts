@@ -733,7 +733,6 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     return;
   };
 
-
   try {
     interface AuthSessionDetails extends RowDataPacket {
       user_id: number,
