@@ -637,7 +637,7 @@ suggestionsRouter.delete('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
       return;
     };
 
@@ -819,7 +819,7 @@ suggestionsRouter.delete('/leader', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE) {
-      res.status(403).json({ message: `Hangout hasn't reached the suggestions stage yet.`, reason: 'inAvailabilityStage' });
+      res.status(403).json({ message: `Hangout isn't in the suggestions stage.`, reason: 'inAvailabilityStage' });
       return;
     };
 
