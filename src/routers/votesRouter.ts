@@ -155,13 +155,16 @@ votesRouter.post('/', async (req: Request, res: Response) => {
     };
 
     if (hangoutMemberDetails.is_concluded) {
+      await connection.rollback();
       res.status(403).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
+
       return;
     };
 
     if (hangoutMemberDetails.current_stage !== HANGOUT_VOTING_STAGE) {
+      await connection.rollback();
       res.status(403).json({
-        message: `Hangout hasn't reached the voting stage yet.`,
+        message: `Hangout isn't in the voting stage.`,
         reason: hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE ? 'inAvailabilityStage' : 'inSuggestionsStage',
       });
 
@@ -350,7 +353,7 @@ votesRouter.delete('/', async (req: Request, res: Response) => {
 
     if (hangoutMemberDetails.current_stage !== HANGOUT_VOTING_STAGE) {
       res.status(403).json({
-        message: `Hangout hasn't reached the voting stage yet.`,
+        message: `Hangout isn't in the voting stage.`,
         reason: hangoutMemberDetails.current_stage === HANGOUT_AVAILABILITY_STAGE ? 'inAvailabilityStage' : 'inSuggestionsStage',
       });
 
