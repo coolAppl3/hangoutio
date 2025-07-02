@@ -1,7 +1,7 @@
 import request, { Response as SuperTestResponse } from 'supertest';
 import { app } from '../../src/app';
 import { dbPool } from '../../src/db/db';
-import { dayMilliseconds, HANGOUT_AVAILABILITY_SLOTS_LIMIT, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds, minuteMilliseconds } from '../../src/util/constants';
+import { dayMilliseconds, HANGOUT_AVAILABILITY_STAGE, HANGOUT_CONCLUSION_STAGE, HANGOUT_SUGGESTIONS_LIMIT, HANGOUT_SUGGESTIONS_STAGE, HANGOUT_VOTING_STAGE, hourMilliseconds } from '../../src/util/constants';
 import { RowDataPacket } from 'mysql2';
 import * as authSessionModule from '../../src/auth/authSessions';
 import { generateAuthSessionId } from '../../src/util/tokenGenerator';
