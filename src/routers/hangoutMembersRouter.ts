@@ -46,7 +46,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
   };
 
   if (!isValidHangoutId(requestData.hangoutId)) {
-    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'invalidHangoutID' });
+    res.status(400).json({ message: 'Invalid hangout ID.', reason: 'invalidHangoutId' });
     return;
   };
 
