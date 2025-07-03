@@ -440,26 +440,14 @@ describe('POST availabilitySlots', () => {
     const slotStartTimestamp: number = Date.now() + (dayMilliseconds * 4);
     const slotEndTimestamp: number = Date.now() + (dayMilliseconds * 4) + hourMilliseconds;
 
-    const availabilitySlotValues: any[] = [];
+    let valuesString: string = '';
 
-    for (let i = 0; i < 10; i++) {
-      availabilitySlotValues.push(...[i + 1, 1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', slotStartTimestamp, slotEndTimestamp]);
+    for (let i = 0; i < HANGOUT_AVAILABILITY_SLOTS_LIMIT; i++) {
+      valuesString += `(${i + 1}, ${1}, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', ${slotStartTimestamp}, ${slotEndTimestamp}),`;
     };
 
-    await dbPool.execute(
-      `INSERT INTO availability_slots VALUES
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)}),
-      (${generatePlaceHolders(5)});`,
-      availabilitySlotValues
-    );
+    valuesString = valuesString.slice(0, -1);
+    await dbPool.execute(`INSERT INTO availability_slots VALUES ${valuesString};`);
 
     const response: SuperTestResponse = await request(app)
       .post('/api/availabilitySlots')
