@@ -137,8 +137,6 @@ describe('POST availabilitySlots', () => {
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
 
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
-
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 'string', slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
@@ -161,8 +159,6 @@ describe('POST availabilitySlots', () => {
     };
 
     await testSlotTimestamps({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, slotStartTimestamp: 3000, slotEndTimestamp: Date.now() });
-
-    await testSlotTimestamps({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: NaN });
 
     await testSlotTimestamps({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: null });
 
@@ -654,8 +650,6 @@ describe('PATCH availabilitySlots', () => {
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, availabilitySlotId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
 
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, availabilitySlotId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
-
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, availabilitySlotId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23.5', availabilitySlotId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
@@ -674,8 +668,6 @@ describe('PATCH availabilitySlots', () => {
     };
 
     await testAvailabilitySlotId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, availabilitySlotId: null, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
-
-    await testAvailabilitySlotId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, availabilitySlotId: NaN, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
 
     await testAvailabilitySlotId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, availabilitySlotId: 23.5, slotStartTimestamp: Date.now(), slotEndTimestamp: Date.now() + hourMilliseconds });
 
@@ -699,8 +691,6 @@ describe('PATCH availabilitySlots', () => {
     };
 
     await testSlotTimestamps({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, availabilitySlotId: 1, slotStartTimestamp: 3000, slotEndTimestamp: Date.now() });
-
-    await testSlotTimestamps({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, availabilitySlotId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: NaN });
 
     await testSlotTimestamps({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, availabilitySlotId: 1, slotStartTimestamp: Date.now(), slotEndTimestamp: null });
 

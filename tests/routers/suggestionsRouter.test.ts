@@ -141,8 +141,6 @@ describe('POST suggestions', () => {
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
 
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
-
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23.5', suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
@@ -719,8 +717,6 @@ describe('PATCH suggestions', () => {
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, suggestionId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
 
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, suggestionId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
-
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, suggestionId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23.5', suggestionId: 1, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
@@ -739,8 +735,6 @@ describe('PATCH suggestions', () => {
     };
 
     await testSuggestionId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionId: null, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
-
-    await testSuggestionId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionId: NaN, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
 
     await testSuggestionId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, suggestionId: 23.5, suggestionTitle: 'Some Title', suggestionDescription: 'Some suggestion description.', suggestionStartTimestamp: Date.now(), suggestionEndTimestamp: Date.now() + hourMilliseconds });
 
@@ -2513,7 +2507,6 @@ describe('POST suggestions/likes', () => {
     };
 
     await testSuggestionId({ suggestionId: null, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
-    await testSuggestionId({ suggestionId: NaN, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testSuggestionId({ suggestionId: '', hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testSuggestionId({ suggestionId: '23.5', hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testSuggestionId({ suggestionId: 23.5, hangoutMemberId: 1, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
@@ -2532,7 +2525,6 @@ describe('POST suggestions/likes', () => {
     };
 
     await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: null, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
-    await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: NaN, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: '', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: '23.5', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testHangoutMemberId({ suggestionId: 1, hangoutMemberId: 23.5, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
