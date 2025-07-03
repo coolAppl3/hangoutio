@@ -50,8 +50,8 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     return;
   };
 
-  if (requestData.hangoutPassword && !isValidPassword(requestData.hangoutPassword)) {
-    res.status(400).json({ message: 'Invalid hangout password', reason: 'invalidHangoutPassword' });
+  if (requestData.hangoutPassword !== null && !isValidPassword(requestData.hangoutPassword)) {
+    res.status(400).json({ message: 'Invalid hangout password.', reason: 'invalidHangoutPassword' });
     return;
   };
 
@@ -105,14 +105,24 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
     interface AccountDetails extends RowDataPacket {
       display_name: string,
       username: string,
-      joined_hangouts_counts: number,
+      joined_hangouts_count: number,
     };
 
     const [userRows] = await connection.execute<AccountDetails[]>(
       `SELECT
         display_name,
         username,
-        (SELECT COUNT(*) FROM hangout_members WHERE account_id = :userId) AS joined_hangouts_count
+        (
+          SELECT
+            COUNT(*)
+          FROM
+            hangout_members
+          INNER JOIN
+            hangouts ON hangout_members.hangout_id = hangouts.hangout_id
+          WHERE
+            hangout_members.account_id = :userId AND
+            hangouts.is_concluded = FALSE
+        ) AS joined_hangouts_count
       FROM
         accounts
       WHERE
@@ -132,7 +142,7 @@ hangoutMembersRouter.post('/joinHangout/account', async (req: Request, res: Resp
       return;
     };
 
-    if (accountDetails.joined_hangouts_counts >= MAX_ONGOING_HANGOUTS_LIMIT) {
+    if (accountDetails.joined_hangouts_count >= MAX_ONGOING_HANGOUTS_LIMIT) {
       await connection.rollback();
       res.status(409).json({
         message: `You've reached the limit of ${MAX_ONGOING_HANGOUTS_LIMIT} ongoing hangouts.`,
@@ -272,7 +282,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     return;
   };
 
-  if (requestData.hangoutPassword && !isValidNewPassword(requestData.hangoutPassword)) {
+  if (requestData.hangoutPassword !== null && !isValidNewPassword(requestData.hangoutPassword)) {
     res.status(400).json({ message: 'Invalid hangout password.', reason: 'invalidHangoutPassword' });
     return;
   };
