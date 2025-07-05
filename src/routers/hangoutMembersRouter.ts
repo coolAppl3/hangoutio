@@ -352,7 +352,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       };
     };
 
-    const isFull: boolean = hangoutDetails.member_count === hangoutDetails.members_limit;
+    const isFull: boolean = hangoutDetails.member_count >= hangoutDetails.members_limit;
     if (isFull) {
       await connection.rollback();
       res.status(409).json({ message: 'Hangout full.', reason: 'hangoutFull' });
