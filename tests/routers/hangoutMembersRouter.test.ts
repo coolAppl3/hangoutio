@@ -814,7 +814,7 @@ describe('DELETE hangoutMembers/kick', () => {
     expect(removeRequestCookieSpy).toHaveBeenCalled();
   });
 
-  it('should reject requests without a hangout ID, hangout member ID, and the ID of the member to kick', async () => {
+  it('should reject requests without a hangout ID, hangout member ID, and the ID of the member to kick in the URL query string', async () => {
     async function testQueryString(queryString: string): Promise<void> {
       const response: SuperTestResponse = await request(app)
         .delete(`/api/hangoutMembers/kick${queryString}`)
