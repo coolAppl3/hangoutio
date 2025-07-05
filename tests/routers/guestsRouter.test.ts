@@ -1,15 +1,11 @@
 import request, { Response as SuperTestResponse } from 'supertest';
 import { app } from '../../src/app';
 import { dbPool } from '../../src/db/db';
-import { dayMilliseconds, HANGOUT_CONCLUSION_STAGE, hourMilliseconds, MAX_ONGOING_HANGOUTS_LIMIT } from '../../src/util/constants';
+import { dayMilliseconds } from '../../src/util/constants';
 import { RowDataPacket } from 'mysql2';
 import * as authSessionModule from '../../src/auth/authSessions';
-import { generateAuthSessionId } from '../../src/util/tokenGenerator';
 import * as cookeUtils from '../../src/util/cookieUtils';
-import * as hangoutWebSocketServerModule from '../../src/webSockets/hangout/hangoutWebSocketServer';
 import { generatePlaceHolders } from '../../src/util/generatePlaceHolders';
-import { encryptPassword } from '../../src/util/encryptionUtils';
-import * as addHangoutEventModule from '../../src/util/addHangoutEvent';
 import bcrypt from 'bcrypt';
 
 beforeEach(async () => {
@@ -34,11 +30,6 @@ beforeEach(async () => {
 afterEach(() => {
   jest.clearAllMocks();
 });
-
-const removeRequestCookieSpy = jest.spyOn(cookeUtils, 'removeRequestCookie');
-const destroyAuthSessionSpy = jest.spyOn(authSessionModule, 'destroyAuthSession');
-const sendHangoutWebSocketMessageSpy = jest.spyOn(hangoutWebSocketServerModule, 'sendHangoutWebSocketMessage');
-const addHangoutEventSpy = jest.spyOn(addHangoutEventModule, 'addHangoutEvent');
 
 describe('POST guests/signIn', () => {
   it('should reject requests with missing or incorrect keys', async () => {
