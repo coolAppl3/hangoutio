@@ -467,3 +467,317 @@ describe('POST hangoutMembers/joinHangout/account', () => {
     expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
   });
 });
+
+describe('POST hangoutMembers/joinHangout/guest', () => {
+  it('should reject requests with an empty body', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangoutMembers/joinHangout/guest')
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Invalid request data.');
+  });
+
+  it('should reject requests with missing or incorrect keys', async () => {
+    async function testKeys(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangoutMembers/joinHangout/guest')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid request data.');
+    };
+
+    await testKeys({ hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, password: 'somePassword', displayName: 'John Doe' });
+
+    await testKeys({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, username: 'johnDoe', displayName: 'John Doe' });
+
+    await testKeys({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword' });
+
+    await testKeys({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe', someRandomValue: 23 });
+  });
+
+  it('should reject requests with an invalid hangout ID', async () => {
+    async function testHangoutId(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangoutMembers/joinHangout/guest')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Invalid hangout ID.');
+    };
+
+    await testHangoutId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR-1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutId({ hangoutId: '1749132719013_htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutId({ hangoutId: '1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with an invalid hangout password that is not null', async () => {
+    async function testHangoutPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangoutMembers/joinHangout/guest')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid hangout password.');
+      expect(response.body.reason).toBe('invalidHangoutPassword');
+    };
+
+    await testHangoutPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'white space', username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    await testHangoutPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: '!nv@l!d', username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with an invalid username', async () => {
+    async function testUsername(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangoutMembers/joinHangout/guest')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid username.');
+      expect(response.body.reason).toBe('invalidUsername');
+    };
+
+    await testUsername({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: null, password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'john', password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'beyondTwentyFiveCharacters', password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'white space', password: 'somePassword', displayName: 'John Doe' });
+
+    await testUsername({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: '!nv@l!d', password: 'somePassword', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with an invalid user password', async () => {
+    async function testUserPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangoutMembers/joinHangout/guest')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid user password.');
+      expect(response.body.reason).toBe('invalidUserPassword');
+    };
+
+    await testUserPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: 'short', displayName: 'John Doe' });
+
+    await testUserPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: 'beyondFortyCharactersForSomeIncrediblyWeirdReason', displayName: 'John Doe' });
+
+    await testUserPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: 'white space', displayName: 'John Doe' });
+
+    await testUserPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: '!nv@l!d', displayName: 'John Doe' });
+  });
+
+  it('should reject requests if the username is identical to the user password', async () => {
+    async function testUsernameAndPassword(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangoutMembers/joinHangout/guest')
+        .send(requestData);
+
+      expect(response.status).toBe(409);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe(`Password can't be identical to username.`);
+      expect(response.body.reason).toBe('passwordEqualsUsername');
+    };
+
+    await testUsernameAndPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe23', password: 'johnDoe23', displayName: 'John Doe' });
+    await testUsernameAndPassword({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'someUsername', password: 'someUsername', displayName: 'John Doe' });
+  });
+
+  it('should reject requests with an invalid display name', async () => {
+    async function testDisplayName(requestData: any): Promise<void> {
+      const response: SuperTestResponse = await request(app)
+        .post('/api/hangoutMembers/joinHangout/guest')
+        .send(requestData);
+
+      expect(response.status).toBe(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('reason');
+
+      expect(response.body.message).toBe('Invalid display name.');
+      expect(response.body.reason).toBe('invalidDisplayName');
+    };
+
+    await testDisplayName({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: 'somePassword', displayName: '' });
+
+    await testDisplayName({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: 'somePassword', displayName: 'beyondTwentyFiveCharacters' });
+
+    await testDisplayName({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: 'somePassword', displayName: 'double  white  space' });
+  });
+
+  it('should reject the request if the hangout is not found', async () => {
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangoutMembers/joinHangout/guest')
+      .send({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'somePassword', username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('Hangout not found.');
+  });
+
+  it('should reject the request if the hangout is password-protected, but the hangout password is incorrect', async () => {
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', encryptPassword('somePassword'), 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangoutMembers/joinHangout/guest')
+      .send({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: 'incorrectPassword', username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Incorrect hangout password.');
+    expect(response.body.reason).toBe('hangoutPassword');
+  });
+
+  it('should reject the request if the hangout is full', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)}), (${generatePlaceHolders(8)});`,
+      [
+        2, 'example2@example.com', 'someHashedPassword', 'johnDoe2', 'John Doe', Date.now(), true, 0,
+        3, 'exampl3e@example.com', 'someHashedPassword', 'johnDoe3', 'John Doe', Date.now(), true, 0
+      ]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 2, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangout_members VALUES (${generatePlaceHolders(8)}), (${generatePlaceHolders(8)});`,
+      [
+        2, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'johnDoe2', 'account', 2, null, 'John Doe', false,
+        3, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'johnDoe3', 'account', 3, null, 'John Doe', false
+      ]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangoutMembers/joinHangout/guest')
+      .send({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Hangout full.');
+    expect(response.body.reason).toBe('hangoutFull');
+  });
+
+  it('should reject the request if the username is already taken by a registered user', async () => {
+    await dbPool.execute(
+      `INSERT INTO accounts VALUES (${generatePlaceHolders(8)});`,
+      [1, 'example@example.com', 'someHashedPassword', 'johnDoe', 'John Doe', Date.now(), true, 0]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangoutMembers/joinHangout/guest')
+      .send({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Username already taken.');
+    expect(response.body.reason).toBe('usernameTaken');
+  });
+
+  it('should reject the request if the username is already taken by a guest user', async () => {
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    await dbPool.execute(
+      `INSERT INTO guests VALUES (${generatePlaceHolders(5)});`,
+      [1, 'johnDoe', 'somePassword', 'John Doe', 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
+    );
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangoutMembers/joinHangout/guest')
+      .send({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(409);
+
+    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('reason');
+
+    expect(response.body.message).toBe('Username already taken.');
+    expect(response.body.reason).toBe('usernameTaken');
+  });
+
+  it('should accept the request, create a guest account, create a hangout member row, create an auth session, add a hangout event, send a websocket message, and return a boolean value on whether an auth session was successfully created', async () => {
+    await dbPool.execute(
+      `INSERT INTO hangouts VALUES (${generatePlaceHolders(11)});`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', 'someTitle', null, 10, dayMilliseconds, dayMilliseconds, dayMilliseconds, 1, Date.now(), Date.now(), false]
+    );
+
+    const setResponseCookieSpy = jest.spyOn(cookeUtils, 'setResponseCookie');
+
+    const response: SuperTestResponse = await request(app)
+      .post('/api/hangoutMembers/joinHangout/guest')
+      .send({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutPassword: null, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toHaveProperty('authSessionCreated');
+    expect(typeof response.body.authSessionCreated).toBe('boolean');
+
+    const [createdGuestRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM guests WHERE username = ?;`,
+      ['johnDoe']
+    );
+
+    const [createdHangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM hangout_members WHERe username = ? AND hangout_id = ?;`,
+      ['johnDoe', 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
+    );
+
+    expect(createdGuestRows.length).toBe(1);
+    expect(createdHangoutMemberRows.length).toBe(1);
+
+    expect(setResponseCookieSpy).toHaveBeenCalled();
+    expect(addHangoutEventSpy).toHaveBeenCalled();
+    expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
+  });
+});
