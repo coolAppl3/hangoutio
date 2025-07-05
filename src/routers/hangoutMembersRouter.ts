@@ -581,21 +581,6 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
       return;
     };
 
-    if (!hangoutMember.hangout_is_concluded) {
-      await dbPool.query(
-        `DELETE FROM
-          votes
-        WHERE
-          hangout_member_id = :memberToKickId;
-        
-        DELETE FROM
-          suggestion_likes
-        WHERE
-          hangout_member_id = :memberToKickId;`,
-        { memberToKickId: +memberToKickId }
-      );
-    };
-
     if (!memberToKick.account_id) {
       const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
         `DELETE FROM
@@ -611,25 +596,21 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
 
         return;
       };
+    };
 
-      res.json({});
-
-      const eventTimestamp: number = Date.now();
-      const eventDescription: string = `${memberToKick.display_name} was kicked from the hangout.`;
-      await addHangoutEvent(hangoutId, eventDescription, eventTimestamp);
-
-      sendHangoutWebSocketMessage([hangoutId], {
-        type: 'hangoutMember',
-        reason: 'memberKicked',
-        data: {
-          kickedMemberId: +memberToKickId,
-
-          eventTimestamp,
-          eventDescription,
-        },
-      });
-
-      return;
+    if (!hangoutMember.hangout_is_concluded) {
+      await dbPool.query(
+        `DELETE FROM
+          votes
+        WHERE
+          hangout_member_id = :memberToKickId;
+        
+        DELETE FROM
+          suggestion_likes
+        WHERE
+          hangout_member_id = :memberToKickId;`,
+        { memberToKickId: +memberToKickId }
+      );
     };
 
     const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
