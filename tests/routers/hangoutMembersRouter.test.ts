@@ -1462,13 +1462,6 @@ describe('DELETE hangoutMembers/leave', () => {
 
     expect(response.status).toBe(200);
 
-    const [createdRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM hangout_events WHERE hangout_id = ?;`,
-      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
-    );
-
-    expect(createdRows.length).toBe(1);
-
     const [deletedGuestRows] = await dbPool.execute<RowDataPacket[]>(
       `SELECT 1 FROM guests WHERE guest_id = ?;`,
       [1]
@@ -1493,6 +1486,13 @@ describe('DELETE hangoutMembers/leave', () => {
     expect(deletedHangoutMemberRows.length).toBe(0);
     expect(deletedSuggestionLikeRows.length).toBe(0);
     expect(deletedVoteRows.length).toBe(0);
+
+    const [createdRows] = await dbPool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM hangout_events WHERE hangout_id = ?;`,
+      ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
+    );
+
+    expect(createdRows.length).toBe(1);
 
     expect(addHangoutEventSpy).toHaveBeenCalled();
     expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
