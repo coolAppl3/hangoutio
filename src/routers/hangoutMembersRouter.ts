@@ -752,12 +752,7 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
 
     const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
 
-    if (!hangoutMemberDetails) {
-      res.status(404).json({ message: 'Hangout not found.' });
-      return;
-    };
-
-    if (hangoutMemberDetails.hangout_id !== hangoutId) {
+    if (!hangoutMemberDetails || hangoutMemberDetails.hangout_id !== hangoutId) {
       res.status(404).json({ message: 'Hangout not found.' });
       return;
     };
@@ -768,6 +763,23 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
 
       res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
       return;
+    };
+
+    if (authSessionDetails.user_type === 'guest') {
+      const [resultSetHeader] = await dbPool.execute<ResultSetHeader>(
+        `DELETE FROM
+          guests
+        WHERE
+          guest_id = ?;`,
+        [authSessionDetails.user_id]
+      );
+
+      if (resultSetHeader.affectedRows === 0) {
+        res.status(500).json({ message: 'Internal server error.' });
+        await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
+
+        return;
+      };
     };
 
     if (!hangoutMemberDetails.hangout_is_concluded) {
@@ -798,11 +810,6 @@ hangoutMembersRouter.delete('/leave', async (req: Request, res: Response) => {
       await logUnexpectedError(req, { message: 'Failed to delete rows.', trace: null });
 
       return;
-    };
-
-    if (authSessionDetails.user_type === 'guest') {
-      await purgeAuthSessions(authSessionDetails.user_id, 'guest');
-      removeRequestCookie(res, 'authSessionId');
     };
 
     res.json({});
