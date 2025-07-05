@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.5.22] (2025-07-05)
+
+### Tests
+
+- Removed tests testing for `NaN` values, as JSON stringification would not permit such a value to reach any of them.
+- Implemented unit tests for POST `votes`.
+- Implemented unit tests for DELETE `votes`.
+- Implemented unit tests for POST `hangoutMembers/joinHangout/account`.
+- Implemented unit tests for POST `hangoutMembers/joinHangout/guest`.
+- Implemented unit tests for DELETE `hangoutMembers/kick`.
+- Implemented unit tests for DELETE `hangoutMembers/leave`.
+- Implemented unit tests for PATCH `hangoutMembers/relinquishLeadership`.
+- Implemented unit tests for PATCH `hangoutMembers/transferLeadership`.
+- Implemented unit tests for PATCH `hangoutMembers/claimLeadership`.
+
+
+### Bug Fixes
+
+- Fixed POST `votes` not rolling back the transaction in some cases.
+- Fixed POST `hangoutMembers/joinHangout/account` and POST `hangoutMembers/joinHangout/guest` not correctly declining empty strings passed for the hangout password.
+- Fixed POST `hangoutMembers/joinHangout/guest` not correctly checking if the username is taken.
+- Fixed DELETE `hangoutMembers/kick` not deleting the `hangout_members` row when kicking a guest user, as it relied on logic that was present earlier in the project.
+- Fixed DELETE `hangoutMembers/leave` not deleting a guest user's account.
+
+
 ## [0.5.21] (2025-07-02)
 
 ### Tests

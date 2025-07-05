@@ -126,8 +126,6 @@ describe('POST hangouts/create/accountLeader', () => {
 
     await testHangoutTitle({ hangoutTitle: null, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
 
-    await testHangoutTitle({ hangoutTitle: NaN, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
-
     await testHangoutTitle({ hangoutTitle: 23, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
 
     await testHangoutTitle({ hangoutTitle: '', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
@@ -212,8 +210,6 @@ describe('POST hangouts/create/accountLeader', () => {
     await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds });
 
     await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: dayMilliseconds / 3, suggestionsPeriod: dayMilliseconds * 2.5, votingPeriod: dayMilliseconds - 45000 });
-
-    await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: NaN, votingPeriod: dayMilliseconds + 0.5 });
   });
 
   it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
@@ -459,8 +455,6 @@ describe('POST hangouts/create/guestLeader', () => {
 
     await testHangoutTitle({ hangoutTitle: null, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
 
-    await testHangoutTitle({ hangoutTitle: NaN, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
-
     await testHangoutTitle({ hangoutTitle: 23, hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
 
     await testHangoutTitle({ hangoutTitle: '', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
@@ -542,8 +536,6 @@ describe('POST hangouts/create/guestLeader', () => {
     await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
 
     await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: dayMilliseconds / 3, suggestionsPeriod: dayMilliseconds * 2.5, votingPeriod: dayMilliseconds - 45000, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
-
-    await testHangoutPeriods({ hangoutTitle: 'Some Title', hangoutPassword: 'someHangoutPassword', membersLimit: 10, availabilityPeriod: null, suggestionsPeriod: NaN, votingPeriod: dayMilliseconds + 0.5, username: 'johnDoe', password: 'somePassword', displayName: 'John Doe' });
   });
 
   it('should reject requests with an invalid username', async () => {
@@ -562,8 +554,6 @@ describe('POST hangouts/create/guestLeader', () => {
     };
 
     await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: null, password: 'somePassword', displayName: 'John Doe' });
-
-    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: NaN, password: 'somePassword', displayName: 'John Doe' });
 
     await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 23, password: 'somePassword', displayName: 'John Doe' });
 
@@ -592,8 +582,6 @@ describe('POST hangouts/create/guestLeader', () => {
     };
 
     await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: null, displayName: 'John Doe' });
-
-    await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: NaN, displayName: 'John Doe' });
 
     await testUsername({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 23, displayName: 'John Doe' });
 
@@ -632,8 +620,6 @@ describe('POST hangouts/create/guestLeader', () => {
     };
 
     await testDisplayName({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: 23 });
-
-    await testDisplayName({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: NaN });
 
     await testDisplayName({ hangoutTitle: 'Some Title', hangoutPassword: 'somePassword', membersLimit: 10, availabilityPeriod: dayMilliseconds, suggestionsPeriod: dayMilliseconds, votingPeriod: dayMilliseconds, username: 'johnDoe', password: 'somePassword', displayName: null });
 
@@ -810,7 +796,6 @@ describe('PATCH hangouts/details/updatePassword', () => {
     };
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, newPassword: 'someNewPassword' });
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, newPassword: 'someNewPassword' });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, newPassword: 'someNewPassword' });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23', newPassword: 'someNewPassword' });
   });
@@ -1229,7 +1214,6 @@ describe('PATCH hangouts/details/updateTitle', () => {
     };
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, newTitle: 'New Title' });
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, newTitle: 'New Title' });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, newTitle: 'New Title' });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23', newTitle: 'New Title' });
   });
@@ -1251,7 +1235,6 @@ describe('PATCH hangouts/details/updateTitle', () => {
     };
 
     await testNewTitle({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newTitle: null });
-    await testNewTitle({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newTitle: NaN });
     await testNewTitle({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newTitle: 23 });
     await testNewTitle({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newTitle: 'ab' });
     await testNewTitle({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newTitle: 'forbidden-!$%' });
@@ -1616,7 +1599,6 @@ describe('PATCH hangouts/details/updateMembersLimit', () => {
     };
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, newMembersLimit: 10 });
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, newMembersLimit: 10 });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, newMembersLimit: 10 });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23', newMembersLimit: 10 });
   });
@@ -1634,7 +1616,6 @@ describe('PATCH hangouts/details/updateMembersLimit', () => {
     };
 
     await testNewMembersLimit({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newMembersLimit: null });
-    await testNewMembersLimit({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newMembersLimit: NaN });
     await testNewMembersLimit({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newMembersLimit: 23.5 });
     await testNewMembersLimit({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newMembersLimit: '23.5' });
     await testNewMembersLimit({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 1, newMembersLimit: MIN_HANGOUT_MEMBERS_LIMIT - 1 });
@@ -2053,7 +2034,6 @@ describe('PATCH hangouts/details/stages/update', () => {
     };
 
     await testHangoutMemberID({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null, newAvailabilityPeriod: dayMilliseconds, newSuggestionsPeriod: dayMilliseconds, newVotingPeriod: dayMilliseconds });
-    await testHangoutMemberID({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN, newAvailabilityPeriod: dayMilliseconds, newSuggestionsPeriod: dayMilliseconds, newVotingPeriod: dayMilliseconds });
     await testHangoutMemberID({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5, newAvailabilityPeriod: dayMilliseconds, newSuggestionsPeriod: dayMilliseconds, newVotingPeriod: dayMilliseconds });
     await testHangoutMemberID({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23.5', newAvailabilityPeriod: dayMilliseconds, newSuggestionsPeriod: dayMilliseconds, newVotingPeriod: dayMilliseconds });
   });
@@ -2515,7 +2495,6 @@ describe('PATCH hangouts/details/stages/progress', () => {
     };
 
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: null });
-    await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: NaN });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: 23.5 });
     await testHangoutMemberId({ hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013', hangoutMemberId: '23.5' });
   });

@@ -368,7 +368,6 @@ describe('POST accounts/verification/resendEmail', () => {
 
     await testAccountId({ accountId: 23.5 });
     await testAccountId({ accountId: 'someString' });
-    await testAccountId({ accountId: NaN });
   });
 
   it('should reject requests if the user is signed in', async () => {
@@ -531,7 +530,6 @@ describe('PATCH accounts/verification/verify', () => {
     await testAccountId({ accountId: null, verificationCode: 'ASDFGH' });
     await testAccountId({ accountId: '', verificationCode: 'ASDFGH' });
     await testAccountId({ accountId: '23', verificationCode: 'ASDFGH' });
-    await testAccountId({ accountId: NaN, verificationCode: 'ASDFGH' });
     await testAccountId({ accountId: 2.4, verificationCode: 'ASDFGH' });
   });
 
@@ -551,7 +549,6 @@ describe('PATCH accounts/verification/verify', () => {
     };
 
     await testVerificationCode({ accountId: 23, verificationCode: null });
-    await testVerificationCode({ accountId: 23, verificationCode: NaN });
     await testVerificationCode({ accountId: 23, verificationCode: '' });
     await testVerificationCode({ accountId: 23, verificationCode: '123' });
     await testVerificationCode({ accountId: 23, verificationCode: 'ASD' });
@@ -1094,7 +1091,6 @@ describe('POST accounts/recovery/resendEmail', () => {
     };
 
     await testAccountId({ accountId: true });
-    await testAccountId({ accountId: NaN });
     await testAccountId({ accountId: '' });
     await testAccountId({ accountId: 'string' });
     await testAccountId({ accountId: 23.5 });
@@ -1256,7 +1252,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     };
 
     await testAccountId({ accountId: null, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
-    await testAccountId({ accountId: NaN, recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
     await testAccountId({ accountId: '', recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
     await testAccountId({ accountId: 'invalid', recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
     await testAccountId({ accountId: '23', recoveryCode: 'AAAAAA', newPassword: 'someNewPassword' });
@@ -1279,7 +1274,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     };
 
     await testRecoveryCode({ accountId: 23, recoveryCode: null, newPassword: 'someNewPassword' });
-    await testRecoveryCode({ accountId: 23, recoveryCode: NaN, newPassword: 'someNewPassword' });
     await testRecoveryCode({ accountId: 23, recoveryCode: 23, newPassword: 'someNewPassword' });
     await testRecoveryCode({ accountId: 23, recoveryCode: 23.5, newPassword: 'someNewPassword' });
     await testRecoveryCode({ accountId: 23, recoveryCode: 'AA', newPassword: 'someNewPassword' });
@@ -1303,7 +1297,6 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     };
 
     await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: null });
-    await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: NaN });
     await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: '' });
     await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'short' });
     await testNewPassword({ accountId: 23, recoveryCode: 'AAAAAA', newPassword: 'passwordIsLongerThanTwentyFourCharactersTotal' });
@@ -1595,7 +1588,6 @@ describe('PATCH accounts/details/updateDisplayName', () => {
     };
 
     await testDisplayName({ password: 'somePassword', newDisplayName: null });
-    await testDisplayName({ password: 'somePassword', newDisplayName: NaN });
     await testDisplayName({ password: 'somePassword', newDisplayName: 23 });
     await testDisplayName({ password: 'somePassword', newDisplayName: 23.5 });
     await testDisplayName({ password: 'somePassword', newDisplayName: '' });
@@ -1904,7 +1896,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     };
 
     await testCurrentPassword({ currentPassword: null, newPassword: 'someNewPassword' });
-    await testCurrentPassword({ currentPassword: NaN, newPassword: 'someNewPassword' });
     await testCurrentPassword({ currentPassword: 23, newPassword: 'someNewPassword' });
     await testCurrentPassword({ currentPassword: '', newPassword: 'someNewPassword' });
     await testCurrentPassword({ currentPassword: 'white space', newPassword: 'someNewPassword' });
@@ -1928,7 +1919,6 @@ describe('PATCH accounts/details/updatePassword', () => {
     };
 
     await testNewPassword({ currentPassword: 'somePassword', newPassword: null });
-    await testNewPassword({ currentPassword: 'somePassword', newPassword: NaN });
     await testNewPassword({ currentPassword: 'somePassword', newPassword: 23 });
     await testNewPassword({ currentPassword: 'somePassword', newPassword: '' });
     await testNewPassword({ currentPassword: 'somePassword', newPassword: 'white space' });
@@ -2275,7 +2265,6 @@ describe('POST accounts/details/updateEmail/start', () => {
     };
 
     await testNewEmail({ password: 'somePassword', newEmail: null });
-    await testNewEmail({ password: 'somePassword', newEmail: NaN });
     await testNewEmail({ password: 'somePassword', newEmail: 23 });
     await testNewEmail({ password: 'somePassword', newEmail: '' });
     await testNewEmail({ password: 'somePassword', newEmail: 'invalid' });
@@ -2937,7 +2926,6 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     await testConfirmationCode({ confirmationCode: 'AAAAAAAAAAAA' });
     await testConfirmationCode({ confirmationCode: 23 });
     await testConfirmationCode({ confirmationCode: null });
-    await testConfirmationCode({ confirmationCode: NaN });
   });
 
   it(`should reject requests if the user's auth session is not found, and remove the authSessionId cookie`, async () => {
@@ -4482,7 +4470,6 @@ describe('POST accounts/friends/requests/send', () => {
     };
 
     await testRequesteeUsername({ requesteeUsername: null });
-    await testRequesteeUsername({ requesteeUsername: NaN });
     await testRequesteeUsername({ requesteeUsername: 23 });
     await testRequesteeUsername({ requesteeUsername: '' });
     await testRequesteeUsername({ requesteeUsername: 'mark' });
@@ -4754,7 +4741,6 @@ describe('POST accounts/friends/requests/accept', () => {
     };
 
     await testFriendRequestId({ friendRequestId: null });
-    await testFriendRequestId({ friendRequestId: NaN });
     await testFriendRequestId({ friendRequestId: '' });
     await testFriendRequestId({ friendRequestId: '23' });
     await testFriendRequestId({ friendRequestId: 'white space' });
@@ -5495,7 +5481,6 @@ describe('POST accounts/hangoutInvites', () => {
     };
 
     await testHangoutId({ friendshipId: 1, hangoutId: null });
-    await testHangoutId({ friendshipId: 1, hangoutId: NaN });
     await testHangoutId({ friendshipId: 1, hangoutId: 23 });
     await testHangoutId({ friendshipId: 1, hangoutId: '' });
     await testHangoutId({ friendshipId: 1, hangoutId: 'tooShort' });
@@ -5517,7 +5502,6 @@ describe('POST accounts/hangoutInvites', () => {
     };
 
     await testFriendshipId({ friendshipId: null, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
-    await testFriendshipId({ friendshipId: NaN, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testFriendshipId({ friendshipId: '', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testFriendshipId({ friendshipId: 'invalid', hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
     await testFriendshipId({ friendshipId: 23.5, hangoutId: 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013' });
@@ -5987,7 +5971,7 @@ describe('DELETE accounts/hangoutInvites', () => {
     expect(response.status).toBe(200);
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM hangout_invites WHERe invite_id = ?;`,
+      `SELECT 1 FROM hangout_invites WHERE invite_id = ?;`,
       [1]
     );
 
