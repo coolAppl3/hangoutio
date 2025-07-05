@@ -1327,13 +1327,6 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
       return;
     };
 
-    if (hangoutMemberRows[0]?.hangout_is_concluded) {
-      await connection.rollback();
-      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
-
-      return;
-    };
-
     const hangoutMember: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === requestData.hangoutMemberId && member[`${authSessionDetails.user_type}_id`] === authSessionDetails.user_id);
 
     if (!hangoutMember) {
@@ -1342,6 +1335,13 @@ hangoutMembersRouter.patch('/claimLeadership', async (req: Request, res: Respons
 
       await connection.rollback();
       res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
+
+      return;
+    };
+
+    if (hangoutMemberRows[0]?.hangout_is_concluded) {
+      await connection.rollback();
+      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };
