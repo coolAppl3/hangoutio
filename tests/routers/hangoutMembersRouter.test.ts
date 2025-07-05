@@ -39,7 +39,6 @@ const destroyAuthSessionSpy = jest.spyOn(authSessionModule, 'destroyAuthSession'
 const sendHangoutWebSocketMessageSpy = jest.spyOn(hangoutWebSocketServerModule, 'sendHangoutWebSocketMessage');
 const addHangoutEventSpy = jest.spyOn(addHangoutEventModule, 'addHangoutEvent');
 
-
 describe('POST hangoutMembers/joinHangout/account', () => {
   it('should reject requests if an authSessionId cookie is not found', async () => {
     const response: SuperTestResponse = await request(app)
