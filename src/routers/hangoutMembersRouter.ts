@@ -361,10 +361,10 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
     };
 
     const [guestRows] = await connection.execute<RowDataPacket[]>(
-      `(SELECT 1 AS taken_status FROM accounts WHERE username = 'someUsername' LIMIT 1)
+      `(SELECT 1 AS taken_status FROM accounts WHERE username = :username LIMIT 1)
       UNION ALL
-      (SELECT 1 AS taken_status FROM guests WHERE username = 'someUsername' LIMIT 1);`,
-      [requestData.username]
+      (SELECT 1 AS taken_status FROM guests WHERE username = :username LIMIT 1);`,
+      { username: requestData.username }
     );
 
     if (guestRows.length > 0) {
