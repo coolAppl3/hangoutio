@@ -571,7 +571,7 @@ hangoutMembersRouter.delete('/kick', async (req: Request, res: Response) => {
     };
 
     if (!hangoutMember.is_leader) {
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
       return;
     };
 
@@ -1042,7 +1042,7 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
   };
 
   if (requestData.hangoutMemberId === requestData.newLeaderMemberId) {
-    res.status(409).json({ message: `You're already hangout leader.` });
+    res.status(409).json({ message: `Can't transfer leadership to yourself.` });
     return;
   };
 
@@ -1120,13 +1120,6 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
       return;
     };
 
-    if (hangoutMemberRows[0]?.hangout_is_concluded) {
-      await connection.rollback();
-      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
-
-      return;
-    };
-
     const hangoutMember: HangoutMember | undefined = hangoutMemberRows.find((member: HangoutMember) => member.hangout_member_id === requestData.hangoutMemberId && member[`${authSessionDetails.user_type}_id`] === authSessionDetails.user_id);
 
     if (!hangoutMember) {
@@ -1141,7 +1134,14 @@ hangoutMembersRouter.patch('/transferLeadership', async (req: Request, res: Resp
 
     if (!hangoutMember.is_leader) {
       await connection.rollback();
-      res.status(401).json({ message: 'Not hangout leader.', reason: 'notHangoutLeader' });
+      res.status(401).json({ message: `You're not the hangout leader.`, reason: 'notHangoutLeader' });
+
+      return;
+    };
+
+    if (hangoutMemberRows[0]?.hangout_is_concluded) {
+      await connection.rollback();
+      res.status(409).json({ message: 'Hangout has already been concluded.', reason: 'hangoutConcluded' });
 
       return;
     };

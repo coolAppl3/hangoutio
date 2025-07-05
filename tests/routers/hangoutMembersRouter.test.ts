@@ -1054,7 +1054,7 @@ describe('DELETE hangoutMembers/kick', () => {
     expect(response.body).toHaveProperty('message');
     expect(response.body).toHaveProperty('reason');
 
-    expect(response.body.message).toBe('Not hangout leader.');
+    expect(response.body.message).toBe(`You're not the hangout leader.`);
     expect(response.body.reason).toBe('notHangoutLeader');
   });
 
