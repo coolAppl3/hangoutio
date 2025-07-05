@@ -459,7 +459,7 @@ describe('POST hangoutMembers/joinHangout/account', () => {
     expect(addHangoutEventSpy).toHaveBeenCalled();
 
     const [createdRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM hangout_members WHERe account_id = ? AND hangout_id = ?;`,
+      `SELECT 1 FROM hangout_members WHERE account_id = ? AND hangout_id = ?;`,
       [1, 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
     );
 
@@ -769,7 +769,7 @@ describe('POST hangoutMembers/joinHangout/guest', () => {
     );
 
     const [createdHangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM hangout_members WHERe username = ? AND hangout_id = ?;`,
+      `SELECT 1 FROM hangout_members WHERE username = ? AND hangout_id = ?;`,
       ['johnDoe', 'htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
     );
 

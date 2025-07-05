@@ -5971,7 +5971,7 @@ describe('DELETE accounts/hangoutInvites', () => {
     expect(response.status).toBe(200);
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM hangout_invites WHERe invite_id = ?;`,
+      `SELECT 1 FROM hangout_invites WHERE invite_id = ?;`,
       [1]
     );
 
