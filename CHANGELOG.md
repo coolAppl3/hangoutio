@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.23] (2025-07-06)
+
+### Tests
+
+- Implemented unit tests for POST `guests/signIn`.
+- Implemented unit tests for POST `auth/signOut`.
+- Implemented unit tests for POST `chat`.
+- Implemented unit tests for GET `chat`.
+
+
+### Bug Fixes
+
+- Fixed `replenishRateRequests()` incorrectly replenishing requests and going out of range.
+
+
 ## [0.5.22] (2025-07-05)
 
 ### Tests

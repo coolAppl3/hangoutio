@@ -62,7 +62,7 @@ exports.chatRouter.post('/', async (req, res) => {
     }
     ;
     if (!Number.isInteger(requestData.hangoutMemberId)) {
-        res.status(400).json({ message: 'Invalid hangout member Id' });
+        res.status(400).json({ message: 'Invalid hangout member ID.' });
         return;
     }
     ;
@@ -72,7 +72,7 @@ exports.chatRouter.post('/', async (req, res) => {
     }
     ;
     if (!(0, chatValidation_1.isValidMessageContent)(requestData.messageContent)) {
-        res.status(400).json({ message: 'Invalid message content', reason: 'messageContent' });
+        res.status(400).json({ message: 'Invalid message content.', reason: 'messageContent' });
         return;
     }
     ;
@@ -109,7 +109,8 @@ exports.chatRouter.post('/', async (req, res) => {
       FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`, [requestData.hangoutMemberId]);
+        hangout_member_id = ? AND
+        hangout_id = ?;`, [requestData.hangoutMemberId, requestData.hangoutId]);
         const hangoutMemberDetails = hangoutMemberRows[0];
         if (!hangoutMemberDetails) {
             res.status(404).json({ message: 'Hangout not found.' });
@@ -120,11 +121,6 @@ exports.chatRouter.post('/', async (req, res) => {
             await (0, authSessions_1.destroyAuthSession)(authSessionId);
             (0, cookieUtils_1.removeRequestCookie)(res, 'authSessionId');
             res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-            return;
-        }
-        ;
-        if (hangoutMemberDetails.hangout_id !== requestData.hangoutId) {
-            res.status(404).json({ message: 'Hangout not found.' });
             return;
         }
         ;
@@ -193,7 +189,7 @@ exports.chatRouter.get('/', async (req, res) => {
     }
     ;
     if (!Number.isInteger(+messageOffset)) {
-        res.status(400).json({ message: 'Invalid messages offset.' });
+        res.status(400).json({ message: 'Invalid message offset.' });
         return;
     }
     ;
