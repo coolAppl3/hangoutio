@@ -12,8 +12,8 @@ export async function replenishRateRequests(): Promise<void> {
       `UPDATE
         rate_tracker
       SET
-        general_requests_count = general_requests_count - ?,
-        chat_requests_count = chat_requests_count - ?
+        general_requests_count = GREATEST(general_requests_count - ?, 0),
+        chat_requests_count = GREATEST(chat_requests_count - ?, 0)
       WHERE
         ? - window_timestamp >= ?;`,
       [generalRequestsToReplenish, chatRequestsToReplenish, currentTimestamp, minuteMilliseconds / 2]
