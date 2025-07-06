@@ -207,7 +207,7 @@ chatRouter.get('/', async (req: Request, res: Response) => {
   };
 
   if (!Number.isInteger(+messageOffset)) {
-    res.status(400).json({ message: 'Invalid messages offset.' });
+    res.status(400).json({ message: 'Invalid message offset.' });
     return;
   };
 
