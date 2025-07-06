@@ -11,8 +11,8 @@ async function replenishRateRequests() {
         await db_1.dbPool.execute(`UPDATE
         rate_tracker
       SET
-        general_requests_count = general_requests_count - ?,
-        chat_requests_count = chat_requests_count - ?
+        general_requests_count = GREATEST(general_requests_count - ?, 0),
+        chat_requests_count = GREATEST(chat_requests_count - ?, 0)
       WHERE
         ? - window_timestamp >= ?;`, [generalRequestsToReplenish, chatRequestsToReplenish, currentTimestamp, constants_1.minuteMilliseconds / 2]);
     }
