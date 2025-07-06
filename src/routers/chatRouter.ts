@@ -45,7 +45,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!Number.isInteger(requestData.hangoutMemberId)) {
-    res.status(400).json({ message: 'Invalid hangout member Id' });
+    res.status(400).json({ message: 'Invalid hangout member ID.' });
     return;
   };
 
@@ -55,7 +55,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
   };
 
   if (!isValidMessageContent(requestData.messageContent)) {
-    res.status(400).json({ message: 'Invalid message content', reason: 'messageContent' });
+    res.status(400).json({ message: 'Invalid message content.', reason: 'messageContent' });
     return;
   };
 
@@ -111,8 +111,9 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       FROM
         hangout_members
       WHERE
-        hangout_member_id = ?;`,
-      [requestData.hangoutMemberId]
+        hangout_member_id = ? AND
+        hangout_id = ?;`,
+      [requestData.hangoutMemberId, requestData.hangoutId]
     );
 
     const hangoutMemberDetails: HangoutMemberDetails | undefined = hangoutMemberRows[0];
@@ -127,11 +128,6 @@ chatRouter.post('/', async (req: Request, res: Response) => {
       removeRequestCookie(res, 'authSessionId');
 
       res.status(401).json({ message: 'Invalid credentials. Request denied.', reason: 'authSessionDestroyed' });
-      return;
-    };
-
-    if (hangoutMemberDetails.hangout_id !== requestData.hangoutId) {
-      res.status(404).json({ message: 'Hangout not found.' });
       return;
     };
 
