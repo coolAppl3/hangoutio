@@ -33,7 +33,7 @@ export function initCronJobs(): void {
   // every hour
   cron.schedule('0 * * * *', async () => {
     await clearExpiredAuthSessions();
-    await hangoutCronJobs.deleteNoMemberHangouts();
+    await hangoutCronJobs.deleteEmptyHangouts();
   });
 
   // every day

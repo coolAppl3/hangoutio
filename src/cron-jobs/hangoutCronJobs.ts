@@ -232,18 +232,24 @@ export async function concludeNoSuggestionHangouts(): Promise<void> {
   };
 };
 
-export async function deleteNoMemberHangouts(): Promise<void> {
-  await dbPool.execute(
-    `DELETE FROM
-    hangouts
-      WHERE
-    NOT EXISTS (
-      SELECT
-        1 AS members_exist
-      FROM
-        hangout_members
-      WHERE
-        hangout_members.hangout_id = hangouts.hangout_id
-    );`
-  );
+export async function deleteEmptyHangouts(): Promise<void> {
+  try {
+    await dbPool.execute(
+      `DELETE FROM
+      hangouts
+        WHERE
+      NOT EXISTS (
+        SELECT
+          1 AS members_exist
+        FROM
+          hangout_members
+        WHERE
+          hangout_members.hangout_id = hangouts.hangout_id
+      );`
+    );
+
+  } catch (err: unknown) {
+    console.log(`CRON JOB ERROR: ${deleteEmptyHangouts.name}`);
+    console.log(err);
+  };
 };
