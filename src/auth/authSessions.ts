@@ -5,9 +5,7 @@ import { generateAuthSessionId } from "../util/tokenGenerator";
 import { generatePlaceHolders } from "../util/generatePlaceHolders";
 import { isSqlError } from "../util/isSqlError";
 import { setResponseCookie } from "../util/cookieUtils";
-import { hourMilliseconds } from "../util/constants";
-
-const authSessionLimit: number = 3;
+import { AUTH_SESSIONS_LIMIT, hourMilliseconds } from "../util/constants";
 
 interface CreateAuthSessionConfig {
   user_id: number,
@@ -47,7 +45,7 @@ export async function createAuthSession(res: Response, sessionConfig: CreateAuth
       WHERE
         user_id = ? AND
         user_type = ?
-      LIMIT ${authSessionLimit};`,
+      LIMIT ${AUTH_SESSIONS_LIMIT};`,
       [sessionConfig.user_id, sessionConfig.user_type]
     );
 
@@ -144,7 +142,7 @@ export async function purgeAuthSessions(userId: number, userType: 'account' | 'g
       WHERE
         user_id = ? AND
         user_type = ?
-      LIMIT ${authSessionLimit};`,
+      LIMIT ${AUTH_SESSIONS_LIMIT};`,
       [userId, userType]
     );
 

@@ -7,7 +7,6 @@ const generatePlaceHolders_1 = require("../util/generatePlaceHolders");
 const isSqlError_1 = require("../util/isSqlError");
 const cookieUtils_1 = require("../util/cookieUtils");
 const constants_1 = require("../util/constants");
-const authSessionLimit = 3;
 ;
 async function createAuthSession(res, sessionConfig, attemptCount = 1) {
     if (attemptCount > 3) {
@@ -32,7 +31,7 @@ async function createAuthSession(res, sessionConfig, attemptCount = 1) {
       WHERE
         user_id = ? AND
         user_type = ?
-      LIMIT ${authSessionLimit};`, [sessionConfig.user_id, sessionConfig.user_type]);
+      LIMIT ${constants_1.AUTH_SESSIONS_LIMIT};`, [sessionConfig.user_id, sessionConfig.user_type]);
         if (sessionRows.length < 3) {
             await connection.execute(`INSERT INTO auth_sessions (
           session_id,
@@ -112,7 +111,7 @@ async function purgeAuthSessions(userId, userType) {
       WHERE
         user_id = ? AND
         user_type = ?
-      LIMIT ${authSessionLimit};`, [userId, userType]);
+      LIMIT ${constants_1.AUTH_SESSIONS_LIMIT};`, [userId, userType]);
     }
     catch (err) {
         console.log(err);

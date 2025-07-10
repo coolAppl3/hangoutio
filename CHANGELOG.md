@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.24] (2025-07-10)
+
+### Tests
+
+- Implemented unit tests for `authSession.ts`.
+- Implemented unit tests for `authUtils.ts`.
+- Implemented unit tests for `accountCronJobs.ts`.
+- Implemented unit tests for `authCronJobs.ts`.
+- Implemented unit tests for `guestCronJobs.ts`.
+- Implemented unit tests for `hangoutCronJobs.ts`.
+- Implemented unit tests for `rateLimiterCronJobs.ts`.
+
+
+### Code Refactoring
+
+- Renamed `deleteNoMemberHangouts()` to `deleteEmptyHangouts()`, and wrapped it in a try-catch block.
+
+
 ## [0.5.23] (2025-07-06)
 
 ### Tests

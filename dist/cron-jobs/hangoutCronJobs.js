@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteNoMemberHangouts = exports.concludeNoSuggestionHangouts = exports.concludeSingleSuggestionHangouts = exports.progressHangouts = void 0;
+exports.deleteEmptyHangouts = exports.concludeNoSuggestionHangouts = exports.concludeSingleSuggestionHangouts = exports.progressHangouts = void 0;
 const db_1 = require("../db/db");
 const constants_1 = require("../util/constants");
 const hangoutWebSocketServer_1 = require("../webSockets/hangout/hangoutWebSocketServer");
@@ -184,18 +184,25 @@ async function concludeNoSuggestionHangouts() {
 }
 exports.concludeNoSuggestionHangouts = concludeNoSuggestionHangouts;
 ;
-async function deleteNoMemberHangouts() {
-    await db_1.dbPool.execute(`DELETE FROM
-    hangouts
-      WHERE
-    NOT EXISTS (
-      SELECT
-        1 AS members_exist
-      FROM
-        hangout_members
-      WHERE
-        hangout_members.hangout_id = hangouts.hangout_id
-    );`);
+async function deleteEmptyHangouts() {
+    try {
+        await db_1.dbPool.execute(`DELETE FROM
+      hangouts
+        WHERE
+      NOT EXISTS (
+        SELECT
+          1 AS members_exist
+        FROM
+          hangout_members
+        WHERE
+          hangout_members.hangout_id = hangouts.hangout_id
+      );`);
+    }
+    catch (err) {
+        console.log(`CRON JOB ERROR: ${deleteEmptyHangouts.name}`);
+        console.log(err);
+    }
+    ;
 }
-exports.deleteNoMemberHangouts = deleteNoMemberHangouts;
+exports.deleteEmptyHangouts = deleteEmptyHangouts;
 ;

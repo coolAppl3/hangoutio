@@ -53,7 +53,7 @@ function initCronJobs() {
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
         await (0, authCronJobs_1.clearExpiredAuthSessions)();
-        await hangoutCronJobs.deleteNoMemberHangouts();
+        await hangoutCronJobs.deleteEmptyHangouts();
     });
     node_cron_1.default.schedule('0 0 * * *', async () => {
         await (0, guestCronJobs_1.deleteStaleGuestUsers)();
