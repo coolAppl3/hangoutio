@@ -96,7 +96,7 @@ describe('removeStaleRateTrackerRows()', () => {
     await removeStaleRateTrackerRows();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM rate_tracker;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -116,7 +116,7 @@ describe('removeLightRateAbusers()', () => {
     await removeLightRateAbusers();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT ip_address FROM abusive_users;`);
-    expect(deletedRows.length).toBe(1);
+    expect(deletedRows).toHaveLength(1);
 
     expect(deletedRows[0].ip_address).toBe('100.100.100.102');
   });

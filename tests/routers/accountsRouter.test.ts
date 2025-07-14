@@ -318,8 +318,8 @@ describe('POST accounts/signUp', () => {
       [accountRows[0].account_id]
     );
 
-    expect(accountRows.length).toBe(1);
-    expect(accountVerificationRows.length).toBe(1);
+    expect(accountRows).toHaveLength(1);
+    expect(accountVerificationRows).toHaveLength(1);
 
     expect(sendVerificationEmailSpy).toHaveBeenCalled();
   });
@@ -650,7 +650,7 @@ describe('PATCH accounts/verification/verify', () => {
     expect(response.body.reason).toBe('accountDeleted');
 
     const [removedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM accounts WHERE account_id = ?;`, [1]);
-    expect(removedRows.length).toBe(0);
+    expect(removedRows).toHaveLength(0);
   });
 
   it('should accept the request, mark the account as verified, remove the relevant row from the account_verification table, create and auth session, and return a confirmation of whether an auth session was successfully created', async () => {
@@ -678,7 +678,7 @@ describe('PATCH accounts/verification/verify', () => {
     expect(updatedRows[0].is_verified).toBe(1);
 
     const [removedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_verification WHERE verification_id = ?;`, [1]);
-    expect(removedRows.length).toBe(0);
+    expect(removedRows).toHaveLength(0);
 
     expect(createAuthSessionSpy).toHaveBeenCalled();
   });
@@ -1049,7 +1049,7 @@ describe('POST accounts/recovery/start', () => {
     expect(sendRecoveryEmailSpy).toHaveBeenCalled();
 
     const [createdRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_recovery WHERE account_id = ?;`, [1]);
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -1485,7 +1485,7 @@ describe('PATCH accounts/recovery/updatePassword', () => {
     expect(updatedRows[0].failed_sign_in_attempts).toBe(0);
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_recovery WHERE account_id = ?;`, [1]);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -1643,7 +1643,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -1678,7 +1678,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the password is incorrect`, async () => {
@@ -1743,7 +1743,7 @@ describe('PATCH accounts/details/updateDisplayName', () => {
       [1, 'account']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the new display name is identical to the user's existing display name`, async () => {
@@ -1975,7 +1975,7 @@ describe('PATCH accounts/details/updatePassword', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -2010,7 +2010,7 @@ describe('PATCH accounts/details/updatePassword', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the password is incorrect', async () => {
@@ -2079,7 +2079,7 @@ describe('PATCH accounts/details/updatePassword', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the new password is identical to the current one', async () => {
@@ -2322,7 +2322,7 @@ describe('POST accounts/details/updateEmail/start', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -2357,7 +2357,7 @@ describe('POST accounts/details/updateEmail/start', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the password is incorrect', async () => {
@@ -2426,7 +2426,7 @@ describe('POST accounts/details/updateEmail/start', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if an email update request is found, but the request was suspended, returning the expiry timestamp of the ongoing request', async () => {
@@ -2732,7 +2732,7 @@ describe('GET accounts/details/updateEmail/resendEmail', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the email update request is not found`, async () => {
@@ -2977,7 +2977,7 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -3012,7 +3012,7 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the email update request is not found`, async () => {
@@ -3203,7 +3203,7 @@ describe('PATCH accounts/details/updateEmail/confirm', () => {
     );
 
     expect(updatedRows[0].email).toBe('new@example.com');
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -3288,7 +3288,7 @@ describe('DELETE accounts/details/updateEmail/abort', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the email update request is not found`, async () => {
@@ -3340,7 +3340,7 @@ describe('DELETE accounts/details/updateEmail/abort', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -3471,7 +3471,7 @@ describe('DELETE accounts/deletion/start', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -3506,7 +3506,7 @@ describe('DELETE accounts/deletion/start', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the password is incorrect', async () => {
@@ -3575,7 +3575,7 @@ describe('DELETE accounts/deletion/start', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if an ongoing deletion request is found, returning the request's expiry timestamp`, async () => {
@@ -3706,7 +3706,7 @@ describe('DELETE accounts/deletion/start', () => {
       [1]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -3791,7 +3791,7 @@ describe('GET accounts/deletion/resendEmail', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -3826,7 +3826,7 @@ describe('GET accounts/deletion/resendEmail', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the deletion request is not found', async () => {
@@ -4054,7 +4054,7 @@ describe('DELETE accounts/deletion/confirm', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -4089,7 +4089,7 @@ describe('DELETE accounts/deletion/confirm', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the account deletion request is not found', async () => {
@@ -4257,7 +4257,7 @@ describe('DELETE accounts/deletion/confirm', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -4342,7 +4342,7 @@ describe('DELETE accounts/deletion/abort', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the account deletion request is not found', async () => {
@@ -4394,7 +4394,7 @@ describe('DELETE accounts/deletion/abort', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -4526,7 +4526,7 @@ describe('POST accounts/friends/requests/send', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the requestee account is not found', async () => {
@@ -4665,7 +4665,7 @@ describe('POST accounts/friends/requests/send', () => {
       [1, 2]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -4796,7 +4796,7 @@ describe('POST accounts/friends/requests/accept', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the friend request is not found`, async () => {
@@ -4895,14 +4895,14 @@ describe('POST accounts/friends/requests/accept', () => {
       [1, 1]
     );
 
-    expect(createdRows.length).toBe(2);
+    expect(createdRows).toHaveLength(2);
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(
       `SELECT 1 FROM friend_requests WHERE requester_id = ? OR requestee_id = ?;`,
       [1, 1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -5015,7 +5015,7 @@ describe('DELETE accounts/friends/requests/reject', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should accept the request and return a successful response, even if the friend request is not found`, async () => {
@@ -5075,7 +5075,7 @@ describe('DELETE accounts/friends/requests/reject', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -5188,7 +5188,7 @@ describe('DELETE accounts/friends/manage/remove', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the friend is not found`, async () => {
@@ -5245,7 +5245,7 @@ describe('DELETE accounts/friends/manage/remove', () => {
       [1, 1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -5358,7 +5358,7 @@ describe('GET accounts/friends', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should accept the request and return the user's friends and their details`, async () => {
@@ -5390,7 +5390,7 @@ describe('GET accounts/friends', () => {
     expect(response.status).toBe(200);
 
     expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBe(1);
+    expect(response.body).toHaveLength(1);
 
     const friend = response.body[0];
 
@@ -5556,7 +5556,7 @@ describe('POST accounts/hangoutInvites', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the invitee is not found', async () => {
@@ -5808,7 +5808,7 @@ describe('POST accounts/hangoutInvites', () => {
       [1]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -5921,7 +5921,7 @@ describe('DELETE accounts/hangoutInvites', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should accept the request and delete the invitation in the hangout_invites table`, async () => {
@@ -5975,7 +5975,7 @@ describe('DELETE accounts/hangoutInvites', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -6088,7 +6088,7 @@ describe('GET accounts/hangoutInvites', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should accept the request and return all the user's pending hangout invites`, async () => {
@@ -6138,7 +6138,7 @@ describe('GET accounts/hangoutInvites', () => {
     expect(response.status).toBe(200);
 
     expect(Array.isArray(response.body));
-    expect(response.body.length).toBe(1);
+    expect(response.body).toHaveLength(1);
 
     const hangoutInvite = response.body[0];
 
@@ -6243,7 +6243,7 @@ describe('GET accounts', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found`, async () => {
@@ -6343,7 +6343,7 @@ describe('GET accounts', () => {
 
     expect(response.body).toHaveProperty('friends');
     expect(Array.isArray(response.body.friends)).toBe(true);
-    expect(response.body.friends.length).toBe(1);
+    expect(response.body.friends).toHaveLength(1);
 
     const friend = response.body.friends[0];
 
@@ -6362,7 +6362,7 @@ describe('GET accounts', () => {
 
     expect(response.body).toHaveProperty('friendRequests');
     expect(Array.isArray(response.body.friendRequests)).toBe(true);
-    expect(response.body.friendRequests.length).toBe(1);
+    expect(response.body.friendRequests).toHaveLength(1);
 
     const friendRequest = response.body.friendRequests[0];
 
@@ -6381,7 +6381,7 @@ describe('GET accounts', () => {
 
     expect(response.body).toHaveProperty('hangoutHistory');
     expect(Array.isArray(response.body.hangoutHistory)).toBe(true);
-    expect(response.body.hangoutHistory.length).toBe(1);
+    expect(response.body.hangoutHistory).toHaveLength(1);
 
     const hangout = response.body.hangoutHistory[0];
 
@@ -6403,7 +6403,7 @@ describe('GET accounts', () => {
 
     expect(response.body).toHaveProperty('hangoutInvites');
     expect(Array.isArray(response.body.hangoutInvites)).toBe(true);
-    expect(response.body.hangoutInvites.length).toBe(1);
+    expect(response.body.hangoutInvites).toHaveLength(1);
 
     const hangoutInvite = response.body.hangoutInvites[0];
 
@@ -6543,7 +6543,7 @@ describe('GET accounts/hangoutHistory', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should accept the request and return an array of the user's hangout history`, async () => {
@@ -6578,7 +6578,7 @@ describe('GET accounts/hangoutHistory', () => {
     expect(response.status).toBe(200);
 
     expect(Array.isArray(response.body));
-    expect(response.body.length).toBe(1);
+    expect(response.body).toHaveLength(1);
 
     const hangout = response.body[0];
 
@@ -6711,7 +6711,7 @@ describe('DELETE accounts/leaveHangout', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should accept the request if the user isn't a member of the hangout provided, but take no further action`, async () => {
@@ -6770,6 +6770,6 @@ describe('DELETE accounts/leaveHangout', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

@@ -209,7 +209,7 @@ describe('POST chat', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -280,7 +280,7 @@ describe('POST chat', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should accept the request, add a message row, return the message details, and send a websocket message', async () => {
@@ -328,7 +328,7 @@ describe('POST chat', () => {
       [1]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
     expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
   });
 });
@@ -485,7 +485,7 @@ describe('GET chat', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -546,7 +546,7 @@ describe('GET chat', () => {
     expect(response.status).toBe(200);
 
     expect(Array.isArray(response.body));
-    expect(response.body.length).toBe(2);
+    expect(response.body).toHaveLength(2);
 
     const newestMessage = response.body[0];
 

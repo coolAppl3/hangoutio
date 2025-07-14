@@ -93,7 +93,7 @@ describe('progressHangouts()', () => {
       `SELECT 1 FROM hangout_events WHERE hangout_id = ?;`,
       ['hangout_id_3']
     );
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -298,6 +298,6 @@ describe('concludeNoSuggestionHangouts()', () => {
     await deleteEmptyHangouts();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangouts;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

@@ -198,7 +198,7 @@ describe('POST votes', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -273,7 +273,7 @@ describe('POST votes', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -548,7 +548,7 @@ describe('POST votes', () => {
       [1]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -705,7 +705,7 @@ describe('DELETE votes', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -776,7 +776,7 @@ describe('DELETE votes', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -962,6 +962,6 @@ describe('DELETE votes', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

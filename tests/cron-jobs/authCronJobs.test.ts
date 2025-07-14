@@ -44,6 +44,6 @@ describe('clearExpiredAuthSessions()', () => {
     await clearExpiredAuthSessions();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM auth_sessions;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

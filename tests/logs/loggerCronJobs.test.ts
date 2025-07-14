@@ -43,6 +43,6 @@ describe('clearErrorLogs()', () => {
     await clearErrorLogs();
 
     const [remainingRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM unexpected_errors;`);
-    expect(remainingRows.length).toBe(1);
+    expect(remainingRows).toHaveLength(1);
   });
 });

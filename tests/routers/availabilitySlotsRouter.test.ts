@@ -234,7 +234,7 @@ describe('POST availabilitySlots', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -305,7 +305,7 @@ describe('POST availabilitySlots', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -543,7 +543,7 @@ describe('POST availabilitySlots', () => {
       [response.body.availabilitySlotId]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -746,7 +746,7 @@ describe('PATCH availabilitySlots', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -821,7 +821,7 @@ describe('PATCH availabilitySlots', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -1264,7 +1264,7 @@ describe('DELETE availabilitySlots', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -1339,7 +1339,7 @@ describe('DELETE availabilitySlots', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -1447,7 +1447,7 @@ describe('DELETE availabilitySlots', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -1585,7 +1585,7 @@ describe('DELETE availabilitySlots/clear', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -1685,7 +1685,7 @@ describe('DELETE availabilitySlots/clear', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -1800,7 +1800,7 @@ describe('DELETE availabilitySlots/clear', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -1938,7 +1938,7 @@ describe('GET availabilitySlots', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not a member of the hangout', async () => {
@@ -2016,7 +2016,7 @@ describe('GET availabilitySlots', () => {
     expect(response.status).toBe(200);
 
     expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBe(2);
+    expect(response.body).toHaveLength(2);
 
 
     const firstAvailabilitySlot = response.body[0];

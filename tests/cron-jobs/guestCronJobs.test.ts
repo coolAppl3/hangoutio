@@ -43,6 +43,6 @@ describe('deleteStaleGuestUsers()', () => {
     await deleteStaleGuestUsers();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM guests;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
