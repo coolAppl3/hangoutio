@@ -23,6 +23,10 @@ beforeEach(async () => {
   await dbPool.query(clearDatabaseStatement);
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('replenishRateRequests()', () => {
   it('should reduce the number of requests count by half the request allowance for any rate_tracker rows whose window_timestamp is 30 seconds old or older, or reset the count to 0 if half the allowance has not been used', async () => {
     const windowTimestamp: number = Date.now() - (1000 * 35);

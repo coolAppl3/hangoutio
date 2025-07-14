@@ -28,6 +28,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 interface HangoutDetails extends RowDataPacket {
   hangout_id: string,
   current_stage: number,

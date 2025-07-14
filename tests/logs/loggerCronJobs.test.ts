@@ -27,6 +27,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('clearErrorLogs()', () => {
   it('should delete any rows in the unexpected_errors table with a timestamp two days old or older', async () => {
     await dbPool.execute<RowDataPacket[]>(

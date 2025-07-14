@@ -28,6 +28,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('POST auth/signOut', () => {
   it('should reject requests if an authSessionId cookie is not found', async () => {
     const response: SuperTestResponse = await request(app)

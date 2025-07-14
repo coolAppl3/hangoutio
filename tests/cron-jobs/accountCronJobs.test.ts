@@ -23,6 +23,10 @@ beforeEach(async () => {
   await dbPool.query(clearDatabaseStatement);
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('removeUnverifiedAccounts()', () => {
   it('should delete any unverified accounts whose verification timestamp has passed', async () => {
     await dbPool.execute(

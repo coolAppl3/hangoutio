@@ -23,6 +23,10 @@ beforeEach(async () => {
   await dbPool.query(clearDatabaseStatement);
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('clearExpiredAuthSessions()', () => {
   it('should delete any expired auth sessions', async () => {
     await dbPool.execute(

@@ -37,6 +37,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 const mockResponse = {
   cookie: jest.fn(),
 } as unknown as Response;
