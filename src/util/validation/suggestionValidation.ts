@@ -1,5 +1,6 @@
 import { hourMilliseconds } from "../constants";
 import { containsInvalidWhitespace } from "../globalUtils";
+import { isValidTimestamp } from "./hangoutValidation";
 
 export function isValidSuggestionTitle(title: string): boolean {
   if (typeof title !== 'string') {
@@ -49,24 +50,6 @@ export function isValidSuggestionSlotStart(hangoutConclusionTimestamp: number, s
   const furthestPossibleTimestamp: number = dateObj.setMonth(dateObj.getMonth() + 6);
 
   if (slotStart > furthestPossibleTimestamp) {
-    return false;
-  };
-
-  return true;
-};
-
-function isValidTimestamp(timestamp: number): boolean {
-  const timeStampLength: number = 13;
-
-  if (!Number.isInteger(timestamp)) {
-    return false;
-  };
-
-  if (timestamp.toString().length !== timeStampLength) {
-    return false;
-  };
-
-  if (timestamp < 0) {
     return false;
   };
 

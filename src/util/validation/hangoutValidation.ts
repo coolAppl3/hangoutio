@@ -51,8 +51,8 @@ export function isValidHangoutMembersLimit(limit: number): boolean {
   return true;
 };
 
-function isValidTimestamp(timestamp: number): boolean {
-  const timeStampLength: number = 13; // will work till 2268 AD
+export function isValidTimestamp(timestamp: number): boolean {
+  const timeStampLength: number = 13; // will work till 2268 AD ;)
 
   if (!Number.isInteger(timestamp)) {
     return false;
