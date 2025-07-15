@@ -74,10 +74,8 @@ export function isValidHangoutPeriods(hangoutPeriods: number[]): boolean {
     return false;
   };
 
-  for (let i = 0; i < hangoutPeriods.length; i++) {
-    const period: number | undefined = hangoutPeriods[i];
-
-    if (!period || !isValidHangoutPeriod(period)) {
+  for (const period of hangoutPeriods) {
+    if (!isValidHangoutPeriod(period)) {
       return false;
     };
   };
