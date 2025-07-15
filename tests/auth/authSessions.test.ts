@@ -37,6 +37,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 const mockResponse = {
   cookie: jest.fn(),
 } as unknown as Response;
@@ -83,7 +87,7 @@ describe('createAuthSession()', () => {
       [1]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
 
     expect(setResponseCookieSpy).toHaveBeenCalledTimes(2);
     expect(setResponseCookieSpy).toHaveBeenCalledWith(mockResponse, 'authSessionId', 'dummyAuthSessionIdForTesting1234', maxAge, true);
@@ -112,7 +116,7 @@ describe('createAuthSession()', () => {
       [1]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
 
     expect(setResponseCookieSpy).toHaveBeenCalledTimes(2);
     expect(setResponseCookieSpy).toHaveBeenCalledWith(mockResponse, 'authSessionId', 'dummyAuthSessionIdForTesting1234', maxAge, true);
@@ -155,8 +159,8 @@ describe('createAuthSession()', () => {
       ['dummyAuthSessionIdForTesting1231']
     );
 
-    expect(newAuthSession.length).toBe(1);
-    expect(oldAuthSession.length).toBe(0);
+    expect(newAuthSession).toHaveLength(1);
+    expect(oldAuthSession).toHaveLength(0);
 
     expect(setResponseCookieSpy).toHaveBeenCalledTimes(2);
     expect(setResponseCookieSpy).toHaveBeenCalledWith(mockResponse, 'authSessionId', 'dummyAuthSessionIdForTesting1234', maxAge, true);
@@ -199,8 +203,8 @@ describe('createAuthSession()', () => {
       ['dummyAuthSessionIdForTesting1231']
     );
 
-    expect(newAuthSession.length).toBe(1);
-    expect(oldAuthSession.length).toBe(0);
+    expect(newAuthSession).toHaveLength(1);
+    expect(oldAuthSession).toHaveLength(0);
 
     expect(setResponseCookieSpy).toHaveBeenCalledTimes(2);
     expect(setResponseCookieSpy).toHaveBeenCalledWith(mockResponse, 'authSessionId', 'dummyAuthSessionIdForTesting1234', maxAge, true);
@@ -227,7 +231,7 @@ describe('destroyAuthSession()', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -254,6 +258,6 @@ describe('destroyAuthSession()', () => {
       [1, 'account']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidSuggestionSlotStart = exports.isValidSuggestionTimeSlot = exports.isValidSuggestionDescription = exports.isValidSuggestionTitle = void 0;
 const constants_1 = require("../constants");
 const globalUtils_1 = require("../globalUtils");
+const hangoutValidation_1 = require("./hangoutValidation");
 function isValidSuggestionTitle(title) {
     if (typeof title !== 'string') {
         return false;
@@ -32,12 +33,12 @@ function isValidSuggestionDescription(description) {
 exports.isValidSuggestionDescription = isValidSuggestionDescription;
 ;
 function isValidSuggestionTimeSlot(slotStart, slotEnd) {
-    if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
+    if (!(0, hangoutValidation_1.isValidTimestamp)(slotStart) || !(0, hangoutValidation_1.isValidTimestamp)(slotEnd)) {
         return false;
     }
     ;
     const slotLength = slotEnd - slotStart;
-    if (slotLength < constants_1.hourMilliseconds || slotLength > constants_1.hourMilliseconds * 24) {
+    if (slotLength < constants_1.hourMilliseconds || slotLength > constants_1.dayMilliseconds) {
         return false;
     }
     ;
@@ -59,21 +60,4 @@ function isValidSuggestionSlotStart(hangoutConclusionTimestamp, slotStart) {
     return true;
 }
 exports.isValidSuggestionSlotStart = isValidSuggestionSlotStart;
-;
-function isValidTimestamp(timestamp) {
-    const timeStampLength = 13;
-    if (!Number.isInteger(timestamp)) {
-        return false;
-    }
-    ;
-    if (timestamp.toString().length !== timeStampLength) {
-        return false;
-    }
-    ;
-    if (timestamp < 0) {
-        return false;
-    }
-    ;
-    return true;
-}
 ;

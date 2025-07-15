@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.5.25] (2025-07-16)
+
+### Tests
+
+- Implemented unit tests for `loggerCronJobs.ts`.
+- Refactored tests pertaining to array lengths to use the `toHaveLength()` property for better readability.
+- Fixed test modules not destroying the connection pool after the tests are completed, causing pool connection to leak and linger in the database.
+- Implemented unit tests for `availabilitySlotValidation.ts`.
+- Implemented unit tests for `chatValidation.ts`.
+- Implemented unit tests for `hangoutValidation.ts`.
+- Implemented unit tests for `requestValidation.ts`.
+- Implemented unit tests for `suggestionValidation.ts`.
+- Implemented unit tests for `userValidation.ts`.
+
+
+### Bug Fixes
+
+- Fixed `isValidAvailabilitySlotStart()` in `availabilitySlotValidation.ts` not checking if the `slotStart` parameter is a valid timestamp.
+
+
+### Code Refactoring
+
+- Refactored `isValidTimestamp()` being declared in 3 separate modules in the backend.
+
+
 ## [0.5.24] (2025-07-10)
 
 ### Tests

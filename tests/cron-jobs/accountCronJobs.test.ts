@@ -23,6 +23,10 @@ beforeEach(async () => {
   await dbPool.query(clearDatabaseStatement);
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('removeUnverifiedAccounts()', () => {
   it('should delete any unverified accounts whose verification timestamp has passed', async () => {
     await dbPool.execute(
@@ -44,7 +48,7 @@ describe('removeUnverifiedAccounts()', () => {
     await removeUnverifiedAccounts();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM accounts;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -69,7 +73,7 @@ describe('removeExpiredRecoveryRequests()', () => {
     await removeExpiredRecoveryRequests();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_recovery;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -94,7 +98,7 @@ describe('removeExpiredEmailUpdateRequests()', () => {
     await removeExpiredEmailUpdateRequests();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM email_update;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -119,6 +123,6 @@ describe('removeExpiredDeletionRequests()', () => {
     await removeExpiredDeletionRequests();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM account_deletion;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

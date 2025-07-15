@@ -1,5 +1,6 @@
 import { hourMilliseconds } from "../constants";
 import { AvailabilitySlot } from "../hangoutTypes";
+import { isValidTimestamp } from "./hangoutValidation";
 
 export function isValidAvailabilitySlot(slotStart: number, slotEnd: number): boolean {
   if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
@@ -23,24 +24,6 @@ export function isValidAvailabilitySlotStart(hangoutConclusionTimestamp: number,
   const furthestPossibleTimestamp: number = dateObj.setMonth(dateObj.getMonth() + 6);
 
   if (slotStart > furthestPossibleTimestamp) {
-    return false;
-  };
-
-  return true;
-};
-
-function isValidTimestamp(timestamp: number): boolean {
-  const timeStampLength: number = 13;
-
-  if (!Number.isInteger(timestamp)) {
-    return false;
-  };
-
-  if (timestamp.toString().length !== timeStampLength) {
-    return false;
-  };
-
-  if (timestamp < 0) {
     return false;
   };
 

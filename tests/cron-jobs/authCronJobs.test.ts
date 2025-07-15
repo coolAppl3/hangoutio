@@ -23,6 +23,10 @@ beforeEach(async () => {
   await dbPool.query(clearDatabaseStatement);
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('clearExpiredAuthSessions()', () => {
   it('should delete any expired auth sessions', async () => {
     await dbPool.execute(
@@ -44,6 +48,6 @@ describe('clearExpiredAuthSessions()', () => {
     await clearExpiredAuthSessions();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM auth_sessions;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

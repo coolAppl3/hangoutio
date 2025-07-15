@@ -2,8 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.overlapsWithExistingAvailabilitySlots = exports.isValidAvailabilitySlotStart = exports.isValidAvailabilitySlot = void 0;
 const constants_1 = require("../constants");
+const hangoutValidation_1 = require("./hangoutValidation");
 function isValidAvailabilitySlot(slotStart, slotEnd) {
-    if (!isValidTimestamp(slotStart) || !isValidTimestamp(slotEnd)) {
+    if (!(0, hangoutValidation_1.isValidTimestamp)(slotStart) || !(0, hangoutValidation_1.isValidTimestamp)(slotEnd)) {
         return false;
     }
     ;
@@ -30,23 +31,6 @@ function isValidAvailabilitySlotStart(hangoutConclusionTimestamp, slotStart) {
     return true;
 }
 exports.isValidAvailabilitySlotStart = isValidAvailabilitySlotStart;
-;
-function isValidTimestamp(timestamp) {
-    const timeStampLength = 13;
-    if (!Number.isInteger(timestamp)) {
-        return false;
-    }
-    ;
-    if (timestamp.toString().length !== timeStampLength) {
-        return false;
-    }
-    ;
-    if (timestamp < 0) {
-        return false;
-    }
-    ;
-    return true;
-}
 ;
 ;
 function overlapsWithExistingAvailabilitySlots(existingSlots, newSlotTimestamps) {

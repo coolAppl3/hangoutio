@@ -51,8 +51,8 @@ export function isValidHangoutMembersLimit(limit: number): boolean {
   return true;
 };
 
-function isValidTimestamp(timestamp: number): boolean {
-  const timeStampLength: number = 13; // will work till 2268 AD
+export function isValidTimestamp(timestamp: number): boolean {
+  const timeStampLength: number = 13; // will work till 2268 AD ;)
 
   if (!Number.isInteger(timestamp)) {
     return false;
@@ -74,10 +74,8 @@ export function isValidHangoutPeriods(hangoutPeriods: number[]): boolean {
     return false;
   };
 
-  for (let i = 0; i < hangoutPeriods.length; i++) {
-    const period: number | undefined = hangoutPeriods[i];
-
-    if (!period || !isValidHangoutPeriod(period)) {
+  for (const period of hangoutPeriods) {
+    if (!isValidHangoutPeriod(period)) {
       return false;
     };
   };
@@ -108,6 +106,10 @@ interface HangoutStageDetails {
 };
 
 export function isValidNewHangoutPeriods(hangoutStageDetails: HangoutStageDetails, existingPeriods: number[], newPeriods: number[]): boolean {
+  if (existingPeriods.length !== 3 || newPeriods.length !== 3) {
+    return false;
+  };
+
   for (let i = 0; i < 3; i++) {
     const existingPeriod: number | undefined = existingPeriods[i];
     const newPeriod: number | undefined = newPeriods[i];

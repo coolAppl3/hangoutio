@@ -31,6 +31,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('POST guests/signIn', () => {
   it('should reject requests with missing or incorrect keys', async () => {
     async function testKeys(requestData: any): Promise<void> {

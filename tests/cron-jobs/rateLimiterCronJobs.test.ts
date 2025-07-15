@@ -23,6 +23,10 @@ beforeEach(async () => {
   await dbPool.query(clearDatabaseStatement);
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('replenishRateRequests()', () => {
   it('should reduce the number of requests count by half the request allowance for any rate_tracker rows whose window_timestamp is 30 seconds old or older, or reset the count to 0 if half the allowance has not been used', async () => {
     const windowTimestamp: number = Date.now() - (1000 * 35);
@@ -96,7 +100,7 @@ describe('removeStaleRateTrackerRows()', () => {
     await removeStaleRateTrackerRows();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM rate_tracker;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });
 
@@ -116,7 +120,7 @@ describe('removeLightRateAbusers()', () => {
     await removeLightRateAbusers();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT ip_address FROM abusive_users;`);
-    expect(deletedRows.length).toBe(1);
+    expect(deletedRows).toHaveLength(1);
 
     expect(deletedRows[0].ip_address).toBe('100.100.100.102');
   });

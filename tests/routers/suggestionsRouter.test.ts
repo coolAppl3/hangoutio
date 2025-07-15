@@ -32,6 +32,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 const removeRequestCookieSpy = jest.spyOn(cookeUtils, 'removeRequestCookie');
 const destroyAuthSessionSpy = jest.spyOn(authSessionModule, 'destroyAuthSession');
 const sendHangoutWebSocketMessageSpy = jest.spyOn(hangoutWebSocketServerModule, 'sendHangoutWebSocketMessage');
@@ -282,7 +286,7 @@ describe('POST suggestions', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -353,7 +357,7 @@ describe('POST suggestions', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -874,7 +878,7 @@ describe('PATCH suggestions', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -945,7 +949,7 @@ describe('PATCH suggestions', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is concluded', async () => {
@@ -1232,8 +1236,8 @@ describe('PATCH suggestions', () => {
       [1]
     );
 
-    expect(deletedLikeRows.length).toBe(0);
-    expect(deletedVoteRows.length).toBe(0);
+    expect(deletedLikeRows).toHaveLength(0);
+    expect(deletedVoteRows).toHaveLength(0);
 
     expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
   });
@@ -1392,7 +1396,7 @@ describe('DELETE suggestions', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -1463,7 +1467,7 @@ describe('DELETE suggestions', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is in the availability stage', async () => {
@@ -1658,9 +1662,9 @@ describe('DELETE suggestions', () => {
       [1]
     );
 
-    expect(deletedSuggestionRows.length).toBe(0);
-    expect(deletedLikeRows.length).toBe(0);
-    expect(deletedVoteRows.length).toBe(0);
+    expect(deletedSuggestionRows).toHaveLength(0);
+    expect(deletedLikeRows).toHaveLength(0);
+    expect(deletedVoteRows).toHaveLength(0);
 
     expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
   });
@@ -1819,7 +1823,7 @@ describe('DELETE suggestions/leader', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -1890,7 +1894,7 @@ describe('DELETE suggestions/leader', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not the hangout leader', async () => {
@@ -2189,9 +2193,9 @@ describe('DELETE suggestions/leader', () => {
       [1]
     );
 
-    expect(deletedSuggestionRows.length).toBe(0);
-    expect(deletedLikeRows.length).toBe(0);
-    expect(deletedVoteRows.length).toBe(0);
+    expect(deletedSuggestionRows).toHaveLength(0);
+    expect(deletedLikeRows).toHaveLength(0);
+    expect(deletedVoteRows).toHaveLength(0);
 
     expect(sendHangoutWebSocketMessageSpy).toHaveBeenCalled();
   });
@@ -2314,7 +2318,7 @@ describe('GET suggestions', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if no results are found for the hangout ID and hangout member ID provided, purposefully not providing too much details in the response', async () => {
@@ -2597,7 +2601,7 @@ describe('POST suggestions/likes', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if user is not a member of the hangout', async () => {
@@ -2739,7 +2743,7 @@ describe('POST suggestions/likes', () => {
       [1]
     );
 
-    expect(createdRows.length).toBe(1);
+    expect(createdRows).toHaveLength(1);
   });
 });
 
@@ -2895,7 +2899,7 @@ describe('DELETE suggestions/likes', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not a member of the hangout', async () => {
@@ -3001,6 +3005,6 @@ describe('DELETE suggestions/likes', () => {
       [1]
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

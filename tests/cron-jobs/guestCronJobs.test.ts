@@ -23,6 +23,10 @@ beforeEach(async () => {
   await dbPool.query(clearDatabaseStatement);
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 describe('deleteStaleGuestUsers()', () => {
   it('should delete guest users related to hangouts that have been concluded for longer than 60 days', async () => {
     const createdOnTimestamp: number = Date.now() - (dayMilliseconds * 32 * 2);
@@ -43,6 +47,6 @@ describe('deleteStaleGuestUsers()', () => {
     await deleteStaleGuestUsers();
 
     const [deletedRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM guests;`);
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 });

@@ -33,6 +33,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+afterAll(async () => {
+  await dbPool.end();
+});
+
 const removeRequestCookieSpy = jest.spyOn(cookeUtils, 'removeRequestCookie');
 const destroyAuthSessionSpy = jest.spyOn(authSessionModule, 'destroyAuthSession');
 const sendHangoutWebSocketMessageSpy = jest.spyOn(hangoutWebSocketServerModule, 'sendHangoutWebSocketMessage');
@@ -261,7 +265,7 @@ describe('POST hangouts/create/accountLeader', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the account is not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -296,7 +300,7 @@ describe('POST hangouts/create/accountLeader', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the user is in too many ongoing hangouts`, async () => {
@@ -385,12 +389,12 @@ describe('POST hangouts/create/accountLeader', () => {
     const [hangoutRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangouts WHERE hangout_title = ?;`, ['Some Title']);
     const [hangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangout_members WHERE account_id = ?;`, [1]);
 
-    expect(hangoutRows.length).toBe(1);
-    expect(hangoutMemberRows.length).toBe(1);
+    expect(hangoutRows).toHaveLength(1);
+    expect(hangoutMemberRows).toHaveLength(1);
 
     const [eventRows] = await dbPool.execute<RowDataPacket[]>(`SELECT event_description FROM hangout_events WHERE hangout_id = ?`, [response.body.hangoutId]);
 
-    expect(eventRows.length).toBe(1);
+    expect(eventRows).toHaveLength(1);
     expect(eventRows[0].event_description).toBe('John Doe created the hangout.');
   });
 });
@@ -693,13 +697,13 @@ describe('POST hangouts/create/guestLeader', () => {
     const [guestRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM guests WHERE username = ?;`, ['johnDoe']);
     const [hangoutMemberRows] = await dbPool.execute<RowDataPacket[]>(`SELECT 1 FROM hangout_members WHERE username = ?;`, ['johnDoe']);
 
-    expect(hangoutRows.length).toBe(1);
-    expect(guestRows.length).toBe(1);
-    expect(hangoutMemberRows.length).toBe(1);
+    expect(hangoutRows).toHaveLength(1);
+    expect(guestRows).toHaveLength(1);
+    expect(hangoutMemberRows).toHaveLength(1);
 
     const [eventRows] = await dbPool.execute<RowDataPacket[]>(`SELECT event_description FROM hangout_events WHERE hangout_id = ?`, [response.body.hangoutId]);
 
-    expect(eventRows.length).toBe(1);
+    expect(eventRows).toHaveLength(1);
     expect(eventRows[0].event_description).toBe('John Doe created the hangout.');
   });
 });
@@ -867,7 +871,7 @@ describe('PATCH hangouts/details/updatePassword', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the hangout member details are not found, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -902,7 +906,7 @@ describe('PATCH hangouts/details/updatePassword', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the hangout member user ID doesn't match the requester's user ID, removing the authSessionId cookie, and destroying the auth session`, async () => {
@@ -952,7 +956,7 @@ describe('PATCH hangouts/details/updatePassword', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the hangout member's hangout ID doesn't match the provided hangout ID`, async () => {
@@ -1289,7 +1293,7 @@ describe('PATCH hangouts/details/updateTitle', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the hangout is not found`, async () => {
@@ -1360,7 +1364,7 @@ describe('PATCH hangouts/details/updateTitle', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not the hangout leader', async () => {
@@ -1671,7 +1675,7 @@ describe('PATCH hangouts/details/updateMembersLimit', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -1742,7 +1746,7 @@ describe('PATCH hangouts/details/updateMembersLimit', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not the hangout leader', async () => {
@@ -2087,7 +2091,7 @@ describe('PATCH hangouts/details/stages/update', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -2159,7 +2163,7 @@ describe('PATCH hangouts/details/stages/update', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not the hangout leader', async () => {
@@ -2389,8 +2393,8 @@ describe('PATCH hangouts/details/stages/update', () => {
       ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
     );
 
-    expect(deletedAvailabilitySlotRows.length).toBe(0);
-    expect(deletedSuggestionRows.length).toBe(0);
+    expect(deletedAvailabilitySlotRows).toHaveLength(0);
+    expect(deletedSuggestionRows).toHaveLength(0);
 
     const [createdRows] = await dbPool.execute<RowDataPacket[]>(
       `SELECT event_description FROM hangout_events WHERE hangout_id = ?;`,
@@ -2548,7 +2552,7 @@ describe('PATCH hangouts/details/stages/progress', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it(`should reject requests if the hangout is not found`, async () => {
@@ -2619,7 +2623,7 @@ describe('PATCH hangouts/details/stages/progress', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not the hangout leader', async () => {
@@ -2922,7 +2926,7 @@ describe('DELETE hangouts', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   // ------------------------------
@@ -2995,7 +2999,7 @@ describe('DELETE hangouts', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the user is not the hangout leader', async () => {
@@ -3071,8 +3075,8 @@ describe('DELETE hangouts', () => {
       ['htUJOeoHJhuI8O7JA4HZPTBq7e8x7TgR_1749132719013']
     );
 
-    expect(deletedHangoutRows.length).toBe(0);
-    expect(deletedHangoutMemberRows.length).toBe(0);
+    expect(deletedHangoutRows).toHaveLength(0);
+    expect(deletedHangoutMemberRows).toHaveLength(0);
   });
 });
 
@@ -3242,7 +3246,7 @@ describe('GET hangouts/details/initial', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout is not found', async () => {
@@ -3595,7 +3599,7 @@ describe('GET hangouts/events', () => {
       ['dummyAuthSessionIdForTesting1234']
     );
 
-    expect(deletedRows.length).toBe(0);
+    expect(deletedRows).toHaveLength(0);
   });
 
   it('should reject requests if the hangout with a member matching the hangout member ID is found', async () => {
