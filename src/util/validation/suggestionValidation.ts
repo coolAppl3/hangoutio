@@ -1,4 +1,4 @@
-import { hourMilliseconds } from "../constants";
+import { dayMilliseconds, hourMilliseconds } from "../constants";
 import { containsInvalidWhitespace } from "../globalUtils";
 import { isValidTimestamp } from "./hangoutValidation";
 
@@ -34,7 +34,7 @@ export function isValidSuggestionTimeSlot(slotStart: number, slotEnd: number): b
   };
 
   const slotLength: number = slotEnd - slotStart;
-  if (slotLength < hourMilliseconds || slotLength > hourMilliseconds * 24) {
+  if (slotLength < hourMilliseconds || slotLength > dayMilliseconds) {
     return false;
   };
 
