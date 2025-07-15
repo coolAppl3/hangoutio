@@ -106,6 +106,10 @@ interface HangoutStageDetails {
 };
 
 export function isValidNewHangoutPeriods(hangoutStageDetails: HangoutStageDetails, existingPeriods: number[], newPeriods: number[]): boolean {
+  if (existingPeriods.length !== 3 || newPeriods.length !== 3) {
+    return false;
+  };
+
   for (let i = 0; i < 3; i++) {
     const existingPeriod: number | undefined = existingPeriods[i];
     const newPeriod: number | undefined = newPeriods[i];
