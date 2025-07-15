@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidNewHangoutPeriods = exports.isValidHangoutPeriods = exports.isValidHangoutMembersLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = void 0;
+exports.isValidNewHangoutPeriods = exports.isValidHangoutPeriods = exports.isValidTimestamp = exports.isValidHangoutMembersLimit = exports.isValidHangoutTitle = exports.isValidHangoutId = void 0;
 const constants_1 = require("../constants");
 const globalUtils_1 = require("../globalUtils");
 function isValidHangoutId(hangoutId) {
@@ -72,15 +72,15 @@ function isValidTimestamp(timestamp) {
     ;
     return true;
 }
+exports.isValidTimestamp = isValidTimestamp;
 ;
 function isValidHangoutPeriods(hangoutPeriods) {
     if (hangoutPeriods.length !== 3) {
         return false;
     }
     ;
-    for (let i = 0; i < hangoutPeriods.length; i++) {
-        const period = hangoutPeriods[i];
-        if (!period || !isValidHangoutPeriod(period)) {
+    for (const period of hangoutPeriods) {
+        if (!isValidHangoutPeriod(period)) {
             return false;
         }
         ;
@@ -109,6 +109,10 @@ function isValidHangoutPeriod(hangoutPeriod) {
 ;
 ;
 function isValidNewHangoutPeriods(hangoutStageDetails, existingPeriods, newPeriods) {
+    if (existingPeriods.length !== 3 || newPeriods.length !== 3) {
+        return false;
+    }
+    ;
     for (let i = 0; i < 3; i++) {
         const existingPeriod = existingPeriods[i];
         const newPeriod = newPeriods[i];
