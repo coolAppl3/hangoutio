@@ -1,10 +1,58 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authenticateHandshake = void 0;
+exports.authenticateHandshake = exports.handleWebSocketUpgrade = void 0;
+const http_1 = __importDefault(require("http"));
 const db_1 = require("../../db/db");
 const authUtils_1 = require("../../auth/authUtils");
 const authSessions_1 = require("../../auth/authSessions");
 const hangoutValidation_1 = require("../../util/validation/hangoutValidation");
+const hangoutWebSocketServer_1 = require("./hangoutWebSocketServer");
+async function handleWebSocketUpgrade(req, socket, head) {
+    socket.on('error', (err) => {
+        if (('errno' in err) && err.errno === -4077) {
+            socket.end();
+            return;
+        }
+        ;
+        console.log(err, err.stack);
+        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[500]}\r\n\r\n`);
+        socket.write('Internal server error\r\n');
+        socket.end();
+    });
+    const memoryUsageMegabytes = process.memoryUsage().rss / Math.pow(1024, 2);
+    const memoryThreshold = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500);
+    if (memoryUsageMegabytes >= memoryThreshold) {
+        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[509]}\r\n\r\n`);
+        socket.write('Temporarily unavailable\r\n');
+        socket.end();
+        return;
+    }
+    ;
+    const webSocketDetails = await authenticateHandshake(req);
+    if (!webSocketDetails) {
+        socket.write(`HTTP/1.1 ${http_1.default.STATUS_CODES[401]}\r\n\r\n`);
+        socket.write('Invalid credentials\r\n');
+        socket.end();
+        return;
+    }
+    ;
+    hangoutWebSocketServer_1.wss.handleUpgrade(req, socket, head, (ws) => {
+        const wsSet = hangoutWebSocketServer_1.wsMap.get(webSocketDetails.hangoutId);
+        if (!wsSet) {
+            hangoutWebSocketServer_1.wsMap.set(webSocketDetails.hangoutId, new Set([ws]));
+            hangoutWebSocketServer_1.wss.emit('connection', ws, req);
+            return;
+        }
+        ;
+        wsSet.add(ws);
+        hangoutWebSocketServer_1.wss.emit('connection', ws, req);
+    });
+}
+exports.handleWebSocketUpgrade = handleWebSocketUpgrade;
+;
 async function authenticateHandshake(req) {
     const cookieHeader = req.headers.cookie;
     if (!cookieHeader) {

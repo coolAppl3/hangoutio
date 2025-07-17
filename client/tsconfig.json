@@ -10,7 +10,7 @@
     // "noUnusedLocals": true,
     // "noUnusedParameters": true,
     "removeComments": true,
-    "types": ["axios"],
+    "types": ["axios", "jest"],
   },
   "include": ["src/**/*", "globals.d.ts"],
   "exclude": ["node_modules"],
