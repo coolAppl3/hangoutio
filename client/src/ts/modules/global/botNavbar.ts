@@ -19,7 +19,7 @@ function loadEventListeners(): void {
 };
 
 function handleBotNavbarClicks(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLButtonElement)) {
+  if (!(e.target instanceof HTMLElement)) {
     return;
   };
 
