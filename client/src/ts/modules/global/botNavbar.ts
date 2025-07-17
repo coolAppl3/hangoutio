@@ -19,7 +19,7 @@ function loadEventListeners(): void {
 };
 
 function handleBotNavbarClicks(e: MouseEvent): void {
-  if (!(e.target instanceof HTMLEmbedElement)) {
+  if (!(e.target instanceof HTMLButtonElement)) {
     return;
   };
 
@@ -98,4 +98,11 @@ function displaySignOutModal(): void {
       ConfirmModal.remove();
     };
   });
+};
+
+export const botNavbarTestOnlyExports = {
+  handleBotNavbarClicks,
+  displayRelevantLinks,
+  toggleAccountList,
+  displaySignOutModal,
 };
