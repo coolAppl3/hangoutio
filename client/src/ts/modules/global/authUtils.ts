@@ -50,3 +50,8 @@ function removeRelevantCookies(): void {
   Cookies.remove('signedInAs');
   Cookies.remove('guestHangoutId');
 };
+
+export const authUtilsTestOnlyExports = {
+  removeAuthDetails,
+  removeRelevantCookies,
+};
