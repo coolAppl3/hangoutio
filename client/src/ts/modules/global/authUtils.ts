@@ -8,7 +8,6 @@ export function handleAuthSessionExpired(afterAuthRedirectHref: string = window.
   removeAuthDetails(afterAuthRedirectHref, title, description);
 };
 
-
 export function handleAuthSessionDestroyed(afterAuthRedirectHref: string = window.location.href): void {
   const title: string = 'Invalid sign in credentials detected.';
   const description: string = `You've been signed out as a result. Please sign back in to continue.`;
