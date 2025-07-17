@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosResponse } from "axios";
 
 axios.defaults.withCredentials = true;
 

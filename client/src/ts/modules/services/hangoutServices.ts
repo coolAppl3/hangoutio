@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "../../../../node_modules/axios/index";
+import axios, { AxiosResponse } from "axios";
 import { ChatMessage, HangoutEvent, HangoutMember, HangoutMemberCountables, HangoutsDetails } from "../hangout/hangoutTypes";
 
 axios.defaults.withCredentials = true;
