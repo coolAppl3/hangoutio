@@ -51,7 +51,7 @@ describe('removeAuthDetails()', () => {
     const confirmModalCancelBtn: HTMLButtonElement | null = document.querySelector('#confirm-modal-cancel-btn');
 
     if (!confirmModalCancelBtn) {
-      fail('Confirm modal was not created or appended to the body.');
+      throw new Error('Confirm modal was not created or appended to the body.');
     };
 
     confirmModalCancelBtn.click();
