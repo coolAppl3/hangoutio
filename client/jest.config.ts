@@ -6,7 +6,6 @@ const config: Config = {
   testMatch: ['**/tests/**/*.test.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   setupFiles: ['./tests/jest.setup.ts'],
-  rootDir: '.', // make sure 
 };
 
 export default config;
