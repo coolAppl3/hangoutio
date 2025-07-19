@@ -74,8 +74,8 @@ export class InfoModal {
     };
 
     infoModalContainer.appendChild(createBtnElement(null, config.btnTitle, 'info-modal-btn'));
-
     infoModal.appendChild(infoModalContainer);
+
     return infoModal;
   };
 };
