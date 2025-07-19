@@ -6,7 +6,7 @@ beforeEach(() => {
 });
 
 describe('display()', () => {
-  it('should append a confirm modal with all the data passed into it, then append it to the body', () => {
+  it('should create a confirm modal with all the data passed into it, then append it to the body', () => {
     const config = {
       title: 'Some title.',
       description: 'Some description.',
