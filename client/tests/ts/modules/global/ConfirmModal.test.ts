@@ -53,6 +53,38 @@ describe('display()', () => {
     expect(extraBtn?.className).toBe('');
   });
 
+  it('should create multiple description paragraph elements if the description in the config is separated using \n', () => {
+    const config = {
+      title: 'Some title.',
+      description: 'Some description.\nSome other description.',
+      confirmBtnTitle: 'Confirm',
+      cancelBtnTitle: 'Cancel',
+      extraBtnTitle: 'Other Option',
+      isDangerousAction: false,
+    };
+
+    ConfirmModal.display(config);
+
+    const descriptionContainer: HTMLDivElement | null = document.querySelector('#confirm-modal .description-container');
+    expect(descriptionContainer).toBeInstanceOf(HTMLDivElement);
+
+    const descriptionElementsNodeList: NodeListOf<HTMLParagraphElement> | undefined = descriptionContainer?.querySelectorAll('.confirm-modal-description');
+    expect(descriptionElementsNodeList?.length).toBe(2);
+
+    if (!descriptionElementsNodeList) {
+      throw new Error('Failed to create node list.');
+    };
+
+    const firstDescriptionElement: HTMLParagraphElement | undefined = descriptionElementsNodeList[0];
+    const secondDescriptionElement: HTMLParagraphElement | undefined = descriptionElementsNodeList[1];
+
+    expect(firstDescriptionElement).toBeInstanceOf(HTMLParagraphElement);
+    expect(firstDescriptionElement?.textContent).toBe('Some description.');
+
+    expect(secondDescriptionElement).toBeInstanceOf(HTMLParagraphElement);
+    expect(secondDescriptionElement?.textContent).toBe('Some other description.');
+  });
+
   it('should not create a paragraph element if the tile is null in the config', () => {
     const config = {
       title: null,
