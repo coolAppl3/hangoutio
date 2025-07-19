@@ -68,7 +68,7 @@ export class ConfirmModal {
     btnContainer.appendChild(cancelBtn);
 
     if (config.extraBtnTitle) {
-      const extraBtn: HTMLButtonElement = createBtnElement(null, config.extraBtnTitle, 'other-btn');
+      const extraBtn: HTMLButtonElement = createBtnElement(null, config.extraBtnTitle, 'confirm-modal-other-btn');
       btnContainer.appendChild(extraBtn);
     };
 
