@@ -1,4 +1,6 @@
-export interface InfoModalConfig {
+import { createBtnElement, createDivElement, createParagraphElement } from "./domUtils";
+
+interface InfoModalConfig {
   title: string | null,
   description: string | null,
   btnTitle: string,
@@ -54,61 +56,26 @@ export class InfoModal {
   };
 
   private static createInfoModal(config: InfoModalConfig): HTMLDivElement {
-    const infoModal: HTMLDivElement = document.createElement('div');
-    infoModal.id = 'info-modal';
+    const infoModal: HTMLDivElement = createDivElement(null, 'info-modal');
     infoModal.setAttribute('tabindex', '0');
     config.description && (infoModal.className = 'has-description');
 
-    const infoModalContainer: HTMLDivElement = document.createElement('div');
-    infoModalContainer.id = 'info-modal-container';
-
-    config.title && infoModalContainer.appendChild(this.createModalTitle(config.title));
+    const infoModalContainer: HTMLDivElement = createDivElement(null, 'info-modal-container');
+    config.title && infoModalContainer.appendChild(createParagraphElement('info-modal-title', config.title));
 
     if (config.description) {
-      const descriptionContainer: HTMLDivElement = this.createDescriptionContainer();
+      const descriptionContainer: HTMLDivElement = createDivElement('description-container');
 
       for (const descriptionLine of config.description.split('\n')) {
-        descriptionContainer.appendChild(this.createModalDescription(descriptionLine));
+        descriptionContainer.appendChild(createParagraphElement('info-modal-description', descriptionLine));
       };
 
       infoModalContainer.appendChild(descriptionContainer);
     };
 
-    infoModalContainer.appendChild(this.createModalBtn(config.btnTitle));
+    infoModalContainer.appendChild(createBtnElement(null, config.btnTitle, 'info-modal-btn'));
 
     infoModal.appendChild(infoModalContainer);
     return infoModal;
-  };
-
-  private static createModalTitle(title: string): HTMLParagraphElement {
-    const modalTitle: HTMLParagraphElement = document.createElement('p');
-    modalTitle.className = 'info-modal-title';
-    modalTitle.appendChild(document.createTextNode(title));
-
-    return modalTitle;
-  };
-
-  private static createDescriptionContainer(): HTMLDivElement {
-    const descriptionContainer: HTMLDivElement = document.createElement('div');
-    descriptionContainer.className = 'description-container';
-
-    return descriptionContainer;
-  };
-
-  private static createModalDescription(description: string): HTMLParagraphElement {
-    const modalDescription: HTMLParagraphElement = document.createElement('p');
-    modalDescription.className = 'info-modal-description';
-    modalDescription.appendChild(document.createTextNode(description));
-
-    return modalDescription;
-  };
-
-  private static createModalBtn(btnTitle: string): HTMLButtonElement {
-    const modalBtn: HTMLButtonElement = document.createElement('button');
-    modalBtn.id = 'info-modal-btn';
-    modalBtn.setAttribute('type', 'button');
-    modalBtn.appendChild(document.createTextNode(btnTitle));
-
-    return modalBtn;
   };
 };
