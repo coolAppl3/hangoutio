@@ -1,4 +1,4 @@
-export interface ConfirmModalConfig {
+interface ConfirmModalConfig {
   title: string | null,
   description: string | null,
   confirmBtnTitle: string,
