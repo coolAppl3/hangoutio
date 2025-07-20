@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "../../../../node_modules/axios/index";
+import axios, { AxiosError } from "axios";
 import { InfoModal } from "./InfoModal";
 import popup from "./popup";
 

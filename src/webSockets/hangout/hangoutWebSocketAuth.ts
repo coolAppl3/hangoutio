@@ -1,9 +1,64 @@
-import { IncomingMessage } from "http";
+import http, { IncomingMessage } from "http";
 import { dbPool } from "../../db/db";
 import { RowDataPacket } from "mysql2";
 import { isValidAuthSessionDetails, isValidAuthSessionId } from "../../auth/authUtils";
 import { destroyAuthSession } from "../../auth/authSessions";
 import { isValidHangoutId } from "../../util/validation/hangoutValidation";
+
+import { Socket } from 'net';
+import { wsMap, wss } from "./hangoutWebSocketServer";
+import { WebSocket } from "ws";
+
+export async function handleWebSocketUpgrade(req: IncomingMessage, socket: Socket, head: Buffer): Promise<void> {
+  socket.on('error', (err) => {
+    if (('errno' in err) && err.errno === -4077) {
+      socket.end();
+      return;
+    };
+
+    console.log(err, err.stack)
+
+    socket.write(`HTTP/1.1 ${http.STATUS_CODES[500]}\r\n\r\n`);
+    socket.write('Internal server error\r\n');
+
+    socket.end();
+  });
+
+  const memoryUsageMegabytes: number = process.memoryUsage().rss / Math.pow(1024, 2);
+  const memoryThreshold: number = +(process.env.WS_ALLOW_MEMORY_THRESHOLD_MB || 500);
+
+  if (memoryUsageMegabytes >= memoryThreshold) {
+    socket.write(`HTTP/1.1 ${http.STATUS_CODES[509]}\r\n\r\n`);
+    socket.write('Temporarily unavailable\r\n');
+
+    socket.end();
+    return;
+  };
+
+  const webSocketDetails: { hangoutMemberId: number, hangoutId: string } | null = await authenticateHandshake(req);
+
+  if (!webSocketDetails) {
+    socket.write(`HTTP/1.1 ${http.STATUS_CODES[401]}\r\n\r\n`);
+    socket.write('Invalid credentials\r\n');
+
+    socket.end();
+    return;
+  };
+
+  wss.handleUpgrade(req, socket, head, (ws: WebSocket) => {
+    const wsSet: Set<WebSocket> | undefined = wsMap.get(webSocketDetails.hangoutId);
+
+    if (!wsSet) {
+      wsMap.set(webSocketDetails.hangoutId, new Set([ws]));
+      wss.emit('connection', ws, req);
+
+      return;
+    };
+
+    wsSet.add(ws);
+    wss.emit('connection', ws, req);
+  });
+};
 
 export async function authenticateHandshake(req: IncomingMessage): Promise<{ hangoutMemberId: number, hangoutId: string } | null> {
   const cookieHeader: string | undefined = req.headers.cookie;

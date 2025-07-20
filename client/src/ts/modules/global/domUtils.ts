@@ -1,4 +1,4 @@
-export function createDivElement(className: string | null, id: string | null = null): HTMLDivElement {
+export function createDivElement(className: string | null, id?: string): HTMLDivElement {
   const divElement: HTMLDivElement = document.createElement('div');
 
   className && (divElement.className = className);
@@ -23,9 +23,10 @@ export function createSpanElement(className: string | null, text: string): HTMLS
   return spanElement;
 };
 
-export function createBtnElement(className: string | null, text: string | null): HTMLButtonElement {
+export function createBtnElement(className: string | null, text: string | null, id?: string): HTMLButtonElement {
   const btnElement: HTMLButtonElement = document.createElement('button');
   className && (btnElement.className = className);
+  id && (btnElement.id = id);
   text && btnElement.appendChild(document.createTextNode(text));
   btnElement.setAttribute('type', 'button');
 

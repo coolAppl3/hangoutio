@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 
 process.env.DATABASE_NAME = process.env.TEST_DATABASE_NAME;
 process.env.PORT = '6000';
+process.env.WS_ALLOW_MEMORY_THRESHOLD_MB = '500';
 
 jest.mock('../src/middleware/rateLimiter', () => ({
   rateLimiter: jest.fn((req: Request, res: Response, next: NextFunction) => next()),
