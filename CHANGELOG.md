@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.5.26] (2025-07-20)
+
+### Code Refactoring
+
+- Moved websocket upgrade logic from `server.ts` into `hangoutWebSocketAuth.ts` for better readability.
+- Refactored `createBtnElement()` to accept an optional ID.
+- Refactored `ConfirmModal.ts` and `InfoModal.ts` to use global domUtils functions.
+
+
+### Bug Fixes
+
+- Fixed axios being incorrectly imported throughout the front end, which while worked, is causing issues with tests, and could cause issues down the line.
+- Fixed `handleBotNavbarClicks()` in `botNavbar.ts` not correctly checking the instance type, causing one of the two sign-out buttons to not work.
+
+
+### Tests
+
+- Implemented unit tests for `hangoutWebSocketAuth.ts`.
+- Set up jest testing environment for the frontend.
+- Implemented unit tests for `authUtils.ts`.
+- Implemented unit tests for `ConfirmModal.ts`.
+- Implemented unit tests for `InfoModal.ts`.
+- Implemented unit tests for `Cookies.ts`.
+  - Not really testing organic behavior, but it's close enough.
+
+
 ## [0.5.25] (2025-07-16)
 
 ### Tests
