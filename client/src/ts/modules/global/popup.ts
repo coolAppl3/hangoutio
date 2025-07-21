@@ -1,3 +1,5 @@
+import { createDivElement, createSpanElement } from "./domUtils";
+
 export default function popup(text: string, type: 'error' | 'success' | 'info', durationMilliseconds: number = 2000): void {
   if (text.trim() === '' || (durationMilliseconds && durationMilliseconds <= 0)) {
     durationMilliseconds = 2000;
@@ -8,8 +10,8 @@ export default function popup(text: string, type: 'error' | 'success' | 'info', 
     existingPopup.remove();
   };
 
-  const popup: HTMLDivElement = createPopup(type);
-  popup.appendChild(createSpan(text));
+  const popup: HTMLDivElement = createDivElement(type, 'popup');
+  popup.appendChild(createSpanElement(null, text));
 
   document.body.appendChild(popup);
 
@@ -24,19 +26,4 @@ export default function popup(text: string, type: 'error' | 'success' | 'info', 
     setTimeout(() => popup.remove(), 150);
 
   }, durationMilliseconds || 2000);
-};
-
-function createPopup(type: string): HTMLDivElement {
-  const popup: HTMLDivElement = document.createElement('div');
-  popup.id = 'popup';
-  popup.className = type;
-
-  return popup;
-};
-
-function createSpan(text: string): HTMLSpanElement {
-  const span: HTMLSpanElement = document.createElement('span');
-  span.appendChild(document.createTextNode(text));
-
-  return span;
 };
