@@ -456,7 +456,7 @@ async function startEmailUpdate(): Promise<void> {
   const newEmail: string = newEmailInput.value;
 
   if (newEmail === accountState.data.accountDetails.email) {
-    popup('This email is already assigned to your account..', 'info');
+    popup('This email is already assigned to your account.', 'info');
     LoadingModal.remove();
 
     return;
