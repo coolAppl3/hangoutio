@@ -201,7 +201,7 @@ export function validateCode(input: HTMLInputElement): boolean {
   const code: string = input.value.toUpperCase();
 
   if (code.includes('O')) {
-    ErrorSpan.display(input, `Code can not contain the letter "O". Replace it with the number 0.`);
+    ErrorSpan.display(input, `Code can't contain the letter "O". Try replacing it with the number 0.`);
     return false;
   };
 
