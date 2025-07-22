@@ -46,8 +46,7 @@ export function validateHangoutTitle(input: HTMLInputElement): boolean {
     return false;
   };
 
-  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
-  if (title !== doubleSpacesRemoved) {
+  if (title.includes('  ')) {
     ErrorSpan.display(input, 'Only one whitespace is allowed between words.');
     return false;
   };
@@ -183,8 +182,7 @@ export function validateDisplayName(input: HTMLInputElement): boolean {
     return false;
   };
 
-  const doubleSpacesRemoved: string = displayName.split(' ').filter((char: string) => char !== '').join(' ');
-  if (displayName !== doubleSpacesRemoved) {
+  if (displayName.includes('  ')) {
     ErrorSpan.display(input, 'Only one whitespace is allowed between words.');
     return false;
   };
@@ -250,8 +248,7 @@ export function validateSuggestionTitle(input: HTMLInputElement): boolean {
     return false;
   };
 
-  const doubleSpacesRemoved: string = title.split(' ').filter((char: string) => char !== '').join(' ');
-  if (title !== doubleSpacesRemoved) {
+  if (title.includes('  ')) {
     ErrorSpan.display(input, 'Only one whitespace is allowed between words.');
     return false;
   };
