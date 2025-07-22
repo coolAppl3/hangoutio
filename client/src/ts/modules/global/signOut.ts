@@ -16,8 +16,6 @@ export async function signOut(): Promise<void> {
     popup('Signed out.', 'success');
     LoadingModal.remove();
 
-    return;
-
   } catch (err: unknown) {
     console.log(err);
     LoadingModal.remove();
@@ -46,7 +44,6 @@ export async function signOut(): Promise<void> {
     };
 
     popup('Something went wrong.', 'error');
-    return;
   };
 };
 
