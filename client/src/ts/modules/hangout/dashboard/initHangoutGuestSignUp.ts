@@ -5,7 +5,7 @@ import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
 import revealPassword from "../../global/revealPassword";
-import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateNewUsername, validatePassword } from "../../global/validation";
+import { validateConfirmPassword, validateDisplayName, validateNewPassword, validateUsername, validatePassword } from "../../global/validation";
 import { JoinHangoutAsGuestBody, joinHangoutAsGuestService } from "../../services/hangoutMemberServices";
 import { getInitialHangoutData } from "./hangoutDashboard";
 import { handleHangoutFull, handleHangoutNotFound } from "./hangoutDashboardUtils";
@@ -202,7 +202,7 @@ function isValidSignUpData(): boolean {
   const validationArray: boolean[] = [
     guestSignUpFormState?.isPasswordProtected ? validatePassword(hangoutPasswordInput) : true,
     validateDisplayName(displayNameInput),
-    validateNewUsername(userNameInput),
+    validateUsername(userNameInput),
     validateNewPassword(guestPasswordInput),
   ];
 
@@ -221,7 +221,7 @@ function isValidSignUpData(): boolean {
 function setActiveValidation(): void {
   hangoutPasswordInput?.addEventListener('input', () => validatePassword(hangoutPasswordInput));
   displayNameInput?.addEventListener('input', () => validateDisplayName(displayNameInput));
-  userNameInput?.addEventListener('input', () => validateNewUsername(userNameInput));
+  userNameInput?.addEventListener('input', () => validateUsername(userNameInput));
 
   guestPasswordInput?.addEventListener('input', () => {
     validateNewPassword(guestPasswordInput);

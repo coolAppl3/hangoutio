@@ -5,7 +5,7 @@ import ErrorSpan from "../global/ErrorSpan";
 import popup from "../global/popup";
 import revealPassword from "../global/revealPassword";
 import { signOut } from "../global/signOut";
-import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateNewUsername } from "../global/validation";
+import { validateConfirmPassword, validateDisplayName, validateEmail, validateNewPassword, validateUsername } from "../global/validation";
 import { AccountSignUpBody, accountSignUpService } from "../services/accountServices";
 import { switchToVerificationStage } from "./signUpUtils";
 import LoadingModal from "../global/LoadingModal";
@@ -140,7 +140,7 @@ function isValidSignUpDetails(): boolean {
   const validationArray: boolean[] = [
     validateEmail(emailInput),
     validateDisplayName(displayNameInput),
-    validateNewUsername(usernameInput),
+    validateUsername(usernameInput),
     validateNewPassword(passwordInput),
     validateConfirmPassword(confirmPasswordInput, passwordInput),
   ];
@@ -160,7 +160,7 @@ function isValidSignUpDetails(): boolean {
 function setActiveValidation(): void {
   emailInput?.addEventListener('input', () => validateEmail(emailInput));
   displayNameInput?.addEventListener('input', () => validateDisplayName(displayNameInput));
-  usernameInput?.addEventListener('input', () => validateNewUsername(usernameInput));
+  usernameInput?.addEventListener('input', () => validateUsername(usernameInput));
 
   passwordInput?.addEventListener('input', () => {
     validateNewPassword(passwordInput);

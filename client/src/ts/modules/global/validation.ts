@@ -37,7 +37,7 @@ export function validateHangoutTitle(input: HTMLInputElement): boolean {
   };
 
   if (title.length < 3) {
-    ErrorSpan.display(input, 'Title must contain at least 3 characters.');
+    ErrorSpan.display(input, 'Title must at least contain 3 characters.');
     return false;
   };
 
@@ -54,7 +54,7 @@ export function validateHangoutTitle(input: HTMLInputElement): boolean {
 
   const regex: RegExp = /^[A-Za-z ]{3,25}$/;
   if (!regex.test(title)) {
-    ErrorSpan.display(input, 'Only English letters and a single space between words are allowed.');
+    ErrorSpan.display(input, 'Only English letters are allowed.');
     return false;
   };
 
@@ -76,12 +76,12 @@ export function validateNewPassword(input: HTMLInputElement): boolean {
   };
 
   if (password.length < 8) {
-    ErrorSpan.display(input, 'Password must contain at least 8 characters.');
+    ErrorSpan.display(input, 'Password must at least contain 8 characters.');
     return false;
   };
 
   if (password.length > 40) {
-    ErrorSpan.display(input, `Password must not exceed 40 characters.`);
+    ErrorSpan.display(input, 'Password must not exceed 40 characters.');
     return false;
   };
 
@@ -99,7 +99,7 @@ export function validatePassword(input: HTMLInputElement): boolean {
   const password: string = input.value;
 
   if (password === '') {
-    ErrorSpan.display(input, 'A valid password is required');
+    ErrorSpan.display(input, 'A valid password is required.');
     return false;
   };
 
@@ -109,7 +109,7 @@ export function validatePassword(input: HTMLInputElement): boolean {
   };
 
   if (password.length > 40) {
-    ErrorSpan.display(input, 'Password can not be longer than 40 characters.');
+    ErrorSpan.display(input, 'Password must not exceed 40 characters.');
     return false;
   };
 
@@ -129,39 +129,6 @@ export function validateConfirmPassword(confirmInput: HTMLInputElement, referenc
   };
 
   ErrorSpan.hide(confirmInput);
-  return true;
-};
-
-export function validateNewUsername(input: HTMLInputElement): boolean {
-  const username: string = input.value;
-
-  if (username === '') {
-    ErrorSpan.display(input, 'A valid username is required.');
-    return false;
-  };
-
-  if (username.includes(' ')) {
-    ErrorSpan.display(input, 'Username must not contain whitespace.');
-    return false;
-  };
-
-  if (username.length < 5) {
-    ErrorSpan.display(input, 'Username must be at least 5 characters long.');
-    return false;
-  };
-
-  if (username.length > 25) {
-    ErrorSpan.display(input, 'Username must not exceed 25 characters.');
-    return false;
-  };
-
-  const regex: RegExp = /^[A-Za-z0-9_.]{5,25}$/;
-  if (!regex.test(username)) {
-    ErrorSpan.display(input, 'Only English alphanumerical characters, dots, and underscores are allowed.');
-    return false;
-  };
-
-  ErrorSpan.hide(input);
   return true;
 };
 
@@ -190,7 +157,7 @@ export function validateUsername(input: HTMLInputElement): boolean {
 
   const regex: RegExp = /^[A-Za-z0-9_.]{5,25}$/;
   if (!regex.test(username)) {
-    ErrorSpan.display(input, 'Only English alphanumerical characters, dots, and underscores are possible.');
+    ErrorSpan.display(input, 'Only English alphanumerical characters, dots, and underscores are allowed.');
     return false;
   };
 
@@ -274,7 +241,7 @@ export function validateSuggestionTitle(input: HTMLInputElement): boolean {
   };
 
   if (title.length < 3) {
-    ErrorSpan.display(input, 'Title must be at least 3 characters long.');
+    ErrorSpan.display(input, 'Title must at least contain 3 characters.');
     return false;
   };
 
@@ -308,7 +275,7 @@ export function validateSuggestionDescription(textarea: HTMLTextAreaElement): bo
   };
 
   if (description.length < 10) {
-    ErrorSpan.display(textarea, 'Description must be at least 10 characters long.');
+    ErrorSpan.display(textarea, 'Description must at least contain 10 characters.');
     return false;
   };
 
