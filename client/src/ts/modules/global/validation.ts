@@ -345,6 +345,6 @@ export function isValidQueryString(queryString: string): boolean {
     return false;
   };
 
-  const regex: RegExp = /^\?[A-Za-z0-9][A-Za-z0-9&=]{0,150}$/;
+  const regex: RegExp = /^\?[A-Za-z0-9][A-Za-z0-9&=_]{0,150}$/;
   return regex.test(queryString);
 };
