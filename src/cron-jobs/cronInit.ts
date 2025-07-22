@@ -25,6 +25,7 @@ export function initCronJobs(): void {
     await accountCronJobs.removeExpiredEmailUpdateRequests();
     await accountCronJobs.removeExpiredDeletionRequests();
 
+    await clearExpiredAuthSessions();
     await removeStaleRateTrackerRows();
 
     removeEmptyHangoutWebSocketSets();
@@ -32,7 +33,6 @@ export function initCronJobs(): void {
 
   // every hour
   cron.schedule('0 * * * *', async () => {
-    await clearExpiredAuthSessions();
     await hangoutCronJobs.deleteEmptyHangouts();
   });
 
