@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.5.27] (2025-07-23)
+
+### Code Refactoring
+
+- Refactored `LoadingModal.ts` and `popup.ts` to use global `domUtils.ts` functions.
+- Turned off autocomplete for the hangout title input to force the browser to not auto-fill an email address in `create-hangout.html`.
+- Refactored how double whitespace validation was done in `validation.ts`, as it was unnecessarily complicated.
+
+
+### Bug Fixes
+
+- Fixed the regex in `isValidQueryString()` in `validation.ts` not allowing underscores in the query string.
+  - This bug hadn't caused any issues so far, but had the potential to do so down the line.
+
+
+### Tests
+
+- Implemented unit tests for `dateTimeUtils.ts`.
+- Implemented unit tests for `domUtils.ts`.
+- Implemented unit tests for `errorUtils.ts`.
+- Implemented unit tests for `validation.ts`.
+- Implemented unit tests for `signOut.ts`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## [0.5.26] (2025-07-20)
 
 ### Code Refactoring
