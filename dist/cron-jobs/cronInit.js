@@ -48,11 +48,11 @@ function initCronJobs() {
         await accountCronJobs.removeExpiredRecoveryRequests();
         await accountCronJobs.removeExpiredEmailUpdateRequests();
         await accountCronJobs.removeExpiredDeletionRequests();
+        await (0, authCronJobs_1.clearExpiredAuthSessions)();
         await (0, rateLimiterCronJobs_1.removeStaleRateTrackerRows)();
         (0, hangoutWebSocketServer_1.removeEmptyHangoutWebSocketSets)();
     });
     node_cron_1.default.schedule('0 * * * *', async () => {
-        await (0, authCronJobs_1.clearExpiredAuthSessions)();
         await hangoutCronJobs.deleteEmptyHangouts();
     });
     node_cron_1.default.schedule('0 0 * * *', async () => {
