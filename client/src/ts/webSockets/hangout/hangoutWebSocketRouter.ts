@@ -10,7 +10,7 @@ import { hangoutEventsState, searchHangoutEvents } from "../../modules/hangout/e
 import { globalHangoutState } from "../../modules/hangout/globalHangoutState";
 import { directlyNavigateHangoutSections } from "../../modules/hangout/hangoutNav";
 import { AvailabilitySlot, ChatMessage, HangoutEvent, HangoutMember, HangoutsDetails, Suggestion } from "../../modules/hangout/hangoutTypes";
-import { hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
+import { hangoutMembers, hangoutMembersState, removeHangoutMemberData, renderMembersSection, searchHangoutMembers } from "../../modules/hangout/members/hangoutMembers";
 import { hangoutSettingsState, renderHangoutSettingsSection } from "../../modules/hangout/settings/hangoutSettings";
 import { hangoutSuggestionState, removeOutOfBoundsSuggestions, renderHangoutSuggestions, renderSuggestionsSection, updateRemainingSuggestionsCount, updateRemainingVotesCount } from "../../modules/hangout/suggestions/hangoutSuggestions";
 import { updateSuggestionsFormHeader } from "../../modules/hangout/suggestions/suggestionsUtils";
@@ -385,18 +385,28 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
       return;
     };
 
-    const previousLeader: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === data.previousLeaderId);
-    const newLeader: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === data.newLeader);
+    let previousLeaderDisplayName: string | null = null;
 
-    previousLeader && (previousLeader.is_leader = false);
-    newLeader && (newLeader.is_leader = true);
+    for (const member of globalHangoutState.data.hangoutMembers) {
+      if (member.hangout_member_id === data.previousLeaderId) {
+        member.is_leader = false;
+        previousLeaderDisplayName = member.display_name;
+        continue;
+      };
+
+      if (member.hangout_member_id === data.newLeaderId) {
+        member.is_leader = true;
+      };
+    };
 
     if (data.newLeaderId === globalHangoutState.data.hangoutMemberId) {
       globalHangoutState.data.isLeader = true;
 
       InfoModal.display({
         title: `You're now the hangout leader.`,
-        description: `${previousLeader?.display_name} has transferred the hangout leadership to you.`,
+        description: previousLeaderDisplayName
+          ? `${previousLeaderDisplayName} has transferred the hangout leadership to you.`
+          : 'Hangout leadership has been transferred to you by the previous leader.',
         btnTitle: 'Okay',
       }, { simple: true });
     };
