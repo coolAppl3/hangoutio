@@ -76,7 +76,7 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
 
   const joinHangoutAsGuestBody: JoinHangoutAsGuestBody = {
     hangoutId: guestSignUpFormState.hangoutId,
-    hangoutPassword: hangoutPasswordInput.value,
+    hangoutPassword: guestSignUpFormState.isPasswordProtected ? hangoutPasswordInput.value : null,
     username: userNameInput.value,
     password: guestPasswordInput.value,
     displayName: displayNameInput.value,
