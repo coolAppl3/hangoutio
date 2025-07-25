@@ -908,8 +908,28 @@
 
               <!-- extra -->
               <div class="dashboard-grid-content-extra p-2 row-span-4 bg-secondary dark:bg-secondary-dark rounded-sm shadow-simple">
+                <!-- latest-events -->
+                <div class="dashboard-grid-content-extra-events mb-3">
+                  <h4 class="text-md font-medium text-title dark:text-title-dark mb-2">Latest events</h4>
+
+                  <div
+                    id="dashboard-events"
+                    class="mb-1"
+                  >
+                    <div id="dashboard-events-container"></div>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="block text-sm font-medium link text-center w-fit mx-auto"
+                    data-goTo="events"
+                  >
+                    View all events
+                  </button>
+                </div>
+
                 <!-- latest messages -->
-                <div class="dashboard-grid-content-extra-chat mb-3">
+                <div class="dashboard-grid-content-extra-chat">
                   <h4 class="text-md font-medium text-title dark:text-title-dark mb-2">Latest messages</h4>
 
                   <div id="dashboard-chat">
@@ -933,26 +953,6 @@
                       </button>
                     </div>
                   </div>
-                </div>
-
-                <!-- latest-events -->
-                <div class="dashboard-grid-content-extra-events">
-                  <h4 class="text-md font-medium text-title dark:text-title-dark mb-2">Latest events</h4>
-
-                  <div
-                    id="dashboard-events"
-                    class="mb-1"
-                  >
-                    <div id="dashboard-events-container"></div>
-                  </div>
-
-                  <button
-                    type="button"
-                    class="block text-sm font-medium link text-center w-fit mx-auto"
-                    data-goTo="events"
-                  >
-                    View all events
-                  </button>
                 </div>
               </div>
             </div>
