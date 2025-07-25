@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.28] (2025-07-25)
+
+### Features
+
+- Signing out will now redirect the user to the homepage if they're on the account or hangout pages, instead of simply reloading the page.
+
+
+### Bug Fixes
+
+- Fixed `joinHangoutAsGuest()` in `initHangoutGuestSignUp.ts` not setting the hangoutPassword as null if the hangout is not password protected.
+- Fixed websocket events not correctly setting the new hangout leader in the state.
+- Fixed `isDangerousAction` not being refactored properly back when `ConfirmModal.ts` was refactored to use global dom utility functions.
+
+
+### Code Refactoring
+
+- Refactored `hangoutWebSocketRouter.ts` to be more verbose on type checking websocket data, as it caused a typo-related bug to slip through.
+- Refactored `handleHangoutAlreadyHasLeader()` in `hangoutMembers.ts` to protect against situations where the state wasn't updated properly, leading to the claim leadership section being stuck. This shouldn't happen, but is done defensively for more resiliency.
+
+
 ## [0.5.27] (2025-07-23)
 
 ### Code Refactoring
@@ -22,21 +42,6 @@
 - Implemented unit tests for `errorUtils.ts`.
 - Implemented unit tests for `validation.ts`.
 - Implemented unit tests for `signOut.ts`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## [0.5.26] (2025-07-20)
