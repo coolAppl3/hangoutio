@@ -1066,7 +1066,7 @@
             }
 
             .message {
-              @apply h-fit p-1 mb-[4px] last:mb-0 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden;
+              @apply h-fit p-1 mb-[4px] last:mb-0 w-fit max-w-[70%] min-w-5 md:max-w-[85%] bg-secondary dark:bg-secondary-dark rounded-sm font-medium flex flex-col justify-start items-start relative overflow-hidden whitespace-pre-line;
               word-break: break-word;
 
               &.sent-by-user {
