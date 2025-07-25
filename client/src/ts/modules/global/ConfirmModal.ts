@@ -61,14 +61,14 @@ export class ConfirmModal {
   private static createBtnContainer(config: ConfirmModalConfig): HTMLDivElement {
     const btnContainer: HTMLDivElement = createDivElement('btn-container');
 
-    const confirmBtn: HTMLButtonElement = createBtnElement(null, config.confirmBtnTitle, 'confirm-modal-confirm-btn');
+    const confirmBtn: HTMLButtonElement = createBtnElement(config.isDangerousAction ? 'danger' : null, config.confirmBtnTitle, 'confirm-modal-confirm-btn');
     const cancelBtn: HTMLButtonElement = createBtnElement(null, config.cancelBtnTitle, 'confirm-modal-cancel-btn');
 
     btnContainer.appendChild(confirmBtn);
     btnContainer.appendChild(cancelBtn);
 
     if (config.extraBtnTitle) {
-      const extraBtn: HTMLButtonElement = createBtnElement(config.isDangerousAction ? 'danger' : null, config.extraBtnTitle, 'confirm-modal-other-btn');
+      const extraBtn: HTMLButtonElement = createBtnElement(null, config.extraBtnTitle, 'confirm-modal-other-btn');
       btnContainer.appendChild(extraBtn);
     };
 

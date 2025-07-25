@@ -140,7 +140,7 @@ describe('display()', () => {
     expect(extraBtn).toBeNull();
   });
 
-  it('should add a danger class to the extra button if isDangerousAction is true in the config', () => {
+  it('should add a danger class to the confirm button if isDangerousAction is true in the config', () => {
     const config = {
       title: 'Some Title',
       description: 'Some description.',
@@ -152,10 +152,10 @@ describe('display()', () => {
 
     ConfirmModal.display(config);
 
-    const extraBtn: HTMLButtonElement | null = document.querySelector('#confirm-modal #confirm-modal-other-btn');
-    expect(extraBtn).toBeInstanceOf(HTMLButtonElement);
-    expect(extraBtn?.textContent).toBe(config.extraBtnTitle);
-    expect(extraBtn?.className).toBe('danger');
+    const confirmBtn: HTMLButtonElement | null = document.querySelector('#confirm-modal #confirm-modal-confirm-btn');
+    expect(confirmBtn).toBeInstanceOf(HTMLButtonElement);
+    expect(confirmBtn?.textContent).toBe(config.confirmBtnTitle);
+    expect(confirmBtn?.className).toBe('danger');
   });
 });
 

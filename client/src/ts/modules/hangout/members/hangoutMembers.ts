@@ -720,18 +720,10 @@ export function removeHangoutMemberData(hangoutMemberId: number): void {
 };
 
 function hangoutHasLeader(): boolean {
-  const hangoutLeader: HangoutMember | undefined = globalHangoutState.data?.hangoutMembers.find((member: HangoutMember) => member.is_leader);
-
-  if (!hangoutLeader) {
-    return false;
-  };
-
-  return true;
+  return globalHangoutState.data?.hangoutMembers.some((member: HangoutMember) => member.is_leader) === true;
 };
 
 function handleHangoutAlreadyHasLeader(errResData: unknown, hangoutMemberId: number): void {
-  hangoutMembersState.hasLeader = true;
-
   if (!globalHangoutState.data) {
     return;
   };
@@ -759,6 +751,9 @@ function handleHangoutAlreadyHasLeader(errResData: unknown, hangoutMemberId: num
   if (errResData.leaderMemberId === hangoutMemberId) {
     globalHangoutState.data.isLeader = true;
   };
+
+  hangoutMembersState.hasLeader = true;
+  renderMembersSection();
 };
 
 const debounceMembersSearch = debounce(searchHangoutMembers, 300);

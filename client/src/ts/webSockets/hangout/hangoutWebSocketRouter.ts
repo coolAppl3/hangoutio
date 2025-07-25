@@ -18,7 +18,7 @@ import { updateSuggestionsFormHeader } from "../../modules/hangout/suggestions/s
 interface WebSocketData {
   type: string,
   reason: string,
-  data: { [key: string]: unknown },
+  data: object,
 };
 
 function isValidWebSocketData(webSocketData: unknown): webSocketData is WebSocketData {
@@ -91,7 +91,7 @@ function handleChatUpdate(webSocketData: WebSocketData): void {
     return;
   };
 
-  if (!webSocketData.data.chatMessage) {
+  if (!('chatMessage' in webSocketData.data) || !webSocketData.data.chatMessage) {
     return;
   };
 
@@ -117,7 +117,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
   const { reason, data } = webSocketData;
 
   if (reason === 'passwordUpdated') {
-    if (typeof data.isPasswordProtected !== 'boolean') {
+    if (!('isPasswordProtected' in data) || typeof data.isPasswordProtected !== 'boolean') {
       return;
     };
 
@@ -129,7 +129,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'titleUpdated') {
-    if (typeof data.newTitle !== 'string') {
+    if (!('newTitle' in data) || typeof data.newTitle !== 'string') {
       return;
     };
 
@@ -141,7 +141,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'memberLimitUpdated') {
-    if (typeof data.newMemberLimit !== 'number' || !Number.isInteger(data.newMemberLimit)) {
+    if (!('newMemberLimit' in data) || typeof data.newMemberLimit !== 'number' || !Number.isInteger(data.newMemberLimit)) {
       return;
     };
 
@@ -155,6 +155,10 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'hangoutStagesUpdated') {
+    if (!('newAvailabilityPeriod' in data) || !('newSuggestionsPeriod' in data) || !('newVotingPeriod' in data)) {
+      return;
+    };
+
     const { newAvailabilityPeriod, newSuggestionsPeriod, newVotingPeriod } = data;
     const hangoutDetails: HangoutsDetails = globalHangoutState.data.hangoutDetails;
 
@@ -191,7 +195,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'hangoutManuallyProgressed') {
-    if (typeof data.updatedHangoutDetails !== 'object' || data.updatedHangoutDetails === null) {
+    if (!('updatedHangoutDetails' in data) || typeof data.updatedHangoutDetails !== 'object' || data.updatedHangoutDetails === null) {
       return;
     };
 
@@ -235,7 +239,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'hangoutAutoProgressed' || reason === 'singleSuggestionConclusion' || reason === 'noSuggestionConclusion') {
-    if (typeof data.newStageControlTimestamp !== 'number' || !Number.isInteger(data.newStageControlTimestamp)) {
+    if (!('newStageControlTimestamp' in data) || typeof data.newStageControlTimestamp !== 'number' || !Number.isInteger(data.newStageControlTimestamp)) {
       return;
     };
 
@@ -274,7 +278,7 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
   const { reason, data } = webSocketData;
 
   if (reason === 'memberJoined') {
-    if (!data.newMember) {
+    if (!('newMember' in data) || !data.newMember) {
       return;
     };
 
@@ -291,7 +295,7 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'memberKicked') {
-    if (typeof data.kickedMemberId !== 'number' || !Number.isInteger(data.kickedMemberId)) {
+    if (!('kickedMemberId' in data) || typeof data.kickedMemberId !== 'number' || !Number.isInteger(data.kickedMemberId)) {
       return;
     };
 
@@ -332,7 +336,7 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'memberLeft') {
-    if (typeof data.leftMemberId !== 'number' || !Number.isInteger(data.leftMemberId)) {
+    if (!('leftMemberId' in data) || typeof data.leftMemberId !== 'number' || !Number.isInteger(data.leftMemberId)) {
       return;
     };
 
@@ -350,7 +354,7 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'leadershipRelinquished') {
-    if (typeof data.previousLeaderId !== 'number' || !Number.isInteger(data.previousLeaderId)) {
+    if (!('previousLeaderId' in data) || typeof data.previousLeaderId !== 'number' || !Number.isInteger(data.previousLeaderId)) {
       return;
     };
 
@@ -372,11 +376,11 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'leadershipTransferred') {
-    if (typeof data.previousLeaderId !== 'number' || !Number.isInteger(data.previousLeaderId)) {
+    if (!('previousLeaderId' in data) || typeof data.previousLeaderId !== 'number' || !Number.isInteger(data.previousLeaderId)) {
       return;
     };
 
-    if (typeof data.newLeaderId !== 'number' || !Number.isInteger(data.newLeaderId)) {
+    if (!('newLeaderId' in data) || typeof data.newLeaderId !== 'number' || !Number.isInteger(data.newLeaderId)) {
       return;
     };
 
@@ -385,18 +389,28 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
       return;
     };
 
-    const previousLeader: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === data.previousLeaderId);
-    const newLeader: HangoutMember | undefined = globalHangoutState.data.hangoutMembers.find((member: HangoutMember) => member.hangout_member_id === data.newLeader);
+    let previousLeaderDisplayName: string | null = null;
 
-    previousLeader && (previousLeader.is_leader = false);
-    newLeader && (newLeader.is_leader = true);
+    for (const member of globalHangoutState.data.hangoutMembers) {
+      if (member.hangout_member_id === data.previousLeaderId) {
+        member.is_leader = false;
+        previousLeaderDisplayName = member.display_name;
+        continue;
+      };
+
+      if (member.hangout_member_id === data.newLeaderId) {
+        member.is_leader = true;
+      };
+    };
 
     if (data.newLeaderId === globalHangoutState.data.hangoutMemberId) {
       globalHangoutState.data.isLeader = true;
 
       InfoModal.display({
         title: `You're now the hangout leader.`,
-        description: `${previousLeader?.display_name} has transferred the hangout leadership to you.`,
+        description: previousLeaderDisplayName
+          ? `${previousLeaderDisplayName} has transferred the hangout leadership to you.`
+          : 'Hangout leadership has been transferred to you by the previous leader.',
         btnTitle: 'Okay',
       }, { simple: true });
     };
@@ -409,7 +423,7 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'leadershipClaimed') {
-    if (typeof data.newLeaderMemberId !== 'number' || !Number.isInteger(data.newLeaderMemberId)) {
+    if (!('newLeaderMemberId' in data) || typeof data.newLeaderMemberId !== 'number' || !Number.isInteger(data.newLeaderMemberId)) {
       return;
     };
 
@@ -437,7 +451,7 @@ function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
   const { reason, data } = webSocketData;
 
   if (reason === 'newSlot') {
-    if (typeof data.newAvailabilitySlot !== 'object' || data.newAvailabilitySlot === null) {
+    if (!('newAvailabilitySlot' in data) || typeof data.newAvailabilitySlot !== 'object' || data.newAvailabilitySlot === null) {
       return;
     };
 
@@ -458,7 +472,7 @@ function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'slotUpdated') {
-    if (typeof data.updatedAvailabilitySlot !== 'object' || data.updatedAvailabilitySlot === null) {
+    if (!('updatedAvailabilitySlot' in data) || typeof data.updatedAvailabilitySlot !== 'object' || data.updatedAvailabilitySlot === null) {
       return;
     };
 
@@ -488,11 +502,11 @@ function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'slotDeleted') {
-    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+    if (!('hangoutMemberId' in data) || typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
       return;
     };
 
-    if (typeof data.deletedSlotId !== 'number' || !Number.isInteger(data.deletedSlotId)) {
+    if (!('deletedSlotId' in data) || typeof data.deletedSlotId !== 'number' || !Number.isInteger(data.deletedSlotId)) {
       return;
     };
 
@@ -511,7 +525,7 @@ function handleAvailabilitySlotsUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'slotsCleared') {
-    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+    if (!('hangoutMemberId' in data) || typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
       return;
     };
 
@@ -537,7 +551,7 @@ function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
   const { reason, data } = webSocketData;
 
   if (reason === 'newSuggestion') {
-    if (typeof data.newSuggestion !== 'object' || data.newSuggestion == null) {
+    if (!('newSuggestion' in data) || typeof data.newSuggestion !== 'object' || data.newSuggestion == null) {
       return;
     };
 
@@ -558,11 +572,11 @@ function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'suggestionUpdated') {
-    if (typeof data.isMajorChange !== 'boolean') {
+    if (!('isMajorChange' in data) || typeof data.isMajorChange !== 'boolean') {
       return;
     };
 
-    if (typeof data.updatedSuggestion !== 'object' || data.updatedSuggestion == null) {
+    if (!('updatedSuggestion' in data) || typeof data.updatedSuggestion !== 'object' || data.updatedSuggestion == null) {
       return;
     };
 
@@ -607,11 +621,11 @@ function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'suggestionDeleted') {
-    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+    if (!('hangoutMemberId' in data) || typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
       return;
     };
 
-    if (typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
+    if (!('deletedSuggestionId' in data) || typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
       return;
     };
 
@@ -638,7 +652,7 @@ function handleSuggestionsUpdate(webSocketData: WebSocketData): void {
   };
 
   if (reason === 'suggestionDeletedByLeader') {
-    if (typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
+    if (!('deletedSuggestionId' in data) || typeof data.deletedSuggestionId !== 'number' || !Number.isInteger(data.deletedSuggestionId)) {
       return;
     };
 
@@ -696,11 +710,11 @@ function handleLikesUpdate(webSocketData: WebSocketData): void {
   const { reason, data } = webSocketData;
 
   if (reason === 'likeAdded' || reason === 'likeDeleted') {
-    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+    if (!('hangoutMemberId' in data) || typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
       return;
     };
 
-    if (typeof data.suggestionId !== 'number' || !Number.isInteger(data.suggestionId)) {
+    if (!('suggestionId' in data) || typeof data.suggestionId !== 'number' || !Number.isInteger(data.suggestionId)) {
       return;
     };
 
@@ -731,11 +745,11 @@ function handleVotesUpdate(webSocketData: WebSocketData): void {
   const { reason, data } = webSocketData;
 
   if (reason === 'voteAdded' || reason === 'voteDeleted') {
-    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+    if (!('hangoutMemberId' in data) || typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
       return;
     };
 
-    if (typeof data.suggestionId !== 'number' || !Number.isInteger(data.suggestionId)) {
+    if (!('suggestionId' in data) || typeof data.suggestionId !== 'number' || !Number.isInteger(data.suggestionId)) {
       return;
     };
 
@@ -766,11 +780,11 @@ function handleHangoutMiscUpdate(webSocketData: WebSocketData): void {
   const { reason, data } = webSocketData;
 
   if (reason === 'memberUpdatedDisplayName') {
-    if (typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
+    if (!('hangoutMemberId' in data) || typeof data.hangoutMemberId !== 'number' || !Number.isInteger(data.hangoutMemberId)) {
       return;
     };
 
-    if (typeof data.newDisplayName !== 'string') {
+    if (!('newDisplayName' in data) || typeof data.newDisplayName !== 'string') {
       return;
     };
 
@@ -799,13 +813,13 @@ function insertNewHangoutEvent(webSocketData: WebSocketData): void {
     return;
   };
 
-  const data: { [key: string]: unknown } = webSocketData.data;
+  const data: object = webSocketData.data;
 
-  if (typeof data.eventDescription !== 'string') {
+  if (!('eventDescription' in data) || typeof data.eventDescription !== 'string') {
     return;
   };
 
-  if (typeof data.eventTimestamp !== 'number' || !Number.isInteger(data.eventTimestamp)) {
+  if (!('eventTimestamp' in data) || typeof data.eventTimestamp !== 'number' || !Number.isInteger(data.eventTimestamp)) {
     return;
   };
 

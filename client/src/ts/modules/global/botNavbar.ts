@@ -89,7 +89,15 @@ function displaySignOutModal(): void {
       await signOut();
 
       LoadingModal.display();
-      setTimeout(() => window.location.reload(), 1000);
+      setTimeout(() => {
+        const pagesToRedirectFrom: string[] = ['/hangout', '/account'];
+        if (pagesToRedirectFrom.includes(document.location.pathname)) {
+          window.location.href = 'home';
+          return;
+        };
+
+        window.location.reload();
+      }, 1000);
 
       return;
     };
