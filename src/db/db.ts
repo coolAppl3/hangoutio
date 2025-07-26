@@ -1,17 +1,17 @@
 import mysql, { Pool } from 'mysql2/promise';
-import { minuteMilliseconds } from '../util/constants';
 
 export const dbPool: Pool = mysql.createPool({
   host: process.env.DATABASE_HOST,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASS,
   database: process.env.DATABASE_NAME,
-  waitForConnections: true,
   connectionLimit: 50,
-  idleTimeout: minuteMilliseconds * 5,
-  queueLimit: 100,
+  maxIdle: 20,
+  idleTimeout: 60 * 1000,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
+  keepAliveInitialDelay: 20 * 1000,
+  waitForConnections: true,
+  queueLimit: 10,
   multipleStatements: true,
   namedPlaceholders: true,
 });
