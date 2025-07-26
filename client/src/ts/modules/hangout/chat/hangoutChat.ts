@@ -21,6 +21,7 @@ interface HangoutChatState {
   fetchBatchSize: number,
   latestChatContainerScrollTop: number,
 
+  isSendingMessage: boolean,
   messages: ChatMessage[],
 };
 
@@ -34,6 +35,7 @@ export const hangoutChatState: HangoutChatState = {
   fetchBatchSize: HANGOUT_CHAT_FETCH_BATCH_SIZE,
   latestChatContainerScrollTop: 0,
 
+  isSendingMessage: false,
   messages: [],
 };
 
@@ -250,6 +252,10 @@ async function getHangoutMessages(): Promise<void> {
 async function sendHangoutMessage(e: SubmitEvent): Promise<void> {
   e.preventDefault();
 
+  if (hangoutChatState.isSendingMessage) {
+    return;
+  };
+
   if (!globalHangoutState.data || !chatTextarea) {
     popup('Failed to send message.', 'error');
     return;
@@ -259,6 +265,8 @@ async function sendHangoutMessage(e: SubmitEvent): Promise<void> {
   if (!isValidMessage) {
     return;
   };
+
+  hangoutChatState.isSendingMessage = true;
 
   const messageContent: string = chatTextarea.value.trim();
   const { hangoutMemberId, hangoutId } = globalHangoutState.data;
@@ -273,8 +281,11 @@ async function sendHangoutMessage(e: SubmitEvent): Promise<void> {
     chatTextarea.value = '';
     autoExpandChatTextarea();
 
+    hangoutChatState.isSendingMessage = false;
+
   } catch (err: unknown) {
     console.log(err);
+    hangoutChatState.isSendingMessage = false;
 
     const asyncErrorData: AsyncErrorData | null = getAsyncErrorData(err);
 
