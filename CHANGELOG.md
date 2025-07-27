@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.01] (2025-07-27)
+
+### Features
+
+- Added `README.md`.
+
+
 ## [1.0.0] (2025-07-27)
 
 ### Features
