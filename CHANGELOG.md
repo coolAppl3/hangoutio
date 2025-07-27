@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0] (2025-07-27)
+
+### Features
+
+- Added a safeguard against double-sending chat messages.
+
+
+### Code Refactoring
+
+- Refactored the connection pool configuration to better align with the app's needs.
+
+
+### Bug Fixes
+
+- Fixed chat messages being duplicated when the receivers load the chat section after it had been sent.
+- Fixed line breaks in chat messages not being ignored when rendered.
+- Reorganized the order of the latest events and latest messages section in the hangout dashboard, to avoid the layout shift caused by differently-sized messages being sent.
+- Reworked autoInsertColon() to not lead to situations where the user ends up with two colons back to back (on auto-inserted, the other manually inserted).
+- Implemented a fix for browsers ignoring the autocomplete values for some of the inputs in the hangout creation form.
+
+
 ## [0.5.28] (2025-07-25)
 
 ### Features
@@ -495,7 +516,7 @@
 - Implemented rate limiting.
 
 
-## [0.5.00] (2025-05-08)
+## [0.5.0] (2025-05-08)
 
 ### Features
 

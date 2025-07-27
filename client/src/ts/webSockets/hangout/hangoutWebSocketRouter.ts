@@ -101,6 +101,17 @@ function handleChatUpdate(webSocketData: WebSocketData): void {
     return;
   };
 
+  if (!hangoutChatState.isLoaded) {
+    hangoutDashboardState.latestChatMessages.push(newMessage);
+
+    if (hangoutDashboardState.latestChatMessages.length > 2) {
+      hangoutDashboardState.latestChatMessages.shift();
+    };
+
+    renderDashboardLatestMessages();
+    return;
+  };
+
   hangoutChatState.messages.push(newMessage);
 
   insertNewMessagesFlag();

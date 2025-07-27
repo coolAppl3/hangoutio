@@ -119,8 +119,8 @@ function loadEventListeners(): void {
   timePickerChangeDateBtn?.addEventListener('click', regressStage);
   timePickerExtendSlotCheckbox?.addEventListener('click', toggleSlotEndExtension);
 
-  timePickerSlotStartInput?.addEventListener('keyup', (e: KeyboardEvent) => autoInsertColon(e, timePickerSlotStartInput));
-  timePickerSlotEndInput?.addEventListener('keyup', (e: KeyboardEvent) => autoInsertColon(e, timePickerSlotEndInput));
+  timePickerSlotStartInput?.addEventListener('input', () => autoInsertColon(timePickerSlotStartInput));
+  timePickerSlotEndInput?.addEventListener('input', () => autoInsertColon(timePickerSlotEndInput));
 };
 
 function submitDateAndTime(e: SubmitEvent): void {
@@ -598,17 +598,9 @@ function enableCalendarNavigationBtn(direction: 'forwards' | 'backwards'): void 
   navigationBtn && navigationBtn.classList.remove('disabled');
 };
 
-function autoInsertColon(e: Event, input: HTMLInputElement): void {
-  if (!(e instanceof KeyboardEvent)) {
-    return;
-  };
-
-  if (!e.code.startsWith('Digit')) {
-    return;
-  };
-
-  if (input.value.length === 2) {
-    input.value += ':';
+function autoInsertColon(input: HTMLInputElement): void {
+  if (input.value.length === 4 && Number.isInteger(+input.value)) {
+    input.value = `${input.value.slice(0, 2)}:${input.value.slice(2)}`;
   };
 };
 
