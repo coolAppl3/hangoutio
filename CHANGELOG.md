@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.02] (2025-07-27)
+
+### Features
+
+- Added description and keywords meta tags to all HTML pages.
+- Added `sitemap.xml`.
+
+
 ## [1.0.01] (2025-07-27)
 
 ### Features
