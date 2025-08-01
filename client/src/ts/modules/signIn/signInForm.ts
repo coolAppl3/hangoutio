@@ -87,6 +87,8 @@ async function accountSignIn(): Promise<void> {
     await accountSignInService(accountSignInBody);
     popup('Signed in successfully.', 'success');
 
+    document.dispatchEvent(new CustomEvent('signedIn'));
+
     const afterAuthRedirectHref: string | null = Cookies.get('afterAuthRedirectHref');
     if (afterAuthRedirectHref) {
       Cookies.remove('afterAuthRedirectHref');
@@ -196,6 +198,7 @@ async function guestSignIn(): Promise<void> {
     };
 
     popup('Signed in successfully.', 'success');
+    document.dispatchEvent(new CustomEvent('signedIn'));
 
     const afterAuthRedirectHref: string | null = Cookies.get('afterAuthRedirectHref');
     if (afterAuthRedirectHref) {

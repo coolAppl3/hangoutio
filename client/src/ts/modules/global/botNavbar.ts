@@ -15,7 +15,9 @@ export default function botNavbar(): void {
 function loadEventListeners(): void {
   accountListBtn?.addEventListener('click', toggleAccountList);
   botNavbarElement?.addEventListener('click', handleBotNavbarClicks);
+
   document.addEventListener('signedOut', displayRelevantLinks);
+  document.addEventListener('signedIn', displayRelevantLinks);
 };
 
 function handleBotNavbarClicks(e: MouseEvent): void {

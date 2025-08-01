@@ -16,7 +16,9 @@ export default function topNavbar(): void {
 function loadEventListeners(): void {
   accountNavBtn?.addEventListener('click', enableAccountNavBtn);
   topNavbarElement?.addEventListener('click', handleTopNavbarClicks);
+
   document.addEventListener('signedOut', displayRelevantLinks);
+  document.addEventListener('signedIn', displayRelevantLinks);
 };
 
 function handleTopNavbarClicks(e: MouseEvent): void {
