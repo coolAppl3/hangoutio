@@ -376,7 +376,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
 
     const hashedPassword: string = await bcrypt.hash(requestData.password, 10);
 
-    const [resultSetHeader] = await connection.execute<ResultSetHeader>(
+    const [firstResultSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO guests (
         username,
         hashed_password,
@@ -386,9 +386,9 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       [requestData.username, hashedPassword, requestData.displayName, requestData.hangoutId]
     );
 
-    const guestId: number = resultSetHeader.insertId;
+    const guestId: number = firstResultSetHeader.insertId;
 
-    await connection.execute(
+    const [secondResultsSetHeader] = await connection.execute<ResultSetHeader>(
       `INSERT INTO hangout_members (
         hangout_id,
         username,
@@ -400,6 +400,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       ) VALUES (${generatePlaceHolders(7)});`,
       [requestData.hangoutId, requestData.username, 'guest', null, guestId, requestData.displayName, false]
     );
+
 
     await connection.commit();
 
@@ -422,7 +423,7 @@ hangoutMembersRouter.post('/joinHangout/guest', async (req: Request, res: Respon
       reason: 'memberJoined',
       data: {
         newMember: {
-          hangout_member_id: resultSetHeader.insertId,
+          hangout_member_id: secondResultsSetHeader.insertId,
           username: requestData.username,
           user_type: 'guest',
           display_name: requestData.displayName,

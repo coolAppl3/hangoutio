@@ -110,6 +110,8 @@ async function joinHangoutAsGuest(e: SubmitEvent): Promise<void> {
       return;
     };
 
+    document.dispatchEvent(new CustomEvent('signedIn'));
+
     hideGuestSignUpSection();
     await getInitialHangoutData();
 

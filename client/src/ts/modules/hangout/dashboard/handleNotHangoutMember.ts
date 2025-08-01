@@ -6,6 +6,7 @@ import { AsyncErrorData, getAsyncErrorData } from "../../global/errorUtils";
 import { InfoModal } from "../../global/InfoModal";
 import LoadingModal from "../../global/LoadingModal";
 import popup from "../../global/popup";
+import { signOut } from "../../global/signOut";
 import { JoinHangoutAsAccountBody, joinHangoutAsAccountService } from "../../services/hangoutMemberServices";
 import { getInitialHangoutData } from "./hangoutDashboard";
 import { handleHangoutFull, handleHangoutNotFound, handleInvalidHangoutId } from "./hangoutDashboardUtils";
@@ -217,6 +218,8 @@ function handleGuestNotMember(): void {
     };
 
     if (e.target.id === 'confirm-modal-confirm-btn') {
+      await signOut();
+
       if (!notHangoutMemberState) {
         popup('Something went wrong.', 'error');
         setTimeout(() => window.location.href = 'home', 1000);
@@ -225,6 +228,8 @@ function handleGuestNotMember(): void {
       };
 
       initHangoutGuestSignUp(notHangoutMemberState.hangoutId, notHangoutMemberState.isPasswordProtected);
+      ConfirmModal.remove();
+
       return;
     };
 

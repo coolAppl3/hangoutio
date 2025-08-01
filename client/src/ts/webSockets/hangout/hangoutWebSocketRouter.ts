@@ -1,6 +1,7 @@
 import { HANGOUT_CONCLUSION_STAGE } from "../../modules/global/clientConstants";
 import { InfoModal } from "../../modules/global/InfoModal";
 import popup from "../../modules/global/popup";
+import { signOut } from "../../modules/global/signOut";
 import { availabilityCalendarState, updateAvailabilityCalendarMarkers, resetAvailabilityCalendar } from "../../modules/hangout/availability/availabilityCalendar";
 import { hangoutAvailabilityState, removeOutOfBoundsAvailabilitySlots } from "../../modules/hangout/availability/hangoutAvailability";
 import { hangoutChatState, insertNewMessagesFlag, insertSingleChatMessage } from "../../modules/hangout/chat/hangoutChat";
@@ -41,7 +42,7 @@ function isValidWebSocketData(webSocketData: unknown): webSocketData is WebSocke
   return true;
 };
 
-export function hangoutWebSocketRouter(WebSocketData: unknown): void {
+export async function hangoutWebSocketRouter(WebSocketData: unknown): Promise<void> {
   if (!isValidWebSocketData(WebSocketData)) {
     return;
   };
@@ -57,7 +58,7 @@ export function hangoutWebSocketRouter(WebSocketData: unknown): void {
   };
 
   if (WebSocketData.type === 'hangoutMember') {
-    handleHangoutMembersUpdate(WebSocketData);
+    await handleHangoutMembersUpdate(WebSocketData);
     return;
   };
 
@@ -281,7 +282,7 @@ function handleHangoutUpdate(webSocketData: WebSocketData): void {
   };
 };
 
-function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
+async function handleHangoutMembersUpdate(webSocketData: WebSocketData): Promise<void> {
   if (!globalHangoutState.data) {
     return;
   };
@@ -317,6 +318,7 @@ function handleHangoutMembersUpdate(webSocketData: WebSocketData): void {
 
     if (data.kickedMemberId === globalHangoutState.data.hangoutMemberId) {
       globalHangoutState.hangoutWebSocket?.close(1000);
+      await signOut();
 
       const infoModal: HTMLDivElement = InfoModal.display({
         title: null,

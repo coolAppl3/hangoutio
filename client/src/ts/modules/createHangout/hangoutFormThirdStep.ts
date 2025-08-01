@@ -306,6 +306,8 @@ async function accountSignIn(): Promise<void> {
 
   try {
     await accountSignInService(accountSignInBody);
+    document.dispatchEvent(new CustomEvent('signedIn'));
+
     await createHangoutAsAccount();
 
   } catch (err: unknown) {

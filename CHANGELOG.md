@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.03] (2025-08-01)
+
+### Bug Fixes
+
+- Fixed a few issues with the confirm modal and stored cookies relating to guest users attempting to access a hangout not meant for their guest account.
+- Fixed POST `hangoutMembers/joinHangout/guest` returning the `guest_id` in as the `hangout_member_id` for the guest user, instead of the actual `hangout_member_id`.
+- Fixed kicked guest users not having their relevant sign in cookies removed, despite their guest account being deleted.
+- Fixed the top and bottom navbars not updating in certain situations when a user signs in or creates an account (guest accounts included).
+
+
 ## [1.0.02] (2025-07-27)
 
 ### Features

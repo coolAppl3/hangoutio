@@ -26,7 +26,7 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
     globalHangoutState.webSocketConnected = true;
   });
 
-  hangoutWebSocket.addEventListener('message', (e: MessageEvent) => {
+  hangoutWebSocket.addEventListener('message', async (e: MessageEvent) => {
     if (!e.data) {
       return;
     };
@@ -36,7 +36,7 @@ export function initHangoutWebSocket(hangoutMemberId: number, hangoutId: string,
       return;
     };
 
-    hangoutWebSocketRouter(WebSocketData);
+    await hangoutWebSocketRouter(WebSocketData);
   });
 
   hangoutWebSocket.addEventListener('close', (event) => {
