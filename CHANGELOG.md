@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.04] (2025-08-13)
+
+### Bug Fixes
+
+- Fixed CTA buttons in index.html not going full width on smaller devices.
+
+
 ## [1.0.03] (2025-08-01)
 
 ### Bug Fixes
