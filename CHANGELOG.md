@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.05] (2025-09-10)
+
+### Bug Fixes
+
+- Fixed misalignment in the hangout dashboard.
+
+
 ## [1.0.04] (2025-08-13)
 
 ### Bug Fixes
